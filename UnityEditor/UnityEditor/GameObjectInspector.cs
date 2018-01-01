@@ -21,11 +21,11 @@ namespace UnityEditor
 
 			public GUIContent modelIcon = EditorGUIUtility.IconContent("PrefabModel Icon");
 
-			public GUIContent staticContent = EditorGUIUtility.TextContent("Static|Enable the checkbox to mark this GameObject as static for all systems.\n\nDisable the checkbox to mark this GameObject as not static for all systems.\n\nUse the drop-down menu to mark as this GameObject as static or not static for individual systems.");
+			public GUIContent staticContent = EditorGUIUtility.TrTextContent("Static", "Enable the checkbox to mark this GameObject as static for all systems.\n\nDisable the checkbox to mark this GameObject as not static for all systems.\n\nUse the drop-down menu to mark as this GameObject as static or not static for individual systems.", null);
 
-			public GUIContent layerContent = EditorGUIUtility.TextContent("Layer|The layer that this GameObject is in.\n\nChoose Add Layer... to edit the list of available layers.");
+			public GUIContent layerContent = EditorGUIUtility.TrTextContent("Layer", "The layer that this GameObject is in.\n\nChoose Add Layer... to edit the list of available layers.", null);
 
-			public GUIContent tagContent = EditorGUIUtility.TextContent("Tag|The tag that this GameObject has.\n\nChoose Untagged to remove the current tag.\n\nChoose Add Tag... to edit the list of available tags.");
+			public GUIContent tagContent = EditorGUIUtility.TrTextContent("Tag", "The tag that this GameObject has.\n\nChoose Untagged to remove the current tag.\n\nChoose Add Tag... to edit the list of available tags.", null);
 
 			public float tagFieldWidth = EditorStyles.boldLabel.CalcSize(EditorGUIUtility.TempContent("Tag")).x;
 
@@ -39,18 +39,18 @@ namespace UnityEditor
 
 			public GUIStyle instanceManagementInfo = new GUIStyle(EditorStyles.helpBox);
 
-			public GUIContent goTypeLabelMultiple = new GUIContent("Multiple");
+			public GUIContent goTypeLabelMultiple = EditorGUIUtility.TrTextContent("Multiple", null, null);
 
 			public GUIContent[] goTypeLabel = new GUIContent[]
 			{
 				null,
-				EditorGUIUtility.TextContent("Prefab"),
-				EditorGUIUtility.TextContent("Model"),
-				EditorGUIUtility.TextContent("Prefab"),
-				EditorGUIUtility.TextContent("Model"),
-				EditorGUIUtility.TextContent("Missing|The source Prefab or Model has been deleted."),
-				EditorGUIUtility.TextContent("Prefab|You have broken the prefab connection. Changes to the prefab will not be applied to this object before you Apply or Revert."),
-				EditorGUIUtility.TextContent("Model|You have broken the prefab connection. Changes to the model will not be applied to this object before you Revert.")
+				EditorGUIUtility.TrTextContent("Prefab", null, null),
+				EditorGUIUtility.TrTextContent("Model", null, null),
+				EditorGUIUtility.TrTextContent("Prefab", null, null),
+				EditorGUIUtility.TrTextContent("Model", null, null),
+				EditorGUIUtility.TrTextContent("Missing", "The source Prefab or Model has been deleted.", null),
+				EditorGUIUtility.TrTextContent("Prefab", "You have broken the prefab connection. Changes to the prefab will not be applied to this object before you Apply or Revert.", null),
+				EditorGUIUtility.TrTextContent("Model", "You have broken the prefab connection. Changes to the model will not be applied to this object before you Revert.", null)
 			};
 
 			public Styles()
@@ -452,6 +452,7 @@ namespace UnityEditor
 			{
 				SceneModeUtility.SetStaticFlags(base.targets, changedFlags, flagValue);
 				base.serializedObject.SetIsDifferentCacheDirty();
+				GUIUtility.ExitGUI();
 			}
 		}
 
@@ -482,6 +483,7 @@ namespace UnityEditor
 			{
 				SceneModeUtility.SetStaticFlags(base.targets, -1, flagValue);
 				base.serializedObject.SetIsDifferentCacheDirty();
+				GUIUtility.ExitGUI();
 			}
 			EditorGUI.EndProperty();
 		}

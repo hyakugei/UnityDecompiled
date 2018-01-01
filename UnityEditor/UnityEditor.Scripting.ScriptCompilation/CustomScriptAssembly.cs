@@ -29,6 +29,12 @@ namespace UnityEditor.Scripting.ScriptCompilation
 			set;
 		}
 
+		public OptionalUnityReferences OptionalUnityReferences
+		{
+			get;
+			set;
+		}
+
 		public CustomScriptAssemblyPlatform[] IncludePlatforms
 		{
 			get;
@@ -36,6 +42,12 @@ namespace UnityEditor.Scripting.ScriptCompilation
 		}
 
 		public CustomScriptAssemblyPlatform[] ExcludePlatforms
+		{
+			get;
+			set;
+		}
+
+		public EditorCompilation.PackageAssembly? PackageAssembly
 		{
 			get;
 			set;
@@ -64,30 +76,39 @@ namespace UnityEditor.Scripting.ScriptCompilation
 			private set;
 		}
 
+		public static CustomScriptOptinalUnityAssembly[] OptinalUnityAssemblies
+		{
+			get;
+			private set;
+		}
+
 		static CustomScriptAssembly()
 		{
-			CustomScriptAssembly.Platforms = new CustomScriptAssemblyPlatform[20];
-			int num = 0;
-			CustomScriptAssembly.Platforms[num++] = new CustomScriptAssemblyPlatform("Editor", "Editor", BuildTarget.NoTarget);
-			CustomScriptAssembly.Platforms[num++] = new CustomScriptAssemblyPlatform("macOSStandalone", "macOS", BuildTarget.StandaloneOSX);
-			CustomScriptAssembly.Platforms[num++] = new CustomScriptAssemblyPlatform("WindowsStandalone32", "Windows 32-bit", BuildTarget.StandaloneWindows);
-			CustomScriptAssembly.Platforms[num++] = new CustomScriptAssemblyPlatform("WindowsStandalone64", "Windows 64-bit", BuildTarget.StandaloneWindows64);
-			CustomScriptAssembly.Platforms[num++] = new CustomScriptAssemblyPlatform("LinuxStandalone32", "Linux 32-bit", BuildTarget.StandaloneLinux);
-			CustomScriptAssembly.Platforms[num++] = new CustomScriptAssemblyPlatform("LinuxStandalone64", "Linux 64-bit", BuildTarget.StandaloneLinux64);
-			CustomScriptAssembly.Platforms[num++] = new CustomScriptAssemblyPlatform("LinuxStandaloneUniversal", "Linux Universal", BuildTarget.StandaloneLinuxUniversal);
-			CustomScriptAssembly.Platforms[num++] = new CustomScriptAssemblyPlatform("iOS", BuildTarget.iOS);
-			CustomScriptAssembly.Platforms[num++] = new CustomScriptAssemblyPlatform("Android", BuildTarget.Android);
-			CustomScriptAssembly.Platforms[num++] = new CustomScriptAssemblyPlatform("WebGL", BuildTarget.WebGL);
-			CustomScriptAssembly.Platforms[num++] = new CustomScriptAssemblyPlatform("WSA", "Windows Store App", BuildTarget.WSAPlayer);
-			CustomScriptAssembly.Platforms[num++] = new CustomScriptAssemblyPlatform("Tizen", BuildTarget.Tizen);
-			CustomScriptAssembly.Platforms[num++] = new CustomScriptAssemblyPlatform("PSVita", BuildTarget.PSP2);
-			CustomScriptAssembly.Platforms[num++] = new CustomScriptAssemblyPlatform("PS4", BuildTarget.PS4);
-			CustomScriptAssembly.Platforms[num++] = new CustomScriptAssemblyPlatform("PSMobile", BuildTarget.PSM);
-			CustomScriptAssembly.Platforms[num++] = new CustomScriptAssemblyPlatform("XboxOne", BuildTarget.XboxOne);
-			CustomScriptAssembly.Platforms[num++] = new CustomScriptAssemblyPlatform("Nintendo3DS", BuildTarget.N3DS);
-			CustomScriptAssembly.Platforms[num++] = new CustomScriptAssemblyPlatform("WiiU", BuildTarget.WiiU);
-			CustomScriptAssembly.Platforms[num++] = new CustomScriptAssemblyPlatform("tvOS", BuildTarget.tvOS);
-			CustomScriptAssembly.Platforms[num++] = new CustomScriptAssemblyPlatform("Switch", BuildTarget.Switch);
+			CustomScriptAssembly.Platforms = new CustomScriptAssemblyPlatform[]
+			{
+				new CustomScriptAssemblyPlatform("Editor", "Editor", BuildTarget.NoTarget),
+				new CustomScriptAssemblyPlatform("macOSStandalone", "macOS", BuildTarget.StandaloneOSX),
+				new CustomScriptAssemblyPlatform("WindowsStandalone32", "Windows 32-bit", BuildTarget.StandaloneWindows),
+				new CustomScriptAssemblyPlatform("WindowsStandalone64", "Windows 64-bit", BuildTarget.StandaloneWindows64),
+				new CustomScriptAssemblyPlatform("LinuxStandalone32", "Linux 32-bit", BuildTarget.StandaloneLinux),
+				new CustomScriptAssemblyPlatform("LinuxStandalone64", "Linux 64-bit", BuildTarget.StandaloneLinux64),
+				new CustomScriptAssemblyPlatform("LinuxStandaloneUniversal", "Linux Universal", BuildTarget.StandaloneLinuxUniversal),
+				new CustomScriptAssemblyPlatform("iOS", BuildTarget.iOS),
+				new CustomScriptAssemblyPlatform("Android", BuildTarget.Android),
+				new CustomScriptAssemblyPlatform("WebGL", BuildTarget.WebGL),
+				new CustomScriptAssemblyPlatform("WSA", "Windows Store App", BuildTarget.WSAPlayer),
+				new CustomScriptAssemblyPlatform("Tizen", BuildTarget.Tizen),
+				new CustomScriptAssemblyPlatform("PSVita", BuildTarget.PSP2),
+				new CustomScriptAssemblyPlatform("PS4", BuildTarget.PS4),
+				new CustomScriptAssemblyPlatform("XboxOne", BuildTarget.XboxOne),
+				new CustomScriptAssemblyPlatform("Nintendo3DS", BuildTarget.N3DS),
+				new CustomScriptAssemblyPlatform("tvOS", BuildTarget.tvOS),
+				new CustomScriptAssemblyPlatform("Switch", BuildTarget.Switch)
+			};
+			CustomScriptAssembly.OptinalUnityAssemblies = new CustomScriptOptinalUnityAssembly[]
+			{
+				new CustomScriptOptinalUnityAssembly("Test Assemblies", OptionalUnityReferences.TestAssemblies, "Predefined Assemblies (Assembly-CSharp.dll etc) will not reference this assembly.\nThis assembly will only be used for tests and will not be included in player builds.")
+			};
 		}
 
 		public bool IsCompatibleWithEditor()
@@ -110,15 +131,26 @@ namespace UnityEditor.Scripting.ScriptCompilation
 
 		public bool IsCompatibleWith(BuildTarget buildTarget, EditorScriptCompilationOptions options)
 		{
+			bool flag = (options & EditorScriptCompilationOptions.BuildingForEditor) == EditorScriptCompilationOptions.BuildingForEditor;
+			bool flag2 = (this.OptionalUnityReferences & OptionalUnityReferences.TestAssemblies) == OptionalUnityReferences.TestAssemblies;
+			bool flag3 = (options & EditorScriptCompilationOptions.BuildingIncludingTestAssemblies) == EditorScriptCompilationOptions.BuildingIncludingTestAssemblies;
 			bool result;
-			if (this.IncludePlatforms == null && this.ExcludePlatforms == null)
+			if (!flag && flag2 && !flag3)
 			{
-				result = true;
+				result = false;
 			}
 			else
 			{
-				bool flag = (options & EditorScriptCompilationOptions.BuildingForEditor) == EditorScriptCompilationOptions.BuildingForEditor;
-				if (flag)
+				bool hasValue = this.PackageAssembly.HasValue;
+				if (flag2 && hasValue && !this.PackageAssembly.Value.IncludeTestAssemblies)
+				{
+					result = false;
+				}
+				else if (this.IncludePlatforms == null && this.ExcludePlatforms == null)
+				{
+					result = true;
+				}
+				else if (flag)
 				{
 					result = this.IsCompatibleWithEditor();
 				}
@@ -171,6 +203,14 @@ namespace UnityEditor.Scripting.ScriptCompilation
 				customScriptAssembly.References = customScriptAssemblyData.references;
 				customScriptAssembly.FilePath = path;
 				customScriptAssembly.PathPrefix = pathPrefix;
+				customScriptAssemblyData.optionalUnityReferences = (customScriptAssemblyData.optionalUnityReferences ?? new string[0]);
+				string[] optionalUnityReferences = customScriptAssemblyData.optionalUnityReferences;
+				for (int i = 0; i < optionalUnityReferences.Length; i++)
+				{
+					string value = optionalUnityReferences[i];
+					OptionalUnityReferences optionalUnityReferences2 = (OptionalUnityReferences)Enum.Parse(typeof(OptionalUnityReferences), value);
+					customScriptAssembly.OptionalUnityReferences |= optionalUnityReferences2;
+				}
 				if (customScriptAssemblyData.includePlatforms != null && customScriptAssemblyData.includePlatforms.Length > 0)
 				{
 					customScriptAssembly.IncludePlatforms = (from name in customScriptAssemblyData.includePlatforms

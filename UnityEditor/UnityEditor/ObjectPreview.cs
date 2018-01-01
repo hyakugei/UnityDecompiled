@@ -167,10 +167,20 @@ namespace UnityEditor
 					Rect position = new Rect(rect.x + (float)(i % array[0]) * rect.width / (float)array[0], rect.y + (float)(i / array[0]) * rect.height / (float)array[1], vector.x, vector.y);
 					if (flag2 && position.Contains(Event.current.mousePosition))
 					{
-						Selection.objects = new UnityEngine.Object[]
+						if (defaultPreview.target is AssetImporter)
 						{
-							defaultPreview.target
-						};
+							Selection.objects = new UnityEngine.Object[]
+							{
+								AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(((AssetImporter)defaultPreview.target).assetPath)
+							};
+						}
+						else
+						{
+							Selection.objects = new UnityEngine.Object[]
+							{
+								defaultPreview.target
+							};
+						}
 					}
 					position.height -= 12f;
 					Rect position2 = new Rect(position.x + (position.width - num6) * 0.5f, position.y + (position.height - num6) * 0.5f, num6, num6);

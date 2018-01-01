@@ -141,7 +141,7 @@ namespace UnityEditor
 
 		public void SetResults(int[] instanceIDs)
 		{
-			HierarchyProperty hierarchyProperty = new HierarchyProperty(this.m_HierarchyType);
+			HierarchyProperty hierarchyProperty = new HierarchyProperty(this.m_HierarchyType, false);
 			hierarchyProperty.Reset();
 			Array.Resize<FilteredHierarchy.FilterResult>(ref this.m_Results, instanceIDs.Length);
 			for (int i = 0; i < instanceIDs.Length; i++)
@@ -229,13 +229,13 @@ namespace UnityEditor
 			for (int i = 0; i < folders.Length; i++)
 			{
 				string assetPath = folders[i];
-				int mainAssetInstanceID = AssetDatabase.GetMainAssetInstanceID(assetPath);
-				if (property.Find(mainAssetInstanceID, null))
+				int mainAssetOrInProgressProxyInstanceID = AssetDatabase.GetMainAssetOrInProgressProxyInstanceID(assetPath);
+				if (property.Find(mainAssetOrInProgressProxyInstanceID, null))
 				{
 					int depth = property.depth;
 					int[] array = new int[]
 					{
-						mainAssetInstanceID
+						mainAssetOrInProgressProxyInstanceID
 					};
 					while (property.Next(array))
 					{
@@ -285,7 +285,7 @@ namespace UnityEditor
 			this.m_Results = new FilteredHierarchy.FilterResult[0];
 			if (this.m_SearchFilter.GetState() != SearchFilter.State.EmptySearchFilter)
 			{
-				HierarchyProperty hierarchyProperty = new HierarchyProperty(this.m_HierarchyType);
+				HierarchyProperty hierarchyProperty = new HierarchyProperty(this.m_HierarchyType, false);
 				hierarchyProperty.SetSearchFilter(this.m_SearchFilter);
 				this.AddResults(hierarchyProperty);
 				if (this.m_SearchFilter.IsSearching())
@@ -315,7 +315,7 @@ namespace UnityEditor
 			}
 			else if (this.m_HierarchyType == HierarchyType.GameObjects)
 			{
-				HierarchyProperty hierarchyProperty2 = new HierarchyProperty(HierarchyType.GameObjects);
+				HierarchyProperty hierarchyProperty2 = new HierarchyProperty(HierarchyType.GameObjects, false);
 				hierarchyProperty2.SetSearchFilter(this.m_SearchFilter);
 			}
 		}

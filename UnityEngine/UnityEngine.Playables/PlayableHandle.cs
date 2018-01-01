@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.CompilerServices;
+using UnityEngine.Bindings;
 using UnityEngine.Scripting;
 
 namespace UnityEngine.Playables
@@ -44,6 +45,7 @@ namespace UnityEngine.Playables
 			return result;
 		}
 
+		[VisibleToOtherModules]
 		internal bool IsPlayableOfType<T>()
 		{
 			return this.GetPlayableType() == typeof(T);
@@ -152,101 +154,121 @@ namespace UnityEngine.Playables
 			return result;
 		}
 
+		[VisibleToOtherModules]
 		internal bool IsValid()
 		{
 			return PlayableHandle.IsValid_Injected(ref this);
 		}
 
+		[VisibleToOtherModules]
 		internal Type GetPlayableType()
 		{
 			return PlayableHandle.GetPlayableType_Injected(ref this);
 		}
 
+		[VisibleToOtherModules]
 		internal void SetScriptInstance(object scriptInstance)
 		{
 			PlayableHandle.SetScriptInstance_Injected(ref this, scriptInstance);
 		}
 
+		[VisibleToOtherModules]
 		internal bool CanChangeInputs()
 		{
 			return PlayableHandle.CanChangeInputs_Injected(ref this);
 		}
 
+		[VisibleToOtherModules]
 		internal bool CanSetWeights()
 		{
 			return PlayableHandle.CanSetWeights_Injected(ref this);
 		}
 
+		[VisibleToOtherModules]
 		internal bool CanDestroy()
 		{
 			return PlayableHandle.CanDestroy_Injected(ref this);
 		}
 
+		[VisibleToOtherModules]
 		internal PlayState GetPlayState()
 		{
 			return PlayableHandle.GetPlayState_Injected(ref this);
 		}
 
+		[VisibleToOtherModules]
 		internal void Play()
 		{
 			PlayableHandle.Play_Injected(ref this);
 		}
 
+		[VisibleToOtherModules]
 		internal void Pause()
 		{
 			PlayableHandle.Pause_Injected(ref this);
 		}
 
+		[VisibleToOtherModules]
 		internal double GetSpeed()
 		{
 			return PlayableHandle.GetSpeed_Injected(ref this);
 		}
 
+		[VisibleToOtherModules]
 		internal void SetSpeed(double value)
 		{
 			PlayableHandle.SetSpeed_Injected(ref this, value);
 		}
 
+		[VisibleToOtherModules]
 		internal double GetTime()
 		{
 			return PlayableHandle.GetTime_Injected(ref this);
 		}
 
+		[VisibleToOtherModules]
 		internal void SetTime(double value)
 		{
 			PlayableHandle.SetTime_Injected(ref this, value);
 		}
 
+		[VisibleToOtherModules]
 		internal bool IsDone()
 		{
 			return PlayableHandle.IsDone_Injected(ref this);
 		}
 
+		[VisibleToOtherModules]
 		internal void SetDone(bool value)
 		{
 			PlayableHandle.SetDone_Injected(ref this, value);
 		}
 
+		[VisibleToOtherModules]
 		internal double GetDuration()
 		{
 			return PlayableHandle.GetDuration_Injected(ref this);
 		}
 
+		[VisibleToOtherModules]
 		internal void SetDuration(double value)
 		{
 			PlayableHandle.SetDuration_Injected(ref this, value);
 		}
 
+		[VisibleToOtherModules]
 		internal bool GetPropagateSetTime()
 		{
 			return PlayableHandle.GetPropagateSetTime_Injected(ref this);
 		}
 
+		[VisibleToOtherModules]
 		internal void SetPropagateSetTime(bool value)
 		{
 			PlayableHandle.SetPropagateSetTime_Injected(ref this, value);
 		}
 
+		[VisibleToOtherModules]
 		internal PlayableGraph GetGraph()
 		{
 			PlayableGraph result;
@@ -254,44 +276,70 @@ namespace UnityEngine.Playables
 			return result;
 		}
 
+		[VisibleToOtherModules]
 		internal int GetInputCount()
 		{
 			return PlayableHandle.GetInputCount_Injected(ref this);
 		}
 
+		[VisibleToOtherModules]
 		internal void SetInputCount(int value)
 		{
 			PlayableHandle.SetInputCount_Injected(ref this, value);
 		}
 
+		[VisibleToOtherModules]
 		internal int GetOutputCount()
 		{
 			return PlayableHandle.GetOutputCount_Injected(ref this);
 		}
 
+		[VisibleToOtherModules]
 		internal void SetOutputCount(int value)
 		{
 			PlayableHandle.SetOutputCount_Injected(ref this, value);
 		}
 
+		[VisibleToOtherModules]
 		internal void SetInputWeight(PlayableHandle input, float weight)
 		{
 			PlayableHandle.SetInputWeight_Injected(ref this, ref input, weight);
 		}
 
+		[VisibleToOtherModules]
 		internal void SetDelay(double delay)
 		{
 			PlayableHandle.SetDelay_Injected(ref this, delay);
 		}
 
+		[VisibleToOtherModules]
 		internal double GetDelay()
 		{
 			return PlayableHandle.GetDelay_Injected(ref this);
 		}
 
+		[VisibleToOtherModules]
 		internal bool IsDelayed()
 		{
 			return PlayableHandle.IsDelayed_Injected(ref this);
+		}
+
+		[VisibleToOtherModules]
+		internal double GetPreviousTime()
+		{
+			return PlayableHandle.GetPreviousTime_Injected(ref this);
+		}
+
+		[VisibleToOtherModules]
+		internal void SetLeadTime(float value)
+		{
+			PlayableHandle.SetLeadTime_Injected(ref this, value);
+		}
+
+		[VisibleToOtherModules]
+		internal float GetLeadTime()
+		{
+			return PlayableHandle.GetLeadTime_Injected(ref this);
 		}
 
 		private object GetScriptInstance()
@@ -406,6 +454,15 @@ namespace UnityEngine.Playables
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern bool IsDelayed_Injected(ref PlayableHandle _unity_self);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern double GetPreviousTime_Injected(ref PlayableHandle _unity_self);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void SetLeadTime_Injected(ref PlayableHandle _unity_self, float value);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern float GetLeadTime_Injected(ref PlayableHandle _unity_self);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern object GetScriptInstance_Injected(ref PlayableHandle _unity_self);

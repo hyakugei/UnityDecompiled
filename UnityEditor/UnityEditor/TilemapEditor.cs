@@ -10,13 +10,13 @@ namespace UnityEditor
 	{
 		private static class Styles
 		{
-			public static readonly GUIContent animationFrameRateLabel = EditorGUIUtility.TextContent("Animation Frame Rate|Frame rate for playing animated tiles in the tilemap");
+			public static readonly GUIContent animationFrameRateLabel = EditorGUIUtility.TrTextContent("Animation Frame Rate", "Frame rate for playing animated tiles in the tilemap", null);
 
-			public static readonly GUIContent tilemapColorLabel = EditorGUIUtility.TextContent("Color|Color tinting all Sprites from tiles in the tilemap");
+			public static readonly GUIContent tilemapColorLabel = EditorGUIUtility.TrTextContent("Color", "Color tinting all Sprites from tiles in the tilemap", null);
 
-			public static readonly GUIContent tileAnchorLabel = EditorGUIUtility.TextContent("Tile Anchor|Anchoring position for Sprites from tiles in the tilemap");
+			public static readonly GUIContent tileAnchorLabel = EditorGUIUtility.TrTextContent("Tile Anchor", "Anchoring position for Sprites from tiles in the tilemap", null);
 
-			public static readonly GUIContent orientationLabel = EditorGUIUtility.TextContent("Orientation|Orientation for tiles in the tilemap");
+			public static readonly GUIContent orientationLabel = EditorGUIUtility.TrTextContent("Orientation", "Orientation for tiles in the tilemap", null);
 		}
 
 		private SerializedProperty m_AnimationFrameRate;
@@ -85,14 +85,14 @@ namespace UnityEditor
 		{
 			GameObject gameObject = TilemapEditor.FindOrCreateRootGrid();
 			string uniqueNameForSibling = GameObjectUtility.GetUniqueNameForSibling(gameObject.transform, "Tilemap");
-			GameObject gameObject2 = new GameObject(uniqueNameForSibling, new Type[]
+			GameObject gameObject2 = ObjectFactory.CreateGameObject(uniqueNameForSibling, new Type[]
 			{
 				typeof(Tilemap),
 				typeof(TilemapRenderer)
 			});
-			gameObject2.transform.SetParent(gameObject.transform);
+			Undo.SetTransformParent(gameObject2.transform, gameObject.transform, "");
 			gameObject2.transform.position = Vector3.zero;
-			Undo.RegisterCreatedObjectUndo(gameObject2, "Create Tilemap");
+			Undo.SetCurrentGroupName("Create Tilemap");
 		}
 
 		private static GameObject FindOrCreateRootGrid()
@@ -109,14 +109,14 @@ namespace UnityEditor
 			}
 			if (gameObject == null)
 			{
-				gameObject = new GameObject("Grid", new Type[]
+				gameObject = ObjectFactory.CreateGameObject("Grid", new Type[]
 				{
 					typeof(Grid)
 				});
 				gameObject.transform.position = Vector3.zero;
 				Grid component = gameObject.GetComponent<Grid>();
 				component.cellSize = new Vector3(1f, 1f, 0f);
-				Undo.RegisterCreatedObjectUndo(gameObject, "Create Grid");
+				Undo.SetCurrentGroupName("Create Grid");
 			}
 			return gameObject;
 		}

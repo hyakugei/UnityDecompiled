@@ -156,7 +156,7 @@ namespace UnityEditor
 			{
 				GUILayout.ExpandWidth(true)
 			});
-			if (GUILayout.Button(new GUIContent("Forgot?", "Reset your password"), AssetStoreLoginWindow.styles.link, new GUILayoutOption[]
+			if (GUILayout.Button(EditorGUIUtility.TrTextContent("Forgot?", "Reset your password", null), AssetStoreLoginWindow.styles.link, new GUILayoutOption[]
 			{
 				GUILayout.ExpandWidth(false)
 			}))

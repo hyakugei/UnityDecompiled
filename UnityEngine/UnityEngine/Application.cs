@@ -92,6 +92,58 @@ namespace UnityEngine
 			}
 		}
 
+		public static event Func<bool> wantsToQuit
+		{
+			add
+			{
+				Func<bool> func = Application.wantsToQuit;
+				Func<bool> func2;
+				do
+				{
+					func2 = func;
+					func = Interlocked.CompareExchange<Func<bool>>(ref Application.wantsToQuit, (Func<bool>)Delegate.Combine(func2, value), func);
+				}
+				while (func != func2);
+			}
+			remove
+			{
+				Func<bool> func = Application.wantsToQuit;
+				Func<bool> func2;
+				do
+				{
+					func2 = func;
+					func = Interlocked.CompareExchange<Func<bool>>(ref Application.wantsToQuit, (Func<bool>)Delegate.Remove(func2, value), func);
+				}
+				while (func != func2);
+			}
+		}
+
+		public static event Action quitting
+		{
+			add
+			{
+				Action action = Application.quitting;
+				Action action2;
+				do
+				{
+					action2 = action;
+					action = Interlocked.CompareExchange<Action>(ref Application.quitting, (Action)Delegate.Combine(action2, value), action);
+				}
+				while (action != action2);
+			}
+			remove
+			{
+				Action action = Application.quitting;
+				Action action2;
+				do
+				{
+					action2 = action;
+					action = Interlocked.CompareExchange<Action>(ref Application.quitting, (Action)Delegate.Remove(action2, value), action);
+				}
+				while (action != action2);
+			}
+		}
+
 		[Obsolete("This property is deprecated, please use LoadLevelAsync to detect if a specific scene is currently loading.")]
 		public static extern bool isLoadingLevel
 		{
@@ -471,7 +523,7 @@ namespace UnityEngine
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void Quit();
 
-		[GeneratedByOldBindingsGenerator]
+		[Obsolete("CancelQuit is deprecated. Use the wantsToQuit event instead."), GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void CancelQuit();
 
@@ -708,6 +760,43 @@ namespace UnityEngine
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern bool HasUserAuthorization(UserAuthorization mode);
+
+		[RequiredByNativeCode]
+		private static bool Internal_ApplicationWantsToQuit()
+		{
+			bool result;
+			if (Application.wantsToQuit != null)
+			{
+				Delegate[] invocationList = Application.wantsToQuit.GetInvocationList();
+				for (int i = 0; i < invocationList.Length; i++)
+				{
+					Func<bool> func = (Func<bool>)invocationList[i];
+					try
+					{
+						if (!func())
+						{
+							result = false;
+							return result;
+						}
+					}
+					catch (Exception exception)
+					{
+						Debug.LogException(exception);
+					}
+				}
+			}
+			result = true;
+			return result;
+		}
+
+		[RequiredByNativeCode]
+		private static void Internal_ApplicationQuit()
+		{
+			if (Application.quitting != null)
+			{
+				Application.quitting();
+			}
+		}
 
 		[RequiredByNativeCode]
 		internal static void InvokeOnBeforeRender()

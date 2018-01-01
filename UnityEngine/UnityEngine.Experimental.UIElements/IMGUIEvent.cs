@@ -19,7 +19,7 @@ namespace UnityEngine.Experimental.UIElements
 		protected override void Init()
 		{
 			base.Init();
-			this.flags = (EventBase.EventFlags.Bubbles | EventBase.EventFlags.Capturable | EventBase.EventFlags.Cancellable);
+			base.flags = (EventBase.EventFlags.Bubbles | EventBase.EventFlags.Capturable | EventBase.EventFlags.Cancellable);
 		}
 	}
 }

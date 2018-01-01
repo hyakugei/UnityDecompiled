@@ -888,13 +888,15 @@ namespace UnityEditor.Modules
 			case (BuildTarget)23:
 			case BuildTarget.WP8Player:
 			case BuildTarget.BlackBerry:
+			case BuildTarget.PSM:
 			case BuildTarget.SamsungTV:
+			case BuildTarget.WiiU:
 				IL_62:
 				switch (target)
 				{
 				case BuildTarget.StandaloneOSX:
 				case BuildTarget.StandaloneOSXIntel:
-					goto IL_13C;
+					goto IL_126;
 				case (BuildTarget)3:
 				case BuildTarget.WebPlayer:
 				case BuildTarget.WebPlayerStreamed:
@@ -908,14 +910,14 @@ namespace UnityEditor.Modules
 					result = "Android";
 					return result;
 				case BuildTarget.StandaloneWindows:
-					goto IL_131;
+					goto IL_11B;
 				case BuildTarget.iOS:
 					result = "iOS";
 					return result;
 				}
 				goto IL_8A;
 			case BuildTarget.StandaloneWindows64:
-				goto IL_131;
+				goto IL_11B;
 			case BuildTarget.WebGL:
 				result = "WebGL";
 				return result;
@@ -923,7 +925,7 @@ namespace UnityEditor.Modules
 				result = "Metro";
 				return result;
 			case BuildTarget.StandaloneOSXIntel64:
-				goto IL_13C;
+				goto IL_126;
 			case BuildTarget.Tizen:
 				result = "Tizen";
 				return result;
@@ -933,17 +935,11 @@ namespace UnityEditor.Modules
 			case BuildTarget.PS4:
 				result = "PS4";
 				return result;
-			case BuildTarget.PSM:
-				result = "PSM";
-				return result;
 			case BuildTarget.XboxOne:
 				result = "XboxOne";
 				return result;
 			case BuildTarget.N3DS:
 				result = "N3DS";
-				return result;
-			case BuildTarget.WiiU:
-				result = "WiiU";
 				return result;
 			case BuildTarget.tvOS:
 				result = "tvOS";
@@ -953,10 +949,10 @@ namespace UnityEditor.Modules
 				return result;
 			}
 			goto IL_62;
-			IL_131:
+			IL_11B:
 			result = "WindowsStandalone";
 			return result;
-			IL_13C:
+			IL_126:
 			result = "OSXStandalone";
 			return result;
 		}
@@ -977,7 +973,9 @@ namespace UnityEditor.Modules
 			}
 			case BuildTargetGroup.WP8:
 			case BuildTargetGroup.BlackBerry:
+			case BuildTargetGroup.PSM:
 			case BuildTargetGroup.SamsungTV:
+			case BuildTargetGroup.WiiU:
 			{
 				IL_46:
 				string result;
@@ -1008,11 +1006,6 @@ namespace UnityEditor.Modules
 				string result = "PS4";
 				return result;
 			}
-			case BuildTargetGroup.PSM:
-			{
-				string result = "PSM";
-				return result;
-			}
 			case BuildTargetGroup.XboxOne:
 			{
 				string result = "XboxOne";
@@ -1021,11 +1014,6 @@ namespace UnityEditor.Modules
 			case BuildTargetGroup.N3DS:
 			{
 				string result = "N3DS";
-				return result;
-			}
-			case BuildTargetGroup.WiiU:
-			{
-				string result = "WiiU";
 				return result;
 			}
 			case BuildTargetGroup.tvOS:

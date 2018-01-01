@@ -62,8 +62,7 @@ namespace UnityEngine.Experimental.UIElements
 		{
 			if (this.clicked != null && this.IsRepeatable())
 			{
-				Vector2 localPoint = base.target.ChangeCoordinatesTo(base.target.shadow.parent, this.lastMousePosition);
-				if (base.target.ContainsPoint(localPoint))
+				if (base.target.ContainsPoint(this.lastMousePosition))
 				{
 					this.clicked();
 					base.target.pseudoStates |= PseudoStates.Active;
@@ -98,12 +97,11 @@ namespace UnityEngine.Experimental.UIElements
 		{
 			if (base.CanStartManipulation(evt))
 			{
-				base.target.TakeCapture();
+				base.target.TakeMouseCapture();
 				this.lastMousePosition = evt.localMousePosition;
 				if (this.IsRepeatable())
 				{
-					Vector2 localPoint = base.target.ChangeCoordinatesTo(base.target.shadow.parent, evt.localMousePosition);
-					if (this.clicked != null && base.target.ContainsPoint(localPoint))
+					if (this.clicked != null && base.target.ContainsPoint(evt.localMousePosition))
 					{
 						this.clicked();
 					}
@@ -123,7 +121,7 @@ namespace UnityEngine.Experimental.UIElements
 
 		protected void OnMouseMove(MouseMoveEvent evt)
 		{
-			if (base.target.HasCapture())
+			if (base.target.HasMouseCapture())
 			{
 				this.lastMousePosition = evt.localMousePosition;
 				evt.StopPropagation();
@@ -134,7 +132,7 @@ namespace UnityEngine.Experimental.UIElements
 		{
 			if (base.CanStopManipulation(evt))
 			{
-				base.target.ReleaseCapture();
+				base.target.ReleaseMouseCapture();
 				if (this.IsRepeatable())
 				{
 					if (this.m_Repeater != null)
@@ -142,7 +140,7 @@ namespace UnityEngine.Experimental.UIElements
 						this.m_Repeater.Pause();
 					}
 				}
-				else if (this.clicked != null && base.target.ContainsPoint(base.target.ChangeCoordinatesTo(base.target.shadow.parent, evt.localMousePosition)))
+				else if (this.clicked != null && base.target.ContainsPoint(evt.localMousePosition))
 				{
 					this.clicked();
 				}

@@ -76,6 +76,7 @@ namespace UnityEditor
 		{
 			base.serializedObject.Update();
 			this.LightingFieldsGUI();
+			base.RenderRenderingLayer();
 			bool flag = false;
 			if (!this.m_Materials.hasMultipleDifferentValues)
 			{

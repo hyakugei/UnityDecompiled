@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 using UnityEngine.Scripting;
 
 namespace UnityEngine
@@ -16,6 +17,7 @@ namespace UnityEngine
 
 		public static Rect zero
 		{
+			[CompilerGenerated]
 			get
 			{
 				return new Rect(0f, 0f, 0f, 0f);

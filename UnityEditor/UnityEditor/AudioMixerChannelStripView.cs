@@ -288,7 +288,7 @@ namespace UnityEditor
 
 		private GUIContent headerGUIContent = new GUIContent();
 
-		private GUIContent addText = new GUIContent("Add..");
+		private GUIContent addText = EditorGUIUtility.TrTextContent("Add..", null, null);
 
 		[NonSerialized]
 		private int FrameCounter = 0;
@@ -1183,11 +1183,11 @@ namespace UnityEditor
 				AudioMixerEffectController effect = group.effects[effectSlotIndex];
 				if (!effect.IsAttenuation() && !effect.IsSend() && !effect.IsReceive() && !effect.IsDuckVolume())
 				{
-					genericMenu.AddItem(new GUIContent("Allow Wet Mixing (causes higher memory usage)"), effect.enableWetMix, delegate
+					genericMenu.AddItem(EditorGUIUtility.TrTextContent("Allow Wet Mixing (causes higher memory usage)", null, null), effect.enableWetMix, delegate
 					{
 						effect.enableWetMix = !effect.enableWetMix;
 					});
-					genericMenu.AddItem(new GUIContent("Bypass"), effect.bypass, delegate
+					genericMenu.AddItem(EditorGUIUtility.TrTextContent("Bypass", null, null), effect.bypass, delegate
 					{
 						effect.bypass = !effect.bypass;
 						this.m_Controller.UpdateBypass();
@@ -1208,7 +1208,7 @@ namespace UnityEditor
 				if (!audioMixerEffectController.IsAttenuation())
 				{
 					genericMenu.AddSeparator("");
-					genericMenu.AddItem(new GUIContent("Remove"), false, new GenericMenu.MenuFunction2(this.RemoveEffectPopupCallback), new AudioMixerChannelStripView.EffectContext(this.m_Controller, groups, effectSlotIndex, ""));
+					genericMenu.AddItem(EditorGUIUtility.TrTextContent("Remove", null, null), false, new GenericMenu.MenuFunction2(this.RemoveEffectPopupCallback), new AudioMixerChannelStripView.EffectContext(this.m_Controller, groups, effectSlotIndex, ""));
 					bool flag = false;
 					if (audioMixerEffectController.IsSend())
 					{
@@ -1219,14 +1219,14 @@ namespace UnityEditor
 								flag = true;
 								genericMenu.AddSeparator("");
 							}
-							GenericMenu arg_1FB_0 = genericMenu;
-							GUIContent arg_1FB_1 = new GUIContent("Disconnect from '" + audioMixerEffectController.GetSendTargetDisplayString(effectMap) + "'");
-							bool arg_1FB_2 = false;
+							GenericMenu arg_203_0 = genericMenu;
+							GUIContent arg_203_1 = EditorGUIUtility.TrTextContent("Disconnect from '" + audioMixerEffectController.GetSendTargetDisplayString(effectMap) + "'", null, null);
+							bool arg_203_2 = false;
 							if (AudioMixerChannelStripView.<>f__mg$cache1 == null)
 							{
 								AudioMixerChannelStripView.<>f__mg$cache1 = new GenericMenu.MenuFunction2(AudioMixerChannelStripView.ConnectSendPopupCallback);
 							}
-							arg_1FB_0.AddItem(arg_1FB_1, arg_1FB_2, AudioMixerChannelStripView.<>f__mg$cache1, new AudioMixerChannelStripView.ConnectSendContext(audioMixerEffectController, null));
+							arg_203_0.AddItem(arg_203_1, arg_203_2, AudioMixerChannelStripView.<>f__mg$cache1, new AudioMixerChannelStripView.ConnectSendContext(audioMixerEffectController, null));
 						}
 						if (!flag)
 						{
@@ -1530,7 +1530,7 @@ namespace UnityEditor
 
 		public void ShowDeveloperOverlays(Rect rect, Event evt, bool show)
 		{
-			if (show && Unsupported.IsDeveloperBuild() && evt.type == EventType.Repaint)
+			if (show && Unsupported.IsDeveloperMode() && evt.type == EventType.Repaint)
 			{
 				AudioMixerDrawUtils.ReadOnlyLabel(new Rect(rect.x + 5f, rect.y + 5f, rect.width - 10f, 20f), "Current snapshot: " + this.m_Controller.TargetSnapshot.name, this.developerInfoStyle);
 				AudioMixerDrawUtils.ReadOnlyLabel(new Rect(rect.x + 5f, rect.y + 25f, rect.width - 10f, 20f), "Frame count: " + this.FrameCounter++, this.developerInfoStyle);

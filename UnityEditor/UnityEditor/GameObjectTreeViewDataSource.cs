@@ -510,7 +510,7 @@ namespace UnityEditor
 			item.shouldDisplay = true;
 			item.isSceneHeader = isSceneHeader;
 			item.scene = scene;
-			item.icon = ((!isSceneHeader) ? null : EditorGUIUtility.FindTexture("SceneAsset Icon"));
+			item.icon = ((!isSceneHeader) ? null : EditorGUIUtility.FindTexture(typeof(SceneAsset)));
 			if (hasChildren)
 			{
 				item.children = LazyTreeViewDataSource.CreateChildListForCollapsedParent();

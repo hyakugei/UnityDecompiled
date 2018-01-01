@@ -7,6 +7,10 @@ namespace UnityEngine
 {
 	public sealed class ComputeShader : Object
 	{
+		private ComputeShader()
+		{
+		}
+
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern int FindKernel(string name);

@@ -37,21 +37,6 @@ namespace UnityEditor.Web
 			PlayerSettings.SetCloudServiceEnabled(this.GetServiceName(), enabled);
 		}
 
-		public virtual string GetCurrentPackageVersion()
-		{
-			return PackageUtils.instance.GetCurrentVersion(this.GetPackageName());
-		}
-
-		public virtual string GetLatestPackageVersion()
-		{
-			return PackageUtils.instance.GetLatestVersion(this.GetPackageName());
-		}
-
-		public virtual void UpdateLatestPackage()
-		{
-			PackageUtils.instance.UpdateLatest(this.GetPackageName());
-		}
-
 		public virtual void OnProjectUnbound()
 		{
 		}

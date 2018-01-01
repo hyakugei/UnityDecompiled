@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace UnityEditor.Experimental.UIElements.GraphView
 {
-	internal abstract class BaseTypeFactory<TKey, TValue>
+	public abstract class BaseTypeFactory<TKey, TValue>
 	{
 		private readonly Dictionary<Type, Type> m_Mappings = new Dictionary<Type, Type>();
 

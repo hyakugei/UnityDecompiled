@@ -1,36 +1,11 @@
 using System;
 using System.Runtime.CompilerServices;
 using UnityEngine.Rendering;
-using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
 	public sealed class RenderSettings : Object
 	{
-		public static SphericalHarmonicsL2 ambientProbe
-		{
-			get
-			{
-				SphericalHarmonicsL2 result;
-				RenderSettings.INTERNAL_get_ambientProbe(out result);
-				return result;
-			}
-			set
-			{
-				RenderSettings.INTERNAL_set_ambientProbe(ref value);
-			}
-		}
-
-		public static extern Cubemap customReflection
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
 		[Obsolete("Use RenderSettings.ambientIntensity instead (UnityUpgradable) -> ambientIntensity", false)]
 		public static float ambientSkyboxAmount
 		{
@@ -200,6 +175,28 @@ namespace UnityEngine
 			set;
 		}
 
+		public static SphericalHarmonicsL2 ambientProbe
+		{
+			get
+			{
+				SphericalHarmonicsL2 result;
+				RenderSettings.get_ambientProbe_Injected(out result);
+				return result;
+			}
+			set
+			{
+				RenderSettings.set_ambientProbe_Injected(ref value);
+			}
+		}
+
+		public static extern Cubemap customReflection
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
 		public static extern float reflectionIntensity
 		{
 			[MethodImpl(MethodImplOptions.InternalCall)]
@@ -256,21 +253,15 @@ namespace UnityEngine
 			set;
 		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_get_ambientProbe(out SphericalHarmonicsL2 value);
+		private RenderSettings()
+		{
+		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_set_ambientProbe(ref SphericalHarmonicsL2 value);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern void Reset();
-
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern Object GetRenderSettings();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void Reset();
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern void get_fogColor_Injected(out Color ret);
@@ -307,5 +298,11 @@ namespace UnityEngine
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern void set_subtractiveShadowColor_Injected(ref Color value);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void get_ambientProbe_Injected(out SphericalHarmonicsL2 ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void set_ambientProbe_Injected(ref SphericalHarmonicsL2 value);
 	}
 }

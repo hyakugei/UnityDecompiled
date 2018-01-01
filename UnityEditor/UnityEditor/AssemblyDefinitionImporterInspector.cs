@@ -14,11 +14,38 @@ namespace UnityEditor
 	[CanEditMultipleObjects, CustomEditor(typeof(AssemblyDefinitionImporter))]
 	internal class AssemblyDefinitionImporterInspector : AssetImporterEditor
 	{
+		internal class Styles
+		{
+			public static readonly GUIContent name = EditorGUIUtility.TrTextContent("Name", null, null);
+
+			public static readonly GUIContent unityReferences = EditorGUIUtility.TrTextContent("Unity References", null, null);
+
+			public static readonly GUIContent references = EditorGUIUtility.TrTextContent("References", null, null);
+
+			public static readonly GUIContent platforms = EditorGUIUtility.TrTextContent("Platforms", null, null);
+
+			public static readonly GUIContent anyPlatform = EditorGUIUtility.TrTextContent("Any Platform", null, null);
+
+			public static readonly GUIContent includePlatforms = EditorGUIUtility.TrTextContent("Include Platforms", null, null);
+
+			public static readonly GUIContent excludePlatforms = EditorGUIUtility.TrTextContent("Exclude Platforms", null, null);
+
+			public static readonly GUIContent selectAll = EditorGUIUtility.TrTextContent("Select all", null, null);
+
+			public static readonly GUIContent deselectAll = EditorGUIUtility.TrTextContent("Deselect all", null, null);
+
+			public static readonly GUIContent apply = EditorGUIUtility.TrTextContent("Apply", null, null);
+
+			public static readonly GUIContent revert = EditorGUIUtility.TrTextContent("Revert", null, null);
+
+			public static readonly GUIContent loadError = EditorGUIUtility.TrTextContent("Load error", null, null);
+		}
+
 		internal enum MixedBool
 		{
 			Mixed = -1,
-			True,
-			False
+			False,
+			True
 		}
 
 		internal class AssemblyDefinitionReference
@@ -46,6 +73,8 @@ namespace UnityEditor
 
 			public List<AssemblyDefinitionImporterInspector.AssemblyDefinitionReference> references;
 
+			public AssemblyDefinitionImporterInspector.MixedBool[] optionalUnityReferences;
+
 			public AssemblyDefinitionImporterInspector.MixedBool compatibleWithAnyPlatform;
 
 			public AssemblyDefinitionImporterInspector.MixedBool[] platformCompatibility;
@@ -61,13 +90,13 @@ namespace UnityEditor
 			}
 		}
 
+		private GUIStyle m_TextStyle;
+
 		private AssemblyDefinitionImporterInspector.AssemblyDefintionState[] m_TargetStates;
 
 		private AssemblyDefinitionImporterInspector.AssemblyDefintionState m_State;
 
 		private ReorderableList m_ReferencesList;
-
-		private GUIStyle m_TextStyle;
 
 		public override bool showImportedObject
 		{
@@ -87,11 +116,13 @@ namespace UnityEditor
 				}
 				catch (Exception e)
 				{
+					this.m_State = null;
 					this.ShowLoadErrorExceptionGUI(e);
 					return;
 				}
 			}
 			AssemblyDefinitionPlatform[] assemblyDefinitionPlatforms = CompilationPipeline.GetAssemblyDefinitionPlatforms();
+			CustomScriptOptinalUnityAssembly[] optinalUnityAssemblies = CustomScriptAssembly.OptinalUnityAssemblies;
 			using (new EditorGUI.DisabledScope(false))
 			{
 				EditorGUI.BeginChangeCheck();
@@ -101,19 +132,31 @@ namespace UnityEditor
 					{
 						string text = string.Join(", ", (from t in this.m_TargetStates
 						select t.name).ToArray<string>());
-						EditorGUILayout.TextField("Name", text, EditorStyles.textField, new GUILayoutOption[0]);
+						EditorGUILayout.TextField(AssemblyDefinitionImporterInspector.Styles.name, text, EditorStyles.textField, new GUILayoutOption[0]);
 					}
 				}
 				else
 				{
-					this.m_State.name = EditorGUILayout.TextField("Name", this.m_State.name, EditorStyles.textField, new GUILayoutOption[0]);
+					this.m_State.name = EditorGUILayout.TextField(AssemblyDefinitionImporterInspector.Styles.name, this.m_State.name, EditorStyles.textField, new GUILayoutOption[0]);
 				}
-				GUILayout.Label("References", EditorStyles.boldLabel, new GUILayoutOption[0]);
+				GUILayout.Label(AssemblyDefinitionImporterInspector.Styles.references, EditorStyles.boldLabel, new GUILayoutOption[0]);
 				this.m_ReferencesList.DoLayoutList();
-				GUILayout.Label("Platforms", EditorStyles.boldLabel, new GUILayoutOption[0]);
+				GUILayout.Label(AssemblyDefinitionImporterInspector.Styles.unityReferences, EditorStyles.boldLabel, new GUILayoutOption[0]);
+				EditorGUILayout.BeginVertical(GUI.skin.box, new GUILayoutOption[0]);
+				for (int i = 0; i < optinalUnityAssemblies.Length; i++)
+				{
+					this.m_State.optionalUnityReferences[i] = AssemblyDefinitionImporterInspector.ToggleWithMixedValue(new GUIContent(optinalUnityAssemblies[i].DisplayName), this.m_State.optionalUnityReferences[i]);
+					if (this.m_State.optionalUnityReferences[i] == AssemblyDefinitionImporterInspector.MixedBool.True)
+					{
+						EditorGUILayout.HelpBox(optinalUnityAssemblies[i].AdditinalInformationWhenEnabled, MessageType.Info);
+					}
+				}
+				EditorGUILayout.EndVertical();
+				GUILayout.Space(10f);
+				GUILayout.Label(AssemblyDefinitionImporterInspector.Styles.platforms, EditorStyles.boldLabel, new GUILayoutOption[0]);
 				EditorGUILayout.BeginVertical(GUI.skin.box, new GUILayoutOption[0]);
 				AssemblyDefinitionImporterInspector.MixedBool compatibleWithAnyPlatform = this.m_State.compatibleWithAnyPlatform;
-				this.m_State.compatibleWithAnyPlatform = AssemblyDefinitionImporterInspector.ToggleWithMixedValue("Any Platform", this.m_State.compatibleWithAnyPlatform);
+				this.m_State.compatibleWithAnyPlatform = AssemblyDefinitionImporterInspector.ToggleWithMixedValue(AssemblyDefinitionImporterInspector.Styles.anyPlatform, this.m_State.compatibleWithAnyPlatform);
 				if (compatibleWithAnyPlatform == AssemblyDefinitionImporterInspector.MixedBool.Mixed && this.m_State.compatibleWithAnyPlatform != AssemblyDefinitionImporterInspector.MixedBool.Mixed)
 				{
 					AssemblyDefinitionImporterInspector.UpdatePlatformCompatibility(this.m_State.compatibleWithAnyPlatform, this.m_TargetStates);
@@ -125,11 +168,23 @@ namespace UnityEditor
 				}
 				if (this.m_State.compatibleWithAnyPlatform != AssemblyDefinitionImporterInspector.MixedBool.Mixed)
 				{
-					GUILayout.Label((this.m_State.compatibleWithAnyPlatform != AssemblyDefinitionImporterInspector.MixedBool.False) ? "Include Platforms" : "Exclude Platforms", EditorStyles.boldLabel, new GUILayoutOption[0]);
-					for (int i = 0; i < assemblyDefinitionPlatforms.Length; i++)
+					GUILayout.Label((this.m_State.compatibleWithAnyPlatform != AssemblyDefinitionImporterInspector.MixedBool.True) ? AssemblyDefinitionImporterInspector.Styles.includePlatforms : AssemblyDefinitionImporterInspector.Styles.excludePlatforms, EditorStyles.boldLabel, new GUILayoutOption[0]);
+					for (int j = 0; j < assemblyDefinitionPlatforms.Length; j++)
 					{
-						this.m_State.platformCompatibility[i] = AssemblyDefinitionImporterInspector.ToggleWithMixedValue(assemblyDefinitionPlatforms[i].DisplayName, this.m_State.platformCompatibility[i]);
+						this.m_State.platformCompatibility[j] = AssemblyDefinitionImporterInspector.ToggleWithMixedValue(new GUIContent(assemblyDefinitionPlatforms[j].DisplayName), this.m_State.platformCompatibility[j]);
 					}
+					EditorGUILayout.Space();
+					GUILayout.BeginHorizontal(new GUILayoutOption[0]);
+					if (GUILayout.Button(AssemblyDefinitionImporterInspector.Styles.selectAll, new GUILayoutOption[0]))
+					{
+						AssemblyDefinitionImporterInspector.SetPlatformCompatibility(this.m_State, AssemblyDefinitionImporterInspector.MixedBool.True);
+					}
+					if (GUILayout.Button(AssemblyDefinitionImporterInspector.Styles.deselectAll, new GUILayoutOption[0]))
+					{
+						AssemblyDefinitionImporterInspector.SetPlatformCompatibility(this.m_State, AssemblyDefinitionImporterInspector.MixedBool.False);
+					}
+					GUILayout.FlexibleSpace();
+					GUILayout.EndHorizontal();
 				}
 				EditorGUILayout.EndVertical();
 				GUILayout.Space(10f);
@@ -143,11 +198,11 @@ namespace UnityEditor
 			GUILayout.FlexibleSpace();
 			using (new EditorGUI.DisabledScope(!this.m_State.modified))
 			{
-				if (GUILayout.Button("Revert", new GUILayoutOption[0]))
+				if (GUILayout.Button(AssemblyDefinitionImporterInspector.Styles.revert, new GUILayoutOption[0]))
 				{
 					this.LoadAssemblyDefinitionFiles();
 				}
-				if (GUILayout.Button("Apply", new GUILayoutOption[0]))
+				if (GUILayout.Button(AssemblyDefinitionImporterInspector.Styles.apply, new GUILayoutOption[0]))
 				{
 					AssemblyDefinitionImporterInspector.SaveAndUpdateAssemblyDefinitionStates(this.m_State, this.m_TargetStates);
 				}
@@ -189,15 +244,15 @@ namespace UnityEditor
 			}
 		}
 
-		private static AssemblyDefinitionImporterInspector.MixedBool ToggleWithMixedValue(string title, AssemblyDefinitionImporterInspector.MixedBool value)
+		private static AssemblyDefinitionImporterInspector.MixedBool ToggleWithMixedValue(GUIContent title, AssemblyDefinitionImporterInspector.MixedBool value)
 		{
 			EditorGUI.showMixedValue = (value == AssemblyDefinitionImporterInspector.MixedBool.Mixed);
 			EditorGUI.BeginChangeCheck();
-			bool flag = EditorGUILayout.Toggle(title, value == AssemblyDefinitionImporterInspector.MixedBool.False, new GUILayoutOption[0]);
+			bool flag = EditorGUILayout.Toggle(title, value == AssemblyDefinitionImporterInspector.MixedBool.True, new GUILayoutOption[0]);
 			AssemblyDefinitionImporterInspector.MixedBool result;
 			if (EditorGUI.EndChangeCheck())
 			{
-				result = ((!flag) ? AssemblyDefinitionImporterInspector.MixedBool.True : AssemblyDefinitionImporterInspector.MixedBool.False);
+				result = ((!flag) ? AssemblyDefinitionImporterInspector.MixedBool.False : AssemblyDefinitionImporterInspector.MixedBool.True);
 			}
 			else
 			{
@@ -216,16 +271,25 @@ namespace UnityEditor
 			}
 		}
 
+		private static void SetPlatformCompatibility(AssemblyDefinitionImporterInspector.AssemblyDefintionState state, AssemblyDefinitionImporterInspector.MixedBool compatibility)
+		{
+			AssemblyDefinitionPlatform[] assemblyDefinitionPlatforms = CompilationPipeline.GetAssemblyDefinitionPlatforms();
+			for (int i = 0; i < assemblyDefinitionPlatforms.Length; i++)
+			{
+				state.platformCompatibility[i] = compatibility;
+			}
+		}
+
 		private static AssemblyDefinitionImporterInspector.MixedBool InverseCompability(AssemblyDefinitionImporterInspector.MixedBool compatibility)
 		{
 			AssemblyDefinitionImporterInspector.MixedBool result;
-			if (compatibility == AssemblyDefinitionImporterInspector.MixedBool.False)
-			{
-				result = AssemblyDefinitionImporterInspector.MixedBool.True;
-			}
-			else if (compatibility == AssemblyDefinitionImporterInspector.MixedBool.True)
+			if (compatibility == AssemblyDefinitionImporterInspector.MixedBool.True)
 			{
 				result = AssemblyDefinitionImporterInspector.MixedBool.False;
+			}
+			else if (compatibility == AssemblyDefinitionImporterInspector.MixedBool.False)
+			{
+				result = AssemblyDefinitionImporterInspector.MixedBool.True;
 			}
 			else
 			{
@@ -240,7 +304,7 @@ namespace UnityEditor
 			{
 				this.m_TextStyle = "ScriptText";
 			}
-			GUILayout.Label("Load Error", EditorStyles.boldLabel, new GUILayoutOption[0]);
+			GUILayout.Label(AssemblyDefinitionImporterInspector.Styles.loadError, EditorStyles.boldLabel, new GUILayoutOption[0]);
 			Rect rect = GUILayoutUtility.GetRect(EditorGUIUtility.TempContent(e.Message), this.m_TextStyle);
 			EditorGUI.HelpBox(rect, e.Message, MessageType.Error);
 		}
@@ -294,7 +358,10 @@ namespace UnityEditor
 			this.m_State.compatibleWithAnyPlatform = this.m_TargetStates[0].compatibleWithAnyPlatform;
 			AssemblyDefinitionPlatform[] assemblyDefinitionPlatforms = CompilationPipeline.GetAssemblyDefinitionPlatforms();
 			this.m_State.platformCompatibility = new AssemblyDefinitionImporterInspector.MixedBool[assemblyDefinitionPlatforms.Length];
+			CustomScriptOptinalUnityAssembly[] optinalUnityAssemblies = CustomScriptAssembly.OptinalUnityAssemblies;
+			this.m_State.optionalUnityReferences = new AssemblyDefinitionImporterInspector.MixedBool[optinalUnityAssemblies.Length];
 			Array.Copy(this.m_TargetStates[0].platformCompatibility, this.m_State.platformCompatibility, assemblyDefinitionPlatforms.Length);
+			Array.Copy(this.m_TargetStates[0].optionalUnityReferences, this.m_State.optionalUnityReferences, optinalUnityAssemblies.Length);
 			for (int i = 1; i < this.m_TargetStates.Length; i++)
 			{
 				AssemblyDefinitionImporterInspector.AssemblyDefintionState assemblyDefintionState = this.m_TargetStates[i];
@@ -305,13 +372,23 @@ namespace UnityEditor
 						this.m_State.compatibleWithAnyPlatform = AssemblyDefinitionImporterInspector.MixedBool.Mixed;
 					}
 				}
-				for (int j = 0; j < assemblyDefinitionPlatforms.Length; j++)
+				for (int j = 0; j < this.m_State.optionalUnityReferences.Length; j++)
 				{
-					if (this.m_State.platformCompatibility[j] != AssemblyDefinitionImporterInspector.MixedBool.Mixed)
+					if (this.m_State.optionalUnityReferences[j] != AssemblyDefinitionImporterInspector.MixedBool.Mixed)
 					{
-						if (this.m_State.platformCompatibility[j] != assemblyDefintionState.platformCompatibility[j])
+						if (this.m_State.optionalUnityReferences[j] != assemblyDefintionState.optionalUnityReferences[j])
 						{
-							this.m_State.platformCompatibility[j] = AssemblyDefinitionImporterInspector.MixedBool.Mixed;
+							this.m_State.optionalUnityReferences[j] = AssemblyDefinitionImporterInspector.MixedBool.Mixed;
+						}
+					}
+				}
+				for (int k = 0; k < assemblyDefinitionPlatforms.Length; k++)
+				{
+					if (this.m_State.platformCompatibility[k] != AssemblyDefinitionImporterInspector.MixedBool.Mixed)
+					{
+						if (this.m_State.platformCompatibility[k] != assemblyDefintionState.platformCompatibility[k])
+						{
+							this.m_State.platformCompatibility[k] = AssemblyDefinitionImporterInspector.MixedBool.Mixed;
 						}
 					}
 				}
@@ -365,7 +442,7 @@ namespace UnityEditor
 									});
 								}
 								assemblyDefinitionReference.data = CustomScriptAssemblyData.FromJson(assemblyDefinitionReference.asset.text);
-								assemblyDefinitionReference.displayValue = AssemblyDefinitionImporterInspector.MixedBool.True;
+								assemblyDefinitionReference.displayValue = AssemblyDefinitionImporterInspector.MixedBool.False;
 								assemblyDefintionState.references.Add(assemblyDefinitionReference);
 							}
 							catch (AssemblyDefinitionException exception)
@@ -378,26 +455,40 @@ namespace UnityEditor
 					}
 					AssemblyDefinitionPlatform[] assemblyDefinitionPlatforms = CompilationPipeline.GetAssemblyDefinitionPlatforms();
 					assemblyDefintionState.platformCompatibility = new AssemblyDefinitionImporterInspector.MixedBool[assemblyDefinitionPlatforms.Length];
-					assemblyDefintionState.compatibleWithAnyPlatform = AssemblyDefinitionImporterInspector.MixedBool.False;
+					CustomScriptOptinalUnityAssembly[] optinalUnityAssemblies = CustomScriptAssembly.OptinalUnityAssemblies;
+					assemblyDefintionState.optionalUnityReferences = new AssemblyDefinitionImporterInspector.MixedBool[optinalUnityAssemblies.Length];
+					if (customScriptAssemblyData.optionalUnityReferences != null)
+					{
+						for (int j = 0; j < optinalUnityAssemblies.Length; j++)
+						{
+							string optionalUnityReferences = optinalUnityAssemblies[j].OptionalUnityReferences.ToString();
+							bool flag = customScriptAssemblyData.optionalUnityReferences.Any((string x) => x == optionalUnityReferences);
+							if (flag)
+							{
+								assemblyDefintionState.optionalUnityReferences[j] = AssemblyDefinitionImporterInspector.MixedBool.True;
+							}
+						}
+					}
+					assemblyDefintionState.compatibleWithAnyPlatform = AssemblyDefinitionImporterInspector.MixedBool.True;
 					string[] array = null;
 					if (customScriptAssemblyData.includePlatforms != null && customScriptAssemblyData.includePlatforms.Length > 0)
 					{
-						assemblyDefintionState.compatibleWithAnyPlatform = AssemblyDefinitionImporterInspector.MixedBool.True;
+						assemblyDefintionState.compatibleWithAnyPlatform = AssemblyDefinitionImporterInspector.MixedBool.False;
 						array = customScriptAssemblyData.includePlatforms;
 					}
 					else if (customScriptAssemblyData.excludePlatforms != null && customScriptAssemblyData.excludePlatforms.Length > 0)
 					{
-						assemblyDefintionState.compatibleWithAnyPlatform = AssemblyDefinitionImporterInspector.MixedBool.False;
+						assemblyDefintionState.compatibleWithAnyPlatform = AssemblyDefinitionImporterInspector.MixedBool.True;
 						array = customScriptAssemblyData.excludePlatforms;
 					}
 					if (array != null)
 					{
 						string[] array2 = array;
-						for (int j = 0; j < array2.Length; j++)
+						for (int k = 0; k < array2.Length; k++)
 						{
-							string name = array2[j];
+							string name = array2[k];
 							int platformIndex = AssemblyDefinitionImporterInspector.GetPlatformIndex(assemblyDefinitionPlatforms, name);
-							assemblyDefintionState.platformCompatibility[platformIndex] = AssemblyDefinitionImporterInspector.MixedBool.False;
+							assemblyDefintionState.platformCompatibility[platformIndex] = AssemblyDefinitionImporterInspector.MixedBool.True;
 						}
 					}
 					result = assemblyDefintionState;
@@ -451,6 +542,13 @@ namespace UnityEditor
 						assemblyDefintionState.platformCompatibility[k] = combinedState.platformCompatibility[k];
 					}
 				}
+				for (int l = 0; l < combinedState.optionalUnityReferences.Length; l++)
+				{
+					if (combinedState.platformCompatibility[l] != AssemblyDefinitionImporterInspector.MixedBool.Mixed)
+					{
+						assemblyDefintionState.optionalUnityReferences[l] = combinedState.optionalUnityReferences[l];
+					}
+				}
 				AssemblyDefinitionImporterInspector.SaveAssemblyDefinitionState(assemblyDefintionState);
 			}
 			combinedState.modified = false;
@@ -462,27 +560,37 @@ namespace UnityEditor
 			where r.asset != null
 			select r;
 			AssemblyDefinitionPlatform[] assemblyDefinitionPlatforms = CompilationPipeline.GetAssemblyDefinitionPlatforms();
+			CustomScriptOptinalUnityAssembly[] optinalUnityAssemblies = CustomScriptAssembly.OptinalUnityAssemblies;
 			CustomScriptAssemblyData customScriptAssemblyData = new CustomScriptAssemblyData();
 			customScriptAssemblyData.name = state.name;
 			customScriptAssemblyData.references = (from r in source
 			select r.data.name).ToArray<string>();
 			List<string> list = new List<string>();
-			for (int i = 0; i < assemblyDefinitionPlatforms.Length; i++)
+			for (int i = 0; i < optinalUnityAssemblies.Length; i++)
 			{
-				if (state.platformCompatibility[i] == AssemblyDefinitionImporterInspector.MixedBool.False)
+				if (state.optionalUnityReferences[i] == AssemblyDefinitionImporterInspector.MixedBool.True)
 				{
-					list.Add(assemblyDefinitionPlatforms[i].Name);
+					list.Add(optinalUnityAssemblies[i].OptionalUnityReferences.ToString());
 				}
 			}
-			if (list.Any<string>())
+			customScriptAssemblyData.optionalUnityReferences = list.ToArray();
+			List<string> list2 = new List<string>();
+			for (int j = 0; j < assemblyDefinitionPlatforms.Length; j++)
 			{
-				if (state.compatibleWithAnyPlatform == AssemblyDefinitionImporterInspector.MixedBool.False)
+				if (state.platformCompatibility[j] == AssemblyDefinitionImporterInspector.MixedBool.True)
 				{
-					customScriptAssemblyData.excludePlatforms = list.ToArray();
+					list2.Add(assemblyDefinitionPlatforms[j].Name);
+				}
+			}
+			if (list2.Any<string>())
+			{
+				if (state.compatibleWithAnyPlatform == AssemblyDefinitionImporterInspector.MixedBool.True)
+				{
+					customScriptAssemblyData.excludePlatforms = list2.ToArray();
 				}
 				else
 				{
-					customScriptAssemblyData.includePlatforms = list.ToArray();
+					customScriptAssemblyData.includePlatforms = list2.ToArray();
 				}
 			}
 			string contents = CustomScriptAssemblyData.ToJson(customScriptAssemblyData);

@@ -13,27 +13,28 @@ namespace UnityEditor
 		{
 			public static readonly GUIContent[] ObjectPreviewTextureOptions = new GUIContent[]
 			{
-				EditorGUIUtility.TextContent("UV Charts"),
-				EditorGUIUtility.TextContent("Realtime Albedo"),
-				EditorGUIUtility.TextContent("Realtime Emissive"),
-				EditorGUIUtility.TextContent("Realtime Indirect"),
-				EditorGUIUtility.TextContent("Realtime Directionality"),
-				EditorGUIUtility.TextContent("Baked Lightmap"),
-				EditorGUIUtility.TextContent("Baked Directionality"),
-				EditorGUIUtility.TextContent("Baked Shadowmask"),
-				EditorGUIUtility.TextContent("Baked Albedo"),
-				EditorGUIUtility.TextContent("Baked Emissive"),
-				EditorGUIUtility.TextContent("Baked UV Charts"),
-				EditorGUIUtility.TextContent("Baked Texel Validity")
+				EditorGUIUtility.TrTextContent("UV Charts", null, null),
+				EditorGUIUtility.TrTextContent("Realtime Albedo", null, null),
+				EditorGUIUtility.TrTextContent("Realtime Emissive", null, null),
+				EditorGUIUtility.TrTextContent("Realtime Indirect", null, null),
+				EditorGUIUtility.TrTextContent("Realtime Directionality", null, null),
+				EditorGUIUtility.TrTextContent("Baked Lightmap", null, null),
+				EditorGUIUtility.TrTextContent("Baked Directionality", null, null),
+				EditorGUIUtility.TrTextContent("Baked Shadowmask", null, null),
+				EditorGUIUtility.TrTextContent("Baked Albedo", null, null),
+				EditorGUIUtility.TrTextContent("Baked Emissive", null, null),
+				EditorGUIUtility.TrTextContent("Baked UV Charts", null, null),
+				EditorGUIUtility.TrTextContent("Baked Texel Validity", null, null),
+				EditorGUIUtility.TrTextContent("Baked UV Overlap", null, null)
 			};
 
-			public static readonly GUIContent TextureNotAvailableRealtime = EditorGUIUtility.TextContent("The texture is not available at the moment.");
+			public static readonly GUIContent TextureNotAvailableRealtime = EditorGUIUtility.TrTextContent("The texture is not available at the moment.", null, null);
 
-			public static readonly GUIContent TextureNotAvailableBaked = EditorGUIUtility.TextContent("The texture is not available at the moment.\nPlease try to rebake the current scene or turn on Auto, and make sure that this object is set to Lightmap Static if it's meant to be baked.");
+			public static readonly GUIContent TextureNotAvailableBaked = EditorGUIUtility.TrTextContent("The texture is not available at the moment.\nPlease try to rebake the current scene or turn on Auto, and make sure that this object is set to Lightmap Static if it's meant to be baked.", null, null);
 
-			public static readonly GUIContent TextureNotAvailableBakedShadowmask = EditorGUIUtility.TextContent("The texture is not available at the moment.\nPlease make sure that Mixed Lights affect this GameObject and that it is set to Lightmap Static.");
+			public static readonly GUIContent TextureNotAvailableBakedShadowmask = EditorGUIUtility.TrTextContent("The texture is not available at the moment.\nPlease make sure that Mixed Lights affect this GameObject and that it is set to Lightmap Static.", null, null);
 
-			public static readonly GUIContent TextureLoading = EditorGUIUtility.TextContent("Loading...");
+			public static readonly GUIContent TextureLoading = EditorGUIUtility.TrTextContent("Loading...", null, null);
 		}
 
 		private GITextureType[] kObjectPreviewTextureTypes = new GITextureType[]
@@ -49,7 +50,8 @@ namespace UnityEditor
 			GITextureType.BakedAlbedo,
 			GITextureType.BakedEmissive,
 			GITextureType.BakedCharting,
-			GITextureType.BakedTexelValidity
+			GITextureType.BakedTexelValidity,
+			GITextureType.BakedUVOverlap
 		};
 
 		private ZoomableArea m_ZoomablePreview;

@@ -6,7 +6,7 @@ namespace UnityEditorInternal.VR
 {
 	internal class VRCustomOptionsCardboard : VRCustomOptionsGoogleVR
 	{
-		private static GUIContent s_EnableTransitionViewLabel = new GUIContent("Enable Transition View");
+		private static GUIContent s_EnableTransitionViewLabel = EditorGUIUtility.TrTextContent("Enable Transition View", null, null);
 
 		private SerializedProperty m_EnableTransitionView;
 

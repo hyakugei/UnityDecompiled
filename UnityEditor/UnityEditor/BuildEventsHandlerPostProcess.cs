@@ -1,5 +1,6 @@
 using System;
 using UnityEditor.Build;
+using UnityEditor.Build.Reporting;
 using UnityEngine;
 
 namespace UnityEditor
@@ -20,7 +21,7 @@ namespace UnityEditor
 			}
 		}
 
-		public void OnPostprocessBuild(BuildTarget target, string path)
+		public void OnPostprocessBuild(BuildReport report)
 		{
 			UnityEngine.Object[] array = Resources.FindObjectsOfTypeAll(typeof(SceneView));
 			int num = 0;

@@ -6,31 +6,35 @@ namespace UnityEditorInternal.VR
 {
 	internal class VRCustomOptionsDaydream : VRCustomOptionsGoogleVR
 	{
-		private const int k3DoF = 0;
+		private const int kDisabled = 0;
 
-		private const int k3DoF6DoF = 1;
+		private const int kSupported = 1;
 
-		private const int k6DoF = 2;
+		private const int kRequired = 2;
+
+		private const int kThreeDoFHeadTracking = 0;
+
+		private const int kSixDoFHeadTracking = 1;
 
 		private const float s_Indent = 10f;
 
-		private static GUIContent s_ForegroundIconLabel = EditorGUIUtility.TextContent("Foreground Icon|Icon should be a Texture with dimensions of 512px by 512px and a 1:1 aspect ratio.");
+		private static GUIContent s_ForegroundIconLabel = EditorGUIUtility.TrTextContent("Foreground Icon", "Icon should be a Texture with dimensions of 512px by 512px and a 1:1 aspect ratio.", null);
 
-		private static GUIContent s_BackgroundIconLabel = EditorGUIUtility.TextContent("Background Icon|Icon should be a Texture with dimensions of 512px by 512px and a 1:1 aspect ratio.");
+		private static GUIContent s_BackgroundIconLabel = EditorGUIUtility.TrTextContent("Background Icon", "Icon should be a Texture with dimensions of 512px by 512px and a 1:1 aspect ratio.", null);
 
-		private static GUIContent s_SustainedPerformanceModeLabel = EditorGUIUtility.TextContent("Sustained Performance Mode|Sustained Performance Mode is intended to provide a consistent level of performance for a prolonged amount of time");
+		private static GUIContent s_SustainedPerformanceModeLabel = EditorGUIUtility.TrTextContent("Sustained Performance", "Sustained Performance mode is intended to provide a consistent level of performance for a prolonged amount of time", null);
 
-		private static GUIContent s_EnableVideoLayer = EditorGUIUtility.TextContent("Enable Video Surface|Enable the use of the video surface integrated with Daydream asynchronous reprojection.");
+		private static GUIContent s_EnableVideoLayer = EditorGUIUtility.TrTextContent("Video Surface", "Enable the use of the video surface integrated with Daydream asynchronous reprojection.", null);
 
-		private static GUIContent s_UseProtectedVideoMemoryLabel = EditorGUIUtility.TextContent("Use Protected Memory|Enable the use of DRM protection. Only usable if all content is DRM Protected.");
+		private static GUIContent s_UseProtectedVideoMemoryLabel = EditorGUIUtility.TrTextContent("Protected Memory", "Enable the use of DRM protection. Only usable if all content is DRM Protected.", null);
 
-		private static GUIContent s_MinimumTargetHeadTracking = EditorGUIUtility.TextContent("Supported Head Tracking|Requested head tracking support of target devices to run the applicaiton on.");
+		private static GUIContent s_MinimumTargetHeadTracking = EditorGUIUtility.TrTextContent("Positional Head Tracking", "Requested head tracking support of target devices to run the application on.", null);
 
 		private static GUIContent[] s_TargetHeadTrackingOptions = new GUIContent[]
 		{
-			EditorGUIUtility.TextContent("3 DoF|Support 3 degree of freedom (rotation only) head tracking"),
-			EditorGUIUtility.TextContent("3 DoF & 6 DoF|Support 3 and 6 degree of freedom (rotation and position) head tracking"),
-			EditorGUIUtility.TextContent("6 DoF|Support 6 degree of freedom (rotation and position) head tracking")
+			EditorGUIUtility.TrTextContent("Disabled", "Will run on any device and provides no head tracking.", null),
+			EditorGUIUtility.TrTextContent("Supported", "Will run on any device and will provide head tracking on devices that support head tracking.", null),
+			EditorGUIUtility.TrTextContent("Required", "Will only run on devices with full 6 DoF head tracking support.", null)
 		};
 
 		private SerializedProperty m_DaydreamIcon;
@@ -86,11 +90,11 @@ namespace UnityEditorInternal.VR
 			{
 				result = 0;
 			}
-			else if (this.m_MinimumSupportedHeadTracking.intValue == 0 && this.m_MaximumSupportedHeadTracking.intValue == 2)
+			else if (this.m_MinimumSupportedHeadTracking.intValue == 0 && this.m_MaximumSupportedHeadTracking.intValue == 1)
 			{
 				result = 1;
 			}
-			else if (this.m_MinimumSupportedHeadTracking.intValue == 2 && this.m_MaximumSupportedHeadTracking.intValue == 2)
+			else if (this.m_MinimumSupportedHeadTracking.intValue == 1 && this.m_MaximumSupportedHeadTracking.intValue == 1)
 			{
 				result = 2;
 			}
@@ -105,14 +109,14 @@ namespace UnityEditorInternal.VR
 				{
 					if (headTrackingValue == 2)
 					{
-						this.m_MinimumSupportedHeadTracking.intValue = 2;
-						this.m_MaximumSupportedHeadTracking.intValue = 2;
+						this.m_MinimumSupportedHeadTracking.intValue = 1;
+						this.m_MaximumSupportedHeadTracking.intValue = 1;
 					}
 				}
 				else
 				{
 					this.m_MinimumSupportedHeadTracking.intValue = 0;
-					this.m_MaximumSupportedHeadTracking.intValue = 2;
+					this.m_MaximumSupportedHeadTracking.intValue = 1;
 				}
 			}
 			else

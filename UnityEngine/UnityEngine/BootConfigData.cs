@@ -4,7 +4,7 @@ using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
-	internal sealed class BootConfigData
+	internal class BootConfigData
 	{
 		private IntPtr m_Ptr;
 
@@ -19,39 +19,32 @@ namespace UnityEngine
 
 		public void AddKey(string key)
 		{
-			BootConfigData.Append(this.m_Ptr, key, null);
-		}
-
-		public void Append(string key, string value)
-		{
-			BootConfigData.Append(this.m_Ptr, key, value);
-		}
-
-		public void Set(string key, string value)
-		{
-			BootConfigData.Set(this.m_Ptr, key, value);
+			this.Append(key, null);
 		}
 
 		public string Get(string key)
 		{
-			return BootConfigData.Get(this.m_Ptr, key);
+			return this.GetValue(key, 0);
 		}
 
-		private static BootConfigData Wrap(IntPtr nativeHandle)
+		public string Get(string key, int index)
+		{
+			return this.GetValue(key, index);
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public extern void Append(string key, string value);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public extern void Set(string key, string value);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern string GetValue(string key, int index);
+
+		[RequiredByNativeCode]
+		private static BootConfigData WrapBootConfigData(IntPtr nativeHandle)
 		{
 			return new BootConfigData(nativeHandle);
 		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void Append(IntPtr nativeHandle, string key, string val);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void Set(IntPtr nativeHandle, string key, string val);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern string Get(IntPtr nativeHandle, string key);
 	}
 }

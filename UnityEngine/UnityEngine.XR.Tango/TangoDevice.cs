@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace UnityEngine.XR.Tango
 {
-	public static class TangoDevice
+	internal static class TangoDevice
 	{
 		private static ARBackgroundRenderer m_BackgroundRenderer = null;
 
@@ -16,7 +16,7 @@ namespace UnityEngine.XR.Tango
 		[CompilerGenerated]
 		private static Action <>f__mg$cache1;
 
-		public static extern CoordinateFrame baseCoordinateFrame
+		internal static extern CoordinateFrame baseCoordinateFrame
 		{
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
@@ -24,7 +24,7 @@ namespace UnityEngine.XR.Tango
 			set;
 		}
 
-		public static extern uint depthCameraRate
+		internal static extern uint depthCameraRate
 		{
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
@@ -32,7 +32,7 @@ namespace UnityEngine.XR.Tango
 			set;
 		}
 
-		public static extern bool synchronizeFramerateWithColorCamera
+		internal static extern bool synchronizeFramerateWithColorCamera
 		{
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
@@ -40,13 +40,19 @@ namespace UnityEngine.XR.Tango
 			set;
 		}
 
-		public static extern bool isServiceConnected
+		internal static extern bool isServiceConnected
 		{
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
 
-		public static string areaDescriptionUUID
+		internal static extern bool isServiceAvailable
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+		}
+
+		internal static string areaDescriptionUUID
 		{
 			get
 			{
@@ -58,7 +64,7 @@ namespace UnityEngine.XR.Tango
 			}
 		}
 
-		public static ARBackgroundRenderer backgroundRenderer
+		internal static ARBackgroundRenderer backgroundRenderer
 		{
 			get
 			{
@@ -93,13 +99,13 @@ namespace UnityEngine.XR.Tango
 		internal static extern bool Connect(string[] boolKeys, bool[] boolValues, string[] intKeys, int[] intValues, string[] longKeys, long[] longValues, string[] doubleKeys, double[] doubleValues, string[] stringKeys, string[] stringValues);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern void Disconnect();
+		internal static extern void Disconnect();
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern bool TryGetHorizontalFov(out float fovOut);
+		internal static extern bool TryGetHorizontalFov(out float fovOut);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern bool TryGetVerticalFov(out float fovOut);
+		internal static extern bool TryGetVerticalFov(out float fovOut);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern void SetRenderMode(ARRenderMode mode);
@@ -107,7 +113,7 @@ namespace UnityEngine.XR.Tango
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern void SetBackgroundMaterial(Material material);
 
-		public static bool TryGetLatestPointCloud(ref PointCloudData pointCloudData)
+		internal static bool TryGetLatestPointCloud(ref PointCloudData pointCloudData)
 		{
 			if (pointCloudData.points == null)
 			{
@@ -120,18 +126,58 @@ namespace UnityEngine.XR.Tango
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern bool TryGetLatestPointCloudInternal(List<Vector4> pointCloudData, out uint version, out double timestamp);
 
-		public static bool TryGetLatestImageData(ref ImageData imageData)
+		internal static bool TryGetLatestImageData(ref ImageData image)
 		{
-			if (imageData.data == null)
+			if (image.planeData == null)
 			{
-				imageData.data = new List<byte>();
+				image.planeData = new List<byte>();
 			}
-			imageData.data.Clear();
-			return TangoDevice.TryGetLatestImageDataInternal(imageData.data, out imageData.width, out imageData.height, out imageData.stride, out imageData.timestamp, out imageData.frameNumber, out imageData.format, out imageData.exposureDurationNs);
+			if (image.planeInfos == null)
+			{
+				image.planeInfos = new List<ImageData.PlaneInfo>();
+			}
+			image.planeData.Clear();
+			return TangoDevice.TryGetLatestImageDataInternal(image.planeData, image.planeInfos, out image.width, out image.height, out image.format, out image.timestampNs, out image.metadata);
 		}
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern bool TryGetLatestImageDataInternal(List<byte> imageData, out uint width, out uint height, out uint stride, out double timestamp, out long frameNumber, out int format, out long exposureDurationNs);
+		private static extern bool TryGetLatestImageDataInternal(List<byte> imageData, List<ImageData.PlaneInfo> planeInfos, out uint width, out uint height, out int format, out long timestampNs, out ImageData.CameraMetadata metadata);
+
+		internal static bool TryAcquireLatestPointCloud(ref NativePointCloud pointCloud)
+		{
+			return TangoDevice.Internal_TryAcquireLatestPointCloud(out pointCloud.version, out pointCloud.timestamp, out pointCloud.numPoints, out pointCloud.points, out pointCloud.nativePtr);
+		}
+
+		internal static void ReleasePointCloud(IntPtr pointCloudNativePtr)
+		{
+			TangoDevice.Internal_ReleasePointCloud(pointCloudNativePtr);
+		}
+
+		internal static bool TryAcquireLatestImageBuffer(ref NativeImage nativeImage)
+		{
+			if (nativeImage.planeInfos == null)
+			{
+				nativeImage.planeInfos = new List<ImageData.PlaneInfo>();
+			}
+			return TangoDevice.Internal_TryAcquireLatestImageBuffer(nativeImage.planeInfos, out nativeImage.width, out nativeImage.height, out nativeImage.format, out nativeImage.timestampNs, out nativeImage.planeData, out nativeImage.nativePtr, out nativeImage.metadata);
+		}
+
+		internal static void ReleaseImageBuffer(IntPtr imageBufferNativePtr)
+		{
+			TangoDevice.Internal_ReleaseImageBuffer(imageBufferNativePtr);
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern bool Internal_TryAcquireLatestImageBuffer(List<ImageData.PlaneInfo> planeInfos, out uint width, out uint height, out int format, out long timestampNs, out IntPtr planeData, out IntPtr nativePtr, out ImageData.CameraMetadata metadata);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern bool Internal_TryAcquireLatestPointCloud(out uint version, out double timestamp, out uint numPoints, out IntPtr points, out IntPtr nativePtr);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void Internal_ReleasePointCloud(IntPtr pointCloudPtr);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void Internal_ReleaseImageBuffer(IntPtr imageBufferPtr);
 
 		private static void OnBackgroundRendererChanged()
 		{
@@ -139,7 +185,7 @@ namespace UnityEngine.XR.Tango
 			TangoDevice.SetRenderMode(TangoDevice.m_BackgroundRenderer.mode);
 		}
 
-		public static bool Connect(TangoConfig config)
+		internal static bool Connect(TangoConfig config)
 		{
 			string[] boolKeys;
 			bool[] boolValues;

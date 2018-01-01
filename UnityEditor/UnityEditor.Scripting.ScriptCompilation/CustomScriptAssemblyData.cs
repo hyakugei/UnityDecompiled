@@ -10,6 +10,8 @@ namespace UnityEditor.Scripting.ScriptCompilation
 
 		public string[] references;
 
+		public string[] optionalUnityReferences;
+
 		public string[] includePlatforms;
 
 		public string[] excludePlatforms;

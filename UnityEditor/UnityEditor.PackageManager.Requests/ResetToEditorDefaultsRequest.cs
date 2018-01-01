@@ -9,7 +9,7 @@ namespace UnityEditor.PackageManager.Requests
 		{
 		}
 
-		internal ResetToEditorDefaultsRequest(long operationId, NativeClient.StatusCode initialStatus) : base(operationId, initialStatus)
+		internal ResetToEditorDefaultsRequest(long operationId, NativeStatusCode initialStatus) : base(operationId, initialStatus)
 		{
 		}
 	}

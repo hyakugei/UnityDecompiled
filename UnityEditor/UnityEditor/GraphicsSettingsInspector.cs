@@ -13,23 +13,23 @@ namespace UnityEditor
 	{
 		internal class Styles
 		{
-			public static readonly GUIContent showEditorWindow = new GUIContent("Open Editor...");
+			public static readonly GUIContent showEditorWindow = EditorGUIUtility.TrTextContent("Open Editor...", null, null);
 
-			public static readonly GUIContent closeEditorWindow = new GUIContent("Close Editor");
+			public static readonly GUIContent closeEditorWindow = EditorGUIUtility.TrTextContent("Close Editor", null, null);
 
-			public static readonly GUIContent tierSettings = EditorGUIUtility.TextContent("Tier Settings");
+			public static readonly GUIContent tierSettings = EditorGUIUtility.TrTextContent("Tier Settings", null, null);
 
-			public static readonly GUIContent builtinSettings = EditorGUIUtility.TextContent("Built-in Shader Settings");
+			public static readonly GUIContent builtinSettings = EditorGUIUtility.TrTextContent("Built-in Shader Settings", null, null);
 
-			public static readonly GUIContent shaderStrippingSettings = EditorGUIUtility.TextContent("Shader Stripping");
+			public static readonly GUIContent shaderStrippingSettings = EditorGUIUtility.TrTextContent("Shader Stripping", null, null);
 
-			public static readonly GUIContent shaderPreloadSettings = EditorGUIUtility.TextContent("Shader Preloading");
+			public static readonly GUIContent shaderPreloadSettings = EditorGUIUtility.TrTextContent("Shader Preloading", null, null);
 
-			public static readonly GUIContent cameraSettings = EditorGUIUtility.TextContent("Camera Settings");
+			public static readonly GUIContent cameraSettings = EditorGUIUtility.TrTextContent("Camera Settings", null, null);
 
-			public static readonly GUIContent renderPipeSettings = EditorGUIUtility.TextContent("Scriptable Render Pipeline Settings");
+			public static readonly GUIContent renderPipeSettings = EditorGUIUtility.TrTextContent("Scriptable Render Pipeline Settings", null, null);
 
-			public static readonly GUIContent renderPipeLabel = EditorGUIUtility.TextContent("Scriptable Render Pipeline");
+			public static readonly GUIContent renderPipeLabel = EditorGUIUtility.TrTextContent("Scriptable Render Pipeline", null, null);
 		}
 
 		private Editor m_TierSettingsEditor;
@@ -180,8 +180,8 @@ namespace UnityEditor
 				EditorGUILayout.PropertyField(this.m_TransparencySortMode, new GUILayoutOption[0]);
 				EditorGUILayout.PropertyField(this.m_TransparencySortAxis, new GUILayoutOption[0]);
 				EditorGUILayout.Space();
-				this.TierSettingsGUI();
 			}
+			this.TierSettingsGUI();
 			GUILayout.Label(GraphicsSettingsInspector.Styles.builtinSettings, EditorStyles.boldLabel, new GUILayoutOption[0]);
 			if (!flag)
 			{

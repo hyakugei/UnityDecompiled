@@ -7,50 +7,12 @@ namespace UnityEditor
 	{
 		private static class Styles
 		{
-			public static readonly GUIContent OtherSettings = EditorGUIUtility.TextContent("Other Settings");
+			public static readonly GUIContent OtherSettings = EditorGUIUtility.TrTextContent("Other Settings", null, null);
 
-			public static readonly GUIContent DebugSettings = EditorGUIUtility.TextContent("Debug Settings");
+			public static readonly GUIContent DebugSettings = EditorGUIUtility.TrTextContent("Debug Settings", null, null);
 
-			public static readonly GUIContent LightProbeVisualization = EditorGUIUtility.TextContent("Light Probe Visualization");
-
-			public static readonly GUIContent StatisticsCategory = EditorGUIUtility.TextContent("Category");
-
-			public static readonly GUIContent StatisticsEnabled = EditorGUIUtility.TextContent("Enabled");
-
-			public static readonly GUIContent StatisticsDisabled = EditorGUIUtility.TextContent("Disabled|The Light’s GameObject is active, but the Light component is disabled. These lights have no effect on the Scene.");
-
-			public static readonly GUIContent StatisticsInactive = EditorGUIUtility.TextContent("Inactive|The Light’s GameObject is inactive. These lights have no effect on the Scene.");
-
-			public static readonly GUIContent UpdateStatistics = EditorGUIUtility.TextContent("Update Statistics|Turn off to prevent statistics from being updated during play mode to improve performance.");
-
-			public static readonly string StatisticsWarning = "Statistics are not updated during play mode. This behavior can be changed via Settings -> Debug Settings -> \"Update Statistics\"";
-
-			public static GUIStyle StatsTableHeader = new GUIStyle("preLabel");
-
-			public static GUIStyle StatsTableContent = new GUIStyle(EditorStyles.whiteLabel);
-
-			public static readonly GUIContent RealtimeLights = EditorGUIUtility.TextContent("Realtime Lights");
-
-			public static readonly GUIContent MixedLights = EditorGUIUtility.TextContent("Mixed Lights");
-
-			public static readonly GUIContent BakedLights = EditorGUIUtility.TextContent("Baked Lights");
-
-			public static readonly GUIContent DynamicMeshes = EditorGUIUtility.TextContent("Dynamic Meshes");
-
-			public static readonly GUIContent StaticMeshes = EditorGUIUtility.TextContent("Static Meshes");
-
-			public static readonly GUIContent StaticMeshesIconWarning = EditorGUIUtility.TextContentWithIcon("|Baked Global Illumination is Enabled but there are no Static Meshes or Terrains in the Scene. Please enable the Lightmap Static property on the meshes you want included in baked lighting.", "console.warnicon");
-
-			public static readonly GUIContent RealtimeEmissiveMaterials = EditorGUIUtility.TextContent("Realtime Emissive Materials");
-
-			public static readonly GUIContent BakedEmissiveMaterials = EditorGUIUtility.TextContent("Baked Emissive Materials");
-
-			public static readonly GUIContent LightProbeGroups = EditorGUIUtility.TextContent("Light Probe Groups");
-
-			public static readonly GUIContent ReflectionProbes = EditorGUIUtility.TextContent("Reflection Probes");
+			public static readonly GUIContent LightProbeVisualization = EditorGUIUtility.TrTextContent("Light Probe Visualization", null, null);
 		}
-
-		private delegate void DrawStats(GUIContent icon, GUIContent label, int enabled, int active, int inactive);
 
 		private Editor m_LightingEditor;
 
@@ -73,8 +35,6 @@ namespace UnityEditor
 		private const string kUpdateStatistics = "kUpdateStatistics";
 
 		private UnityEngine.Object m_RenderSettings = null;
-
-		private LightModeValidator.Stats m_Stats;
 
 		private LightingWindowBakeSettings m_BakeSettings;
 
@@ -210,79 +170,6 @@ namespace UnityEditor
 			this.m_BakeSettings.OnGUI();
 			this.OtherSettingsGUI();
 			this.DebugSettingsGUI();
-		}
-
-		public void StatisticsPreview(Rect r)
-		{
-			GUI.Box(r, "", "PreBackground");
-			LightingWindowLightingTab.Styles.StatsTableHeader.alignment = TextAnchor.MiddleLeft;
-			EditorGUILayout.BeginScrollView(Vector2.zero, new GUILayoutOption[]
-			{
-				GUILayout.Height(r.height)
-			});
-			bool flag = this.m_ShouldUpdateStatistics || !EditorApplication.isPlayingOrWillChangePlaymode;
-			if (flag)
-			{
-				LightModeUtil.Get().AnalyzeScene(ref this.m_Stats);
-			}
-			else
-			{
-				EditorGUI.indentLevel++;
-				EditorGUILayout.HelpBox(LightingWindowLightingTab.Styles.StatisticsWarning, MessageType.Info);
-				EditorGUI.indentLevel--;
-			}
-			EditorGUILayout.Space();
-			bool flag2 = LightModeUtil.Get().AreBakedLightmapsEnabled() && this.m_Stats.receiverMask == LightModeValidator.Receivers.None;
-			using (new EditorGUI.DisabledScope(!flag))
-			{
-				GUILayoutOption[] opts_icon = new GUILayoutOption[]
-				{
-					GUILayout.MinWidth(16f),
-					GUILayout.MaxWidth(16f)
-				};
-				GUILayoutOption[] opts_name = new GUILayoutOption[]
-				{
-					GUILayout.MinWidth(175f),
-					GUILayout.MaxWidth(200f)
-				};
-				GUILayoutOption[] opts = new GUILayoutOption[]
-				{
-					GUILayout.MinWidth(10f),
-					GUILayout.MaxWidth(65f)
-				};
-				using (new EditorGUILayout.HorizontalScope(new GUILayoutOption[0]))
-				{
-					EditorGUILayout.LabelField(GUIContent.none, LightingWindowLightingTab.Styles.StatsTableHeader, opts_icon);
-					EditorGUILayout.LabelField(LightingWindowLightingTab.Styles.StatisticsCategory, LightingWindowLightingTab.Styles.StatsTableHeader, opts_name);
-					EditorGUILayout.LabelField(LightingWindowLightingTab.Styles.StatisticsEnabled, LightingWindowLightingTab.Styles.StatsTableHeader, opts);
-					EditorGUILayout.LabelField(LightingWindowLightingTab.Styles.StatisticsDisabled, LightingWindowLightingTab.Styles.StatsTableHeader, opts);
-					EditorGUILayout.LabelField(LightingWindowLightingTab.Styles.StatisticsInactive, LightingWindowLightingTab.Styles.StatsTableHeader, opts);
-				}
-				LightingWindowLightingTab.DrawStats drawStats = delegate(GUIContent icon, GUIContent label, int enabled, int active, int inactive)
-				{
-					using (new EditorGUILayout.HorizontalScope(new GUILayoutOption[0]))
-					{
-						EditorGUILayout.LabelField(icon, LightingWindowLightingTab.Styles.StatsTableContent, opts_icon);
-						EditorGUILayout.LabelField(label, LightingWindowLightingTab.Styles.StatsTableContent, opts_name);
-						Rect lastRect = GUILayoutUtility.GetLastRect();
-						EditorGUILayout.LabelField(enabled.ToString(), LightingWindowLightingTab.Styles.StatsTableContent, opts);
-						lastRect.xMax = GUILayoutUtility.GetLastRect().xMax;
-						EditorGUILayout.LabelField(active.ToString(), LightingWindowLightingTab.Styles.StatsTableContent, opts);
-						EditorGUILayout.LabelField(inactive.ToString(), LightingWindowLightingTab.Styles.StatsTableContent, opts);
-					}
-				};
-				drawStats(GUIContent.none, LightingWindowLightingTab.Styles.RealtimeLights, (int)this.m_Stats.enabled.realtimeLightsCount, (int)this.m_Stats.active.realtimeLightsCount, (int)this.m_Stats.inactive.realtimeLightsCount);
-				drawStats(GUIContent.none, LightingWindowLightingTab.Styles.MixedLights, (int)this.m_Stats.enabled.mixedLightsCount, (int)this.m_Stats.active.mixedLightsCount, (int)this.m_Stats.inactive.mixedLightsCount);
-				drawStats(GUIContent.none, LightingWindowLightingTab.Styles.BakedLights, (int)this.m_Stats.enabled.bakedLightsCount, (int)this.m_Stats.active.bakedLightsCount, (int)this.m_Stats.inactive.bakedLightsCount);
-				drawStats(GUIContent.none, LightingWindowLightingTab.Styles.DynamicMeshes, (int)this.m_Stats.enabled.dynamicMeshesCount, (int)this.m_Stats.active.dynamicMeshesCount, (int)this.m_Stats.inactive.dynamicMeshesCount);
-				drawStats((!flag2) ? GUIContent.none : LightingWindowLightingTab.Styles.StaticMeshesIconWarning, LightingWindowLightingTab.Styles.StaticMeshes, (int)this.m_Stats.enabled.staticMeshesCount, (int)this.m_Stats.active.staticMeshesCount, (int)this.m_Stats.inactive.staticMeshesCount);
-				drawStats(GUIContent.none, LightingWindowLightingTab.Styles.RealtimeEmissiveMaterials, (int)this.m_Stats.enabled.staticMeshesRealtimeEmissive, (int)this.m_Stats.active.staticMeshesRealtimeEmissive, (int)this.m_Stats.inactive.staticMeshesRealtimeEmissive);
-				drawStats(GUIContent.none, LightingWindowLightingTab.Styles.BakedEmissiveMaterials, (int)this.m_Stats.enabled.staticMeshesBakedEmissive, (int)this.m_Stats.active.staticMeshesBakedEmissive, (int)this.m_Stats.inactive.staticMeshesBakedEmissive);
-				drawStats(GUIContent.none, LightingWindowLightingTab.Styles.LightProbeGroups, (int)this.m_Stats.enabled.lightProbeGroupsCount, (int)this.m_Stats.active.lightProbeGroupsCount, (int)this.m_Stats.inactive.lightProbeGroupsCount);
-				drawStats(GUIContent.none, LightingWindowLightingTab.Styles.ReflectionProbes, (int)this.m_Stats.enabled.reflectionProbesCount, (int)this.m_Stats.active.reflectionProbesCount, (int)this.m_Stats.inactive.reflectionProbesCount);
-			}
-			EditorGUILayout.Space();
-			EditorGUILayout.EndScrollView();
 		}
 	}
 }

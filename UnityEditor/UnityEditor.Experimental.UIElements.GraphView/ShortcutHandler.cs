@@ -5,7 +5,7 @@ using UnityEngine.Experimental.UIElements;
 
 namespace UnityEditor.Experimental.UIElements.GraphView
 {
-	internal class ShortcutHandler : Manipulator
+	public class ShortcutHandler : Manipulator
 	{
 		private readonly Dictionary<Event, ShortcutDelegate> m_Dictionary;
 
@@ -26,12 +26,19 @@ namespace UnityEditor.Experimental.UIElements.GraphView
 
 		private void OnKeyDown(KeyDownEvent evt)
 		{
-			if (this.m_Dictionary.ContainsKey(evt.imguiEvent))
+			if (!MouseCaptureController.IsMouseCaptureTaken())
 			{
-				EventPropagation eventPropagation = this.m_Dictionary[evt.imguiEvent]();
-				if (eventPropagation == EventPropagation.Stop)
+				if (this.m_Dictionary.ContainsKey(evt.imguiEvent))
 				{
-					evt.StopPropagation();
+					EventPropagation eventPropagation = this.m_Dictionary[evt.imguiEvent]();
+					if (eventPropagation == EventPropagation.Stop)
+					{
+						evt.StopPropagation();
+						if (evt.imguiEvent != null)
+						{
+							evt.imguiEvent.Use();
+						}
+					}
 				}
 			}
 		}

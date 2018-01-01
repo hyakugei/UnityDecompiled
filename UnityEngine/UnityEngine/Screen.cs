@@ -2,39 +2,11 @@ using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using UnityEngine.Internal;
-using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
 	public sealed class Screen
 	{
-		public static extern Resolution[] resolutions
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-		}
-
-		public static Resolution currentResolution
-		{
-			get
-			{
-				Resolution result;
-				Screen.INTERNAL_get_currentResolution(out result);
-				return result;
-			}
-		}
-
-		public static extern bool fullScreen
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
 		public static extern int width
 		{
 			[MethodImpl(MethodImplOptions.InternalCall)]
@@ -53,12 +25,21 @@ namespace UnityEngine
 			get;
 		}
 
-		public static extern ScreenOrientation orientation
+		public static ScreenOrientation orientation
 		{
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
+			get
+			{
+				return Screen.GetScreenOrientation();
+			}
+			set
+			{
+				if (value == ScreenOrientation.Unknown)
+				{
+					Debug.Log("ScreenOrientation.Unknown is deprecated. Please use ScreenOrientation.AutoRotation");
+					value = ScreenOrientation.AutoRotation;
+				}
+				Screen.RequestOrientation(value);
+			}
 		}
 
 		public static extern int sleepTimeout
@@ -117,6 +98,48 @@ namespace UnityEngine
 			}
 		}
 
+		public static Resolution currentResolution
+		{
+			get
+			{
+				Resolution result;
+				Screen.get_currentResolution_Injected(out result);
+				return result;
+			}
+		}
+
+		public static extern bool fullScreen
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public static extern FullScreenMode fullScreenMode
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public static Rect safeArea
+		{
+			get
+			{
+				Rect result;
+				Screen.get_safeArea_Injected(out result);
+				return result;
+			}
+		}
+
+		public static extern Resolution[] resolutions
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+		}
+
 		[EditorBrowsable(EditorBrowsableState.Never), Obsolete("Property GetResolution has been deprecated. Use resolutions instead (UnityUpgradable) -> resolutions", true)]
 		public static Resolution[] GetResolution
 		{
@@ -155,25 +178,40 @@ namespace UnityEngine
 			}
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_get_currentResolution(out Resolution value);
+		private static extern void RequestOrientation(ScreenOrientation orient);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern void SetResolution(int width, int height, bool fullscreen, [UnityEngine.Internal.DefaultValue("0")] int preferredRefreshRate);
-
-		[ExcludeFromDocs]
-		public static void SetResolution(int width, int height, bool fullscreen)
-		{
-			int preferredRefreshRate = 0;
-			Screen.SetResolution(width, height, fullscreen, preferredRefreshRate);
-		}
+		private static extern ScreenOrientation GetScreenOrientation();
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern bool IsOrientationEnabled(EnabledOrientation orient);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern void SetOrientationEnabled(EnabledOrientation orient, bool enabled);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern void SetResolution(int width, int height, FullScreenMode fullscreenMode, [UnityEngine.Internal.DefaultValue("0")] int preferredRefreshRate);
+
+		public static void SetResolution(int width, int height, FullScreenMode fullscreenMode)
+		{
+			Screen.SetResolution(width, height, fullscreenMode, 0);
+		}
+
+		public static void SetResolution(int width, int height, bool fullscreen, [UnityEngine.Internal.DefaultValue("0")] int preferredRefreshRate)
+		{
+			Screen.SetResolution(width, height, (!fullscreen) ? FullScreenMode.Windowed : FullScreenMode.FullScreenWindow, preferredRefreshRate);
+		}
+
+		public static void SetResolution(int width, int height, bool fullscreen)
+		{
+			Screen.SetResolution(width, height, fullscreen, 0);
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void get_currentResolution_Injected(out Resolution ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void get_safeArea_Injected(out Rect ret);
 	}
 }

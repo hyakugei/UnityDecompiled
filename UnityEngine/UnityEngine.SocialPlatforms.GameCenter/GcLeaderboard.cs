@@ -1,13 +1,12 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using UnityEngine.Scripting;
 using UnityEngine.SocialPlatforms.Impl;
 
 namespace UnityEngine.SocialPlatforms.GameCenter
 {
 	[StructLayout(LayoutKind.Sequential)]
-	internal sealed class GcLeaderboard
+	internal class GcLeaderboard
 	{
 		private IntPtr m_InternalLeaderboard;
 
@@ -65,16 +64,29 @@ namespace UnityEngine.SocialPlatforms.GameCenter
 			}
 		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern void Internal_LoadScores(string category, int from, int count, string[] userIDs, int playerScope, int timeScope, object callback);
+		internal void Internal_LoadScores(string category, int from, int count, string[] userIDs, int playerScope, int timeScope, object callback)
+		{
+			this.m_InternalLeaderboard = GcLeaderboard.GcLeaderboard_LoadScores(this, category, from, count, userIDs, playerScope, timeScope, callback);
+		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern bool Loading();
+		private static extern IntPtr GcLeaderboard_LoadScores(object self, string category, int from, int count, string[] userIDs, int playerScope, int timeScope, object callback);
 
-		[GeneratedByOldBindingsGenerator, ThreadAndSerializationSafe]
+		internal bool Loading()
+		{
+			return GcLeaderboard.GcLeaderboard_Loading(this.m_InternalLeaderboard);
+		}
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern void Dispose();
+		private static extern bool GcLeaderboard_Loading(IntPtr leaderboard);
+
+		internal void Dispose()
+		{
+			GcLeaderboard.GcLeaderboard_Dispose(this.m_InternalLeaderboard);
+			this.m_InternalLeaderboard = IntPtr.Zero;
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void GcLeaderboard_Dispose(IntPtr leaderboard);
 	}
 }

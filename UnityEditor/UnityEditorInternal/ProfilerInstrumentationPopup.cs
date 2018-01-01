@@ -33,7 +33,7 @@ namespace UnityEditorInternal
 
 		private const int kAutoInstrumentButtonsHeight = 20;
 
-		private static GUIContent s_AutoInstrumentScriptsContent = new GUIContent("Auto instrument " + InstrumentedAssemblyTypes.Script.ToString() + " assemblies");
+		private static GUIContent s_AutoInstrumentScriptsContent = EditorGUIUtility.TrTextContent("Auto instrument " + InstrumentedAssemblyTypes.Script.ToString() + " assemblies", null, null);
 
 		private static Dictionary<string, int> s_InstrumentableFunctions;
 

@@ -348,6 +348,12 @@ namespace UnityEngine
 			Caching.MoveCacheAfter_Injected(ref src, ref dst);
 		}
 
+		[Obsolete("This function is obsolete. Please use ClearCache.  (UnityUpgradable) -> ClearCache()")]
+		public static bool CleanCache()
+		{
+			return Caching.ClearCache();
+		}
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern bool ClearCachedVersionInternal_Injected(string assetBundleName, ref Hash128 hash);
 

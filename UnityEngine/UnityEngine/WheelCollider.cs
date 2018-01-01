@@ -1,41 +1,36 @@
 using System;
 using System.Runtime.CompilerServices;
-using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
-	public sealed class WheelCollider : Collider
+	public class WheelCollider : Collider
 	{
 		public Vector3 center
 		{
 			get
 			{
 				Vector3 result;
-				this.INTERNAL_get_center(out result);
+				this.get_center_Injected(out result);
 				return result;
 			}
 			set
 			{
-				this.INTERNAL_set_center(ref value);
+				this.set_center_Injected(ref value);
 			}
 		}
 
 		public extern float radius
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern float suspensionDistance
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
@@ -45,41 +40,35 @@ namespace UnityEngine
 			get
 			{
 				JointSpring result;
-				this.INTERNAL_get_suspensionSpring(out result);
+				this.get_suspensionSpring_Injected(out result);
 				return result;
 			}
 			set
 			{
-				this.INTERNAL_set_suspensionSpring(ref value);
+				this.set_suspensionSpring_Injected(ref value);
 			}
 		}
 
 		public extern float forceAppPointDistance
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern float mass
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern float wheelDampingRate
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
@@ -89,12 +78,12 @@ namespace UnityEngine
 			get
 			{
 				WheelFrictionCurve result;
-				this.INTERNAL_get_forwardFriction(out result);
+				this.get_forwardFriction_Injected(out result);
 				return result;
 			}
 			set
 			{
-				this.INTERNAL_set_forwardFriction(ref value);
+				this.set_forwardFriction_Injected(ref value);
 			}
 		}
 
@@ -103,108 +92,88 @@ namespace UnityEngine
 			get
 			{
 				WheelFrictionCurve result;
-				this.INTERNAL_get_sidewaysFriction(out result);
+				this.get_sidewaysFriction_Injected(out result);
 				return result;
 			}
 			set
 			{
-				this.INTERNAL_set_sidewaysFriction(ref value);
+				this.set_sidewaysFriction_Injected(ref value);
 			}
 		}
 
 		public extern float motorTorque
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern float brakeTorque
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern float steerAngle
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern bool isGrounded
 		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-		}
-
-		public extern float sprungMass
-		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
 
 		public extern float rpm
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void INTERNAL_get_center(out Vector3 value);
+		public extern float sprungMass
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void INTERNAL_set_center(ref Vector3 value);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void INTERNAL_get_suspensionSpring(out JointSpring value);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void INTERNAL_set_suspensionSpring(ref JointSpring value);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void INTERNAL_get_forwardFriction(out WheelFrictionCurve value);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void INTERNAL_set_forwardFriction(ref WheelFrictionCurve value);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void INTERNAL_get_sidewaysFriction(out WheelFrictionCurve value);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void INTERNAL_set_sidewaysFriction(ref WheelFrictionCurve value);
-
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern void ConfigureVehicleSubsteps(float speedThreshold, int stepsBelowThreshold, int stepsAboveThreshold);
 
-		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public extern void GetWorldPose(out Vector3 pos, out Quaternion quat);
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern bool GetGroundHit(out WheelHit hit);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern void GetWorldPose(out Vector3 pos, out Quaternion quat);
+		private extern void get_center_Injected(out Vector3 ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void set_center_Injected(ref Vector3 value);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void get_suspensionSpring_Injected(out JointSpring ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void set_suspensionSpring_Injected(ref JointSpring value);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void get_forwardFriction_Injected(out WheelFrictionCurve ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void set_forwardFriction_Injected(ref WheelFrictionCurve value);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void get_sidewaysFriction_Injected(out WheelFrictionCurve ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void set_sidewaysFriction_Injected(ref WheelFrictionCurve value);
 	}
 }

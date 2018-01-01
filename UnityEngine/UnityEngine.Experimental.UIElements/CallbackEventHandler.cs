@@ -44,12 +44,19 @@ namespace UnityEngine.Experimental.UIElements
 		{
 			if (evt.propagationPhase != PropagationPhase.DefaultAction)
 			{
-				if (this.m_CallbackRegistry != null)
+				if (!evt.isPropagationStopped)
 				{
-					this.m_CallbackRegistry.InvokeCallbacks(evt);
+					if (this.m_CallbackRegistry != null)
+					{
+						this.m_CallbackRegistry.InvokeCallbacks(evt);
+					}
+				}
+				if (evt.propagationPhase == PropagationPhase.AtTarget && !evt.isDefaultPrevented)
+				{
+					this.ExecuteDefaultActionAtTarget(evt);
 				}
 			}
-			else
+			else if (!evt.isDefaultPrevented)
 			{
 				this.ExecuteDefaultAction(evt);
 			}
@@ -65,11 +72,11 @@ namespace UnityEngine.Experimental.UIElements
 			return this.m_CallbackRegistry != null && this.m_CallbackRegistry.HasBubbleHandlers();
 		}
 
-		protected internal virtual void ExecuteDefaultAction(EventBase evt)
+		protected internal virtual void ExecuteDefaultActionAtTarget(EventBase evt)
 		{
 		}
 
-		public virtual void OnLostCapture()
+		protected internal virtual void ExecuteDefaultAction(EventBase evt)
 		{
 		}
 	}

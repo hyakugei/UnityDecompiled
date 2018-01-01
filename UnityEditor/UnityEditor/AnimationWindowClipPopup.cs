@@ -16,37 +16,33 @@ namespace UnityEditor
 
 		public void OnGUI()
 		{
-			AnimationWindowSelectionItem selectedItem = this.state.selectedItem;
-			if (!(selectedItem == null))
+			if (this.state.selection.canChangeAnimationClip)
 			{
-				if (selectedItem.canChangeAnimationClip)
+				string[] clipMenuContent = this.GetClipMenuContent();
+				EditorGUI.BeginChangeCheck();
+				this.selectedIndex = EditorGUILayout.Popup(this.ClipToIndex(this.state.activeAnimationClip), clipMenuContent, EditorStyles.toolbarPopup, new GUILayoutOption[0]);
+				if (EditorGUI.EndChangeCheck())
 				{
-					string[] clipMenuContent = this.GetClipMenuContent();
-					EditorGUI.BeginChangeCheck();
-					this.selectedIndex = EditorGUILayout.Popup(this.ClipToIndex(this.state.activeAnimationClip), clipMenuContent, EditorStyles.toolbarPopup, new GUILayoutOption[0]);
-					if (EditorGUI.EndChangeCheck())
+					if (clipMenuContent[this.selectedIndex] == AnimationWindowStyles.createNewClip.text)
 					{
-						if (clipMenuContent[this.selectedIndex] == AnimationWindowStyles.createNewClip.text)
+						AnimationClip animationClip = AnimationWindowUtility.CreateNewClip(this.state.selection.rootGameObject.name);
+						if (animationClip)
 						{
-							AnimationClip animationClip = AnimationWindowUtility.CreateNewClip(selectedItem.rootGameObject.name);
-							if (animationClip)
-							{
-								AnimationWindowUtility.AddClipToAnimationPlayerComponent(this.state.activeAnimationPlayer, animationClip);
-								this.state.selection.UpdateClip(this.state.selectedItem, animationClip);
-								GUIUtility.ExitGUI();
-							}
+							AnimationWindowUtility.AddClipToAnimationPlayerComponent(this.state.activeAnimationPlayer, animationClip);
+							this.state.activeAnimationClip = animationClip;
 						}
-						else
-						{
-							this.state.selection.UpdateClip(this.state.selectedItem, this.IndexToClip(this.selectedIndex));
-						}
+						GUIUtility.ExitGUI();
+					}
+					else
+					{
+						this.state.activeAnimationClip = this.IndexToClip(this.selectedIndex);
 					}
 				}
-				else if (this.state.activeAnimationClip != null)
-				{
-					Rect controlRect = EditorGUILayout.GetControlRect(false, EditorGUIUtility.singleLineHeight, AnimationWindowStyles.toolbarLabel, new GUILayoutOption[0]);
-					EditorGUI.LabelField(controlRect, CurveUtility.GetClipName(this.state.activeAnimationClip), AnimationWindowStyles.toolbarLabel);
-				}
+			}
+			else if (this.state.activeAnimationClip != null)
+			{
+				Rect controlRect = EditorGUILayout.GetControlRect(false, EditorGUIUtility.singleLineHeight, AnimationWindowStyles.toolbarLabel, new GUILayoutOption[0]);
+				EditorGUI.LabelField(controlRect, CurveUtility.GetClipName(this.state.activeAnimationClip), AnimationWindowStyles.toolbarLabel);
 			}
 		}
 
@@ -54,8 +50,7 @@ namespace UnityEditor
 		{
 			List<string> list = new List<string>();
 			list.AddRange(this.GetClipNames());
-			AnimationWindowSelectionItem selectedItem = this.state.selectedItem;
-			if (selectedItem.rootGameObject != null && selectedItem.animationIsEditable)
+			if (this.state.selection.rootGameObject != null)
 			{
 				list.Add("");
 				list.Add(AnimationWindowStyles.createNewClip.text);

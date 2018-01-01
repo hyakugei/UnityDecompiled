@@ -1,8 +1,9 @@
 using System;
 using System.Runtime.CompilerServices;
+using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine.Audio;
 using UnityEngine.Bindings;
-using UnityEngine.Collections;
 
 namespace UnityEngine
 {
@@ -26,12 +27,12 @@ namespace UnityEngine
 
 		internal static bool AddMixerGroupSink(AudioMixerGroup mixerGroup, NativeArray<float> buffer, bool excludeFromMix)
 		{
-			return AudioRenderer.Internal_AudioRenderer_AddMixerGroupSink(mixerGroup, buffer.UnsafePtr, buffer.Length, excludeFromMix);
+			return AudioRenderer.Internal_AudioRenderer_AddMixerGroupSink(mixerGroup, buffer.GetUnsafePtr<float>(), buffer.Length, excludeFromMix);
 		}
 
 		public static bool Render(NativeArray<float> buffer)
 		{
-			return AudioRenderer.Internal_AudioRenderer_Render(buffer.UnsafePtr, buffer.Length);
+			return AudioRenderer.Internal_AudioRenderer_Render(buffer.GetUnsafePtr<float>(), buffer.Length);
 		}
 
 		[MethodImpl(MethodImplOptions.InternalCall)]

@@ -66,31 +66,29 @@ namespace UnityEditor.Experimental.UIElements.Debugger
 
 		private int m_Index;
 
-		public VisualElement target
+		private void Setup(VisualElement cursor)
 		{
-			get
+			this.m_Hierarchy.Add(cursor);
+			if (cursor.shadow.parent != null)
 			{
-				return this.m_Target;
+				this.Setup(cursor.shadow.parent);
 			}
-			set
+			if (cursor.styleSheets != null)
 			{
-				this.m_Target = value;
-				this.m_Hierarchy.Clear();
-				this.m_Hierarchy.Add(value);
-				for (VisualElement visualElement = value; visualElement != null; visualElement = visualElement.shadow.parent)
+				foreach (StyleSheet current in cursor.styleSheets)
 				{
-					if (visualElement.styleSheets != null)
-					{
-						foreach (StyleSheet current in visualElement.styleSheets)
-						{
-							this.selectedElementStylesheets.Add(AssetDatabase.GetAssetPath(current) ?? "<unknown>");
-							this.PushStyleSheet(current);
-						}
-					}
-					this.m_Hierarchy.Add(visualElement);
+					this.selectedElementStylesheets.Add(AssetDatabase.GetAssetPath(current) ?? "<unknown>");
+					this.PushStyleSheet(current);
 				}
-				this.m_Index = this.m_Hierarchy.Count - 1;
 			}
+		}
+
+		public void SetupTarget(VisualElement target)
+		{
+			this.m_Target = target;
+			this.m_Hierarchy.Clear();
+			this.Setup(target);
+			this.m_Index = this.m_Hierarchy.Count - 1;
 		}
 
 		private void PushStyleSheet(StyleSheet styleSheetData)
@@ -104,9 +102,7 @@ namespace UnityEditor.Experimental.UIElements.Debugger
 				this.ruleMatchers.Add(new RuleMatcher
 				{
 					sheet = styleSheetData,
-					complexSelector = complexSelector,
-					simpleSelectorIndex = 0,
-					depth = 2147483647
+					complexSelector = complexSelector
 				});
 			}
 		}
@@ -118,7 +114,7 @@ namespace UnityEditor.Experimental.UIElements.Debugger
 
 		public override bool OnRuleMatchedElement(RuleMatcher matcher, VisualElement element)
 		{
-			if (element == this.target)
+			if (element == this.m_Target)
 			{
 				this.selectedElementRules.Add(new MatchedRulesExtractor.MatchedRule(matcher));
 			}
@@ -130,7 +126,7 @@ namespace UnityEditor.Experimental.UIElements.Debugger
 			this.m_Index--;
 			if (this.m_Index >= 0)
 			{
-				base.Traverse(this.m_Hierarchy[this.m_Index], depth + 1, allRuleMatchers);
+				this.TraverseRecursive(this.m_Hierarchy[this.m_Index], depth + 1, allRuleMatchers);
 			}
 		}
 	}

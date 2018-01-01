@@ -50,14 +50,44 @@ namespace UnityEditor
 		[SerializeField]
 		private TextureImporterInspector m_Inspector;
 
-		public static readonly int[] kTextureFormatsValueWiiU = new int[]
+		public static readonly int[] kTextureFormatsValuePSP2 = new int[]
 		{
 			10,
 			12,
 			7,
-			1,
+			3,
+			13,
 			4,
-			13
+			1,
+			17
+		};
+
+		public static readonly int[] kTextureFormatsValueSwitch = new int[]
+		{
+			10,
+			12,
+			28,
+			29,
+			7,
+			3,
+			1,
+			2,
+			4,
+			17,
+			26,
+			27,
+			48,
+			49,
+			50,
+			51,
+			52,
+			53,
+			54,
+			55,
+			56,
+			57,
+			58,
+			59
 		};
 
 		public static readonly int[] kTextureFormatsValueApplePVR = new int[]
@@ -80,13 +110,18 @@ namespace UnityEditor
 			59,
 			34,
 			64,
+			45,
+			46,
 			47,
 			65,
+			41,
+			43,
 			7,
 			3,
 			1,
 			13,
-			4
+			4,
+			17
 		};
 
 		public static readonly int[] kTextureFormatsValueAndroid = new int[]
@@ -101,12 +136,12 @@ namespace UnityEditor
 			46,
 			47,
 			65,
+			41,
+			43,
 			30,
 			31,
 			32,
 			33,
-			35,
-			36,
 			48,
 			49,
 			50,
@@ -123,7 +158,8 @@ namespace UnityEditor
 			3,
 			1,
 			13,
-			4
+			4,
+			17
 		};
 
 		public static readonly int[] kTextureFormatsValueTizen = new int[]
@@ -180,7 +216,9 @@ namespace UnityEditor
 		public static readonly int[] kTextureFormatsValueSingleChannel = new int[]
 		{
 			1,
-			26
+			63,
+			26,
+			41
 		};
 
 		public static readonly int[] kAndroidETC2FallbackOverrideValues = new int[]
@@ -502,35 +540,40 @@ namespace UnityEditor
 			TextureImporterSettings settings = this.GetSettings(importer);
 			BuildTarget target = this.m_Target;
 			int[] array;
-			if (target != BuildTarget.WiiU)
+			if (target != BuildTarget.Tizen)
 			{
-				if (target != BuildTarget.tvOS && target != BuildTarget.iOS)
+				if (target != BuildTarget.PSP2)
 				{
-					if (target != BuildTarget.Android)
+					if (target != BuildTarget.tvOS)
 					{
-						if (target != BuildTarget.Tizen)
+						if (target == BuildTarget.Switch)
 						{
-							array = ((settings.textureType != TextureImporterType.NormalMap) ? TextureImportPlatformSettings.kTextureFormatsValueDefault : TextureImportPlatformSettings.kNormalFormatsValueDefault);
+							array = TextureImportPlatformSettings.kTextureFormatsValueSwitch;
+							goto IL_9D;
 						}
-						else
+						if (target != BuildTarget.iOS)
 						{
-							array = TextureImportPlatformSettings.kTextureFormatsValueTizen;
+							if (target != BuildTarget.Android)
+							{
+								array = ((settings.textureType != TextureImporterType.NormalMap) ? TextureImportPlatformSettings.kTextureFormatsValueDefault : TextureImportPlatformSettings.kNormalFormatsValueDefault);
+								goto IL_9D;
+							}
+							array = TextureImportPlatformSettings.kTextureFormatsValueAndroid;
+							goto IL_9D;
 						}
 					}
-					else
-					{
-						array = TextureImportPlatformSettings.kTextureFormatsValueAndroid;
-					}
+					array = TextureImportPlatformSettings.kTextureFormatsValueApplePVR;
 				}
 				else
 				{
-					array = TextureImportPlatformSettings.kTextureFormatsValueApplePVR;
+					array = TextureImportPlatformSettings.kTextureFormatsValuePSP2;
 				}
 			}
 			else
 			{
-				array = TextureImportPlatformSettings.kTextureFormatsValueWiiU;
+				array = TextureImportPlatformSettings.kTextureFormatsValueTizen;
 			}
+			IL_9D:
 			return ((IList)array).Contains((int)format);
 		}
 

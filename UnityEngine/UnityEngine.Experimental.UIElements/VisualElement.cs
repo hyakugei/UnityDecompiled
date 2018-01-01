@@ -91,6 +91,13 @@ namespace UnityEngine.Experimental.UIElements
 			}
 		}
 
+		public enum ClippingOptions
+		{
+			ClipContents,
+			NoClipping,
+			ClipAndCacheContents
+		}
+
 		public struct Hierarchy
 		{
 			private readonly VisualElement m_Owner;
@@ -157,18 +164,10 @@ namespace UnityEngine.Experimental.UIElements
 				{
 					this.m_Owner.cssNode.SetMeasureFunction(null);
 				}
-				if (index >= this.m_Owner.m_Children.Count)
-				{
-					this.m_Owner.m_Children.Add(child);
-					this.m_Owner.cssNode.Insert(this.m_Owner.cssNode.Count, child.cssNode);
-				}
-				else
-				{
-					this.m_Owner.m_Children.Insert(index, child);
-					this.m_Owner.cssNode.Insert(index, child.cssNode);
-				}
+				this.PutChildAtIndex(child, index);
 				child.SetEnabledFromHierarchy(this.m_Owner.enabledInHierarchy);
 				child.Dirty(ChangeType.Styles);
+				child.Dirty(ChangeType.Transform);
 				this.m_Owner.Dirty(ChangeType.Layout);
 				if (!string.IsNullOrEmpty(child.persistenceKey))
 				{
@@ -201,8 +200,7 @@ namespace UnityEngine.Experimental.UIElements
 				}
 				VisualElement visualElement = this.m_Owner.m_Children[index];
 				visualElement.shadow.SetParent(null);
-				this.m_Owner.m_Children.RemoveAt(index);
-				this.m_Owner.cssNode.RemoveAt(index);
+				this.RemoveChildAtIndex(index);
 				if (this.childCount == 0)
 				{
 					this.m_Owner.cssNode.SetMeasureFunction(new MeasureFunction(this.m_Owner.Measure));
@@ -222,6 +220,68 @@ namespace UnityEngine.Experimental.UIElements
 					this.m_Owner.m_Children.Clear();
 					this.m_Owner.cssNode.Clear();
 					this.m_Owner.Dirty(ChangeType.Layout);
+				}
+			}
+
+			internal void BringToFront(VisualElement child)
+			{
+				if (this.childCount > 1)
+				{
+					int num = this.m_Owner.m_Children.IndexOf(child);
+					if (num >= 0 && num < this.childCount - 1)
+					{
+						this.RemoveChildAtIndex(num);
+						this.PutChildAtIndex(child, this.childCount);
+						this.m_Owner.Dirty(ChangeType.Layout);
+					}
+				}
+			}
+
+			internal void SendToBack(VisualElement child)
+			{
+				if (this.childCount > 1)
+				{
+					int num = this.m_Owner.m_Children.IndexOf(child);
+					if (num > 0)
+					{
+						this.RemoveChildAtIndex(num);
+						this.PutChildAtIndex(child, 0);
+						this.m_Owner.Dirty(ChangeType.Layout);
+					}
+				}
+			}
+
+			internal void PlaceBehind(VisualElement child, VisualElement over)
+			{
+				if (this.childCount > 0)
+				{
+					int num = this.m_Owner.m_Children.IndexOf(child);
+					if (num >= 0)
+					{
+						this.RemoveChildAtIndex(num);
+						num = this.m_Owner.m_Children.IndexOf(over);
+						if (num < 0)
+						{
+							num = 0;
+						}
+						this.PutChildAtIndex(child, num);
+						this.m_Owner.Dirty(ChangeType.Layout);
+					}
+				}
+			}
+
+			internal void PlaceInFront(VisualElement child, VisualElement under)
+			{
+				if (this.childCount > 0)
+				{
+					int num = this.m_Owner.m_Children.IndexOf(child);
+					if (num >= 0)
+					{
+						this.RemoveChildAtIndex(num);
+						num = this.m_Owner.m_Children.IndexOf(under) + 1;
+						this.PutChildAtIndex(child, num);
+						this.m_Owner.Dirty(ChangeType.Layout);
+					}
 				}
 			}
 
@@ -265,13 +325,36 @@ namespace UnityEngine.Experimental.UIElements
 
 			public void Sort(Comparison<VisualElement> comp)
 			{
-				this.m_Owner.m_Children.Sort(comp);
-				this.m_Owner.cssNode.Clear();
-				for (int i = 0; i < this.m_Owner.m_Children.Count; i++)
+				if (this.childCount > 0)
 				{
-					this.m_Owner.cssNode.Insert(i, this.m_Owner.m_Children[i].cssNode);
+					this.m_Owner.m_Children.Sort(comp);
+					this.m_Owner.cssNode.Clear();
+					for (int i = 0; i < this.m_Owner.m_Children.Count; i++)
+					{
+						this.m_Owner.cssNode.Insert(i, this.m_Owner.m_Children[i].cssNode);
+					}
+					this.m_Owner.Dirty(ChangeType.Layout);
 				}
-				this.m_Owner.Dirty(ChangeType.Layout);
+			}
+
+			private void PutChildAtIndex(VisualElement child, int index)
+			{
+				if (index >= this.childCount)
+				{
+					this.m_Owner.m_Children.Add(child);
+					this.m_Owner.cssNode.Insert(this.m_Owner.cssNode.Count, child.cssNode);
+				}
+				else
+				{
+					this.m_Owner.m_Children.Insert(index, child);
+					this.m_Owner.cssNode.Insert(index, child.cssNode);
+				}
+			}
+
+			private void RemoveChildAtIndex(int index)
+			{
+				this.m_Owner.m_Children.RemoveAt(index);
+				this.m_Owner.cssNode.RemoveAt(index);
 			}
 		}
 
@@ -454,6 +537,10 @@ namespace UnityEngine.Experimental.UIElements
 
 		private Rect m_Layout;
 
+		internal PseudoStates triggerPseudoMask;
+
+		internal PseudoStates dependencyPseudoMask;
+
 		private PseudoStates m_PseudoStates;
 
 		internal VisualElementStylesData m_SharedStyle = VisualElementStylesData.none;
@@ -464,14 +551,13 @@ namespace UnityEngine.Experimental.UIElements
 
 		private ChangeType changesNeeded;
 
-		[SerializeField]
-		private string m_Text;
-
 		private bool m_Enabled;
 
 		internal const Align DefaultAlignContent = Align.FlexStart;
 
 		internal const Align DefaultAlignItems = Align.Stretch;
+
+		private VisualElement.ClippingOptions m_ClippingOptions;
 
 		private VisualElement m_PhysicalParent;
 
@@ -575,7 +661,7 @@ namespace UnityEngine.Experimental.UIElements
 			}
 			set
 			{
-				if (VisualElement.ApplyAndCompare(ref this.inlineStyle.width, value))
+				if (StyleValueUtils.ApplyAndCompare(ref this.inlineStyle.width, value))
 				{
 					this.Dirty(ChangeType.Layout);
 					this.cssNode.Width = value.value;
@@ -591,7 +677,7 @@ namespace UnityEngine.Experimental.UIElements
 			}
 			set
 			{
-				if (VisualElement.ApplyAndCompare(ref this.inlineStyle.height, value))
+				if (StyleValueUtils.ApplyAndCompare(ref this.inlineStyle.height, value))
 				{
 					this.Dirty(ChangeType.Layout);
 					this.cssNode.Height = value.value;
@@ -607,7 +693,7 @@ namespace UnityEngine.Experimental.UIElements
 			}
 			set
 			{
-				if (VisualElement.ApplyAndCompare(ref this.inlineStyle.maxWidth, value))
+				if (StyleValueUtils.ApplyAndCompare(ref this.inlineStyle.maxWidth, value))
 				{
 					this.Dirty(ChangeType.Layout);
 					this.cssNode.MaxWidth = value.value;
@@ -623,7 +709,7 @@ namespace UnityEngine.Experimental.UIElements
 			}
 			set
 			{
-				if (VisualElement.ApplyAndCompare(ref this.inlineStyle.maxHeight, value))
+				if (StyleValueUtils.ApplyAndCompare(ref this.inlineStyle.maxHeight, value))
 				{
 					this.Dirty(ChangeType.Layout);
 					this.cssNode.MaxHeight = value.value;
@@ -639,7 +725,7 @@ namespace UnityEngine.Experimental.UIElements
 			}
 			set
 			{
-				if (VisualElement.ApplyAndCompare(ref this.inlineStyle.minWidth, value))
+				if (StyleValueUtils.ApplyAndCompare(ref this.inlineStyle.minWidth, value))
 				{
 					this.Dirty(ChangeType.Layout);
 					this.cssNode.MinWidth = value.value;
@@ -655,7 +741,7 @@ namespace UnityEngine.Experimental.UIElements
 			}
 			set
 			{
-				if (VisualElement.ApplyAndCompare(ref this.inlineStyle.minHeight, value))
+				if (StyleValueUtils.ApplyAndCompare(ref this.inlineStyle.minHeight, value))
 				{
 					this.Dirty(ChangeType.Layout);
 					this.cssNode.MinHeight = value.value;
@@ -671,10 +757,58 @@ namespace UnityEngine.Experimental.UIElements
 			}
 			set
 			{
-				if (VisualElement.ApplyAndCompare(ref this.inlineStyle.flex, value))
+				if (StyleValueUtils.ApplyAndCompare(ref this.inlineStyle.flex, value))
 				{
 					this.Dirty(ChangeType.Layout);
 					this.cssNode.Flex = value.value;
+				}
+			}
+		}
+
+		StyleValue<float> IStyle.flexBasis
+		{
+			get
+			{
+				return this.effectiveStyle.flexBasis;
+			}
+			set
+			{
+				if (StyleValueUtils.ApplyAndCompare(ref this.inlineStyle.flexBasis, value))
+				{
+					this.Dirty(ChangeType.Layout);
+					this.cssNode.FlexBasis = value.value;
+				}
+			}
+		}
+
+		StyleValue<float> IStyle.flexGrow
+		{
+			get
+			{
+				return this.effectiveStyle.flexGrow;
+			}
+			set
+			{
+				if (StyleValueUtils.ApplyAndCompare(ref this.inlineStyle.flexGrow, value))
+				{
+					this.Dirty(ChangeType.Layout);
+					this.cssNode.FlexGrow = value.value;
+				}
+			}
+		}
+
+		StyleValue<float> IStyle.flexShrink
+		{
+			get
+			{
+				return this.effectiveStyle.flexShrink;
+			}
+			set
+			{
+				if (StyleValueUtils.ApplyAndCompare(ref this.inlineStyle.flexShrink, value))
+				{
+					this.Dirty(ChangeType.Layout);
+					this.cssNode.FlexShrink = value.value;
 				}
 			}
 		}
@@ -687,7 +821,7 @@ namespace UnityEngine.Experimental.UIElements
 			}
 			set
 			{
-				if (VisualElement.ApplyAndCompare(ref this.inlineStyle.overflow, new StyleValue<int>((int)value.value, value.specificity)))
+				if (StyleValueUtils.ApplyAndCompare(ref this.inlineStyle.overflow, new StyleValue<int>((int)value.value, value.specificity)))
 				{
 					this.Dirty(ChangeType.Layout);
 					this.cssNode.Overflow = (CSSOverflow)value.value;
@@ -703,9 +837,14 @@ namespace UnityEngine.Experimental.UIElements
 			}
 			set
 			{
-				if (VisualElement.ApplyAndCompare(ref this.inlineStyle.positionLeft, value))
+				if (StyleValueUtils.ApplyAndCompare(ref this.inlineStyle.positionLeft, value))
 				{
+					ChangeType changeType = this.changesNeeded;
 					this.Dirty(ChangeType.Layout);
+					if ((changeType & ChangeType.Repaint) == (ChangeType)0)
+					{
+						this.ClearDirty(ChangeType.Repaint);
+					}
 					this.cssNode.SetPosition(CSSEdge.Left, value.value);
 				}
 			}
@@ -719,9 +858,14 @@ namespace UnityEngine.Experimental.UIElements
 			}
 			set
 			{
-				if (VisualElement.ApplyAndCompare(ref this.inlineStyle.positionTop, value))
+				if (StyleValueUtils.ApplyAndCompare(ref this.inlineStyle.positionTop, value))
 				{
+					ChangeType changeType = this.changesNeeded;
 					this.Dirty(ChangeType.Layout);
+					if ((changeType & ChangeType.Repaint) == (ChangeType)0)
+					{
+						this.ClearDirty(ChangeType.Repaint);
+					}
 					this.cssNode.SetPosition(CSSEdge.Top, value.value);
 				}
 			}
@@ -735,7 +879,7 @@ namespace UnityEngine.Experimental.UIElements
 			}
 			set
 			{
-				if (VisualElement.ApplyAndCompare(ref this.inlineStyle.positionRight, value))
+				if (StyleValueUtils.ApplyAndCompare(ref this.inlineStyle.positionRight, value))
 				{
 					this.Dirty(ChangeType.Layout);
 					this.cssNode.SetPosition(CSSEdge.Right, value.value);
@@ -751,7 +895,7 @@ namespace UnityEngine.Experimental.UIElements
 			}
 			set
 			{
-				if (VisualElement.ApplyAndCompare(ref this.inlineStyle.positionBottom, value))
+				if (StyleValueUtils.ApplyAndCompare(ref this.inlineStyle.positionBottom, value))
 				{
 					this.Dirty(ChangeType.Layout);
 					this.cssNode.SetPosition(CSSEdge.Bottom, value.value);
@@ -767,7 +911,7 @@ namespace UnityEngine.Experimental.UIElements
 			}
 			set
 			{
-				if (VisualElement.ApplyAndCompare(ref this.inlineStyle.marginLeft, value))
+				if (StyleValueUtils.ApplyAndCompare(ref this.inlineStyle.marginLeft, value))
 				{
 					this.Dirty(ChangeType.Layout);
 					this.cssNode.SetMargin(CSSEdge.Left, value.value);
@@ -783,7 +927,7 @@ namespace UnityEngine.Experimental.UIElements
 			}
 			set
 			{
-				if (VisualElement.ApplyAndCompare(ref this.inlineStyle.marginTop, value))
+				if (StyleValueUtils.ApplyAndCompare(ref this.inlineStyle.marginTop, value))
 				{
 					this.Dirty(ChangeType.Layout);
 					this.cssNode.SetMargin(CSSEdge.Top, value.value);
@@ -799,7 +943,7 @@ namespace UnityEngine.Experimental.UIElements
 			}
 			set
 			{
-				if (VisualElement.ApplyAndCompare(ref this.inlineStyle.marginRight, value))
+				if (StyleValueUtils.ApplyAndCompare(ref this.inlineStyle.marginRight, value))
 				{
 					this.Dirty(ChangeType.Layout);
 					this.cssNode.SetMargin(CSSEdge.Right, value.value);
@@ -815,7 +959,7 @@ namespace UnityEngine.Experimental.UIElements
 			}
 			set
 			{
-				if (VisualElement.ApplyAndCompare(ref this.inlineStyle.marginBottom, value))
+				if (StyleValueUtils.ApplyAndCompare(ref this.inlineStyle.marginBottom, value))
 				{
 					this.Dirty(ChangeType.Layout);
 					this.cssNode.SetMargin(CSSEdge.Bottom, value.value);
@@ -831,7 +975,7 @@ namespace UnityEngine.Experimental.UIElements
 			}
 			set
 			{
-				if (VisualElement.ApplyAndCompare(ref this.inlineStyle.borderLeft, value))
+				if (StyleValueUtils.ApplyAndCompare(ref this.inlineStyle.borderLeft, value))
 				{
 					this.Dirty(ChangeType.Layout);
 					this.cssNode.SetBorder(CSSEdge.Left, value.value);
@@ -847,7 +991,7 @@ namespace UnityEngine.Experimental.UIElements
 			}
 			set
 			{
-				if (VisualElement.ApplyAndCompare(ref this.inlineStyle.borderTop, value))
+				if (StyleValueUtils.ApplyAndCompare(ref this.inlineStyle.borderTop, value))
 				{
 					this.Dirty(ChangeType.Layout);
 					this.cssNode.SetBorder(CSSEdge.Top, value.value);
@@ -863,7 +1007,7 @@ namespace UnityEngine.Experimental.UIElements
 			}
 			set
 			{
-				if (VisualElement.ApplyAndCompare(ref this.inlineStyle.borderRight, value))
+				if (StyleValueUtils.ApplyAndCompare(ref this.inlineStyle.borderRight, value))
 				{
 					this.Dirty(ChangeType.Layout);
 					this.cssNode.SetBorder(CSSEdge.Right, value.value);
@@ -879,7 +1023,7 @@ namespace UnityEngine.Experimental.UIElements
 			}
 			set
 			{
-				if (VisualElement.ApplyAndCompare(ref this.inlineStyle.borderBottom, value))
+				if (StyleValueUtils.ApplyAndCompare(ref this.inlineStyle.borderBottom, value))
 				{
 					this.Dirty(ChangeType.Layout);
 					this.cssNode.SetBorder(CSSEdge.Bottom, value.value);
@@ -895,7 +1039,7 @@ namespace UnityEngine.Experimental.UIElements
 			}
 			set
 			{
-				if (VisualElement.ApplyAndCompare(ref this.inlineStyle.borderLeftWidth, value))
+				if (StyleValueUtils.ApplyAndCompare(ref this.inlineStyle.borderLeftWidth, value))
 				{
 					this.Dirty(ChangeType.Layout);
 					this.cssNode.SetBorder(CSSEdge.Left, value.value);
@@ -911,7 +1055,7 @@ namespace UnityEngine.Experimental.UIElements
 			}
 			set
 			{
-				if (VisualElement.ApplyAndCompare(ref this.inlineStyle.borderTopWidth, value))
+				if (StyleValueUtils.ApplyAndCompare(ref this.inlineStyle.borderTopWidth, value))
 				{
 					this.Dirty(ChangeType.Layout);
 					this.cssNode.SetBorder(CSSEdge.Top, value.value);
@@ -927,7 +1071,7 @@ namespace UnityEngine.Experimental.UIElements
 			}
 			set
 			{
-				if (VisualElement.ApplyAndCompare(ref this.inlineStyle.borderRightWidth, value))
+				if (StyleValueUtils.ApplyAndCompare(ref this.inlineStyle.borderRightWidth, value))
 				{
 					this.Dirty(ChangeType.Layout);
 					this.cssNode.SetBorder(CSSEdge.Right, value.value);
@@ -943,7 +1087,7 @@ namespace UnityEngine.Experimental.UIElements
 			}
 			set
 			{
-				if (VisualElement.ApplyAndCompare(ref this.inlineStyle.borderBottomWidth, value))
+				if (StyleValueUtils.ApplyAndCompare(ref this.inlineStyle.borderBottomWidth, value))
 				{
 					this.Dirty(ChangeType.Layout);
 					this.cssNode.SetBorder(CSSEdge.Bottom, value.value);
@@ -974,7 +1118,7 @@ namespace UnityEngine.Experimental.UIElements
 			}
 			set
 			{
-				if (VisualElement.ApplyAndCompare(ref this.inlineStyle.borderTopLeftRadius, value))
+				if (StyleValueUtils.ApplyAndCompare(ref this.inlineStyle.borderTopLeftRadius, value))
 				{
 					this.Dirty(ChangeType.Repaint);
 				}
@@ -989,7 +1133,7 @@ namespace UnityEngine.Experimental.UIElements
 			}
 			set
 			{
-				if (VisualElement.ApplyAndCompare(ref this.inlineStyle.borderTopRightRadius, value))
+				if (StyleValueUtils.ApplyAndCompare(ref this.inlineStyle.borderTopRightRadius, value))
 				{
 					this.Dirty(ChangeType.Repaint);
 				}
@@ -1004,7 +1148,7 @@ namespace UnityEngine.Experimental.UIElements
 			}
 			set
 			{
-				if (VisualElement.ApplyAndCompare(ref this.inlineStyle.borderBottomRightRadius, value))
+				if (StyleValueUtils.ApplyAndCompare(ref this.inlineStyle.borderBottomRightRadius, value))
 				{
 					this.Dirty(ChangeType.Repaint);
 				}
@@ -1019,7 +1163,7 @@ namespace UnityEngine.Experimental.UIElements
 			}
 			set
 			{
-				if (VisualElement.ApplyAndCompare(ref this.inlineStyle.borderBottomLeftRadius, value))
+				if (StyleValueUtils.ApplyAndCompare(ref this.inlineStyle.borderBottomLeftRadius, value))
 				{
 					this.Dirty(ChangeType.Repaint);
 				}
@@ -1034,7 +1178,7 @@ namespace UnityEngine.Experimental.UIElements
 			}
 			set
 			{
-				if (VisualElement.ApplyAndCompare(ref this.inlineStyle.paddingLeft, value))
+				if (StyleValueUtils.ApplyAndCompare(ref this.inlineStyle.paddingLeft, value))
 				{
 					this.Dirty(ChangeType.Layout);
 					this.cssNode.SetPadding(CSSEdge.Left, value.value);
@@ -1050,7 +1194,7 @@ namespace UnityEngine.Experimental.UIElements
 			}
 			set
 			{
-				if (VisualElement.ApplyAndCompare(ref this.inlineStyle.paddingTop, value))
+				if (StyleValueUtils.ApplyAndCompare(ref this.inlineStyle.paddingTop, value))
 				{
 					this.Dirty(ChangeType.Layout);
 					this.cssNode.SetPadding(CSSEdge.Top, value.value);
@@ -1066,7 +1210,7 @@ namespace UnityEngine.Experimental.UIElements
 			}
 			set
 			{
-				if (VisualElement.ApplyAndCompare(ref this.inlineStyle.paddingRight, value))
+				if (StyleValueUtils.ApplyAndCompare(ref this.inlineStyle.paddingRight, value))
 				{
 					this.Dirty(ChangeType.Layout);
 					this.cssNode.SetPadding(CSSEdge.Right, value.value);
@@ -1082,7 +1226,7 @@ namespace UnityEngine.Experimental.UIElements
 			}
 			set
 			{
-				if (VisualElement.ApplyAndCompare(ref this.inlineStyle.paddingBottom, value))
+				if (StyleValueUtils.ApplyAndCompare(ref this.inlineStyle.paddingBottom, value))
 				{
 					this.Dirty(ChangeType.Layout);
 					this.cssNode.SetPadding(CSSEdge.Bottom, value.value);
@@ -1098,7 +1242,7 @@ namespace UnityEngine.Experimental.UIElements
 			}
 			set
 			{
-				if (VisualElement.ApplyAndCompare(ref this.inlineStyle.positionType, new StyleValue<int>((int)value.value, value.specificity)))
+				if (StyleValueUtils.ApplyAndCompare(ref this.inlineStyle.positionType, new StyleValue<int>((int)value.value, value.specificity)))
 				{
 					this.Dirty(ChangeType.Layout);
 					PositionType value2 = value.value;
@@ -1125,7 +1269,7 @@ namespace UnityEngine.Experimental.UIElements
 			}
 			set
 			{
-				if (VisualElement.ApplyAndCompare(ref this.inlineStyle.alignSelf, new StyleValue<int>((int)value.value, value.specificity)))
+				if (StyleValueUtils.ApplyAndCompare(ref this.inlineStyle.alignSelf, new StyleValue<int>((int)value.value, value.specificity)))
 				{
 					this.Dirty(ChangeType.Layout);
 					this.cssNode.AlignSelf = (CSSAlign)value.value;
@@ -1141,7 +1285,7 @@ namespace UnityEngine.Experimental.UIElements
 			}
 			set
 			{
-				if (VisualElement.ApplyAndCompare(ref this.inlineStyle.textAlignment, new StyleValue<int>((int)value.value, value.specificity)))
+				if (StyleValueUtils.ApplyAndCompare(ref this.inlineStyle.textAlignment, new StyleValue<int>((int)value.value, value.specificity)))
 				{
 					this.Dirty(ChangeType.Repaint);
 				}
@@ -1156,7 +1300,7 @@ namespace UnityEngine.Experimental.UIElements
 			}
 			set
 			{
-				if (VisualElement.ApplyAndCompare(ref this.inlineStyle.fontStyle, new StyleValue<int>((int)value.value, value.specificity)))
+				if (StyleValueUtils.ApplyAndCompare(ref this.inlineStyle.fontStyle, new StyleValue<int>((int)value.value, value.specificity)))
 				{
 					this.Dirty(ChangeType.Layout);
 				}
@@ -1171,7 +1315,7 @@ namespace UnityEngine.Experimental.UIElements
 			}
 			set
 			{
-				if (VisualElement.ApplyAndCompare(ref this.inlineStyle.textClipping, new StyleValue<int>((int)value.value, value.specificity)))
+				if (StyleValueUtils.ApplyAndCompare(ref this.inlineStyle.textClipping, new StyleValue<int>((int)value.value, value.specificity)))
 				{
 					this.Dirty(ChangeType.Repaint);
 				}
@@ -1186,7 +1330,7 @@ namespace UnityEngine.Experimental.UIElements
 			}
 			set
 			{
-				if (VisualElement.ApplyAndCompare<Font>(ref this.inlineStyle.font, value))
+				if (StyleValueUtils.ApplyAndCompare<Font>(ref this.inlineStyle.font, value))
 				{
 					this.Dirty(ChangeType.Layout);
 				}
@@ -1201,7 +1345,7 @@ namespace UnityEngine.Experimental.UIElements
 			}
 			set
 			{
-				if (VisualElement.ApplyAndCompare(ref this.inlineStyle.fontSize, value))
+				if (StyleValueUtils.ApplyAndCompare(ref this.inlineStyle.fontSize, value))
 				{
 					this.Dirty(ChangeType.Layout);
 				}
@@ -1216,7 +1360,7 @@ namespace UnityEngine.Experimental.UIElements
 			}
 			set
 			{
-				if (VisualElement.ApplyAndCompare(ref this.inlineStyle.wordWrap, value))
+				if (StyleValueUtils.ApplyAndCompare(ref this.inlineStyle.wordWrap, value))
 				{
 					this.Dirty(ChangeType.Layout);
 				}
@@ -1231,7 +1375,7 @@ namespace UnityEngine.Experimental.UIElements
 			}
 			set
 			{
-				if (VisualElement.ApplyAndCompare(ref this.inlineStyle.textColor, value))
+				if (StyleValueUtils.ApplyAndCompare(ref this.inlineStyle.textColor, value))
 				{
 					this.Dirty(ChangeType.Repaint);
 				}
@@ -1246,7 +1390,7 @@ namespace UnityEngine.Experimental.UIElements
 			}
 			set
 			{
-				if (VisualElement.ApplyAndCompare(ref this.inlineStyle.flexDirection, new StyleValue<int>((int)value.value, value.specificity)))
+				if (StyleValueUtils.ApplyAndCompare(ref this.inlineStyle.flexDirection, new StyleValue<int>((int)value.value, value.specificity)))
 				{
 					this.Dirty(ChangeType.Repaint);
 					this.cssNode.FlexDirection = (CSSFlexDirection)value.value;
@@ -1262,7 +1406,12 @@ namespace UnityEngine.Experimental.UIElements
 			}
 			set
 			{
-				if (VisualElement.ApplyAndCompare(ref this.inlineStyle.backgroundColor, value))
+				if (value.specificity == 0 && value == default(Color))
+				{
+					this.inlineStyle.backgroundColor = this.sharedStyle.backgroundColor;
+					this.Dirty(ChangeType.Repaint);
+				}
+				else if (StyleValueUtils.ApplyAndCompare(ref this.inlineStyle.backgroundColor, value))
 				{
 					this.Dirty(ChangeType.Repaint);
 				}
@@ -1277,7 +1426,7 @@ namespace UnityEngine.Experimental.UIElements
 			}
 			set
 			{
-				if (VisualElement.ApplyAndCompare(ref this.inlineStyle.borderColor, value))
+				if (StyleValueUtils.ApplyAndCompare(ref this.inlineStyle.borderColor, value))
 				{
 					this.Dirty(ChangeType.Repaint);
 				}
@@ -1292,7 +1441,7 @@ namespace UnityEngine.Experimental.UIElements
 			}
 			set
 			{
-				if (VisualElement.ApplyAndCompare<Texture2D>(ref this.inlineStyle.backgroundImage, value))
+				if (StyleValueUtils.ApplyAndCompare<Texture2D>(ref this.inlineStyle.backgroundImage, value))
 				{
 					this.Dirty(ChangeType.Repaint);
 				}
@@ -1307,7 +1456,7 @@ namespace UnityEngine.Experimental.UIElements
 			}
 			set
 			{
-				if (VisualElement.ApplyAndCompare(ref this.inlineStyle.backgroundSize, new StyleValue<int>((int)value.value, value.specificity)))
+				if (StyleValueUtils.ApplyAndCompare(ref this.inlineStyle.backgroundSize, new StyleValue<int>((int)value.value, value.specificity)))
 				{
 					this.Dirty(ChangeType.Repaint);
 				}
@@ -1322,7 +1471,7 @@ namespace UnityEngine.Experimental.UIElements
 			}
 			set
 			{
-				if (VisualElement.ApplyAndCompare(ref this.inlineStyle.alignItems, new StyleValue<int>((int)value.value, value.specificity)))
+				if (StyleValueUtils.ApplyAndCompare(ref this.inlineStyle.alignItems, new StyleValue<int>((int)value.value, value.specificity)))
 				{
 					this.Dirty(ChangeType.Layout);
 					this.cssNode.AlignItems = (CSSAlign)value.value;
@@ -1338,7 +1487,7 @@ namespace UnityEngine.Experimental.UIElements
 			}
 			set
 			{
-				if (VisualElement.ApplyAndCompare(ref this.inlineStyle.alignContent, new StyleValue<int>((int)value.value, value.specificity)))
+				if (StyleValueUtils.ApplyAndCompare(ref this.inlineStyle.alignContent, new StyleValue<int>((int)value.value, value.specificity)))
 				{
 					this.Dirty(ChangeType.Layout);
 					this.cssNode.AlignContent = (CSSAlign)value.value;
@@ -1354,7 +1503,7 @@ namespace UnityEngine.Experimental.UIElements
 			}
 			set
 			{
-				if (VisualElement.ApplyAndCompare(ref this.inlineStyle.justifyContent, new StyleValue<int>((int)value.value, value.specificity)))
+				if (StyleValueUtils.ApplyAndCompare(ref this.inlineStyle.justifyContent, new StyleValue<int>((int)value.value, value.specificity)))
 				{
 					this.Dirty(ChangeType.Layout);
 					this.cssNode.JustifyContent = (CSSJustify)value.value;
@@ -1370,7 +1519,7 @@ namespace UnityEngine.Experimental.UIElements
 			}
 			set
 			{
-				if (VisualElement.ApplyAndCompare(ref this.inlineStyle.flexWrap, new StyleValue<int>((int)value.value, value.specificity)))
+				if (StyleValueUtils.ApplyAndCompare(ref this.inlineStyle.flexWrap, new StyleValue<int>((int)value.value, value.specificity)))
 				{
 					this.Dirty(ChangeType.Layout);
 					this.cssNode.Wrap = (CSSWrap)value.value;
@@ -1386,7 +1535,7 @@ namespace UnityEngine.Experimental.UIElements
 			}
 			set
 			{
-				if (VisualElement.ApplyAndCompare(ref this.inlineStyle.sliceLeft, value))
+				if (StyleValueUtils.ApplyAndCompare(ref this.inlineStyle.sliceLeft, value))
 				{
 					this.Dirty(ChangeType.Repaint);
 				}
@@ -1401,7 +1550,7 @@ namespace UnityEngine.Experimental.UIElements
 			}
 			set
 			{
-				if (VisualElement.ApplyAndCompare(ref this.inlineStyle.sliceTop, value))
+				if (StyleValueUtils.ApplyAndCompare(ref this.inlineStyle.sliceTop, value))
 				{
 					this.Dirty(ChangeType.Repaint);
 				}
@@ -1416,7 +1565,7 @@ namespace UnityEngine.Experimental.UIElements
 			}
 			set
 			{
-				if (VisualElement.ApplyAndCompare(ref this.inlineStyle.sliceRight, value))
+				if (StyleValueUtils.ApplyAndCompare(ref this.inlineStyle.sliceRight, value))
 				{
 					this.Dirty(ChangeType.Repaint);
 				}
@@ -1431,7 +1580,7 @@ namespace UnityEngine.Experimental.UIElements
 			}
 			set
 			{
-				if (VisualElement.ApplyAndCompare(ref this.inlineStyle.sliceBottom, value))
+				if (StyleValueUtils.ApplyAndCompare(ref this.inlineStyle.sliceBottom, value))
 				{
 					this.Dirty(ChangeType.Repaint);
 				}
@@ -1446,10 +1595,22 @@ namespace UnityEngine.Experimental.UIElements
 			}
 			set
 			{
-				if (VisualElement.ApplyAndCompare(ref this.inlineStyle.opacity, value))
+				if (StyleValueUtils.ApplyAndCompare(ref this.inlineStyle.opacity, value))
 				{
 					this.Dirty(ChangeType.Repaint);
 				}
+			}
+		}
+
+		StyleValue<CursorStyle> IStyle.cursor
+		{
+			get
+			{
+				return this.effectiveStyle.cursor;
+			}
+			set
+			{
+				StyleValueUtils.ApplyAndCompare(ref this.inlineStyle.cursor, value);
 			}
 		}
 
@@ -1498,18 +1659,6 @@ namespace UnityEngine.Experimental.UIElements
 			{
 				return (this.panel != null) ? this.panel.focusController : null;
 			}
-		}
-
-		public bool usePixelCaching
-		{
-			get;
-			set;
-		}
-
-		internal bool forceVisible
-		{
-			get;
-			set;
 		}
 
 		internal RenderData renderData
@@ -1567,7 +1716,7 @@ namespace UnityEngine.Experimental.UIElements
 					((IStyle)this).positionBottom = float.NaN;
 					((IStyle)this).width = value.width;
 					((IStyle)this).height = value.height;
-					this.Dirty(ChangeType.Layout);
+					this.Dirty(ChangeType.Transform);
 				}
 			}
 		}
@@ -1586,7 +1735,7 @@ namespace UnityEngine.Experimental.UIElements
 			get
 			{
 				Spacing a = new Spacing(this.style.borderLeftWidth, this.style.borderTopWidth, this.style.borderRightWidth, this.style.borderBottomWidth);
-				return this.layout - a;
+				return this.rect - a;
 			}
 		}
 
@@ -1595,8 +1744,8 @@ namespace UnityEngine.Experimental.UIElements
 			get
 			{
 				Matrix4x4 worldTransform = this.worldTransform;
-				Vector3 vector = worldTransform.MultiplyPoint3x4(this.layout.min);
-				Vector3 vector2 = worldTransform.MultiplyPoint3x4(this.layout.max);
+				Vector3 vector = worldTransform.MultiplyPoint3x4(this.rect.min);
+				Vector3 vector2 = worldTransform.MultiplyPoint3x4(this.rect.max);
 				return Rect.MinMaxRect(Math.Min(vector.x, vector2.x), Math.Min(vector.y, vector2.y), Math.Max(vector.x, vector2.x), Math.Max(vector.y, vector2.y));
 			}
 		}
@@ -1612,19 +1761,28 @@ namespace UnityEngine.Experimental.UIElements
 			}
 		}
 
+		internal Rect rect
+		{
+			get
+			{
+				return new Rect(0f, 0f, this.layout.width, this.layout.height);
+			}
+		}
+
 		public Matrix4x4 worldTransform
 		{
 			get
 			{
 				if (this.IsDirty(ChangeType.Transform))
 				{
+					Matrix4x4 matrix4x = Matrix4x4.Translate(new Vector3(this.layout.x, this.layout.y, 0f));
 					if (this.shadow.parent != null)
 					{
-						this.renderData.worldTransForm = this.shadow.parent.worldTransform * Matrix4x4.Translate(new Vector3(this.shadow.parent.layout.x, this.shadow.parent.layout.y, 0f)) * this.transform.matrix;
+						this.renderData.worldTransForm = this.shadow.parent.worldTransform * matrix4x * this.transform.matrix;
 					}
 					else
 					{
-						this.renderData.worldTransForm = this.transform.matrix;
+						this.renderData.worldTransForm = matrix4x * this.transform.matrix;
 					}
 					this.ClearDirty(ChangeType.Transform);
 				}
@@ -1643,7 +1801,10 @@ namespace UnityEngine.Experimental.UIElements
 				if (this.m_PseudoStates != value)
 				{
 					this.m_PseudoStates = value;
-					this.Dirty(ChangeType.Styles);
+					if ((this.triggerPseudoMask & this.m_PseudoStates) != (PseudoStates)0 || (this.dependencyPseudoMask & ~(this.m_PseudoStates != (PseudoStates)0)) != (PseudoStates)0)
+					{
+						this.Dirty(ChangeType.Styles);
+					}
 				}
 			}
 		}
@@ -1750,26 +1911,6 @@ namespace UnityEngine.Experimental.UIElements
 			}
 		}
 
-		public string text
-		{
-			get
-			{
-				return this.m_Text ?? string.Empty;
-			}
-			set
-			{
-				if (!(this.m_Text == value))
-				{
-					this.m_Text = value;
-					this.Dirty(ChangeType.Layout);
-					if (!string.IsNullOrEmpty(this.persistenceKey))
-					{
-						this.SavePersistentData();
-					}
-				}
-			}
-		}
-
 		[Obsolete("enabled is deprecated. Use SetEnabled as setter, and enabledSelf/enabledInHierarchy as getters.", true)]
 		public virtual bool enabled
 		{
@@ -1832,10 +1973,20 @@ namespace UnityEngine.Experimental.UIElements
 			private set;
 		}
 
-		public bool clipChildren
+		public VisualElement.ClippingOptions clippingOptions
 		{
-			get;
-			set;
+			get
+			{
+				return this.m_ClippingOptions;
+			}
+			set
+			{
+				if (this.m_ClippingOptions != value)
+				{
+					this.m_ClippingOptions = value;
+					this.Dirty(ChangeType.Repaint);
+				}
+			}
 		}
 
 		public VisualElement parent
@@ -1909,7 +2060,7 @@ namespace UnityEngine.Experimental.UIElements
 			}
 		}
 
-		internal IEnumerable<StyleSheet> styleSheets
+		internal IList<StyleSheet> styleSheets
 		{
 			get
 			{
@@ -1935,10 +2086,10 @@ namespace UnityEngine.Experimental.UIElements
 			this.cssNode = new CSSNode();
 			this.cssNode.SetMeasureFunction(new MeasureFunction(this.Measure));
 			this.changesNeeded = ChangeType.All;
-			this.clipChildren = true;
+			this.clippingOptions = VisualElement.ClippingOptions.ClipContents;
 		}
 
-		public virtual void OnStyleResolved(ICustomStyle style)
+		protected virtual void OnStyleResolved(ICustomStyle style)
 		{
 			this.FinalizeLayout();
 		}
@@ -1946,7 +2097,11 @@ namespace UnityEngine.Experimental.UIElements
 		protected internal override void ExecuteDefaultAction(EventBase evt)
 		{
 			base.ExecuteDefaultAction(evt);
-			if (evt.GetEventTypeId() == EventBase<MouseEnterEvent>.TypeId())
+			if (evt.GetEventTypeId() == EventBase<MouseOverEvent>.TypeId() || evt.GetEventTypeId() == EventBase<MouseOutEvent>.TypeId())
+			{
+				this.UpdateCursorStyle(evt.GetEventTypeId());
+			}
+			else if (evt.GetEventTypeId() == EventBase<MouseEnterEvent>.TypeId())
 			{
 				this.pseudoStates |= PseudoStates.Hover;
 			}
@@ -1982,25 +2137,28 @@ namespace UnityEngine.Experimental.UIElements
 			{
 				if (this.panel != null)
 				{
-					DetachFromPanelEvent pooled = EventBase<DetachFromPanelEvent>.GetPooled();
-					pooled.target = this;
-					UIElementsUtility.eventDispatcher.DispatchEvent(pooled, this.panel);
-					EventBase<DetachFromPanelEvent>.ReleasePooled(pooled);
+					using (DetachFromPanelEvent pooled = EventBase<DetachFromPanelEvent>.GetPooled())
+					{
+						pooled.target = this;
+						UIElementsUtility.eventDispatcher.DispatchEvent(pooled, this.panel);
+					}
 				}
 				this.elementPanel = p;
 				if (this.panel != null)
 				{
-					AttachToPanelEvent pooled2 = EventBase<AttachToPanelEvent>.GetPooled();
-					pooled2.target = this;
-					UIElementsUtility.eventDispatcher.DispatchEvent(pooled2, this.panel);
-					EventBase<AttachToPanelEvent>.ReleasePooled(pooled2);
+					using (AttachToPanelEvent pooled2 = EventBase<AttachToPanelEvent>.GetPooled())
+					{
+						pooled2.target = this;
+						UIElementsUtility.eventDispatcher.DispatchEvent(pooled2, this.panel);
+					}
 				}
 				this.Dirty(ChangeType.Styles);
-				if (this.m_Children != null)
+				if (this.m_Children != null && this.m_Children.Count > 0)
 				{
-					foreach (VisualElement current in this.m_Children)
+					for (int i = 0; i < this.m_Children.Count; i++)
 					{
-						current.ChangePanel(p);
+						VisualElement visualElement = this.m_Children[i];
+						visualElement.ChangePanel(p);
 					}
 				}
 			}
@@ -2054,9 +2212,13 @@ namespace UnityEngine.Experimental.UIElements
 		{
 			if ((type & this.changesNeeded) != type)
 			{
-				if ((type & ChangeType.Layout) > (ChangeType)0 && this.cssNode != null && this.cssNode.IsMeasureDefined)
+				if ((type & ChangeType.Layout) > (ChangeType)0)
 				{
-					this.cssNode.MarkDirty();
+					if (this.cssNode != null && this.cssNode.IsMeasureDefined)
+					{
+						this.cssNode.MarkDirty();
+					}
+					type |= ChangeType.Repaint;
 				}
 				this.PropagateToChildren(type);
 				this.PropagateChangesToParents();
@@ -2069,6 +2231,11 @@ namespace UnityEngine.Experimental.UIElements
 		}
 
 		public bool IsDirty(ChangeType type)
+		{
+			return (this.changesNeeded & type) == type;
+		}
+
+		public bool AnyDirty(ChangeType type)
 		{
 			return (this.changesNeeded & type) > (ChangeType)0;
 		}
@@ -2100,7 +2267,7 @@ namespace UnityEngine.Experimental.UIElements
 			return result;
 		}
 
-		public virtual void SetEnabled(bool value)
+		public void SetEnabled(bool value)
 		{
 			if (this.m_Enabled != value)
 			{
@@ -2125,7 +2292,6 @@ namespace UnityEngine.Experimental.UIElements
 			IStylePainter stylePainter = this.elementPanel.stylePainter;
 			stylePainter.DrawBackground(this);
 			stylePainter.DrawBorder(this);
-			stylePainter.DrawText(this);
 		}
 
 		internal virtual void DoRepaint(IStylePainter painter)
@@ -2255,65 +2421,17 @@ namespace UnityEngine.Experimental.UIElements
 
 		public virtual bool ContainsPoint(Vector2 localPoint)
 		{
-			return this.layout.Contains(localPoint);
+			return this.rect.Contains(localPoint);
 		}
 
 		public virtual bool Overlaps(Rect rectangle)
 		{
-			return this.layout.Overlaps(rectangle, true);
+			return this.rect.Overlaps(rectangle, true);
 		}
 
 		protected internal virtual Vector2 DoMeasure(float width, VisualElement.MeasureMode widthMode, float height, VisualElement.MeasureMode heightMode)
 		{
-			IStylePainter stylePainter = this.elementPanel.stylePainter;
-			float num = float.NaN;
-			float num2 = float.NaN;
-			Font font = this.style.font;
-			Vector2 result;
-			if (this.m_Text == null || font == null)
-			{
-				result = new Vector2(num, num2);
-			}
-			else
-			{
-				if (widthMode == VisualElement.MeasureMode.Exactly)
-				{
-					num = width;
-				}
-				else
-				{
-					TextStylePainterParameters defaultTextParameters = stylePainter.GetDefaultTextParameters(this);
-					defaultTextParameters.text = this.text;
-					defaultTextParameters.font = font;
-					defaultTextParameters.wordWrapWidth = 0f;
-					defaultTextParameters.wordWrap = false;
-					defaultTextParameters.richText = true;
-					num = stylePainter.ComputeTextWidth(defaultTextParameters);
-					if (widthMode == VisualElement.MeasureMode.AtMost)
-					{
-						num = Mathf.Min(num, width);
-					}
-				}
-				if (heightMode == VisualElement.MeasureMode.Exactly)
-				{
-					num2 = height;
-				}
-				else
-				{
-					TextStylePainterParameters defaultTextParameters2 = stylePainter.GetDefaultTextParameters(this);
-					defaultTextParameters2.text = this.text;
-					defaultTextParameters2.font = font;
-					defaultTextParameters2.wordWrapWidth = num;
-					defaultTextParameters2.richText = true;
-					num2 = stylePainter.ComputeTextHeight(defaultTextParameters2);
-					if (heightMode == VisualElement.MeasureMode.AtMost)
-					{
-						num2 = Mathf.Min(num2, height);
-					}
-				}
-				result = new Vector2(num, num2);
-			}
-			return result;
+			return new Vector2(float.NaN, float.NaN);
 		}
 
 		internal long Measure(CSSNode node, float width, CSSMeasureMode widthMode, float height, CSSMeasureMode heightMode)
@@ -2334,6 +2452,9 @@ namespace UnityEngine.Experimental.UIElements
 		private void FinalizeLayout()
 		{
 			this.cssNode.Flex = this.style.flex.GetSpecifiedValueOrDefault(float.NaN);
+			this.cssNode.FlexBasis = this.style.flexBasis.GetSpecifiedValueOrDefault(float.NaN);
+			this.cssNode.FlexGrow = this.style.flexGrow.GetSpecifiedValueOrDefault(float.NaN);
+			this.cssNode.FlexShrink = this.style.flexShrink.GetSpecifiedValueOrDefault(float.NaN);
 			this.cssNode.SetPosition(CSSEdge.Left, this.style.positionLeft.GetSpecifiedValueOrDefault(float.NaN));
 			this.cssNode.SetPosition(CSSEdge.Top, this.style.positionTop.GetSpecifiedValueOrDefault(float.NaN));
 			this.cssNode.SetPosition(CSSEdge.Right, this.style.positionRight.GetSpecifiedValueOrDefault(float.NaN));
@@ -2376,6 +2497,7 @@ namespace UnityEngine.Experimental.UIElements
 			this.cssNode.JustifyContent = (CSSJustify)this.style.justifyContent.value;
 			this.cssNode.Wrap = (CSSWrap)this.style.flexWrap.value;
 			this.Dirty(ChangeType.Layout);
+			this.Dirty(ChangeType.Transform);
 		}
 
 		internal void SetInlineStyles(VisualElementStylesData inlineStyle)
@@ -2435,6 +2557,8 @@ namespace UnityEngine.Experimental.UIElements
 		{
 			return string.Concat(new object[]
 			{
+				base.GetType().Name,
+				" ",
 				this.name,
 				" ",
 				this.layout,
@@ -2495,6 +2619,21 @@ namespace UnityEngine.Experimental.UIElements
 			}
 			result = null;
 			return result;
+		}
+
+		private void UpdateCursorStyle(long eventType)
+		{
+			if (this.elementPanel != null)
+			{
+				if (eventType == EventBase<MouseOverEvent>.TypeId())
+				{
+					this.elementPanel.cursorManager.SetCursor(this.style.cursor.value);
+				}
+				else
+				{
+					this.elementPanel.cursorManager.ResetCursor();
+				}
+			}
 		}
 
 		IUIElementDataWatchRequest IUIElementDataWatch.RegisterWatch(UnityEngine.Object toWatch, Action<UnityEngine.Object> watchNotification)
@@ -2619,6 +2758,40 @@ namespace UnityEngine.Experimental.UIElements
 			}
 		}
 
+		public void BringToFront()
+		{
+			if (this.shadow.parent != null)
+			{
+				this.shadow.parent.shadow.BringToFront(this);
+			}
+		}
+
+		public void SendToBack()
+		{
+			if (this.shadow.parent != null)
+			{
+				this.shadow.parent.shadow.SendToBack(this);
+			}
+		}
+
+		public void PlaceBehind(VisualElement sibling)
+		{
+			if (this.shadow.parent == null || sibling.shadow.parent != this.shadow.parent)
+			{
+				throw new ArgumentException("VisualElements are not siblings");
+			}
+			this.shadow.parent.shadow.PlaceBehind(this, sibling);
+		}
+
+		public void PlaceInFront(VisualElement sibling)
+		{
+			if (this.shadow.parent == null || sibling.shadow.parent != this.shadow.parent)
+			{
+				throw new ArgumentException("VisualElements are not siblings");
+			}
+			this.shadow.parent.shadow.PlaceInFront(this, sibling);
+		}
+
 		public void RemoveFromHierarchy()
 		{
 			if (this.shadow.parent != null)
@@ -2674,6 +2847,51 @@ namespace UnityEngine.Experimental.UIElements
 			return result;
 		}
 
+		public VisualElement FindCommonAncestor(VisualElement other)
+		{
+			VisualElement result;
+			if (this.panel != other.panel)
+			{
+				result = null;
+			}
+			else
+			{
+				VisualElement visualElement = this;
+				int i = 0;
+				while (visualElement != null)
+				{
+					i++;
+					visualElement = visualElement.shadow.parent;
+				}
+				VisualElement visualElement2 = other;
+				int j = 0;
+				while (visualElement2 != null)
+				{
+					j++;
+					visualElement2 = visualElement2.shadow.parent;
+				}
+				visualElement = this;
+				visualElement2 = other;
+				while (i > j)
+				{
+					i--;
+					visualElement = visualElement.shadow.parent;
+				}
+				while (j > i)
+				{
+					j--;
+					visualElement2 = visualElement2.shadow.parent;
+				}
+				while (visualElement != visualElement2)
+				{
+					visualElement = visualElement.shadow.parent;
+					visualElement2 = visualElement2.shadow.parent;
+				}
+				result = visualElement;
+			}
+			return result;
+		}
+
 		public IEnumerator<VisualElement> GetEnumerator()
 		{
 			IEnumerator<VisualElement> enumerator;
@@ -2722,36 +2940,6 @@ namespace UnityEngine.Experimental.UIElements
 			return simpleScheduledItem;
 		}
 
-		private static bool ApplyAndCompare(ref StyleValue<float> current, StyleValue<float> other)
-		{
-			float value = current.value;
-			return current.Apply(other, StylePropertyApplyMode.CopyIfEqualOrGreaterSpecificity) && value != other.value;
-		}
-
-		private static bool ApplyAndCompare(ref StyleValue<int> current, StyleValue<int> other)
-		{
-			int value = current.value;
-			return current.Apply(other, StylePropertyApplyMode.CopyIfEqualOrGreaterSpecificity) && value != other.value;
-		}
-
-		private static bool ApplyAndCompare(ref StyleValue<bool> current, StyleValue<bool> other)
-		{
-			bool value = current.value;
-			return current.Apply(other, StylePropertyApplyMode.CopyIfEqualOrGreaterSpecificity) && value != other.value;
-		}
-
-		private static bool ApplyAndCompare(ref StyleValue<Color> current, StyleValue<Color> other)
-		{
-			Color value = current.value;
-			return current.Apply(other, StylePropertyApplyMode.CopyIfEqualOrGreaterSpecificity) && value != other.value;
-		}
-
-		private static bool ApplyAndCompare<T>(ref StyleValue<T> current, StyleValue<T> other) where T : UnityEngine.Object
-		{
-			T value = current.value;
-			return current.Apply(other, StylePropertyApplyMode.CopyIfEqualOrGreaterSpecificity) && value != other.value;
-		}
-
 		public void AddStyleSheetPath(string sheetPath)
 		{
 			if (this.m_StyleSheetPaths == null)
@@ -2780,6 +2968,24 @@ namespace UnityEngine.Experimental.UIElements
 		public bool HasStyleSheetPath(string sheetPath)
 		{
 			return this.m_StyleSheetPaths != null && this.m_StyleSheetPaths.Contains(sheetPath);
+		}
+
+		internal void ReplaceStyleSheetPath(string oldSheetPath, string newSheetPath)
+		{
+			if (this.m_StyleSheetPaths == null)
+			{
+				Debug.LogWarning("Attempting to replace a style from null style sheet path list");
+			}
+			else
+			{
+				int num = this.m_StyleSheetPaths.IndexOf(oldSheetPath);
+				if (num >= 0)
+				{
+					this.m_StyleSheetPaths[num] = newSheetPath;
+					this.m_StyleSheets = null;
+					this.Dirty(ChangeType.Styles);
+				}
+			}
 		}
 
 		internal void LoadStyleSheetsFromPaths()

@@ -2,7 +2,7 @@ using System;
 
 namespace UnityEngine.XR.Tango
 {
-	public enum SegmentChange
+	internal enum SegmentChange
 	{
 		Added,
 		Updated

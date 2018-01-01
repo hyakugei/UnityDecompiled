@@ -14,5 +14,10 @@ namespace UnityEditor.Scripting.Compilers
 		{
 			return string.Empty;
 		}
+
+		public virtual bool CompilerRequiresAdditionalReferences()
+		{
+			return false;
+		}
 	}
 }

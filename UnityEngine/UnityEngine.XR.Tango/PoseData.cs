@@ -6,7 +6,7 @@ namespace UnityEngine.XR.Tango
 {
 	[UsedByNativeCode]
 	[StructLayout(LayoutKind.Explicit, Size = 92)]
-	public struct PoseData
+	internal struct PoseData
 	{
 		[FieldOffset(0)]
 		public uint version;

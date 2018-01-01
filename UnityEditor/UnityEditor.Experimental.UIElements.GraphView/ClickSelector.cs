@@ -1,9 +1,10 @@
 using System;
+using UnityEngine;
 using UnityEngine.Experimental.UIElements;
 
 namespace UnityEditor.Experimental.UIElements.GraphView
 {
-	internal class ClickSelector : MouseManipulator
+	public class ClickSelector : MouseManipulator
 	{
 		public ClickSelector()
 		{
@@ -15,16 +16,26 @@ namespace UnityEditor.Experimental.UIElements.GraphView
 			{
 				button = MouseButton.RightMouse
 			});
+			base.activators.Add(new ManipulatorActivationFilter
+			{
+				button = MouseButton.LeftMouse,
+				modifiers = EventModifiers.Control
+			});
+			base.activators.Add(new ManipulatorActivationFilter
+			{
+				button = MouseButton.LeftMouse,
+				modifiers = EventModifiers.Shift
+			});
 		}
 
 		protected override void RegisterCallbacksOnTarget()
 		{
-			base.target.RegisterCallback<MouseDownEvent>(new EventCallback<MouseDownEvent>(this.OnMouseDown), Capture.Capture);
+			base.target.RegisterCallback<MouseDownEvent>(new EventCallback<MouseDownEvent>(this.OnMouseDown), Capture.NoCapture);
 		}
 
 		protected override void UnregisterCallbacksFromTarget()
 		{
-			base.target.UnregisterCallback<MouseDownEvent>(new EventCallback<MouseDownEvent>(this.OnMouseDown), Capture.Capture);
+			base.target.UnregisterCallback<MouseDownEvent>(new EventCallback<MouseDownEvent>(this.OnMouseDown), Capture.NoCapture);
 		}
 
 		protected void OnMouseDown(MouseDownEvent e)
@@ -33,18 +44,25 @@ namespace UnityEditor.Experimental.UIElements.GraphView
 			{
 				if (base.CanStartManipulation(e))
 				{
-					GraphElement graphElement = e.currentTarget as GraphElement;
-					if (graphElement != null)
+					if ((base.target as ISelectable).HitTest(e.localMousePosition))
 					{
-						VisualElement parent = graphElement.shadow.parent;
-						while (parent != null && !(parent is GraphView))
+						GraphElement graphElement = e.currentTarget as GraphElement;
+						if (graphElement != null)
 						{
-							parent = parent.shadow.parent;
-						}
-						GraphView selectionContainer = parent as GraphView;
-						if (!graphElement.IsSelected(selectionContainer))
-						{
-							graphElement.Select(selectionContainer, e.shiftKey || e.ctrlKey);
+							VisualElement parent = graphElement.shadow.parent;
+							while (parent != null && !(parent is GraphView))
+							{
+								parent = parent.shadow.parent;
+							}
+							GraphView selectionContainer = parent as GraphView;
+							if (graphElement.IsSelected(selectionContainer) && e.ctrlKey)
+							{
+								graphElement.Unselect(selectionContainer);
+							}
+							else
+							{
+								graphElement.Select(selectionContainer, e.shiftKey || e.ctrlKey);
+							}
 						}
 					}
 				}

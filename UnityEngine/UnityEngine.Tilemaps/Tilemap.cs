@@ -1,7 +1,6 @@
 using System;
 using System.Runtime.CompilerServices;
 using UnityEngine.Bindings;
-using UnityEngine.Scripting;
 
 namespace UnityEngine.Tilemaps
 {
@@ -250,6 +249,14 @@ namespace UnityEngine.Tilemaps
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern int GetUsedTilesCount();
 
+		public int GetUsedTilesNonAlloc(TileBase[] usedTiles)
+		{
+			return this.Internal_GetUsedTilesNonAlloc(usedTiles);
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern int Internal_GetUsedTilesNonAlloc(UnityEngine.Object[] usedTiles);
+
 		public Sprite GetSprite(Vector3Int position)
 		{
 			return this.GetSprite_Injected(ref position);
@@ -429,10 +436,6 @@ namespace UnityEngine.Tilemaps
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern void ClearAllEditorPreviewTiles();
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern int GetUsedTilesNonAlloc(TileBase[] usedTiles);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern void get_localBounds_Injected(out Bounds ret);

@@ -7,20 +7,29 @@ namespace UnityEditorInternal.VersionControl
 {
 	public class AssetModificationHook
 	{
-		private static Asset GetStatusCachedIfPossible(string from)
+		private enum CachedStatusMode
+		{
+			Sync,
+			Async
+		}
+
+		private static Asset GetStatusCachedIfPossible(string from, AssetModificationHook.CachedStatusMode mode)
 		{
 			Asset asset = Provider.CacheStatus(from);
 			if (asset == null || asset.IsState(Asset.States.Updating))
 			{
-				Task task = Provider.Status(from, false);
-				task.Wait();
-				if (task.success)
+				if (mode == AssetModificationHook.CachedStatusMode.Sync)
 				{
-					asset = Provider.CacheStatus(from);
-				}
-				else
-				{
-					asset = null;
+					Task task = Provider.Status(from, false);
+					task.Wait();
+					if (task.success)
+					{
+						asset = Provider.CacheStatus(from);
+					}
+					else
+					{
+						asset = null;
+					}
 				}
 			}
 			return asset;
@@ -42,7 +51,7 @@ namespace UnityEditorInternal.VersionControl
 			}
 			else
 			{
-				Asset statusCachedIfPossible = AssetModificationHook.GetStatusCachedIfPossible(from);
+				Asset statusCachedIfPossible = AssetModificationHook.GetStatusCachedIfPossible(from, AssetModificationHook.CachedStatusMode.Sync);
 				if (statusCachedIfPossible == null || !statusCachedIfPossible.IsUnderVersionControl)
 				{
 					result = AssetMoveResult.DidNotMove;
@@ -108,7 +117,16 @@ namespace UnityEditorInternal.VersionControl
 			}
 			else
 			{
-				Asset asset = (statusOptions != StatusQueryOptions.UseCachedIfPossible) ? AssetModificationHook.GetStatusForceUpdate(assetPath) : AssetModificationHook.GetStatusCachedIfPossible(assetPath);
+				Asset asset;
+				if (statusOptions == StatusQueryOptions.UseCachedIfPossible || statusOptions == StatusQueryOptions.UseCachedAsync)
+				{
+					AssetModificationHook.CachedStatusMode mode = (statusOptions != StatusQueryOptions.UseCachedAsync) ? AssetModificationHook.CachedStatusMode.Sync : AssetModificationHook.CachedStatusMode.Async;
+					asset = AssetModificationHook.GetStatusCachedIfPossible(assetPath, mode);
+				}
+				else
+				{
+					asset = AssetModificationHook.GetStatusForceUpdate(assetPath);
+				}
 				if (asset == null)
 				{
 					if (Provider.onlineState == OnlineState.Offline && Provider.offlineReason != string.Empty)

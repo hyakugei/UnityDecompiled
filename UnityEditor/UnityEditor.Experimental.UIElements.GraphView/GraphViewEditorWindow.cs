@@ -4,7 +4,7 @@ using UnityEngine.Experimental.UIElements;
 
 namespace UnityEditor.Experimental.UIElements.GraphView
 {
-	internal abstract class GraphViewEditorWindow : EditorWindow
+	public abstract class GraphViewEditorWindow : EditorWindow
 	{
 		private GraphViewPresenter m_Presenter;
 

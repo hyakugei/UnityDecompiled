@@ -13,10 +13,10 @@ namespace UnityEditor.Experimental.Build.AssetBundle
 			return result;
 		}
 
-		public static SceneLoadInfo PrepareScene(string scenePath, BuildSettings settings, string outputFolder)
+		public static SceneLoadInfo PrepareScene(string scenePath, BuildSettings settings, string outputFolder, BuildUsageTagSet usageSet)
 		{
 			SceneLoadInfo result;
-			BundleBuildInterface.PrepareScene_Injected(scenePath, ref settings, outputFolder, out result);
+			BundleBuildInterface.PrepareScene_Injected(scenePath, ref settings, outputFolder, usageSet, out result);
 			return result;
 		}
 
@@ -33,6 +33,11 @@ namespace UnityEditor.Experimental.Build.AssetBundle
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern ObjectIdentifier[] GetPlayerDependenciesForObjects(ObjectIdentifier[] objectIDs, BuildTarget target, TypeDB typeDB);
 
+		public static void CalculateBuildUsageTags(ObjectIdentifier[] objectIDs, ObjectIdentifier[] dependentObjectIDs, BuildUsageTagGlobal globalUsage, BuildUsageTagSet usageSet)
+		{
+			BundleBuildInterface.CalculateBuildUsageTags_Injected(objectIDs, dependentObjectIDs, ref globalUsage, usageSet);
+		}
+
 		public static Type GetTypeForObject(ObjectIdentifier objectID)
 		{
 			return BundleBuildInterface.GetTypeForObject_Injected(ref objectID);
@@ -41,24 +46,24 @@ namespace UnityEditor.Experimental.Build.AssetBundle
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern Type[] GetTypeForObjects(ObjectIdentifier[] objectIDs);
 
-		public static BuildOutput WriteResourceFilesForBundle(BuildCommandSet commands, string bundleName, BuildSettings settings, string outputFolder)
+		public static BuildOutput WriteResourceFilesForBundle(BuildCommandSet commands, string bundleName, BuildSettings settings, BuildUsageTagSet usageSet, string outputFolder)
 		{
 			BuildOutput result;
-			BundleBuildInterface.WriteResourceFilesForBundle_Injected(ref commands, bundleName, ref settings, outputFolder, out result);
+			BundleBuildInterface.WriteResourceFilesForBundle_Injected(commands, bundleName, ref settings, usageSet, outputFolder, out result);
 			return result;
 		}
 
-		public static BuildOutput WriteResourceFilesForBundles(BuildCommandSet commands, string[] bundleNames, BuildSettings settings, string outputFolder)
+		public static BuildOutput WriteResourceFilesForBundles(BuildCommandSet commands, string[] bundleNames, BuildSettings settings, BuildUsageTagSet usageSet, string outputFolder)
 		{
 			BuildOutput result;
-			BundleBuildInterface.WriteResourceFilesForBundles_Injected(ref commands, bundleNames, ref settings, outputFolder, out result);
+			BundleBuildInterface.WriteResourceFilesForBundles_Injected(commands, bundleNames, ref settings, usageSet, outputFolder, out result);
 			return result;
 		}
 
-		public static BuildOutput WriteAllResourceFiles(BuildCommandSet commands, BuildSettings settings, string outputFolder)
+		public static BuildOutput WriteAllResourceFiles(BuildCommandSet commands, BuildSettings settings, BuildUsageTagSet usageSet, string outputFolder)
 		{
 			BuildOutput result;
-			BundleBuildInterface.WriteAllResourceFiles_Injected(ref commands, ref settings, outputFolder, out result);
+			BundleBuildInterface.WriteAllResourceFiles_Injected(commands, ref settings, usageSet, outputFolder, out result);
 			return result;
 		}
 
@@ -71,7 +76,7 @@ namespace UnityEditor.Experimental.Build.AssetBundle
 		private static extern void GenerateBuildInput_Injected(out BuildInput ret);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void PrepareScene_Injected(string scenePath, ref BuildSettings settings, string outputFolder, out SceneLoadInfo ret);
+		private static extern void PrepareScene_Injected(string scenePath, ref BuildSettings settings, string outputFolder, BuildUsageTagSet usageSet, out SceneLoadInfo ret);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern ObjectIdentifier[] GetPlayerObjectIdentifiersInAsset_Injected(ref GUID asset, BuildTarget target);
@@ -80,16 +85,19 @@ namespace UnityEditor.Experimental.Build.AssetBundle
 		private static extern ObjectIdentifier[] GetPlayerDependenciesForObject_Injected(ref ObjectIdentifier objectID, BuildTarget target, TypeDB typeDB);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void CalculateBuildUsageTags_Injected(ObjectIdentifier[] objectIDs, ObjectIdentifier[] dependentObjectIDs, ref BuildUsageTagGlobal globalUsage, BuildUsageTagSet usageSet);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern Type GetTypeForObject_Injected(ref ObjectIdentifier objectID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void WriteResourceFilesForBundle_Injected(ref BuildCommandSet commands, string bundleName, ref BuildSettings settings, string outputFolder, out BuildOutput ret);
+		private static extern void WriteResourceFilesForBundle_Injected(BuildCommandSet commands, string bundleName, ref BuildSettings settings, BuildUsageTagSet usageSet, string outputFolder, out BuildOutput ret);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void WriteResourceFilesForBundles_Injected(ref BuildCommandSet commands, string[] bundleNames, ref BuildSettings settings, string outputFolder, out BuildOutput ret);
+		private static extern void WriteResourceFilesForBundles_Injected(BuildCommandSet commands, string[] bundleNames, ref BuildSettings settings, BuildUsageTagSet usageSet, string outputFolder, out BuildOutput ret);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void WriteAllResourceFiles_Injected(ref BuildCommandSet commands, ref BuildSettings settings, string outputFolder, out BuildOutput ret);
+		private static extern void WriteAllResourceFiles_Injected(BuildCommandSet commands, ref BuildSettings settings, BuildUsageTagSet usageSet, string outputFolder, out BuildOutput ret);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern uint ArchiveAndCompress_Injected(ResourceFile[] resourceFiles, string outputBundlePath, ref BuildCompression compression);

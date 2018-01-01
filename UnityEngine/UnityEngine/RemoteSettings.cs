@@ -36,8 +36,34 @@ namespace UnityEngine
 			}
 		}
 
+		public static event Action BeforeFetchFromServer
+		{
+			add
+			{
+				Action action = RemoteSettings.BeforeFetchFromServer;
+				Action action2;
+				do
+				{
+					action2 = action;
+					action = Interlocked.CompareExchange<Action>(ref RemoteSettings.BeforeFetchFromServer, (Action)Delegate.Combine(action2, value), action);
+				}
+				while (action != action2);
+			}
+			remove
+			{
+				Action action = RemoteSettings.BeforeFetchFromServer;
+				Action action2;
+				do
+				{
+					action2 = action;
+					action = Interlocked.CompareExchange<Action>(ref RemoteSettings.BeforeFetchFromServer, (Action)Delegate.Remove(action2, value), action);
+				}
+				while (action != action2);
+			}
+		}
+
 		[RequiredByNativeCode]
-		public static void CallOnUpdate()
+		internal static void RemoteSettingsUpdated(bool wasLastUpdatedFromServer)
 		{
 			RemoteSettings.UpdatedEventHandler updated = RemoteSettings.Updated;
 			if (updated != null)
@@ -46,63 +72,79 @@ namespace UnityEngine
 			}
 		}
 
-		[GeneratedByOldBindingsGenerator]
+		[RequiredByNativeCode]
+		internal static void RemoteSettingsBeforeFetchFromServer()
+		{
+			Action beforeFetchFromServer = RemoteSettings.BeforeFetchFromServer;
+			if (beforeFetchFromServer != null)
+			{
+				beforeFetchFromServer();
+			}
+		}
+
+		[Obsolete("Calling CallOnUpdate() is not necessary any more and should be removed. Use RemoteSettingsUpdated instead", true)]
+		public static void CallOnUpdate()
+		{
+			throw new NotSupportedException("Calling CallOnUpdate() is not necessary any more and should be removed.");
+		}
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void ForceUpdate();
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern int GetInt(string key, [DefaultValue("0")] int defaultValue);
+		public static extern bool WasLastUpdatedFromServer();
 
 		[ExcludeFromDocs]
 		public static int GetInt(string key)
 		{
-			int defaultValue = 0;
-			return RemoteSettings.GetInt(key, defaultValue);
+			return RemoteSettings.GetInt(key, 0);
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern float GetFloat(string key, [DefaultValue("0.0F")] float defaultValue);
+		public static extern int GetInt(string key, [DefaultValue("0")] int defaultValue);
+
+		[ExcludeFromDocs]
+		public static long GetLong(string key)
+		{
+			return RemoteSettings.GetLong(key, 0L);
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern long GetLong(string key, [DefaultValue("0")] long defaultValue);
 
 		[ExcludeFromDocs]
 		public static float GetFloat(string key)
 		{
-			float defaultValue = 0f;
-			return RemoteSettings.GetFloat(key, defaultValue);
+			return RemoteSettings.GetFloat(key, 0f);
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern string GetString(string key, [DefaultValue("\"\"")] string defaultValue);
+		public static extern float GetFloat(string key, [DefaultValue("0.0F")] float defaultValue);
 
 		[ExcludeFromDocs]
 		public static string GetString(string key)
 		{
-			string defaultValue = "";
-			return RemoteSettings.GetString(key, defaultValue);
+			return RemoteSettings.GetString(key, "");
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern bool GetBool(string key, [DefaultValue("false")] bool defaultValue);
+		public static extern string GetString(string key, [DefaultValue("\"\"")] string defaultValue);
 
 		[ExcludeFromDocs]
 		public static bool GetBool(string key)
 		{
-			bool defaultValue = false;
-			return RemoteSettings.GetBool(key, defaultValue);
+			return RemoteSettings.GetBool(key, false);
 		}
 
-		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern bool GetBool(string key, [DefaultValue("false")] bool defaultValue);
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern bool HasKey(string key);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern int GetCount();
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern string[] GetKeys();
 	}

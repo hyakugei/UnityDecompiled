@@ -36,6 +36,8 @@ namespace UnityEngine.Experimental.UIElements
 
 		private readonly List<ScheduledItem> m_UnscheduleTransactions = new List<ScheduledItem>();
 
+		internal bool disableThrottling = false;
+
 		private int m_LastUpdatedIndex = -1;
 
 		public void Schedule(IScheduledItem item)
@@ -135,7 +137,7 @@ namespace UnityEngine.Experimental.UIElements
 			try
 			{
 				this.m_TransactionMode = true;
-				long num = (long)(Time.realtimeSinceStartup * 1000f);
+				long num = Panel.TimeSinceStartupMs();
 				int count = this.m_ScheduledItems.Count;
 				long num2 = num + 20L;
 				int num3 = this.m_LastUpdatedIndex + 1;
@@ -145,8 +147,8 @@ namespace UnityEngine.Experimental.UIElements
 				}
 				for (int i = 0; i < count; i++)
 				{
-					num = (long)(Time.realtimeSinceStartup * 1000f);
-					if (num >= num2)
+					num = Panel.TimeSinceStartupMs();
+					if (!this.disableThrottling && num >= num2)
 					{
 						break;
 					}

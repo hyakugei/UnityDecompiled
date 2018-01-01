@@ -1,3 +1,4 @@
+using Mono.Cecil;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -5,10 +6,12 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEditor.Modules;
 using UnityEditorInternal;
+using UnityEngine;
 using UnityEngine.Scripting;
 
 namespace UnityEditor
 {
+	[ExcludeFromPreset]
 	public sealed class PluginImporter : AssetImporter
 	{
 		public delegate bool IncludeInBuildDelegate(string path);
@@ -28,27 +31,17 @@ namespace UnityEditor
 		}
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern bool GetCompatibleWithPlatformOrAnyPlatformBuildTarget(string buildTarget);
+		internal extern bool GetCompatibleWithPlatformOrAnyPlatformBuildTarget(string buildTarget);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern bool GetCompatibleWithPlatformOrAnyPlatformBuildGroupAndTarget(string buildTargetGroup, string buildTarget);
-
-		private static bool IsCompatible(PluginImporter imp, string buildTarget)
-		{
-			return !string.IsNullOrEmpty(imp.assetPath) && imp.GetCompatibleWithPlatformOrAnyPlatformBuildTarget(buildTarget) && imp.ShouldIncludeInBuild();
-		}
-
-		private static bool IsCompatible(PluginImporter imp, string buildTargetGroup, string buildTarget)
-		{
-			return !string.IsNullOrEmpty(imp.assetPath) && imp.GetCompatibleWithPlatformOrAnyPlatformBuildGroupAndTarget(buildTargetGroup, buildTarget) && imp.ShouldIncludeInBuild();
-		}
 
 		public static PluginImporter[] GetImporters(string platformName)
 		{
 			List<PluginImporter> list = new List<PluginImporter>();
 			Dictionary<string, PluginImporter> dictionary = new Dictionary<string, PluginImporter>();
 			PluginImporter[] array = (from imp in PluginImporter.GetAllImporters()
-			where PluginImporter.IsCompatible(imp, platformName)
+			where imp.GetCompatibleWithPlatformOrAnyPlatformBuildTarget(platformName)
 			select imp).ToArray<PluginImporter>();
 			IPluginImporterExtension pluginImporterExtension = ModuleManager.GetPluginImporterExtension(platformName);
 			if (pluginImporterExtension == null)
@@ -98,6 +91,25 @@ namespace UnityEditor
 			return result;
 		}
 
+		internal string HasDiscouragedReferences()
+		{
+			string result;
+			if (!this.isNativePlugin)
+			{
+				AssemblyDefinition assemblyDefinition = AssemblyDefinition.ReadAssembly(base.assetPath, new ReaderParameters());
+				foreach (AssemblyNameReference current in assemblyDefinition.MainModule.AssemblyReferences)
+				{
+					if (current.Name.StartsWith("UnityEngine.") && current.Name.EndsWith("Module"))
+					{
+						result = current.Name;
+						return result;
+					}
+				}
+			}
+			result = null;
+			return result;
+		}
+
 		public static PluginImporter[] GetImporters(BuildTarget platform)
 		{
 			return PluginImporter.GetImporters(BuildPipeline.GetBuildTargetName(platform));
@@ -106,7 +118,7 @@ namespace UnityEditor
 		public static PluginImporter[] GetImporters(string buildTargetGroup, string buildTarget)
 		{
 			return (from imp in PluginImporter.GetAllImporters()
-			where PluginImporter.IsCompatible(imp, buildTargetGroup, buildTarget)
+			where imp.GetCompatibleWithPlatformOrAnyPlatformBuildGroupAndTarget(buildTargetGroup, buildTarget)
 			select imp).ToArray<PluginImporter>();
 		}
 

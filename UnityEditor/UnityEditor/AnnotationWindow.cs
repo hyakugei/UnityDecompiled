@@ -86,13 +86,13 @@ namespace UnityEditor
 
 		private GUIContent iconSelectContent = new GUIContent("", "Select Icon");
 
-		private GUIContent icon3dGizmoContent = new GUIContent("3D Icons");
+		private GUIContent icon3dGizmoContent = EditorGUIUtility.TrTextContent("3D Icons", null, null);
 
-		private GUIContent showGridContent = new GUIContent("Show Grid");
+		private GUIContent showGridContent = EditorGUIUtility.TrTextContent("Show Grid", null, null);
 
-		private GUIContent showOutlineContent = new GUIContent("Selection Outline");
+		private GUIContent showOutlineContent = EditorGUIUtility.TrTextContent("Selection Outline", null, null);
 
-		private GUIContent showWireframeContent = new GUIContent("Selection Wire");
+		private GUIContent showWireframeContent = EditorGUIUtility.TrTextContent("Selection Wire", null, null);
 
 		private bool m_IsGameView;
 
@@ -236,7 +236,7 @@ namespace UnityEditor
 			float num = 2f + this.GetTopSectionHeight() + this.DrawNormalList(false, 100f, 0f, 10000f);
 			num = Mathf.Min(num, 900f);
 			Vector2 windowSize = new Vector2(270f, num);
-			base.ShowAsDropDown(buttonRect, windowSize);
+			base.ShowAsDropDown(buttonRect, windowSize, null, ShowMode.PopupMenuWithKeyboardFocus);
 		}
 
 		private void IconHasChanged()
@@ -457,9 +457,9 @@ namespace UnityEditor
 			bool flag = true;
 			float y = 0f;
 			bool flag2 = false;
-			y = this.DrawListSection(y, "Recently Changed", this.m_RecentAnnotations, doDraw, listElementWidth, startY, endY, ref flag, true, ref flag2);
-			y = this.DrawListSection(y, "Scripts", this.m_ScriptAnnotations, doDraw, listElementWidth, startY, endY, ref flag, false, ref flag2);
-			return this.DrawListSection(y, "Built-in Components", this.m_BuiltinAnnotations, doDraw, listElementWidth, startY, endY, ref flag, false, ref flag2);
+			y = this.DrawListSection(y, L10n.Tr("Recently Changed"), this.m_RecentAnnotations, doDraw, listElementWidth, startY, endY, ref flag, true, ref flag2);
+			y = this.DrawListSection(y, L10n.Tr("Scripts"), this.m_ScriptAnnotations, doDraw, listElementWidth, startY, endY, ref flag, false, ref flag2);
+			return this.DrawListSection(y, L10n.Tr("Built-in Components"), this.m_BuiltinAnnotations, doDraw, listElementWidth, startY, endY, ref flag, false, ref flag2);
 		}
 
 		private float DrawListSection(float y, string sectionHeader, List<AInfo> listElements, bool doDraw, float listElementWidth, float startY, float endY, ref bool even, bool useSeperator, ref bool headerDrawn)

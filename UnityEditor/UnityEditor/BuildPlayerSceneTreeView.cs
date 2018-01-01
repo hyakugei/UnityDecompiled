@@ -204,8 +204,8 @@ namespace UnityEditor
 		protected override void DoubleClickedItem(int id)
 		{
 			BuildPlayerSceneTreeViewItem buildPlayerSceneTreeViewItem = base.FindItem(id, base.rootItem) as BuildPlayerSceneTreeViewItem;
-			int instanceIDFromGUID = AssetDatabase.GetInstanceIDFromGUID(AssetDatabase.AssetPathToGUID(buildPlayerSceneTreeViewItem.fullName));
-			EditorGUIUtility.PingObject(instanceIDFromGUID);
+			int mainAssetOrInProgressProxyInstanceID = AssetDatabase.GetMainAssetOrInProgressProxyInstanceID(buildPlayerSceneTreeViewItem.fullName);
+			EditorGUIUtility.PingObject(mainAssetOrInProgressProxyInstanceID);
 		}
 
 		protected int FindDropAtIndex(TreeView.DragAndDropArgs args)
@@ -246,7 +246,7 @@ namespace UnityEditor
 			if (base.GetSelection().Count > 0)
 			{
 				GenericMenu genericMenu = new GenericMenu();
-				genericMenu.AddItem(new GUIContent("Remove Selection"), false, new GenericMenu.MenuFunction(this.RemoveSelection));
+				genericMenu.AddItem(EditorGUIUtility.TrTextContent("Remove Selection", null, null), false, new GenericMenu.MenuFunction(this.RemoveSelection));
 				genericMenu.ShowAsContext();
 			}
 		}

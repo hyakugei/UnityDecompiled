@@ -154,11 +154,11 @@ namespace UnityEngine
 
 		private static int s_HotTextField;
 
-		private static readonly int s_BoxHash;
-
 		private static readonly int s_RepeatButtonHash;
 
 		private static readonly int s_ToggleHash;
+
+		private static readonly int s_ButtonGridHash;
 
 		private static readonly int s_SliderHash;
 
@@ -356,9 +356,9 @@ namespace UnityEngine
 		{
 			GUI.s_ScrollStepSize = 10f;
 			GUI.s_HotTextField = -1;
-			GUI.s_BoxHash = "Box".GetHashCode();
 			GUI.s_RepeatButtonHash = "repeatButton".GetHashCode();
 			GUI.s_ToggleHash = "Toggle".GetHashCode();
+			GUI.s_ButtonGridHash = "ButtonGrid".GetHashCode();
 			GUI.s_SliderHash = "Slider".GetHashCode();
 			GUI.s_BeginGroupHash = "BeginGroup".GetHashCode();
 			GUI.s_ScrollviewHash = "scrollView".GetHashCode();
@@ -591,10 +591,9 @@ namespace UnityEngine
 		public static void Box(Rect position, GUIContent content, GUIStyle style)
 		{
 			GUIUtility.CheckOnGUI();
-			int controlID = GUIUtility.GetControlID(GUI.s_BoxHash, FocusType.Passive);
 			if (Event.current.type == EventType.Repaint)
 			{
-				style.Draw(position, content, controlID);
+				style.Draw(position, content, false, false, false, false);
 			}
 		}
 
@@ -856,7 +855,7 @@ namespace UnityEngine
 						{
 							content.text = content.text.Substring(0, maxLength);
 						}
-						if (editor.keyboardOnScreen.done)
+						if (editor.keyboardOnScreen.status != TouchScreenKeyboard.Status.Visible)
 						{
 							editor.keyboardOnScreen = null;
 							GUI.changed = true;
@@ -1212,7 +1211,7 @@ namespace UnityEngine
 					{
 						GUI.SetNextControlName(controlNames[i]);
 					}
-					int controlID = GUIUtility.GetControlID(gUIContent, FocusType.Passive, rect);
+					int controlID = GUIUtility.GetControlID(GUI.s_ButtonGridHash, FocusType.Passive, rect);
 					if (i == selected)
 					{
 						num5 = controlID;

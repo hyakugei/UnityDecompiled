@@ -206,7 +206,7 @@ namespace UnityEditor
 					List<AssemblyDefinition> list = new List<AssemblyDefinition>();
 					for (int k = 0; k < assemblyDefinitions.Length; k++)
 					{
-						if (AssemblyHelper.IsUnityEngineModule(assemblyDefinitions[k].Name.Name))
+						if (AssemblyHelper.IsUnityEngineModule(assemblyDefinitions[k]))
 						{
 							list.Add(assemblyDefinitions[k]);
 						}
@@ -254,7 +254,7 @@ namespace UnityEditor
 
 		public static void GenerateRegisterClassesForStripping(HashSet<UnityType> nativeClassesAndBaseClasses, TextWriter output)
 		{
-			output.WriteLine("template <typename T> void RegisterClass();");
+			output.WriteLine("template <typename T> void RegisterClass(const char*);");
 			output.WriteLine("template <typename T> void RegisterStrippedType(int, const char*, const char*);");
 			output.WriteLine();
 			foreach (UnityType current in UnityType.GetTypes())
@@ -282,7 +282,7 @@ namespace UnityEditor
 				if (current2.baseClass != null && !current2.isEditorOnly && nativeClassesAndBaseClasses.Contains(current2))
 				{
 					output.WriteLine("\t// {0}. {1}", num++, current2.qualifiedName);
-					output.WriteLine("\tRegisterClass<{0}>();\n", current2.qualifiedName);
+					output.WriteLine("\tRegisterClass<{0}>(\"{1}\");\n", current2.qualifiedName, current2.module);
 				}
 			}
 			output.WriteLine();

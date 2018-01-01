@@ -227,10 +227,11 @@ namespace UnityEditor
 			{
 				if (this.SecretCodeHasBeenTyped("internal", ref this.m_InternalCodeProgress))
 				{
-					bool flag = !EditorPrefs.GetBool("InternalMode", false);
-					EditorPrefs.SetBool("InternalMode", flag);
-					base.ShowNotification(new GUIContent("Internal Mode " + ((!flag) ? "Off" : "On")));
+					bool flag = !EditorPrefs.GetBool("DeveloperMode", false);
+					EditorPrefs.SetBool("DeveloperMode", flag);
+					base.ShowNotification(new GUIContent("Developer Mode " + ((!flag) ? "Off" : "On")));
 					InternalEditorUtility.RequestScriptReload();
+					InternalEditorUtility.RepaintAllViews();
 				}
 			}
 		}

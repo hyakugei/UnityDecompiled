@@ -7,50 +7,50 @@ namespace UnityEditor
 	{
 		private class Texts
 		{
-			public GUIContent mode = new GUIContent("Mode", "Select how trails are generated on the particles.");
+			public GUIContent mode = EditorGUIUtility.TrTextContent("Mode", "Select how trails are generated on the particles.", null);
 
-			public GUIContent ratio = new GUIContent("Ratio", "Choose what proportion of particles will receive a trail.");
+			public GUIContent ratio = EditorGUIUtility.TrTextContent("Ratio", "Choose what proportion of particles will receive a trail.", null);
 
-			public GUIContent lifetime = EditorGUIUtility.TextContent("Lifetime|How long each trail will last, relative to the life of the particle.");
+			public GUIContent lifetime = EditorGUIUtility.TrTextContent("Lifetime", "How long each trail will last, relative to the life of the particle.", null);
 
-			public GUIContent minVertexDistance = EditorGUIUtility.TextContent("Minimum Vertex Distance|The minimum distance each trail can travel before adding a new vertex.");
+			public GUIContent minVertexDistance = EditorGUIUtility.TrTextContent("Minimum Vertex Distance", "The minimum distance each trail can travel before adding a new vertex.", null);
 
-			public GUIContent textureMode = EditorGUIUtility.TextContent("Texture Mode|Should the U coordinate be stretched or tiled?");
+			public GUIContent textureMode = EditorGUIUtility.TrTextContent("Texture Mode", "Should the U coordinate be stretched or tiled?", null);
 
-			public GUIContent worldSpace = EditorGUIUtility.TextContent("World Space|Trail points will be dropped in world space, even if the particle system is simulating in local space.");
+			public GUIContent worldSpace = EditorGUIUtility.TrTextContent("World Space", "Trail points will be dropped in world space, even if the particle system is simulating in local space.", null);
 
-			public GUIContent dieWithParticles = EditorGUIUtility.TextContent("Die with Particles|The trails will disappear when their owning particles die.");
+			public GUIContent dieWithParticles = EditorGUIUtility.TrTextContent("Die with Particles", "The trails will disappear when their owning particles die.", null);
 
-			public GUIContent sizeAffectsWidth = EditorGUIUtility.TextContent("Size affects Width|The trails will use the particle size to control their width.");
+			public GUIContent sizeAffectsWidth = EditorGUIUtility.TrTextContent("Size affects Width", "The trails will use the particle size to control their width.", null);
 
-			public GUIContent sizeAffectsLifetime = EditorGUIUtility.TextContent("Size affects Lifetime|The trails will use the particle size to control their lifetime.");
+			public GUIContent sizeAffectsLifetime = EditorGUIUtility.TrTextContent("Size affects Lifetime", "The trails will use the particle size to control their lifetime.", null);
 
-			public GUIContent inheritParticleColor = EditorGUIUtility.TextContent("Inherit Particle Color|The trails will use the particle color as their base color.");
+			public GUIContent inheritParticleColor = EditorGUIUtility.TrTextContent("Inherit Particle Color", "The trails will use the particle color as their base color.", null);
 
-			public GUIContent colorOverLifetime = EditorGUIUtility.TextContent("Color over Lifetime|The color of the trails during the lifetime of the particle they are attached to.");
+			public GUIContent colorOverLifetime = EditorGUIUtility.TrTextContent("Color over Lifetime", "The color of the trails during the lifetime of the particle they are attached to.", null);
 
-			public GUIContent widthOverTrail = EditorGUIUtility.TextContent("Width over Trail|Select a width for the trail from its start to end vertex.");
+			public GUIContent widthOverTrail = EditorGUIUtility.TrTextContent("Width over Trail", "Select a width for the trail from its start to end vertex.", null);
 
-			public GUIContent colorOverTrail = EditorGUIUtility.TextContent("Color over Trail|Select a color for the trail from its start to end vertex.");
+			public GUIContent colorOverTrail = EditorGUIUtility.TrTextContent("Color over Trail", "Select a color for the trail from its start to end vertex.", null);
 
-			public GUIContent generateLightingData = EditorGUIUtility.TextContent("Generate Lighting Data|Toggle generation of normal and tangent data, for use in lit shaders.");
+			public GUIContent generateLightingData = EditorGUIUtility.TrTextContent("Generate Lighting Data", "Toggle generation of normal and tangent data, for use in lit shaders.", null);
 
-			public GUIContent ribbonCount = EditorGUIUtility.TextContent("Ribbon Count|Select how many ribbons to render throughout the Particle System.");
+			public GUIContent ribbonCount = EditorGUIUtility.TrTextContent("Ribbon Count", "Select how many ribbons to render throughout the Particle System.", null);
 
-			public GUIContent splitSubEmitterRibbons = EditorGUIUtility.TextContent("Split Sub Emitter Ribbons|When used on a sub emitter, ribbons will connect particles from each parent particle independently.");
+			public GUIContent splitSubEmitterRibbons = EditorGUIUtility.TrTextContent("Split Sub Emitter Ribbons", "When used on a sub emitter, ribbons will connect particles from each parent particle independently.", null);
 
 			public GUIContent[] trailModeOptions = new GUIContent[]
 			{
-				EditorGUIUtility.TextContent("Particles"),
-				EditorGUIUtility.TextContent("Ribbon")
+				EditorGUIUtility.TrTextContent("Particles", null, null),
+				EditorGUIUtility.TrTextContent("Ribbon", null, null)
 			};
 
 			public GUIContent[] textureModeOptions = new GUIContent[]
 			{
-				EditorGUIUtility.TextContent("Stretch"),
-				EditorGUIUtility.TextContent("Tile"),
-				EditorGUIUtility.TextContent("DistributePerSegment"),
-				EditorGUIUtility.TextContent("RepeatPerSegment")
+				EditorGUIUtility.TrTextContent("Stretch", null, null),
+				EditorGUIUtility.TrTextContent("Tile", null, null),
+				EditorGUIUtility.TrTextContent("DistributePerSegment", null, null),
+				EditorGUIUtility.TrTextContent("RepeatPerSegment", null, null)
 			};
 		}
 

@@ -2,7 +2,7 @@ using System;
 
 namespace UnityEngine.Bindings
 {
-	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Method | AttributeTargets.Property)]
+	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Method | AttributeTargets.Property), VisibleToOtherModules]
 	internal class StaticAccessorAttribute : Attribute, IBindingsAttribute
 	{
 		public string Name
@@ -21,6 +21,7 @@ namespace UnityEngine.Bindings
 		{
 		}
 
+		[VisibleToOtherModules]
 		internal StaticAccessorAttribute(string name)
 		{
 			this.Name = name;

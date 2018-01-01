@@ -16,8 +16,8 @@ namespace UnityEditor
 			static Styles()
 			{
 				JointEditor<T>.Styles.editAngularLimitsButton = new GUIContent(EditorGUIUtility.IconContent("JointAngularLimits"));
-				JointEditor<T>.Styles.editAngularLimitsUndoMessage = EditorGUIUtility.TextContent("Change Joint Angular Limits").text;
-				JointEditor<T>.Styles.editAngularLimitsButton.tooltip = EditorGUIUtility.TextContent("Edit joint angular limits.").text;
+				JointEditor<T>.Styles.editAngularLimitsUndoMessage = EditorGUIUtility.TrTextContent("Change Joint Angular Limits", null, null).text;
+				JointEditor<T>.Styles.editAngularLimitsButton.tooltip = EditorGUIUtility.TrTextContent("Edit joint angular limits.", null, null).text;
 			}
 		}
 

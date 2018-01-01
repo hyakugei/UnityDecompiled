@@ -7,16 +7,16 @@ namespace UnityEditor
 	{
 		private class Texts
 		{
-			public GUIContent header = new GUIContent("Create New Library");
+			public GUIContent header = EditorGUIUtility.TrTextContent("Create New Library", null, null);
 
-			public GUIContent name = new GUIContent("Name");
+			public GUIContent name = EditorGUIUtility.TrTextContent("Name", null, null);
 
-			public GUIContent location = new GUIContent("Location");
+			public GUIContent location = EditorGUIUtility.TrTextContent("Location", null, null);
 
 			public GUIContent[] fileLocations = new GUIContent[]
 			{
-				new GUIContent("Preferences Folder"),
-				new GUIContent("Project Folder")
+				EditorGUIUtility.TrTextContent("Preferences Folder", null, null),
+				EditorGUIUtility.TrTextContent("Project Folder", null, null)
 			};
 
 			public PresetFileLocation[] fileLocationOrder = new PresetFileLocation[]

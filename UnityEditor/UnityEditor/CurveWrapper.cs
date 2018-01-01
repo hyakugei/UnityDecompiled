@@ -90,14 +90,6 @@ namespace UnityEditor
 			}
 		}
 
-		public float timeOffset
-		{
-			get
-			{
-				return (this.m_SelectionBinding == null) ? 0f : this.m_SelectionBinding.timeOffset;
-			}
-		}
-
 		public bool clipIsEditable
 		{
 			get

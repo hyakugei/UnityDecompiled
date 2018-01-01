@@ -133,10 +133,6 @@ namespace UnityEditor.Networking.PlayerConnection
 		{
 			ScriptableSingleton<EditorConnection>.instance.m_connectedPlayers.RemoveAll((ConnectedPlayer c) => c.playerId == playerId);
 			ScriptableSingleton<EditorConnection>.instance.m_PlayerEditorConnectionEvents.disconnectionEvent.Invoke(playerId);
-			if (!ScriptableSingleton<EditorConnection>.instance.ConnectedPlayers.Any<ConnectedPlayer>())
-			{
-				ScriptableSingleton<EditorConnection>.instance.Cleanup();
-			}
 		}
 	}
 }

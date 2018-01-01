@@ -92,18 +92,19 @@ namespace UnityEditor.Experimental.UIElements.Debugger
 			{
 				xElement.SetAttributeValue(current.Key, current.Value);
 			}
+			string text2 = (!(ve is BaseTextElement)) ? "" : (ve as BaseTextElement).text;
 			if (!string.IsNullOrEmpty(ve.name) && ve.name[0] != '_')
 			{
 				xElement.SetAttributeValue("name", ve.name);
 			}
 			else if ((options & UxmlExporter.ExportOptions.AutoNameElements) == UxmlExporter.ExportOptions.AutoNameElements)
 			{
-				string value = ve.GetType().Name + ((ve.text == null) ? "" : ve.text.Replace(" ", ""));
+				string value = ve.GetType().Name + text2.Replace(" ", "");
 				xElement.SetAttributeValue("name", value);
 			}
-			if (!string.IsNullOrEmpty(ve.text))
+			if (!string.IsNullOrEmpty(text2))
 			{
-				xElement.SetAttributeValue("text", ve.text);
+				xElement.SetAttributeValue("text", text2);
 			}
 			IEnumerable<string> classes = ve.GetClasses();
 			if (classes.Any<string>())

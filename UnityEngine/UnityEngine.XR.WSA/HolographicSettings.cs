@@ -8,6 +8,29 @@ namespace UnityEngine.XR.WSA
 	[MovedFrom("UnityEngine.VR.WSA")]
 	public sealed class HolographicSettings
 	{
+		public enum HolographicReprojectionMode
+		{
+			PositionAndOrientation,
+			OrientationOnly,
+			Disabled
+		}
+
+		public static extern bool IsContentProtectionEnabled
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public static extern HolographicSettings.HolographicReprojectionMode ReprojectionMode
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
 		[Obsolete("Support for toggling latent frame presentation has been removed, and IsLatentFramePresentation will always return true", false)]
 		public static bool IsLatentFramePresentation
 		{

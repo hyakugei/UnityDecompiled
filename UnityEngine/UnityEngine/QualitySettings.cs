@@ -1,63 +1,11 @@
 using System;
 using System.Runtime.CompilerServices;
 using UnityEngine.Internal;
-using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
 	public sealed class QualitySettings : Object
 	{
-		public static extern string[] names
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-		}
-
-		public static Vector3 shadowCascade4Split
-		{
-			get
-			{
-				Vector3 result;
-				QualitySettings.INTERNAL_get_shadowCascade4Split(out result);
-				return result;
-			}
-			set
-			{
-				QualitySettings.INTERNAL_set_shadowCascade4Split(ref value);
-			}
-		}
-
-		public static extern AnisotropicFiltering anisotropicFiltering
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		public static extern int maxQueuedFrames
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		public static extern BlendWeights blendWeights
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
 		[Obsolete("Use GetQualityLevel and SetQualityLevel", false)]
 		public static QualityLevel currentLevel
 		{
@@ -143,7 +91,29 @@ namespace UnityEngine
 			set;
 		}
 
+		public static Vector3 shadowCascade4Split
+		{
+			get
+			{
+				Vector3 result;
+				QualitySettings.get_shadowCascade4Split_Injected(out result);
+				return result;
+			}
+			set
+			{
+				QualitySettings.set_shadowCascade4Split_Injected(ref value);
+			}
+		}
+
 		public static extern float lodBias
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public static extern AnisotropicFiltering anisotropicFiltering
 		{
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
@@ -247,6 +217,28 @@ namespace UnityEngine
 			set;
 		}
 
+		public static extern BlendWeights blendWeights
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public static extern string[] names
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+		}
+
+		public static extern int maxQueuedFrames
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
 		public static extern ColorSpace desiredColorSpace
 		{
 			[MethodImpl(MethodImplOptions.InternalCall)]
@@ -259,49 +251,45 @@ namespace UnityEngine
 			get;
 		}
 
-		[GeneratedByOldBindingsGenerator]
+		private QualitySettings()
+		{
+		}
+
+		public static void IncreaseLevel([DefaultValue("false")] bool applyExpensiveChanges)
+		{
+			QualitySettings.SetQualityLevel(QualitySettings.GetQualityLevel() + 1, applyExpensiveChanges);
+		}
+
+		public static void DecreaseLevel([DefaultValue("false")] bool applyExpensiveChanges)
+		{
+			QualitySettings.SetQualityLevel(QualitySettings.GetQualityLevel() - 1, applyExpensiveChanges);
+		}
+
+		public static void SetQualityLevel(int index)
+		{
+			QualitySettings.SetQualityLevel(index, true);
+		}
+
+		public static void IncreaseLevel()
+		{
+			QualitySettings.IncreaseLevel(false);
+		}
+
+		public static void DecreaseLevel()
+		{
+			QualitySettings.DecreaseLevel(false);
+		}
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern int GetQualityLevel();
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void SetQualityLevel(int index, [DefaultValue("true")] bool applyExpensiveChanges);
 
-		[ExcludeFromDocs]
-		public static void SetQualityLevel(int index)
-		{
-			bool applyExpensiveChanges = true;
-			QualitySettings.SetQualityLevel(index, applyExpensiveChanges);
-		}
-
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern void IncreaseLevel([DefaultValue("false")] bool applyExpensiveChanges);
+		private static extern void get_shadowCascade4Split_Injected(out Vector3 ret);
 
-		[ExcludeFromDocs]
-		public static void IncreaseLevel()
-		{
-			bool applyExpensiveChanges = false;
-			QualitySettings.IncreaseLevel(applyExpensiveChanges);
-		}
-
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern void DecreaseLevel([DefaultValue("false")] bool applyExpensiveChanges);
-
-		[ExcludeFromDocs]
-		public static void DecreaseLevel()
-		{
-			bool applyExpensiveChanges = false;
-			QualitySettings.DecreaseLevel(applyExpensiveChanges);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_get_shadowCascade4Split(out Vector3 value);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_set_shadowCascade4Split(ref Vector3 value);
+		private static extern void set_shadowCascade4Split_Injected(ref Vector3 value);
 	}
 }

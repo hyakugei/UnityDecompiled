@@ -13,20 +13,24 @@ namespace UnityEditor
 			Birth,
 			Collision,
 			Death,
+			Trigger,
+			Manual,
 			TypesMax
 		}
 
 		private class Texts
 		{
-			public GUIContent create = EditorGUIUtility.TextContent("|Create and assign a Particle System as sub emitter");
+			public GUIContent create = EditorGUIUtility.TrTextContent("", "Create and assign a Particle System as sub emitter", null);
 
-			public GUIContent inherit = EditorGUIUtility.TextContent("Inherit");
+			public GUIContent inherit = EditorGUIUtility.TrTextContent("Inherit", null, null);
 
 			public GUIContent[] subEmitterTypes = new GUIContent[]
 			{
-				EditorGUIUtility.TextContent("Birth"),
-				EditorGUIUtility.TextContent("Collision"),
-				EditorGUIUtility.TextContent("Death")
+				EditorGUIUtility.TrTextContent("Birth", null, null),
+				EditorGUIUtility.TrTextContent("Collision", null, null),
+				EditorGUIUtility.TrTextContent("Death", null, null),
+				EditorGUIUtility.TrTextContent("Trigger", null, null),
+				EditorGUIUtility.TrTextContent("Manual", null, null)
 			};
 
 			public string[] propertyTypes = new string[]
@@ -46,7 +50,7 @@ namespace UnityEditor
 
 		public SubModuleUI(ParticleSystemUI owner, SerializedObject o, string displayName) : base(owner, o, "SubModule", displayName)
 		{
-			this.m_ToolTip = "Sub emission of particles. This allows each particle to emit particles in another system.";
+			this.m_ToolTip = L10n.Tr("Sub emission of particles. This allows each particle to emit particles in another system.");
 			this.Init();
 		}
 
@@ -84,7 +88,7 @@ namespace UnityEditor
 						bool flag = true;
 						if (this.ValidateSubemitter(particleSystem))
 						{
-							string text = ParticleSystemEditorUtils.CheckCircularReferences(particleSystem);
+							string text = ParticleSystemEffectUtils.CheckCircularReferences(particleSystem);
 							if (text.Length == 0)
 							{
 								if (!this.CheckIfChild(objectReferenceValue))
@@ -164,8 +168,9 @@ namespace UnityEditor
 		private bool CheckIfChild(UnityEngine.Object subEmitter)
 		{
 			ParticleSystem root = ParticleSystemEditorUtils.GetRoot(this.m_ParticleSystemUI.m_ParticleSystems[0]);
+			ParticleSystem particleSystem = subEmitter as ParticleSystem;
 			bool result;
-			if (SubModuleUI.IsChild(subEmitter as ParticleSystem, root))
+			if (SubModuleUI.IsChild(particleSystem, root))
 			{
 				result = true;
 			}
@@ -184,18 +189,18 @@ namespace UnityEditor
 							gameObject.transform.localRotation = Quaternion.identity;
 						}
 					}
-					else
+					else if (particleSystem != null)
 					{
-						ParticleSystem particleSystem = subEmitter as ParticleSystem;
-						if (particleSystem)
-						{
-							Undo.SetTransformParent(particleSystem.gameObject.transform.transform, this.m_ParticleSystemUI.m_ParticleSystems[0].transform, "Reparent sub emitter");
-						}
+						Undo.SetTransformParent(particleSystem.gameObject.transform.transform, this.m_ParticleSystemUI.m_ParticleSystems[0].transform, "Reparent sub emitter");
 					}
 					result = true;
 				}
 				else
 				{
+					if (particleSystem != null)
+					{
+						particleSystem.Clear(true);
+					}
 					result = false;
 				}
 			}
@@ -250,6 +255,11 @@ namespace UnityEditor
 							EditorApplication.update = (EditorApplication.CallbackFunction)Delegate.Combine(EditorApplication.update, new EditorApplication.CallbackFunction(this.Update));
 						}
 						this.m_CheckObjectIndex = j;
+						ParticleSystem particleSystem = subEmitterProperties[j] as ParticleSystem;
+						if (particleSystem)
+						{
+							particleSystem.Clear(true);
+						}
 					}
 				}
 			}

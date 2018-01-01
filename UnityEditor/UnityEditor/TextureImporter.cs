@@ -1,15 +1,38 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEditor.Build;
+using UnityEditor.Experimental.U2D;
+using UnityEditor.U2D;
 using UnityEngine;
 using UnityEngine.Internal;
 using UnityEngine.Scripting;
 
 namespace UnityEditor
 {
-	public sealed class TextureImporter : AssetImporter
+	public sealed class TextureImporter : AssetImporter, ISpriteEditorDataProvider
 	{
+		private List<SpriteDataExt> m_SpritesMultiple;
+
+		private SpriteDataExt m_SpriteSingle;
+
+		float ISpriteEditorDataProvider.pixelsPerUnit
+		{
+			get
+			{
+				return this.spritePixelsPerUnit;
+			}
+		}
+
+		UnityEngine.Object ISpriteEditorDataProvider.targetObject
+		{
+			get
+			{
+				return this;
+			}
+		}
+
 		[Obsolete("textureFormat is no longer accessible at the TextureImporter level. For old 'simple' formats use the textureCompression property for the equivalent automatic choice (Uncompressed for TrueColor, Compressed and HQCommpressed for 16 bits). For platform specific formats use the [[PlatformTextureSettings]] API. Using this setter will setup various parameters to match the new automatic system as well as possible. Getter will return the last value set.")]
 		public extern TextureImporterFormat textureFormat
 		{
@@ -688,5 +711,160 @@ namespace UnityEditor
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern void ReadTextureImportInstructions(BuildTarget target, out TextureFormat desiredFormat, out ColorSpace colorSpace, out int compressionQuality);
+
+		SpriteRect[] ISpriteEditorDataProvider.GetSpriteRects()
+		{
+			SpriteRect[] arg_53_0;
+			if (this.spriteImportMode == SpriteImportMode.Multiple)
+			{
+				arg_53_0 = (from x in this.m_SpritesMultiple
+				select new SpriteDataExt(x)).ToArray<SpriteRect>();
+			}
+			else
+			{
+				(arg_53_0 = new SpriteDataExt[1])[0] = new SpriteDataExt(this.m_SpriteSingle);
+			}
+			return arg_53_0;
+		}
+
+		void ISpriteEditorDataProvider.SetSpriteRects(SpriteRect[] spriteRects)
+		{
+			if (this.spriteImportMode == SpriteImportMode.Single && spriteRects.Length == 1)
+			{
+				this.m_SpriteSingle.CopyFromSpriteRect(spriteRects[0]);
+			}
+			else if (this.spriteImportMode == SpriteImportMode.Multiple)
+			{
+				for (int i = this.m_SpritesMultiple.Count - 1; i >= 0; i--)
+				{
+					if (!spriteRects.Contains(this.m_SpritesMultiple[i]))
+					{
+						this.m_SpritesMultiple.RemoveAt(i);
+					}
+				}
+				for (int j = 0; j < spriteRects.Length; j++)
+				{
+					SpriteRect spriteRect = spriteRects[j];
+					int num = this.m_SpritesMultiple.FindIndex((SpriteDataExt x) => x.spriteID == spriteRect.spriteID);
+					if (num == -1)
+					{
+						this.m_SpritesMultiple.Add(new SpriteDataExt(spriteRect));
+					}
+					else
+					{
+						this.m_SpritesMultiple[num].CopyFromSpriteRect(spriteRects[j]);
+					}
+				}
+			}
+		}
+
+		internal SpriteRect GetSpriteData(GUID guid)
+		{
+			return (this.spriteImportMode != SpriteImportMode.Multiple) ? this.m_SpriteSingle : this.m_SpritesMultiple.FirstOrDefault((SpriteDataExt x) => x.spriteID == guid);
+		}
+
+		internal int GetSpriteDataIndex(GUID guid)
+		{
+			int result;
+			switch (this.spriteImportMode)
+			{
+			case SpriteImportMode.Single:
+			case SpriteImportMode.Polygon:
+				result = 0;
+				break;
+			case SpriteImportMode.Multiple:
+				result = this.m_SpritesMultiple.FindIndex((SpriteDataExt x) => x.spriteID == guid);
+				break;
+			default:
+				throw new InvalidOperationException(string.Format("Sprite with GUID {0} not found", guid));
+			}
+			return result;
+		}
+
+		void ISpriteEditorDataProvider.Apply()
+		{
+			TextureImporter.<UnityEditor_Experimental_U2D_ISpriteEditorDataProvider_Apply>c__AnonStorey3 <UnityEditor_Experimental_U2D_ISpriteEditorDataProvider_Apply>c__AnonStorey = new TextureImporter.<UnityEditor_Experimental_U2D_ISpriteEditorDataProvider_Apply>c__AnonStorey3();
+			SerializedObject serializedObject = new SerializedObject(this);
+			this.m_SpriteSingle.Apply(serializedObject);
+			SerializedProperty serializedProperty = serializedObject.FindProperty("m_SpriteSheet.m_Sprites");
+			<UnityEditor_Experimental_U2D_ISpriteEditorDataProvider_Apply>c__AnonStorey.guids = new GUID[serializedProperty.arraySize];
+			int i;
+			for (i = 0; i < serializedProperty.arraySize; i++)
+			{
+				SerializedProperty arrayElementAtIndex = serializedProperty.GetArrayElementAtIndex(i);
+				<UnityEditor_Experimental_U2D_ISpriteEditorDataProvider_Apply>c__AnonStorey.guids[i] = SpriteRect.GetSpriteIDFromSerializedProperty(arrayElementAtIndex);
+				SpriteDataExt spriteDataExt = this.m_SpritesMultiple.Find((SpriteDataExt x) => x.spriteID == <UnityEditor_Experimental_U2D_ISpriteEditorDataProvider_Apply>c__AnonStorey.guids[i]);
+				if (spriteDataExt == null)
+				{
+					serializedProperty.DeleteArrayElementAtIndex(i);
+					i--;
+				}
+				else
+				{
+					spriteDataExt.Apply(arrayElementAtIndex);
+				}
+			}
+			IEnumerable<SpriteDataExt> enumerable = from x in this.m_SpritesMultiple
+			where !<UnityEditor_Experimental_U2D_ISpriteEditorDataProvider_Apply>c__AnonStorey.guids.Contains(x.spriteID)
+			select x;
+			foreach (SpriteDataExt current in enumerable)
+			{
+				serializedProperty.InsertArrayElementAtIndex(serializedProperty.arraySize);
+				SerializedProperty arrayElementAtIndex2 = serializedProperty.GetArrayElementAtIndex(serializedProperty.arraySize - 1);
+				current.Apply(arrayElementAtIndex2);
+			}
+			serializedObject.ApplyModifiedPropertiesWithoutUndo();
+		}
+
+		void ISpriteEditorDataProvider.InitSpriteEditorDataProvider()
+		{
+			SerializedObject serializedObject = new SerializedObject(this);
+			SerializedProperty serializedProperty = serializedObject.FindProperty("m_SpriteSheet.m_Sprites");
+			this.m_SpritesMultiple = new List<SpriteDataExt>();
+			this.m_SpriteSingle = new SpriteDataExt();
+			this.m_SpriteSingle.Load(serializedObject);
+			for (int i = 0; i < serializedProperty.arraySize; i++)
+			{
+				SpriteDataExt spriteDataExt = new SpriteDataExt();
+				SerializedProperty arrayElementAtIndex = serializedProperty.GetArrayElementAtIndex(i);
+				spriteDataExt.Load(arrayElementAtIndex);
+				this.m_SpritesMultiple.Add(spriteDataExt);
+			}
+		}
+
+		T ISpriteEditorDataProvider.GetDataProvider<T>()
+		{
+			T result;
+			if (typeof(T) == typeof(ISpriteBoneDataProvider))
+			{
+				result = (new SpriteBoneDataTransfer(this) as T);
+			}
+			else if (typeof(T) == typeof(ISpriteMeshDataProvider))
+			{
+				result = (new SpriteMeshDataTransfer(this) as T);
+			}
+			else if (typeof(T) == typeof(ISpriteOutlineDataProvider))
+			{
+				result = (new SpriteOutlineDataTransfer(this) as T);
+			}
+			else if (typeof(T) == typeof(ISpritePhysicsOutlineDataProvider))
+			{
+				result = (new SpritePhysicsOutlineDataTransfer(this) as T);
+			}
+			else if (typeof(T) == typeof(ITextureDataProvider))
+			{
+				result = (new SpriteTextureDataTransfer(this) as T);
+			}
+			else
+			{
+				result = (this as T);
+			}
+			return result;
+		}
+
+		bool ISpriteEditorDataProvider.HasDataProvider(Type type)
+		{
+			return type == typeof(ISpriteBoneDataProvider) || type == typeof(ISpriteMeshDataProvider) || type == typeof(ISpriteOutlineDataProvider) || type == typeof(ISpritePhysicsOutlineDataProvider) || type == typeof(ITextureDataProvider) || type.IsAssignableFrom(base.GetType());
+		}
 	}
 }

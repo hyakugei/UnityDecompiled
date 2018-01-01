@@ -4,8 +4,19 @@ using UnityEngine.StyleSheets;
 
 namespace UnityEngine.Experimental.UIElements.StyleSheets
 {
-	internal abstract class HierarchyTraversal
+	internal abstract class HierarchyTraversal : IHierarchyTraversal
 	{
+		public struct MatchResultInfo
+		{
+			public bool success;
+
+			public PseudoStates triggerPseudoMask;
+
+			public PseudoStates dependencyPseudoMask;
+		}
+
+		private List<RuleMatcher> m_ruleMatchers = new List<RuleMatcher>();
+
 		public abstract bool ShouldSkipElement(VisualElement element);
 
 		public abstract bool OnRuleMatchedElement(RuleMatcher matcher, VisualElement element);
@@ -23,7 +34,17 @@ namespace UnityEngine.Experimental.UIElements.StyleSheets
 		{
 		}
 
-		internal void Traverse(VisualElement element, int depth, List<RuleMatcher> ruleMatchers)
+		public virtual void OnProcessMatchResult(VisualElement element, ref RuleMatcher matcher, ref HierarchyTraversal.MatchResultInfo matchInfo)
+		{
+		}
+
+		public virtual void Traverse(VisualElement element)
+		{
+			this.TraverseRecursive(element, 0, this.m_ruleMatchers);
+			this.m_ruleMatchers.Clear();
+		}
+
+		public virtual void TraverseRecursive(VisualElement element, int depth, List<RuleMatcher> ruleMatchers)
 		{
 			if (!this.ShouldSkipElement(element))
 			{
@@ -32,27 +53,10 @@ namespace UnityEngine.Experimental.UIElements.StyleSheets
 				int count2 = ruleMatchers.Count;
 				for (int i = 0; i < count2; i++)
 				{
-					RuleMatcher matcher = ruleMatchers[i];
-					if (matcher.depth >= depth && this.Match(element, ref matcher))
+					RuleMatcher ruleMatcher = ruleMatchers[i];
+					if (this.MatchRightToLeft(element, ref ruleMatcher))
 					{
-						StyleSelector[] selectors = matcher.complexSelector.selectors;
-						int num = matcher.simpleSelectorIndex + 1;
-						int num2 = selectors.Length;
-						if (num < num2)
-						{
-							RuleMatcher item = new RuleMatcher
-							{
-								complexSelector = matcher.complexSelector,
-								depth = ((selectors[num].previousRelationship != StyleSelectorRelationship.Child) ? 2147483647 : (depth + 1)),
-								simpleSelectorIndex = num,
-								sheet = matcher.sheet
-							};
-							ruleMatchers.Add(item);
-						}
-						else if (this.OnRuleMatchedElement(matcher, element))
-						{
-							return;
-						}
+						return;
 					}
 				}
 				this.ProcessMatchedRules(element);
@@ -64,12 +68,65 @@ namespace UnityEngine.Experimental.UIElements.StyleSheets
 			}
 		}
 
+		private bool MatchRightToLeft(VisualElement element, ref RuleMatcher matcher)
+		{
+			VisualElement visualElement = element;
+			int i = matcher.complexSelector.selectors.Length - 1;
+			VisualElement visualElement2 = null;
+			int num = -1;
+			bool result;
+			while (i >= 0)
+			{
+				if (visualElement == null)
+				{
+					break;
+				}
+				HierarchyTraversal.MatchResultInfo matchResultInfo = this.Match(visualElement, ref matcher, i);
+				this.OnProcessMatchResult(visualElement, ref matcher, ref matchResultInfo);
+				if (!matchResultInfo.success)
+				{
+					if (i < matcher.complexSelector.selectors.Length - 1 && matcher.complexSelector.selectors[i + 1].previousRelationship == StyleSelectorRelationship.Descendent)
+					{
+						visualElement = visualElement.parent;
+					}
+					else
+					{
+						if (visualElement2 == null)
+						{
+							break;
+						}
+						visualElement = visualElement2;
+						i = num;
+					}
+				}
+				else
+				{
+					if (i < matcher.complexSelector.selectors.Length - 1 && matcher.complexSelector.selectors[i + 1].previousRelationship == StyleSelectorRelationship.Descendent)
+					{
+						visualElement2 = visualElement.parent;
+						num = i;
+					}
+					if (--i < 0)
+					{
+						if (this.OnRuleMatchedElement(matcher, element))
+						{
+							result = true;
+							return result;
+						}
+					}
+					visualElement = visualElement.parent;
+				}
+			}
+			result = false;
+			return result;
+		}
+
 		protected virtual void Recurse(VisualElement element, int depth, List<RuleMatcher> ruleMatchers)
 		{
 			for (int i = 0; i < element.shadow.childCount; i++)
 			{
 				VisualElement element2 = element.shadow[i];
-				this.Traverse(element2, depth + 1, ruleMatchers);
+				this.TraverseRecursive(element2, depth + 1, ruleMatchers);
 			}
 		}
 
@@ -101,18 +158,55 @@ namespace UnityEngine.Experimental.UIElements.StyleSheets
 			return flag;
 		}
 
-		public virtual bool Match(VisualElement element, ref RuleMatcher matcher)
+		public virtual HierarchyTraversal.MatchResultInfo Match(VisualElement element, ref RuleMatcher matcher, int selectorIndex)
 		{
-			bool flag = true;
-			StyleSelector styleSelector = matcher.complexSelector.selectors[matcher.simpleSelectorIndex];
-			int num = styleSelector.parts.Length;
-			int num2 = 0;
-			while (num2 < num && flag)
+			HierarchyTraversal.MatchResultInfo result;
+			if (element == null)
 			{
-				flag = this.MatchSelectorPart(element, styleSelector, styleSelector.parts[num2]);
-				num2++;
+				result = default(HierarchyTraversal.MatchResultInfo);
 			}
-			return flag;
+			else
+			{
+				bool flag = true;
+				StyleSelector styleSelector = matcher.complexSelector.selectors[selectorIndex];
+				int num = styleSelector.parts.Length;
+				int num2 = 0;
+				int num3 = 0;
+				bool flag2 = true;
+				for (int i = 0; i < num; i++)
+				{
+					bool flag3 = this.MatchSelectorPart(element, styleSelector, styleSelector.parts[i]);
+					if (!flag3)
+					{
+						if (styleSelector.parts[i].type == StyleSelectorType.PseudoClass)
+						{
+							num2 |= styleSelector.pseudoStateMask;
+							num3 |= styleSelector.negatedPseudoStateMask;
+						}
+						else
+						{
+							flag2 = false;
+						}
+					}
+					else if (styleSelector.parts[i].type == StyleSelectorType.PseudoClass)
+					{
+						num3 |= styleSelector.pseudoStateMask;
+						num2 |= styleSelector.negatedPseudoStateMask;
+					}
+					flag &= flag3;
+				}
+				HierarchyTraversal.MatchResultInfo matchResultInfo = new HierarchyTraversal.MatchResultInfo
+				{
+					success = flag
+				};
+				if (flag || flag2)
+				{
+					matchResultInfo.triggerPseudoMask = (PseudoStates)num2;
+					matchResultInfo.dependencyPseudoMask = (PseudoStates)num3;
+				}
+				result = matchResultInfo;
+			}
+			return result;
 		}
 	}
 }

@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using UnityEngine.Bindings;
 using UnityEngine.Internal;
 using UnityEngine.Scripting;
 
 namespace UnityEngine.Rendering
 {
-	[UsedByNativeCode]
+	[NativeType("Runtime/Graphics/CommandBuffer/RenderingCommandBuffer.h"), UsedByNativeCode]
 	public sealed class CommandBuffer : IDisposable
 	{
 		internal IntPtr m_Ptr;
@@ -917,6 +918,15 @@ namespace UnityEngine.Rendering
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern void SetGlobalFloat(int nameID, float value);
 
+		public void SetGlobalInt(string name, int value)
+		{
+			this.SetGlobalInt(Shader.PropertyToID(name), value);
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public extern void SetGlobalInt(int nameID, int value);
+
 		public void SetGlobalVector(string name, Vector4 value)
 		{
 			this.SetGlobalVector(Shader.PropertyToID(name), value);
@@ -1174,5 +1184,23 @@ namespace UnityEngine.Rendering
 		{
 			this.IssuePluginCustomTextureUpdateInternal(callback, targetTexture, userData);
 		}
+
+		public void ConvertTexture(RenderTargetIdentifier src, RenderTargetIdentifier dst)
+		{
+			this.ConvertTexture_Internal(src, 0, dst, 0);
+		}
+
+		public void ConvertTexture(RenderTargetIdentifier src, int srcElement, RenderTargetIdentifier dst, int dstElement)
+		{
+			this.ConvertTexture_Internal(src, srcElement, dst, dstElement);
+		}
+
+		private void ConvertTexture_Internal(RenderTargetIdentifier src, int srcElement, RenderTargetIdentifier dst, int dstElement)
+		{
+			this.ConvertTexture_Internal_Injected(ref src, srcElement, ref dst, dstElement);
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void ConvertTexture_Internal_Injected(ref RenderTargetIdentifier src, int srcElement, ref RenderTargetIdentifier dst, int dstElement);
 	}
 }

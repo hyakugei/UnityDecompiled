@@ -40,6 +40,12 @@ namespace UnityEditor.Scripting.ScriptCompilation
 			set;
 		}
 
+		public OptionalUnityReferences OptionalUnityReferences
+		{
+			get;
+			set;
+		}
+
 		public string FilenameSuffix
 		{
 			get;

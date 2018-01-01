@@ -323,8 +323,6 @@ namespace UnityEditor
 				this.m_TextureRect = new Rect(this.m_TextureViewRect.width / 2f - (float)this.m_Texture.width * this.m_Zoom / 2f, this.m_TextureViewRect.height / 2f - (float)this.m_Texture.height * this.m_Zoom / 2f, (float)this.m_Texture.width * this.m_Zoom, (float)this.m_Texture.height * this.m_Zoom);
 				this.HandleScrollbars();
 				this.SetupHandlesMatrix();
-				this.HandleZoom();
-				this.HandlePanning();
 				this.DrawScreenspaceBackground();
 				GUIClip.Push(this.m_TextureViewRect, -this.m_ScrollPosition, Vector2.zero, false);
 				if (UnityEngine.Event.current.type == EventType.Repaint)
@@ -335,6 +333,8 @@ namespace UnityEditor
 				}
 				this.DoTextureGUIExtras();
 				GUIClip.Pop();
+				this.HandleZoom();
+				this.HandlePanning();
 			}
 		}
 

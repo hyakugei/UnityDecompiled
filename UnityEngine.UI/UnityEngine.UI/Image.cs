@@ -339,7 +339,7 @@ namespace UnityEngine.UI
 				{
 					result = this.m_Material;
 				}
-				else if (this.activeSprite && this.activeSprite.associatedAlphaSplitTexture != null)
+				else if (Application.isPlaying && this.activeSprite && this.activeSprite.associatedAlphaSplitTexture != null)
 				{
 					result = Image.defaultETC1GraphicMaterial;
 				}

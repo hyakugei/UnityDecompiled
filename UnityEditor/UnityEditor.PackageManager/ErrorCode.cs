@@ -2,7 +2,7 @@ using System;
 
 namespace UnityEditor.PackageManager
 {
-	public enum ErrorCode : uint
+	public enum ErrorCode
 	{
 		Unknown,
 		NotFound,

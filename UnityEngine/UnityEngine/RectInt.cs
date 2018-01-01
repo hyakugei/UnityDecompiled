@@ -276,7 +276,7 @@ namespace UnityEngine
 		public void SetMinMax(Vector2Int minPosition, Vector2Int maxPosition)
 		{
 			this.min = minPosition;
-			this.max = maxPosition - minPosition;
+			this.max = maxPosition;
 		}
 
 		public void ClampToBounds(RectInt bounds)

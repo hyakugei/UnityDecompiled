@@ -76,7 +76,7 @@ namespace UnityEditor
 
 			public GUIContent vuMeterGUIContent = new GUIContent("", "The VU meter shows the current level of the mix of all sounds and subgroups.");
 
-			public GUIContent referencedGroups = new GUIContent("Referenced groups", "Mixer groups that are hidden but are referenced by the visible mixer groups are shown here for convenience");
+			public GUIContent referencedGroups = EditorGUIUtility.TrTextContent("Referenced groups", "Mixer groups that are hidden but are referenced by the visible mixer groups are shown here for convenience", null);
 
 			public GUIContent sendString = new GUIContent("s");
 
@@ -91,10 +91,10 @@ namespace UnityEditor
 				this.reorderableListLabel.onHover.background = background;
 				this.reorderableListLabel.onActive.background = background;
 				this.reorderableListLabel.onFocused.background = background;
-				RectOffset arg_32B_0 = this.reorderableListLabel.padding;
+				RectOffset arg_32C_0 = this.reorderableListLabel.padding;
 				int num = 0;
 				this.reorderableListLabel.padding.right = num;
-				arg_32B_0.left = num;
+				arg_32C_0.left = num;
 				this.reorderableListLabel.alignment = TextAnchor.MiddleLeft;
 				this.scrollShadowTexture = EditorGUIUtility.FindTexture("ScrollShadow");
 				this.channelStripHeaderStyle = new GUIStyle(EditorStyles.boldLabel);

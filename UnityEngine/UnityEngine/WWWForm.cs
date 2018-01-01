@@ -126,9 +126,9 @@ namespace UnityEngine
 				{
 					for (int j = 0; j < this.formData.Count; j++)
 					{
-						byte[] array2 = WWWTranscoder.URLEncode(Encoding.UTF8.GetBytes(this.fieldNames[j]));
+						byte[] array2 = WWWTranscoder.DataEncode(Encoding.UTF8.GetBytes(this.fieldNames[j]));
 						byte[] toEncode = this.formData[j];
-						byte[] array3 = WWWTranscoder.URLEncode(toEncode);
+						byte[] array3 = WWWTranscoder.DataEncode(toEncode);
 						if (j > 0)
 						{
 							memoryStream2.Write(bytes10, 0, bytes10.Length);

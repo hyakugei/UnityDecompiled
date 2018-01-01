@@ -1,7 +1,12 @@
 using System;
+using UnityEngine.Bindings;
 
 namespace UnityEngine.StyleSheets
 {
+	[VisibleToOtherModules(new string[]
+	{
+		"UnityEngine.UIElementsModule"
+	})]
 	[Serializable]
 	internal struct StyleSelectorPart
 	{
@@ -11,6 +16,10 @@ namespace UnityEngine.StyleSheets
 		[SerializeField]
 		private StyleSelectorType m_Type;
 
+		[VisibleToOtherModules(new string[]
+		{
+			"UnityEngine.UIElementsModule"
+		})]
 		internal object tempData;
 
 		public string value
@@ -31,6 +40,10 @@ namespace UnityEngine.StyleSheets
 			{
 				return this.m_Type;
 			}
+			[VisibleToOtherModules(new string[]
+			{
+				"UnityEngine.UIElementsModule"
+			})]
 			internal set
 			{
 				this.m_Type = value;

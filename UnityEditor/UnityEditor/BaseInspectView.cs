@@ -16,8 +16,8 @@ namespace UnityEditor
 
 			static Styles()
 			{
-				BaseInspectView.Styles.instructionsLabel = new GUIContent("Instructions");
-				BaseInspectView.Styles.emptyViewLabel = new GUIContent("Select an Instruction on the left to see details");
+				BaseInspectView.Styles.instructionsLabel = EditorGUIUtility.TrTextContent("Instructions", null, null);
+				BaseInspectView.Styles.emptyViewLabel = EditorGUIUtility.TrTextContent("Select an Instruction on the left to see details", null, null);
 				BaseInspectView.Styles.centeredLabel = new GUIStyle("PR Label");
 				BaseInspectView.Styles.centeredLabel.alignment = TextAnchor.MiddleCenter;
 				BaseInspectView.Styles.centeredLabel.padding.right = 0;

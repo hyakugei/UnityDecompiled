@@ -7,7 +7,7 @@ using UnityEngine.Experimental.UIElements;
 
 namespace UnityEditor.Experimental.UIElements.GraphView
 {
-	internal class SelectionDropper : Manipulator
+	public class SelectionDropper : Manipulator
 	{
 		private readonly DragAndDropDelay m_DragAndDropDelay;
 
@@ -102,35 +102,41 @@ namespace UnityEditor.Experimental.UIElements.GraphView
 
 		protected void OnMouseDown(MouseDownEvent e)
 		{
-			this.m_Active = false;
-			this.m_Dragging = false;
-			this.m_AddedByMouseDown = false;
-			if (base.target != null)
+			if (this.m_Active)
 			{
-				this.selectionContainer = base.target.GetFirstAncestorOfType<ISelection>();
-				if (this.selectionContainer != null)
+				e.StopImmediatePropagation();
+			}
+			else if (!MouseCaptureController.IsMouseCaptureTaken())
+			{
+				this.m_Active = false;
+				this.m_Dragging = false;
+				this.m_AddedByMouseDown = false;
+				if (base.target != null)
 				{
-					this.selectedElement = base.target.GetFirstOfType<GraphElement>();
-					if (this.selectedElement != null)
+					this.selectionContainer = base.target.GetFirstAncestorOfType<ISelection>();
+					if (this.selectionContainer != null)
 					{
-						if (!this.selectionContainer.selection.Contains(this.selectedElement))
+						this.selectedElement = base.target.GetFirstOfType<GraphElement>();
+						if (this.selectedElement != null)
 						{
-							if (!e.ctrlKey)
+							if (!this.selectionContainer.selection.Contains(this.selectedElement))
 							{
-								this.selectionContainer.ClearSelection();
+								if (!e.ctrlKey)
+								{
+									this.selectionContainer.ClearSelection();
+								}
+								this.selectionContainer.AddToSelection(this.selectedElement);
+								this.m_AddedByMouseDown = true;
 							}
-							this.selectionContainer.AddToSelection(this.selectedElement);
-							this.m_AddedByMouseDown = true;
-						}
-						if (e.button == (int)this.activateButton)
-						{
-							GraphElementPresenter presenter = this.selectedElement.presenter;
-							if (!(presenter != null) || (presenter.capabilities & Capabilities.Droppable) == Capabilities.Droppable)
+							if (e.button == (int)this.activateButton)
 							{
-								this.m_DragAndDropDelay.Init(e.localMousePosition);
-								this.m_Active = true;
-								base.target.TakeCapture();
-								e.StopPropagation();
+								if (this.selectedElement.IsDroppable())
+								{
+									this.m_DragAndDropDelay.Init(e.localMousePosition);
+									this.m_Active = true;
+									base.target.TakeMouseCapture();
+									e.StopPropagation();
+								}
 							}
 						}
 					}
@@ -145,16 +151,8 @@ namespace UnityEditor.Experimental.UIElements.GraphView
 				List<ISelectable> list = this.selectionContainer.selection.ToList<ISelectable>();
 				if (list.Count > 0)
 				{
-					bool flag = false;
 					GraphElement graphElement = list[0] as GraphElement;
-					if (graphElement != null)
-					{
-						GraphElementPresenter presenter = graphElement.presenter;
-						if (presenter != null)
-						{
-							flag = ((presenter.capabilities & Capabilities.Droppable) == Capabilities.Droppable);
-						}
-					}
+					bool flag = graphElement != null && graphElement.IsDroppable();
 					if (flag && this.m_DragAndDropDelay.CanStartDrag(e.localMousePosition))
 					{
 						DragAndDrop.PrepareStartDrag();
@@ -184,7 +182,7 @@ namespace UnityEditor.Experimental.UIElements.GraphView
 					{
 						this.selectionContainer.RemoveFromSelection(this.selectedElement);
 					}
-					base.target.ReleaseCapture();
+					base.target.ReleaseMouseCapture();
 					e.StopPropagation();
 				}
 				this.m_Active = false;
@@ -222,7 +220,7 @@ namespace UnityEditor.Experimental.UIElements.GraphView
 							}
 							this.prevDropTarget = null;
 							this.m_Active = false;
-							base.target.ReleaseCapture();
+							base.target.ReleaseMouseCapture();
 						}
 					}
 					else
@@ -235,10 +233,10 @@ namespace UnityEditor.Experimental.UIElements.GraphView
 						DragAndDrop.SetGenericData("DragSelection", null);
 						this.prevDropTarget = null;
 						this.m_Active = false;
-						base.target.ReleaseCapture();
+						base.target.ReleaseMouseCapture();
 					}
 				}
-				else if (base.target.HasCapture() && imguiEvent.button == (int)this.activateButton && list.Count > 0)
+				else if (base.target.HasMouseCapture() && imguiEvent.button == (int)this.activateButton && list.Count > 0)
 				{
 					this.selectedElement = null;
 					if (this.OnDrop != null)
@@ -247,10 +245,11 @@ namespace UnityEditor.Experimental.UIElements.GraphView
 						IDropTarget dropTarget2 = (visualElement2 == null) ? null : visualElement2.GetFirstAncestorOfType<IDropTarget>();
 						if (this.prevDropTarget != dropTarget2 && this.prevDropTarget != null)
 						{
-							IMGUIEvent pooled = IMGUIEvent.GetPooled(e.imguiEvent);
-							pooled.imguiEvent.type = EventType.DragExited;
-							this.OnDrop(pooled, list, this.prevDropTarget);
-							EventBase<IMGUIEvent>.ReleasePooled(pooled);
+							using (IMGUIEvent pooled = IMGUIEvent.GetPooled(e.imguiEvent))
+							{
+								pooled.imguiEvent.type = EventType.DragExited;
+								this.OnDrop(pooled, list, this.prevDropTarget);
+							}
 						}
 						this.OnDrop(e, list, dropTarget2);
 						this.prevDropTarget = dropTarget2;

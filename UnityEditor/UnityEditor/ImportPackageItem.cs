@@ -1,11 +1,13 @@
 using System;
 using System.Runtime.InteropServices;
+using UnityEngine.Bindings;
 
 namespace UnityEditor
 {
+	[NativeType(CodegenOptions.Custom, "MonoImportPackageItem", Header = "Editor/Mono/PackageUtility.bindings.h")]
 	[Serializable]
 	[StructLayout(LayoutKind.Sequential)]
-	internal sealed class ImportPackageItem
+	internal class ImportPackageItem
 	{
 		public string exportedAssetPath;
 

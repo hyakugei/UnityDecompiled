@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using UnityEngine.Scripting;
 
@@ -9,7 +8,7 @@ namespace UnityEngine.CSSLayout
 	{
 		private const string DllName = "CSSLayout";
 
-		private static Dictionary<IntPtr, WeakReference> s_MeasureFunctions = new Dictionary<IntPtr, WeakReference>();
+		private static LockDictionary<IntPtr, WeakReference> s_MeasureFunctions = new LockDictionary<IntPtr, WeakReference>();
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern IntPtr CSSNodeNew();
@@ -87,7 +86,7 @@ namespace UnityEngine.CSSLayout
 		{
 			if (measureFunc != null)
 			{
-				Native.s_MeasureFunctions[node] = new WeakReference(measureFunc);
+				Native.s_MeasureFunctions.Set(node, new WeakReference(measureFunc));
 				CSSLayoutCallbacks.RegisterWrapper(node);
 			}
 			else if (Native.s_MeasureFunctions.ContainsKey(node))

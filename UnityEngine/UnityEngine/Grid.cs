@@ -11,11 +11,13 @@ namespace UnityEngine
 		{
 			get
 			{
-				return Grid.GetCellSize(this);
+				Vector3 result;
+				this.get_cellSize_Injected(out result);
+				return result;
 			}
 			set
 			{
-				Grid.SetCellSize(this, value);
+				this.set_cellSize_Injected(ref value);
 			}
 		}
 
@@ -23,11 +25,13 @@ namespace UnityEngine
 		{
 			get
 			{
-				return Grid.GetCellGap(this);
+				Vector3 result;
+				this.get_cellGap_Injected(out result);
+				return result;
 			}
 			set
 			{
-				Grid.SetCellGap(this, value);
+				this.set_cellGap_Injected(ref value);
 			}
 		}
 
@@ -57,30 +61,6 @@ namespace UnityEngine
 			return base.LocalToWorld(base.CellToLocalInterpolated(position + base.GetLayoutCellCenter()));
 		}
 
-		private static Vector3 GetCellSize(Grid self)
-		{
-			Vector3 result;
-			Grid.GetCellSize_Injected(self, out result);
-			return result;
-		}
-
-		private static void SetCellSize(Grid self, Vector3 value)
-		{
-			Grid.SetCellSize_Injected(self, ref value);
-		}
-
-		private static Vector3 GetCellGap(Grid self)
-		{
-			Vector3 result;
-			Grid.GetCellGap_Injected(self, out result);
-			return result;
-		}
-
-		private static void SetCellGap(Grid self, Vector3 value)
-		{
-			Grid.SetCellGap_Injected(self, ref value);
-		}
-
 		public static Vector3 Swizzle(GridLayout.CellSwizzle swizzle, Vector3 position)
 		{
 			Vector3 result;
@@ -96,16 +76,16 @@ namespace UnityEngine
 		}
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void GetCellSize_Injected(Grid self, out Vector3 ret);
+		private extern void get_cellSize_Injected(out Vector3 ret);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void SetCellSize_Injected(Grid self, ref Vector3 value);
+		private extern void set_cellSize_Injected(ref Vector3 value);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void GetCellGap_Injected(Grid self, out Vector3 ret);
+		private extern void get_cellGap_Injected(out Vector3 ret);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void SetCellGap_Injected(Grid self, ref Vector3 value);
+		private extern void set_cellGap_Injected(ref Vector3 value);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern void Swizzle_Injected(GridLayout.CellSwizzle swizzle, ref Vector3 position, out Vector3 ret);

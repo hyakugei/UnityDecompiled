@@ -2,7 +2,7 @@ using System;
 
 namespace UnityEditor.Experimental.UIElements.GraphView
 {
-	internal class PortSource<T>
+	public class PortSource<T>
 	{
 	}
 }

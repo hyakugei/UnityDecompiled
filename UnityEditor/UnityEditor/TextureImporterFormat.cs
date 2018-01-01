@@ -22,7 +22,8 @@ namespace UnityEditor
 		RGB16 = 7,
 		RGB24 = 3,
 		Alpha8 = 1,
-		ARGB16,
+		R8 = 63,
+		ARGB16 = 2,
 		RGBA32 = 4,
 		ARGB32,
 		RGBA16 = 13,
@@ -38,7 +39,9 @@ namespace UnityEditor
 		PVRTC_RGB4,
 		PVRTC_RGBA4,
 		ETC_RGB4,
+		[Obsolete("Use ETC_RGB4 (UnityUpgradable) -> ETC_RGB4")]
 		ATC_RGB4,
+		[Obsolete("Use ETC2_RGBA8 (UnityUpgradable) -> ETC2_RGBA8")]
 		ATC_RGBA8,
 		EAC_R = 41,
 		EAC_R_SIGNED,

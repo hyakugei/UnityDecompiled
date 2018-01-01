@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.UIElements.GraphView
 {
-	internal class RectUtils
+	public class RectUtils
 	{
 		public static bool IntersectsSegment(Rect rect, Vector2 p1, Vector2 p2)
 		{
@@ -61,6 +61,17 @@ namespace UnityEditor.Experimental.UIElements.GraphView
 				yMin = Math.Min(a.yMin, b.yMin),
 				xMax = Math.Max(a.xMax, b.xMax),
 				yMax = Math.Max(a.yMax, b.yMax)
+			};
+		}
+
+		public static Rect Inflate(Rect a, float left, float top, float right, float bottom)
+		{
+			return new Rect
+			{
+				xMin = a.xMin - left,
+				yMin = a.yMin - top,
+				xMax = a.xMax + right,
+				yMax = a.yMax + bottom
 			};
 		}
 	}

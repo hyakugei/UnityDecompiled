@@ -69,11 +69,11 @@ namespace UnityEditor
 		private DefaultPluginImporterExtension.Property[] GetProperties()
 		{
 			List<DefaultPluginImporterExtension.Property> list = new List<DefaultPluginImporterExtension.Property>();
-			this.m_WindowsX86 = new DesktopPluginImporterExtension.DesktopSingleCPUProperty(EditorGUIUtility.TextContent("x86"), BuildPipeline.GetBuildTargetName(BuildTarget.StandaloneWindows));
-			this.m_WindowsX86_X64 = new DesktopPluginImporterExtension.DesktopSingleCPUProperty(EditorGUIUtility.TextContent("x86_x64"), BuildPipeline.GetBuildTargetName(BuildTarget.StandaloneWindows64));
-			this.m_LinuxX86 = new DesktopPluginImporterExtension.DesktopSingleCPUProperty(EditorGUIUtility.TextContent("x86"), BuildPipeline.GetBuildTargetName(BuildTarget.StandaloneLinux), DesktopPluginImporterExtension.DesktopPluginCPUArchitecture.x86);
-			this.m_LinuxX86_X64 = new DesktopPluginImporterExtension.DesktopSingleCPUProperty(EditorGUIUtility.TextContent("x86_x64"), BuildPipeline.GetBuildTargetName(BuildTarget.StandaloneLinux64), DesktopPluginImporterExtension.DesktopPluginCPUArchitecture.x86_64);
-			this.m_OSX_X64 = new DesktopPluginImporterExtension.DesktopSingleCPUProperty(EditorGUIUtility.TextContent("x64"), BuildPipeline.GetBuildTargetName(BuildTarget.StandaloneOSX));
+			this.m_WindowsX86 = new DesktopPluginImporterExtension.DesktopSingleCPUProperty(EditorGUIUtility.TrTextContent("x86", null, null), BuildPipeline.GetBuildTargetName(BuildTarget.StandaloneWindows));
+			this.m_WindowsX86_X64 = new DesktopPluginImporterExtension.DesktopSingleCPUProperty(EditorGUIUtility.TrTextContent("x86_x64", null, null), BuildPipeline.GetBuildTargetName(BuildTarget.StandaloneWindows64));
+			this.m_LinuxX86 = new DesktopPluginImporterExtension.DesktopSingleCPUProperty(EditorGUIUtility.TrTextContent("x86", null, null), BuildPipeline.GetBuildTargetName(BuildTarget.StandaloneLinux), DesktopPluginImporterExtension.DesktopPluginCPUArchitecture.x86);
+			this.m_LinuxX86_X64 = new DesktopPluginImporterExtension.DesktopSingleCPUProperty(EditorGUIUtility.TrTextContent("x86_x64", null, null), BuildPipeline.GetBuildTargetName(BuildTarget.StandaloneLinux64), DesktopPluginImporterExtension.DesktopPluginCPUArchitecture.x86_64);
+			this.m_OSX_X64 = new DesktopPluginImporterExtension.DesktopSingleCPUProperty(EditorGUIUtility.TrTextContent("x64", null, null), BuildPipeline.GetBuildTargetName(BuildTarget.StandaloneOSX));
 			list.Add(this.m_WindowsX86);
 			list.Add(this.m_WindowsX86_X64);
 			list.Add(this.m_LinuxX86);
@@ -155,21 +155,21 @@ namespace UnityEditor
 			EditorGUI.BeginChangeCheck();
 			if (this.IsUsableOnWindows(importer))
 			{
-				EditorGUILayout.LabelField(EditorGUIUtility.TextContent("Windows"), EditorStyles.boldLabel, new GUILayoutOption[0]);
+				EditorGUILayout.LabelField(EditorGUIUtility.TrTextContent("Windows", null, null), EditorStyles.boldLabel, new GUILayoutOption[0]);
 				this.m_WindowsX86.OnGUI(inspector);
 				this.m_WindowsX86_X64.OnGUI(inspector);
 				EditorGUILayout.Space();
 			}
 			if (this.IsUsableOnLinux(importer))
 			{
-				EditorGUILayout.LabelField(EditorGUIUtility.TextContent("Linux"), EditorStyles.boldLabel, new GUILayoutOption[0]);
+				EditorGUILayout.LabelField(EditorGUIUtility.TrTextContent("Linux", null, null), EditorStyles.boldLabel, new GUILayoutOption[0]);
 				this.m_LinuxX86.OnGUI(inspector);
 				this.m_LinuxX86_X64.OnGUI(inspector);
 				EditorGUILayout.Space();
 			}
 			if (this.IsUsableOnOSX(importer))
 			{
-				EditorGUILayout.LabelField(EditorGUIUtility.TextContent("Mac OS X"), EditorStyles.boldLabel, new GUILayoutOption[0]);
+				EditorGUILayout.LabelField(EditorGUIUtility.TrTextContent("Mac OS X", null, null), EditorStyles.boldLabel, new GUILayoutOption[0]);
 				this.m_OSX_X64.OnGUI(inspector);
 			}
 			if (EditorGUI.EndChangeCheck())

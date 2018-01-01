@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEditor.Analytics;
-using UnityEditor.BuildReporting;
+using UnityEditor.Build.Reporting;
 using UnityEditor.Scripting.ScriptCompilation;
 using UnityEditor.Utils;
 using UnityEditorInternal;
@@ -162,8 +162,21 @@ namespace UnityEditor
 			if (VRModule.ShouldInjectVRDependenciesForBuildTarget(target))
 			{
 				nativeModules.Add("VR");
-				strippingInfo.RegisterDependency("VR", "Required by Scripts");
+				strippingInfo.RegisterDependency(StrippingInfo.ModuleName("VR"), "Required because VR is enabled in PlayerSettings");
 				strippingInfo.SetIcon("Required because VR is enabled in PlayerSettings", "class/PlayerSettings");
+			}
+			string[] moduleNames = ModuleMetadata.GetModuleNames();
+			for (int i = 0; i < moduleNames.Length; i++)
+			{
+				string text = moduleNames[i];
+				if (!ModuleMetadata.IsStrippableModule(text))
+				{
+					string text2 = text + " is always required";
+					nativeModules.Add(text);
+					strippingInfo.AddModule(text, true);
+					strippingInfo.RegisterDependency(StrippingInfo.ModuleName(text), text2);
+					strippingInfo.SetIcon(text2, "class/DefaultAsset");
+				}
 			}
 		}
 
@@ -225,12 +238,9 @@ namespace UnityEditor
 								}
 								if (strippingInfo != null)
 								{
-									string text2 = StrippingInfo.ModuleName(current2);
-									strippingInfo.RegisterDependency(StrippingInfo.ModuleName(text), "Required by " + text2);
-									if (strippingInfo.icons.ContainsKey(text2))
-									{
-										strippingInfo.SetIcon("Required by " + text2, strippingInfo.icons[text2]);
-									}
+									string str = StrippingInfo.ModuleName(current2);
+									strippingInfo.RegisterDependency(StrippingInfo.ModuleName(text), "Required by " + str);
+									strippingInfo.SetIcon("Required by " + str, string.Format("package/com.unity.modules.{0}", current2.ToLower()));
 								}
 							}
 						}
@@ -243,9 +253,9 @@ namespace UnityEditor
 			{
 				foreach (string current3 in nativeModules)
 				{
-					strippingInfo.AddModule(StrippingInfo.ModuleName(current3));
+					strippingInfo.AddModule(current3, true);
 				}
-				strippingInfo.AddModule(StrippingInfo.ModuleName("Core"));
+				strippingInfo.AddModule("Core", true);
 			}
 			if (nativeClasses != null && strippingInfo != null)
 			{
@@ -335,7 +345,7 @@ namespace UnityEditor
 			for (int i = 0; i < moduleNames.Length; i++)
 			{
 				string text = moduleNames[i];
-				if (ModuleMetadata.GetModuleStrippable(text))
+				if (ModuleMetadata.IsStrippableModule(text))
 				{
 					hashSet.Add(text);
 				}
@@ -351,7 +361,7 @@ namespace UnityEditor
 			for (int i = 0; i < moduleNames.Length; i++)
 			{
 				string text = moduleNames[i];
-				if (ModuleMetadata.GetModuleStrippable(text))
+				if (ModuleMetadata.IsStrippableModule(text))
 				{
 					HashSet<UnityType> hashSet3 = new HashSet<UnityType>(ModuleMetadata.GetModuleTypes(text));
 					if (nativeClasses.Overlaps(hashSet3))
@@ -391,7 +401,7 @@ namespace UnityEditor
 			for (int i = 0; i < array.Length; i++)
 			{
 				string moduleName = array[i];
-				if (ModuleMetadata.GetModuleStrippable(moduleName))
+				if (ModuleMetadata.IsStrippableModule(moduleName))
 				{
 					UnityType[] moduleTypes = ModuleMetadata.GetModuleTypes(moduleName);
 					HashSet<UnityType> hashSet = new HashSet<UnityType>();
@@ -523,8 +533,7 @@ namespace UnityEditor
 							hashSet.Add(name);
 							if (strippingInfo != null)
 							{
-								string name2 = assemblyDefinition.Name.Name;
-								if (!AssemblyReferenceChecker.IsIgnoredSystemDll(name2))
+								if (!AssemblyReferenceChecker.IsIgnoredSystemDll(assemblyDefinition))
 								{
 									strippingInfo.RegisterDependency(name, "Required by Scripts");
 								}
@@ -556,14 +565,13 @@ namespace UnityEditor
 					{
 						if (current2.Namespace.StartsWith("UnityEngine"))
 						{
-							string name3 = current2.Name;
-							hashSet.Add(name3);
+							string name2 = current2.Name;
+							hashSet.Add(name2);
 							if (strippingInfo != null)
 							{
-								string name4 = assemblyDefinition4.Name.Name;
-								if (!AssemblyReferenceChecker.IsIgnoredSystemDll(name4))
+								if (!AssemblyReferenceChecker.IsIgnoredSystemDll(assemblyDefinition4))
 								{
-									strippingInfo.RegisterDependency(name3, "Required by Scripts");
+									strippingInfo.RegisterDependency(name2, "Required by Scripts");
 								}
 							}
 						}
@@ -603,7 +611,7 @@ namespace UnityEditor
 		{
 			using (TextWriter textWriter = new StreamWriter(file))
 			{
-				textWriter.WriteLine("template <typename T> void RegisterClass();");
+				textWriter.WriteLine("template <typename T> void RegisterClass(const char*);");
 				textWriter.WriteLine("template <typename T> void RegisterStrippedType(int, const char*, const char*);");
 				textWriter.WriteLine();
 				CodeStrippingUtils.WriteStaticallyLinkedModuleRegistration(textWriter, nativeModules, nativeClasses);
@@ -624,7 +632,7 @@ namespace UnityEditor
 							}
 							if (nativeClasses.Contains(current))
 							{
-								textWriter.WriteLine("template <> void RegisterClass<{0}>();", current.qualifiedName);
+								textWriter.WriteLine("template <> void RegisterClass<{0}>(const char*);", current.qualifiedName);
 							}
 							else
 							{
@@ -656,7 +664,7 @@ namespace UnityEditor
 						}
 						else
 						{
-							textWriter.WriteLine("\tRegisterClass<{0}>();", current2.qualifiedName);
+							textWriter.WriteLine("\tRegisterClass<{0}>(\"{1}\");", current2.qualifiedName, current2.module);
 						}
 						num++;
 					}

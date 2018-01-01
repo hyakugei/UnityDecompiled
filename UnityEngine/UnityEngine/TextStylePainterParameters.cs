@@ -1,10 +1,15 @@
 using System;
+using UnityEngine.Bindings;
 
 namespace UnityEngine
 {
+	[VisibleToOtherModules(new string[]
+	{
+		"UnityEngine.UIElementsModule"
+	})]
 	internal struct TextStylePainterParameters
 	{
-		public Rect layout;
+		public Rect rect;
 
 		public string text;
 

@@ -2,7 +2,7 @@ using System;
 
 namespace UnityEngine.Experimental.UIElements
 {
-	public abstract class EventBase
+	public abstract class EventBase : IDisposable
 	{
 		[Flags]
 		public enum EventFlags
@@ -10,19 +10,28 @@ namespace UnityEngine.Experimental.UIElements
 			None = 0,
 			Bubbles = 1,
 			Capturable = 2,
-			Cancellable = 4
+			Cancellable = 4,
+			Pooled = 256
 		}
 
 		private static long s_LastTypeId = 0L;
 
-		protected EventBase.EventFlags flags;
-
 		protected IEventHandler m_CurrentTarget;
+
+		private Event m_ImguiEvent;
+
+		private Vector2 m_OriginalMousePosition;
 
 		public long timestamp
 		{
 			get;
 			private set;
+		}
+
+		protected EventBase.EventFlags flags
+		{
+			get;
+			set;
 		}
 
 		public bool bubbles
@@ -85,7 +94,7 @@ namespace UnityEngine.Experimental.UIElements
 					VisualElement visualElement = this.currentTarget as VisualElement;
 					if (visualElement != null)
 					{
-						this.imguiEvent.mousePosition = visualElement.WorldToLocal(this.imguiEvent.mousePosition);
+						this.imguiEvent.mousePosition = visualElement.WorldToLocal(this.m_OriginalMousePosition);
 					}
 				}
 			}
@@ -99,8 +108,30 @@ namespace UnityEngine.Experimental.UIElements
 
 		public Event imguiEvent
 		{
-			get;
-			protected set;
+			get
+			{
+				return this.m_ImguiEvent;
+			}
+			protected set
+			{
+				this.m_ImguiEvent = value;
+				if (this.m_ImguiEvent != null)
+				{
+					this.originalMousePosition = value.mousePosition;
+				}
+			}
+		}
+
+		public Vector2 originalMousePosition
+		{
+			get
+			{
+				return this.m_OriginalMousePosition;
+			}
+			private set
+			{
+				this.m_OriginalMousePosition = value;
+			}
 		}
 
 		protected EventBase()
@@ -146,7 +177,10 @@ namespace UnityEngine.Experimental.UIElements
 			this.m_CurrentTarget = null;
 			this.dispatch = false;
 			this.imguiEvent = null;
+			this.originalMousePosition = Vector2.zero;
 		}
+
+		public abstract void Dispose();
 	}
 	public abstract class EventBase<T> : EventBase where T : EventBase<T>, new()
 	{
@@ -163,12 +197,22 @@ namespace UnityEngine.Experimental.UIElements
 		{
 			T result = EventBase<T>.s_Pool.Get();
 			result.Init();
+			result.flags |= EventBase.EventFlags.Pooled;
 			return result;
 		}
 
-		public static void ReleasePooled(T evt)
+		protected static void ReleasePooled(T evt)
 		{
-			EventBase<T>.s_Pool.Release(evt);
+			if ((evt.flags & EventBase.EventFlags.Pooled) == EventBase.EventFlags.Pooled)
+			{
+				EventBase<T>.s_Pool.Release(evt);
+				evt.flags &= ~EventBase.EventFlags.Pooled;
+			}
+		}
+
+		public override void Dispose()
+		{
+			EventBase<T>.ReleasePooled((T)((object)this));
 		}
 
 		public override long GetEventTypeId()

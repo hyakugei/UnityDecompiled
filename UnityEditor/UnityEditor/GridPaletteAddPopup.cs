@@ -7,17 +7,17 @@ namespace UnityEditor
 	{
 		private static class Styles
 		{
-			public static readonly GUIContent nameLabel = EditorGUIUtility.TextContent("Name");
+			public static readonly GUIContent nameLabel = EditorGUIUtility.TrTextContent("Name", null, null);
 
-			public static readonly GUIContent ok = EditorGUIUtility.TextContent("Create");
+			public static readonly GUIContent ok = EditorGUIUtility.TrTextContent("Create", null, null);
 
-			public static readonly GUIContent cancel = EditorGUIUtility.TextContent("Cancel");
+			public static readonly GUIContent cancel = EditorGUIUtility.TrTextContent("Cancel", null, null);
 
-			public static readonly GUIContent header = EditorGUIUtility.TextContent("Create New Palette");
+			public static readonly GUIContent header = EditorGUIUtility.TrTextContent("Create New Palette", null, null);
 
-			public static readonly GUIContent gridLabel = EditorGUIUtility.TextContent("Grid");
+			public static readonly GUIContent gridLabel = EditorGUIUtility.TrTextContent("Grid", null, null);
 
-			public static readonly GUIContent sizeLabel = EditorGUIUtility.TextContent("Cell Size");
+			public static readonly GUIContent sizeLabel = EditorGUIUtility.TrTextContent("Cell Size", null, null);
 		}
 
 		private static long s_LastClosedTime;
@@ -39,7 +39,7 @@ namespace UnityEditor
 			this.m_Owner = owner;
 			this.m_CellSize = new Vector3(1f, 1f, 0f);
 			buttonRect = GUIUtility.GUIToScreenRect(buttonRect);
-			base.ShowAsDropDown(buttonRect, new Vector2(312f, 140f));
+			base.ShowAsDropDown(buttonRect, new Vector2(312f, 140f), null, ShowMode.PopupMenuWithKeyboardFocus);
 		}
 
 		internal void OnGUI()
@@ -97,6 +97,7 @@ namespace UnityEditor
 						this.m_Owner.Repaint();
 					}
 					base.Close();
+					GUIUtility.ExitGUI();
 				}
 			}
 			GUILayout.Space(10f);

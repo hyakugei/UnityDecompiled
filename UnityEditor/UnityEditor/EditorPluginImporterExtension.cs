@@ -47,8 +47,8 @@ namespace UnityEditor
 		{
 			return new EditorPluginImporterExtension.EditorProperty[]
 			{
-				new EditorPluginImporterExtension.EditorProperty(EditorGUIUtility.TextContent("CPU|Is plugin compatible with 32bit or 64bit Editor?"), "CPU", EditorPluginImporterExtension.EditorPluginCPUArchitecture.AnyCPU),
-				new EditorPluginImporterExtension.EditorProperty(EditorGUIUtility.TextContent("OS|Is plugin compatible with Windows, OS X or Linux Editor?"), "OS", EditorPluginImporterExtension.EditorPluginOSArchitecture.AnyOS)
+				new EditorPluginImporterExtension.EditorProperty(EditorGUIUtility.TrTextContent("CPU", "Is plugin compatible with 32bit or 64bit Editor?", null), "CPU", EditorPluginImporterExtension.EditorPluginCPUArchitecture.AnyCPU),
+				new EditorPluginImporterExtension.EditorProperty(EditorGUIUtility.TrTextContent("OS", "Is plugin compatible with Windows, OS X or Linux Editor?", null), "OS", EditorPluginImporterExtension.EditorPluginOSArchitecture.AnyOS)
 			};
 		}
 	}

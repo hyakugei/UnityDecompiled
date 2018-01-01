@@ -2,7 +2,7 @@ using System;
 
 namespace UnityEditor.Experimental.UIElements.GraphView
 {
-	internal interface IDroppable
+	public interface IDroppable
 	{
 		bool IsDroppable();
 	}

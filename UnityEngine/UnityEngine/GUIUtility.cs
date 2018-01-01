@@ -1,30 +1,90 @@
 using System;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using UnityEngine.Bindings;
 using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
 	public class GUIUtility
 	{
+		[VisibleToOtherModules(new string[]
+		{
+			"UnityEngine.UIElementsModule"
+		})]
+		internal struct ManualTex2SRGBScope : IDisposable
+		{
+			private bool m_Disposed;
+
+			private bool m_WasEnabled;
+
+			public ManualTex2SRGBScope(bool enabled)
+			{
+				this.m_Disposed = false;
+				this.m_WasEnabled = GUIUtility.manualTex2SRGBEnabled;
+				GUIUtility.manualTex2SRGBEnabled = enabled;
+			}
+
+			public void Dispose()
+			{
+				if (!this.m_Disposed)
+				{
+					this.m_Disposed = true;
+					GUIUtility.manualTex2SRGBEnabled = this.m_WasEnabled;
+				}
+			}
+		}
+
+		[VisibleToOtherModules(new string[]
+		{
+			"UnityEngine.UIElementsModule"
+		})]
 		internal static int s_SkinMode;
 
+		[VisibleToOtherModules(new string[]
+		{
+			"UnityEngine.UIElementsModule"
+		})]
 		internal static int s_OriginalID;
 
+		[VisibleToOtherModules(new string[]
+		{
+			"UnityEngine.UIElementsModule"
+		})]
 		internal static Action takeCapture;
 
+		[VisibleToOtherModules(new string[]
+		{
+			"UnityEngine.UIElementsModule"
+		})]
 		internal static Action releaseCapture;
 
+		[VisibleToOtherModules(new string[]
+		{
+			"UnityEngine.UIElementsModule"
+		})]
 		internal static Func<int, IntPtr, bool> processEvent;
 
+		[VisibleToOtherModules(new string[]
+		{
+			"UnityEngine.UIElementsModule"
+		})]
 		internal static Action cleanupRoots;
 
+		[VisibleToOtherModules(new string[]
+		{
+			"UnityEngine.UIElementsModule"
+		})]
 		internal static Func<Exception, bool> endContainerGUIFromException;
 
 		internal static Vector2 s_EditorScreenPointOffset = Vector2.zero;
 
 		internal static float pixelsPerPoint
 		{
+			[VisibleToOtherModules(new string[]
+			{
+				"UnityEngine.UIElementsModule"
+			})]
 			get
 			{
 				return GUIUtility.Internal_GetPixelsPerPoint();
@@ -71,6 +131,10 @@ namespace UnityEngine
 			set;
 		}
 
+		[VisibleToOtherModules(new string[]
+		{
+			"UnityEngine.UIElementsModule"
+		})]
 		internal static extern bool mouseUsed
 		{
 			[GeneratedByOldBindingsGenerator]
@@ -88,6 +152,10 @@ namespace UnityEngine
 			get;
 		}
 
+		[VisibleToOtherModules(new string[]
+		{
+			"UnityEngine.UIElementsModule"
+		})]
 		internal static extern bool textFieldInput
 		{
 			[GeneratedByOldBindingsGenerator]
@@ -97,6 +165,37 @@ namespace UnityEngine
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
+
+		[VisibleToOtherModules(new string[]
+		{
+			"UnityEngine.UIElementsModule"
+		})]
+		internal static extern bool manualTex2SRGBEnabled
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		[VisibleToOtherModules(new string[]
+		{
+			"UnityEngine.UIElementsModule"
+		})]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void BeginContainerFromOwner(ScriptableObject owner);
+
+		[VisibleToOtherModules(new string[]
+		{
+			"UnityEngine.UIElementsModule"
+		})]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void BeginContainer(ObjectGUIState objectGUIState);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void Internal_EndContainer();
 
 		public static int GetControlID(FocusType focus)
 		{
@@ -178,6 +277,10 @@ namespace UnityEngine
 			return GUIUtility.processEvent != null && GUIUtility.processEvent(instanceID, nativeEventPtr);
 		}
 
+		[VisibleToOtherModules(new string[]
+		{
+			"UnityEngine.UIElementsModule"
+		})]
 		internal static void EndContainer()
 		{
 			GUIUtility.Internal_EndContainer();
@@ -255,6 +358,10 @@ namespace UnityEngine
 			return GUIUtility.endContainerGUIFromException != null && GUIUtility.endContainerGUIFromException(exception);
 		}
 
+		[VisibleToOtherModules(new string[]
+		{
+			"UnityEngine.UIElementsModule"
+		})]
 		internal static void ResetGlobalState()
 		{
 			GUI.skin = null;
@@ -262,6 +369,10 @@ namespace UnityEngine
 			GUI.changed = false;
 		}
 
+		[VisibleToOtherModules(new string[]
+		{
+			"UnityEngine.UIElementsModule"
+		})]
 		internal static bool IsExitGUIException(Exception exception)
 		{
 			while (exception is TargetInvocationException && exception.InnerException != null)
@@ -271,6 +382,10 @@ namespace UnityEngine
 			return exception is ExitGUIException;
 		}
 
+		[VisibleToOtherModules(new string[]
+		{
+			"UnityEngine.UIElementsModule"
+		})]
 		internal static bool ShouldRethrowException(Exception exception)
 		{
 			return GUIUtility.IsExitGUIException(exception);
@@ -327,15 +442,6 @@ namespace UnityEngine
 			GUI.matrix = lhs * matrix;
 		}
 
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern void BeginContainerFromOwner(ScriptableObject owner);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern void BeginContainer(ObjectGUIState objectGUIState);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern void Internal_EndContainer();
-
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern float Internal_GetPixelsPerPoint();
@@ -353,7 +459,10 @@ namespace UnityEngine
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern int INTERNAL_CALL_Internal_GetNextControlID2(int hint, FocusType focusType, ref Rect rect);
 
-		[GeneratedByOldBindingsGenerator]
+		[VisibleToOtherModules(new string[]
+		{
+			"UnityEngine.UIElementsModule"
+		}), GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern int GetPermanentControlID();
 
@@ -365,15 +474,24 @@ namespace UnityEngine
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern void Internal_SetHotControl(int value);
 
-		[GeneratedByOldBindingsGenerator]
+		[VisibleToOtherModules(new string[]
+		{
+			"UnityEngine.UIElementsModule"
+		}), GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern void UpdateUndoName();
 
-		[GeneratedByOldBindingsGenerator]
+		[VisibleToOtherModules(new string[]
+		{
+			"UnityEngine.UIElementsModule"
+		}), GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern bool GetChanged();
 
-		[GeneratedByOldBindingsGenerator]
+		[VisibleToOtherModules(new string[]
+		{
+			"UnityEngine.UIElementsModule"
+		}), GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern void SetChanged(bool changed);
 
@@ -385,7 +503,10 @@ namespace UnityEngine
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern void Internal_SetKeyboardControl(int value);
 
-		[GeneratedByOldBindingsGenerator]
+		[VisibleToOtherModules(new string[]
+		{
+			"UnityEngine.UIElementsModule"
+		}), GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern void SetDidGUIWindowsEatLastEvent(bool value);
 
@@ -401,23 +522,38 @@ namespace UnityEngine
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern void Internal_ExitGUI();
 
-		[GeneratedByOldBindingsGenerator]
+		[VisibleToOtherModules(new string[]
+		{
+			"UnityEngine.UIElementsModule"
+		}), GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern int Internal_GetGUIDepth();
 
-		[GeneratedByOldBindingsGenerator]
+		[VisibleToOtherModules(new string[]
+		{
+			"UnityEngine.UIElementsModule"
+		}), GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern int CheckForTabEvent(Event evt);
 
-		[GeneratedByOldBindingsGenerator]
+		[VisibleToOtherModules(new string[]
+		{
+			"UnityEngine.UIElementsModule"
+		}), GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern void SetKeyboardControlToFirstControlId();
 
-		[GeneratedByOldBindingsGenerator]
+		[VisibleToOtherModules(new string[]
+		{
+			"UnityEngine.UIElementsModule"
+		}), GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern void SetKeyboardControlToLastControlId();
 
-		[GeneratedByOldBindingsGenerator]
+		[VisibleToOtherModules(new string[]
+		{
+			"UnityEngine.UIElementsModule"
+		}), GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern bool HasFocusableControls();
 	}

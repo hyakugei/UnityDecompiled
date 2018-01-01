@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using UnityEditor.Scripting.ScriptCompilation;
+using UnityEngine;
 
 namespace UnityEditor.Compilation
 {
@@ -68,20 +69,7 @@ namespace UnityEditor.Compilation
 
 		static CompilationPipeline()
 		{
-			EditorCompilationInterface.Instance.assemblyCompilationStarted += delegate(string assemblyPath)
-			{
-				if (CompilationPipeline.assemblyCompilationStarted != null)
-				{
-					CompilationPipeline.assemblyCompilationStarted(assemblyPath);
-				}
-			};
-			EditorCompilationInterface.Instance.assemblyCompilationFinished += delegate(string assemblyPath, CompilerMessage[] messages)
-			{
-				if (CompilationPipeline.assemblyCompilationFinished != null)
-				{
-					CompilationPipeline.assemblyCompilationFinished(assemblyPath, messages);
-				}
-			};
+			CompilationPipeline.SubscribeToEvents(EditorCompilationInterface.Instance);
 		}
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -89,6 +77,38 @@ namespace UnityEditor.Compilation
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern void LogEditorCompilationError(string message, int instanceID);
+
+		internal static void SubscribeToEvents(EditorCompilation editorCompilation)
+		{
+			editorCompilation.assemblyCompilationStarted += delegate(string assemblyPath)
+			{
+				try
+				{
+					if (CompilationPipeline.assemblyCompilationStarted != null)
+					{
+						CompilationPipeline.assemblyCompilationStarted(assemblyPath);
+					}
+				}
+				catch (Exception exception)
+				{
+					Debug.LogException(exception);
+				}
+			};
+			editorCompilation.assemblyCompilationFinished += delegate(string assemblyPath, CompilerMessage[] messages)
+			{
+				try
+				{
+					if (CompilationPipeline.assemblyCompilationFinished != null)
+					{
+						CompilationPipeline.assemblyCompilationFinished(assemblyPath, messages);
+					}
+				}
+				catch (Exception exception)
+				{
+					Debug.LogException(exception);
+				}
+			};
+		}
 
 		public static Assembly[] GetAssemblies()
 		{
@@ -138,7 +158,7 @@ namespace UnityEditor.Compilation
 			for (int j = 0; j < allEditorScriptAssemblies.Length; j++)
 			{
 				ScriptAssembly scriptAssembly = allEditorScriptAssemblies[j];
-				string fileNameWithoutExtension = AssetPath.GetFileNameWithoutExtension(scriptAssembly.Filename);
+				string assemblyNameWithoutExtension = AssetPath.GetAssemblyNameWithoutExtension(scriptAssembly.Filename);
 				string fullPath = scriptAssembly.FullPath;
 				string[] files = scriptAssembly.Files;
 				string[] defines = scriptAssembly.Defines;
@@ -150,7 +170,7 @@ namespace UnityEditor.Compilation
 				{
 					assemblyFlags |= AssemblyFlags.EditorAssembly;
 				}
-				array[j] = new Assembly(fileNameWithoutExtension, fullPath, files, defines, assemblyReferences, references, assemblyFlags);
+				array[j] = new Assembly(assemblyNameWithoutExtension, fullPath, files, defines, assemblyReferences, references, assemblyFlags);
 			}
 			return array;
 		}
@@ -162,7 +182,16 @@ namespace UnityEditor.Compilation
 
 		internal static string GetAssemblyNameFromScriptPath(EditorCompilation editorCompilation, string sourceFilePath)
 		{
-			return editorCompilation.GetTargetAssembly(sourceFilePath).Name;
+			string result;
+			try
+			{
+				result = editorCompilation.GetTargetAssembly(sourceFilePath).Name;
+			}
+			catch (Exception)
+			{
+				result = null;
+			}
+			return result;
 		}
 
 		internal static string GetAssemblyDefinitionFilePathFromAssemblyName(EditorCompilation editorCompilation, string assemblyName)
@@ -186,7 +215,7 @@ namespace UnityEditor.Compilation
 			try
 			{
 				CustomScriptAssembly customScriptAssembly = editorCompilation.FindCustomScriptAssemblyFromScriptPath(sourceFilePath);
-				result = customScriptAssembly.FilePath;
+				result = ((customScriptAssembly == null) ? null : customScriptAssembly.FilePath);
 			}
 			catch (Exception)
 			{

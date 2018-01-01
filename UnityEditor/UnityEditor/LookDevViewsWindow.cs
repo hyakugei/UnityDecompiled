@@ -13,26 +13,26 @@ namespace UnityEditor
 
 			public readonly GUIStyle sToolBarButton = "toolbarbutton";
 
-			public readonly GUIContent sTitle = EditorGUIUtility.TextContent("Views");
+			public readonly GUIContent sTitle = EditorGUIUtility.TrTextContent("Views", null, null);
 
-			public readonly GUIContent sExposure = EditorGUIUtility.TextContent("EV|Exposure value: control the brightness of the environment.");
+			public readonly GUIContent sExposure = EditorGUIUtility.TrTextContent("EV", "Exposure value: control the brightness of the environment.", null);
 
-			public readonly GUIContent sEnvironment = EditorGUIUtility.TextContent("Environment|Select an environment from the list of currently available environments");
+			public readonly GUIContent sEnvironment = EditorGUIUtility.TrTextContent("Environment", "Select an environment from the list of currently available environments", null);
 
-			public readonly GUIContent sRotation = EditorGUIUtility.TextContent("Rotation|Change the rotation of the environment");
+			public readonly GUIContent sRotation = EditorGUIUtility.TrTextContent("Rotation", "Change the rotation of the environment", null);
 
 			public readonly GUIContent sZero = EditorGUIUtility.TextContent("0");
 
-			public readonly GUIContent sLoD = EditorGUIUtility.TextContent("LoD|Choose displayed LoD");
+			public readonly GUIContent sLoD = EditorGUIUtility.TrTextContent("LoD", "Choose displayed LoD", null);
 
-			public readonly GUIContent sLoDAuto = EditorGUIUtility.TextContent("LoD (auto)|Choose displayed LoD");
+			public readonly GUIContent sLoDAuto = EditorGUIUtility.TrTextContent("LoD (auto)", "Choose displayed LoD", null);
 
-			public readonly GUIContent sShadingMode = EditorGUIUtility.TextContent("Shading|Select shading mode");
+			public readonly GUIContent sShadingMode = EditorGUIUtility.TrTextContent("Shading", "Select shading mode", null);
 
 			public readonly GUIContent[] sViewTitle = new GUIContent[]
 			{
-				EditorGUIUtility.TextContent("Main View (1)"),
-				EditorGUIUtility.TextContent("Second View (2)")
+				EditorGUIUtility.TrTextContent("Main View (1)", null, null),
+				EditorGUIUtility.TrTextContent("Second View (2)", null, null)
 			};
 
 			public readonly GUIStyle[] sViewTitleStyles = new GUIStyle[]
@@ -61,9 +61,9 @@ namespace UnityEditor
 				11
 			};
 
-			public readonly GUIContent sLinkActive = EditorGUIUtility.IconContent("LookDevMirrorViewsActive", "Link|Links the property between the different views");
+			public readonly GUIContent sLinkActive = EditorGUIUtility.TrIconContent("LookDevMirrorViewsActive", "Links the property between the different views");
 
-			public readonly GUIContent sLinkInactive = EditorGUIUtility.IconContent("LookDevMirrorViewsInactive", "Link|Links the property between the different views");
+			public readonly GUIContent sLinkInactive = EditorGUIUtility.TrIconContent("LookDevMirrorViewsInactive", "Links the property between the different views");
 
 			public Styles()
 			{

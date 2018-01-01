@@ -11,30 +11,32 @@ namespace UnityEditorInternal.VR
 	{
 		private static class Styles
 		{
-			public static readonly GUIContent singlepassAndroidWarning = EditorGUIUtility.TextContent("Single Pass stereo rendering requires OpenGL ES 3. Please make sure that it's the first one listed under Graphics APIs.");
+			public static readonly GUIContent singlepassAndroidWarning = EditorGUIUtility.TrTextContent("Single Pass stereo rendering requires OpenGL ES 3. Please make sure that it's the first one listed under Graphics APIs.", null, null);
 
-			public static readonly GUIContent singlepassAndroidWarning2 = EditorGUIUtility.TextContent("Multi Pass will be used on Android devices that don't support Single Pass.");
+			public static readonly GUIContent singlepassAndroidWarning2 = EditorGUIUtility.TrTextContent("Multi Pass will be used on Android devices that don't support Single Pass.", null, null);
 
-			public static readonly GUIContent singlePassInstancedWarning = EditorGUIUtility.TextContent("Single Pass Instanced is only supported on Windows. Multi Pass will be used on other platforms.");
+			public static readonly GUIContent singlePassInstancedWarning = EditorGUIUtility.TrTextContent("Single Pass Instanced is only supported on Windows. Multi Pass will be used on other platforms.", null, null);
 
 			public static readonly GUIContent[] kDefaultStereoRenderingPaths = new GUIContent[]
 			{
-				new GUIContent("Multi Pass"),
-				new GUIContent("Single Pass"),
-				new GUIContent("Single Pass Instanced (Preview)")
+				EditorGUIUtility.TrTextContent("Multi Pass", null, null),
+				EditorGUIUtility.TrTextContent("Single Pass", null, null),
+				EditorGUIUtility.TrTextContent("Single Pass Instanced (Preview)", null, null)
 			};
 
 			public static readonly GUIContent[] kAndroidStereoRenderingPaths = new GUIContent[]
 			{
-				new GUIContent("Multi Pass"),
-				new GUIContent("Single Pass (Preview)")
+				EditorGUIUtility.TrTextContent("Multi Pass", null, null),
+				EditorGUIUtility.TrTextContent("Single Pass (Preview)", null, null)
 			};
 
-			public static readonly GUIContent xrSettingsTitle = EditorGUIUtility.TextContent("XR Settings");
+			public static readonly GUIContent xrSettingsTitle = EditorGUIUtility.TrTextContent("XR Settings", null, null);
 
-			public static readonly GUIContent supportedCheckbox = EditorGUIUtility.TextContent("Virtual Reality Supported");
+			public static readonly GUIContent supportedCheckbox = EditorGUIUtility.TrTextContent("Virtual Reality Supported", null, null);
 
-			public static readonly GUIContent listHeader = EditorGUIUtility.TextContent("Virtual Reality SDKs");
+			public static readonly GUIContent listHeader = EditorGUIUtility.TrTextContent("Virtual Reality SDKs", null, null);
+
+			public static readonly GUIContent stereo360CaptureCheckbox = EditorGUIUtility.TrTextContent("360 Stereo Capture", null, null);
 		}
 
 		private PlayerSettingsEditor m_Settings;
@@ -53,7 +55,7 @@ namespace UnityEditorInternal.VR
 
 		private SerializedProperty m_AndroidEnableTango;
 
-		private SerializedProperty m_AndroidTangoUsesCamera;
+		private SerializedProperty m_Enable360StereoCapture;
 
 		private bool m_InstallsRequired = false;
 
@@ -70,7 +72,11 @@ namespace UnityEditorInternal.VR
 			this.m_Settings = settingsEditor;
 			this.m_StereoRenderingPath = this.m_Settings.serializedObject.FindProperty("m_StereoRenderingPath");
 			this.m_AndroidEnableTango = this.m_Settings.FindPropertyAssert("AndroidEnableTango");
-			this.m_AndroidTangoUsesCamera = this.m_Settings.FindPropertyAssert("AndroidTangoUsesCamera");
+			SerializedProperty serializedProperty = this.m_Settings.serializedObject.FindProperty("vrSettings");
+			if (serializedProperty != null)
+			{
+				this.m_Enable360StereoCapture = serializedProperty.FindPropertyRelative("enable360StereoCapture");
+			}
 		}
 
 		private void RefreshVRDeviceList(BuildTargetGroup targetGroup)
@@ -123,6 +129,11 @@ namespace UnityEditorInternal.VR
 			this.GUISectionIndex = sectionIndex;
 			if (this.TargetGroupSupportsVirtualReality(targetGroup) || this.TargetGroupSupportsAugmentedReality(targetGroup))
 			{
+				if (VREditor.IsDeviceListDirty(targetGroup))
+				{
+					VREditor.ClearDeviceListDirty(targetGroup);
+					this.m_VRDeviceActiveUI[targetGroup].list = VREditor.GetVREnabledDevicesOnTargetGroup(targetGroup);
+				}
 				this.CheckDevicesRequireInstall(targetGroup);
 				if (this.m_Settings.BeginSettingsBox(sectionIndex, PlayerSettingsEditorVR.Styles.xrSettingsTitle))
 				{
@@ -133,9 +144,11 @@ namespace UnityEditorInternal.VR
 					using (new EditorGUI.DisabledScope(EditorApplication.isPlaying))
 					{
 						this.DevicesGUI(targetGroup);
+						this.ErrorOnVRDeviceIncompatibility(targetGroup);
 						this.SinglePassStereoGUI(targetGroup, this.m_StereoRenderingPath);
 						this.TangoGUI(targetGroup);
 						this.VuforiaGUI(targetGroup);
+						this.Stereo360CaptureGUI();
 						this.ErrorOnARDeviceIncompatibility(targetGroup);
 					}
 					this.InstallGUI(targetGroup);
@@ -205,7 +218,7 @@ namespace UnityEditorInternal.VR
 
 		private static bool TargetSupportsSinglePassStereoRendering(BuildTargetGroup targetGroup)
 		{
-			return targetGroup == BuildTargetGroup.Standalone || targetGroup == BuildTargetGroup.Android || targetGroup == BuildTargetGroup.PS4;
+			return targetGroup == BuildTargetGroup.Standalone || targetGroup == BuildTargetGroup.Android || targetGroup == BuildTargetGroup.WSA || targetGroup == BuildTargetGroup.PS4;
 		}
 
 		private static bool TargetSupportsStereoInstancingRendering(BuildTargetGroup targetGroup)
@@ -249,7 +262,7 @@ namespace UnityEditorInternal.VR
 				{
 					stereoRenderingPath.intValue = 0;
 				}
-				EditorGUILayout.IntPopup(stereoRenderingPath, array, array2, EditorGUIUtility.TextContent("Stereo Rendering Method*"), new GUILayoutOption[0]);
+				EditorGUILayout.IntPopup(stereoRenderingPath, array, array2, EditorGUIUtility.TrTextContent("Stereo Rendering Method*", null, null), new GUILayoutOption[0]);
 				if (stereoRenderingPath.intValue == 1 && targetGroup == BuildTargetGroup.Android)
 				{
 					GraphicsDeviceType[] graphicsAPIs = PlayerSettings.GetGraphicsAPIs(BuildTarget.Android);
@@ -267,6 +280,11 @@ namespace UnityEditorInternal.VR
 					EditorGUILayout.HelpBox(PlayerSettingsEditorVR.Styles.singlePassInstancedWarning.text, MessageType.Warning);
 				}
 			}
+		}
+
+		private void Stereo360CaptureGUI()
+		{
+			EditorGUILayout.PropertyField(this.m_Enable360StereoCapture, PlayerSettingsEditorVR.Styles.stereo360CaptureCheckbox, new GUILayoutOption[0]);
 		}
 
 		private void AddVRDeviceMenuSelected(object userData, string[] options, int selected)
@@ -421,6 +439,21 @@ namespace UnityEditorInternal.VR
 			}
 		}
 
+		private void ErrorOnVRDeviceIncompatibility(BuildTargetGroup targetGroup)
+		{
+			if (PlayerSettings.GetVirtualRealitySupported(targetGroup))
+			{
+				if (targetGroup == BuildTargetGroup.Android)
+				{
+					List<string> list = VREditor.GetVREnabledDevicesOnTargetGroup(targetGroup).ToList<string>();
+					if (list.Contains("Oculus") && list.Contains("daydream"))
+					{
+						EditorGUILayout.HelpBox("To avoid initialization conflicts on devices which support both Daydream and Oculus based VR, build separate APKs with different package names, targeting only the Daydream or Oculus VR SDK in the respective APK.", MessageType.Warning);
+					}
+				}
+			}
+		}
+
 		private void ErrorOnARDeviceIncompatibility(BuildTargetGroup targetGroup)
 		{
 			if (targetGroup == BuildTargetGroup.Android)
@@ -446,14 +479,13 @@ namespace UnityEditorInternal.VR
 		{
 			if (this.TargetGroupSupportsTango(targetGroup))
 			{
-				EditorGUILayout.PropertyField(this.m_AndroidEnableTango, EditorGUIUtility.TextContent("Tango Supported"), new GUILayoutOption[0]);
+				EditorGUILayout.PropertyField(this.m_AndroidEnableTango, EditorGUIUtility.TrTextContent("ARCore Supported", null, null), new GUILayoutOption[0]);
 				if (PlayerSettings.Android.androidTangoEnabled)
 				{
 					EditorGUI.indentLevel++;
-					EditorGUILayout.PropertyField(this.m_AndroidTangoUsesCamera, EditorGUIUtility.TextContent("Tango Uses Camera"), new GUILayoutOption[0]);
-					if (PlayerSettings.Android.minSdkVersion < AndroidSdkVersions.AndroidApiLevel23)
+					if (PlayerSettings.Android.minSdkVersion < AndroidSdkVersions.AndroidApiLevel24)
 					{
-						GUIContent gUIContent = EditorGUIUtility.TextContent("Tango requires 'Minimum API Level' to be at least Android 6.0");
+						GUIContent gUIContent = EditorGUIUtility.TrTextContent("ARCore requires 'Minimum API Level' to be at least Android 7.0", null, null);
 						EditorGUILayout.HelpBox(gUIContent.text, MessageType.Warning);
 					}
 					EditorGUI.indentLevel--;
@@ -474,7 +506,7 @@ namespace UnityEditorInternal.VR
 					}
 					bool flag2 = PlayerSettings.GetPlatformVuforiaEnabled(targetGroup);
 					EditorGUI.BeginChangeCheck();
-					flag2 = EditorGUILayout.Toggle(EditorGUIUtility.TextContent("Vuforia Augmented Reality Supported"), flag2, new GUILayoutOption[0]);
+					flag2 = EditorGUILayout.Toggle(EditorGUIUtility.TrTextContent("Vuforia Augmented Reality Supported", null, null), flag2, new GUILayoutOption[0]);
 					if (EditorGUI.EndChangeCheck())
 					{
 						PlayerSettings.SetPlatformVuforiaEnabled(targetGroup, flag2);

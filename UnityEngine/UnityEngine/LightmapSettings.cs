@@ -60,6 +60,10 @@ namespace UnityEngine
 			}
 		}
 
+		private LightmapSettings()
+		{
+		}
+
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern void Reset();

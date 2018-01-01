@@ -37,7 +37,7 @@ namespace UnityEditor.Connect
 		{
 			UnityConnectConsentView unityConnectConsentView = ScriptableObject.CreateInstance<UnityConnectConsentView>();
 			Rect position = new Rect(100f, 100f, 800f, 605f);
-			unityConnectConsentView.titleContent = EditorGUIUtility.TextContent("Unity Application Consent Window");
+			unityConnectConsentView.titleContent = EditorGUIUtility.TrTextContent("Unity Application Consent Window", null, null);
 			unityConnectConsentView.minSize = new Vector2(position.width, position.height);
 			unityConnectConsentView.maxSize = new Vector2(position.width, position.height);
 			unityConnectConsentView.position = position;

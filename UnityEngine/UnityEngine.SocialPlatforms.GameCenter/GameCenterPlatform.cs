@@ -7,7 +7,7 @@ using UnityEngine.SocialPlatforms.Impl;
 namespace UnityEngine.SocialPlatforms.GameCenter
 {
 	[RequiredByNativeCode]
-	public sealed class GameCenterPlatform : ISocialPlatform
+	public class GameCenterPlatform : ISocialPlatform
 	{
 		private static Action<bool, string> s_AuthenticateCallback;
 
@@ -31,7 +31,7 @@ namespace UnityEngine.SocialPlatforms.GameCenter
 				{
 					GameCenterPlatform.m_LocalUser = new LocalUser();
 				}
-				if (GameCenterPlatform.Internal_Authenticated() && GameCenterPlatform.m_LocalUser.id == "0")
+				if (GameCenterPlatform.GetAuthenticated() && GameCenterPlatform.m_LocalUser.id == "0")
 				{
 					GameCenterPlatform.PopulateLocalUser();
 				}
@@ -183,7 +183,7 @@ namespace UnityEngine.SocialPlatforms.GameCenter
 			}
 			else
 			{
-				GameCenterPlatform.Internal_LoadFriends(callback);
+				GameCenterPlatform.LoadFriends(callback);
 			}
 		}
 
@@ -198,17 +198,17 @@ namespace UnityEngine.SocialPlatforms.GameCenter
 		void ISocialPlatform.Authenticate(ILocalUser user, Action<bool, string> callback)
 		{
 			GameCenterPlatform.s_AuthenticateCallback = callback;
-			GameCenterPlatform.Internal_Authenticate();
+			GameCenterPlatform.Authenticate();
 		}
 
 		[RequiredByNativeCode]
 		private static void PopulateLocalUser()
 		{
-			GameCenterPlatform.m_LocalUser.SetAuthenticated(GameCenterPlatform.Internal_Authenticated());
+			GameCenterPlatform.m_LocalUser.SetAuthenticated(GameCenterPlatform.GetAuthenticated());
 			GameCenterPlatform.m_LocalUser.SetUserName(GameCenterPlatform.Internal_UserName());
 			GameCenterPlatform.m_LocalUser.SetUserID(GameCenterPlatform.Internal_UserID());
-			GameCenterPlatform.m_LocalUser.SetUnderage(GameCenterPlatform.Internal_Underage());
-			GameCenterPlatform.m_LocalUser.SetImage(GameCenterPlatform.Internal_UserImage());
+			GameCenterPlatform.m_LocalUser.SetUnderage(GameCenterPlatform.GetIsUnderage());
+			GameCenterPlatform.m_LocalUser.SetImage(GameCenterPlatform.GetUserImage());
 		}
 
 		public void LoadAchievementDescriptions(Action<IAchievementDescription[]> callback)
@@ -222,7 +222,7 @@ namespace UnityEngine.SocialPlatforms.GameCenter
 			}
 			else
 			{
-				GameCenterPlatform.Internal_LoadAchievementDescriptions(callback);
+				GameCenterPlatform.InternalLoadAchievementDescriptions(callback);
 			}
 		}
 
@@ -237,7 +237,7 @@ namespace UnityEngine.SocialPlatforms.GameCenter
 			}
 			else
 			{
-				GameCenterPlatform.Internal_ReportProgress(id, progress, callback);
+				GameCenterPlatform.InternalReportProgress(id, progress, callback);
 			}
 		}
 
@@ -252,7 +252,7 @@ namespace UnityEngine.SocialPlatforms.GameCenter
 			}
 			else
 			{
-				GameCenterPlatform.Internal_LoadAchievements(callback);
+				GameCenterPlatform.InternalLoadAchievements(callback);
 			}
 		}
 
@@ -267,7 +267,7 @@ namespace UnityEngine.SocialPlatforms.GameCenter
 			}
 			else
 			{
-				GameCenterPlatform.Internal_ReportScore(score, board, callback);
+				GameCenterPlatform.InternalReportScore(score, board, callback);
 			}
 		}
 
@@ -282,7 +282,7 @@ namespace UnityEngine.SocialPlatforms.GameCenter
 			}
 			else
 			{
-				GameCenterPlatform.Internal_LoadScores(category, callback);
+				GameCenterPlatform.InternalLoadScores(category, callback);
 			}
 		}
 
@@ -458,78 +458,61 @@ namespace UnityEngine.SocialPlatforms.GameCenter
 			}
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern void Internal_Authenticate();
+		internal static extern void Authenticate();
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern bool Internal_Authenticated();
+		internal static extern bool GetAuthenticated();
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern string Internal_UserName();
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern string Internal_UserID();
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern bool Internal_Underage();
+		internal static extern bool GetIsUnderage();
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern Texture2D Internal_UserImage();
+		internal static extern Texture2D GetUserImage();
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern void Internal_LoadFriends(object callback);
+		internal static extern void LoadFriends(object callback);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern void Internal_LoadAchievementDescriptions(object callback);
+		internal static extern void InternalLoadAchievementDescriptions(object callback);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern void Internal_LoadAchievements(object callback);
+		internal static extern void InternalLoadAchievements(object callback);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern void Internal_ReportProgress(string id, double progress, object callback);
+		internal static extern void InternalReportProgress(string id, double progress, object callback);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern void Internal_ReportScore(long score, string category, object callback);
+		internal static extern void InternalReportScore(long score, string category, object callback);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern void Internal_LoadScores(string category, object callback);
+		internal static extern void InternalLoadScores(string category, object callback);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern void Internal_ShowAchievementsUI();
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern void Internal_ShowLeaderboardUI();
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern void Internal_LoadUsers(string[] userIds, object callback);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern void Internal_ResetAllAchievements();
+		internal static extern void ResetAllAchievements();
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern void Internal_ShowDefaultAchievementBanner(bool value);
+		internal static extern void ShowDefaultAchievementBanner(bool value);
 
 		public static void ResetAllAchievements(Action<bool> callback)
 		{
 			GameCenterPlatform.s_ResetAchievements = callback;
-			GameCenterPlatform.Internal_ResetAllAchievements();
+			GameCenterPlatform.ResetAllAchievements();
 			Debug.Log("ResetAllAchievements - no effect in editor");
 			if (callback != null)
 			{
@@ -539,18 +522,17 @@ namespace UnityEngine.SocialPlatforms.GameCenter
 
 		public static void ShowDefaultAchievementCompletionBanner(bool value)
 		{
-			GameCenterPlatform.Internal_ShowDefaultAchievementBanner(value);
+			GameCenterPlatform.ShowDefaultAchievementBanner(value);
 			Debug.Log("ShowDefaultAchievementCompletionBanner - no effect in editor");
 		}
 
 		public static void ShowLeaderboardUI(string leaderboardID, TimeScope timeScope)
 		{
-			GameCenterPlatform.Internal_ShowSpecificLeaderboardUI(leaderboardID, (int)timeScope);
+			GameCenterPlatform.ShowSpecificLeaderboardUI(leaderboardID, (int)timeScope);
 			Debug.Log("ShowLeaderboardUI - no effect in editor");
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern void Internal_ShowSpecificLeaderboardUI(string leaderboardID, int timeScope);
+		internal static extern void ShowSpecificLeaderboardUI(string leaderboardID, int timeScope);
 	}
 }

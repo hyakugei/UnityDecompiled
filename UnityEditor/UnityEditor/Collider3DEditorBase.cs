@@ -9,9 +9,9 @@ namespace UnityEditor
 
 		protected SerializedProperty m_IsTrigger;
 
-		protected GUIContent materialContent = EditorGUIUtility.TextContent("Material|Reference to the Physic Material that determines how this Collider interacts with others.");
+		protected GUIContent materialContent = EditorGUIUtility.TrTextContent("Material", "Reference to the Physic Material that determines how this Collider interacts with others.", null);
 
-		protected GUIContent triggerContent = EditorGUIUtility.TextContent("Is Trigger|If enabled, this Collider is used for triggering events and is ignored by the physics engine.");
+		protected GUIContent triggerContent = EditorGUIUtility.TrTextContent("Is Trigger", "If enabled, this Collider is used for triggering events and is ignored by the physics engine.", null);
 
 		public override void OnEnable()
 		{

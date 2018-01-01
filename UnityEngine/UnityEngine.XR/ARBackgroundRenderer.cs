@@ -52,8 +52,7 @@ namespace UnityEngine.XR
 			}
 			set
 			{
-				this.m_BackgroundMaterial = value;
-				if (!value)
+				if (!(this.m_BackgroundMaterial == value))
 				{
 					this.RemoveCommandBuffersIfNeeded();
 					this.m_BackgroundMaterial = value;

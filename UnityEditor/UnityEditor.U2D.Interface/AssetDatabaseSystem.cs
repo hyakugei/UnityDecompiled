@@ -10,10 +10,9 @@ namespace UnityEditor.U2D.Interface
 			return AssetDatabase.GetAssetPath(o);
 		}
 
-		public ITextureImporter GetAssetImporterFromPath(string path)
+		public AssetImporter GetAssetImporterFromPath(string path)
 		{
-			AssetImporter assetImporter = AssetImporter.GetAtPath(path) as UnityEditor.TextureImporter;
-			return (!(assetImporter == null)) ? new TextureImporter((UnityEditor.TextureImporter)assetImporter) : null;
+			return AssetImporter.GetAtPath(path);
 		}
 	}
 }

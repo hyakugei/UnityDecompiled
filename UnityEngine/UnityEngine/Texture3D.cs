@@ -5,18 +5,17 @@ using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
+	[ExcludeFromPreset]
 	public sealed class Texture3D : Texture
 	{
 		public extern int depth
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
 
 		public extern TextureFormat format
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
@@ -70,27 +69,40 @@ namespace UnityEngine
 			this.SetPixels32(colors, miplevel);
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern void Apply([DefaultValue("true")] bool updateMipmaps, [DefaultValue("false")] bool makeNoLongerReadable);
+		private extern bool IsReadable();
 
-		[ExcludeFromDocs]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern bool Internal_CreateImpl([Writable] Texture3D mono, int w, int h, int d, TextureFormat format, bool mipmap);
+
+		private static void Internal_Create([Writable] Texture3D mono, int w, int h, int d, TextureFormat format, bool mipmap)
+		{
+			if (!Texture3D.Internal_CreateImpl(mono, w, h, d, format, mipmap))
+			{
+				throw new UnityException("Failed to create texture because of invalid parameters.");
+			}
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void ApplyImpl(bool updateMipmaps, bool makeNoLongerReadable);
+
+		public void Apply([DefaultValue("true")] bool updateMipmaps, [DefaultValue("false")] bool makeNoLongerReadable)
+		{
+			if (!this.IsReadable())
+			{
+				throw base.CreateNonReadableException(this);
+			}
+			this.ApplyImpl(updateMipmaps, makeNoLongerReadable);
+		}
+
 		public void Apply(bool updateMipmaps)
 		{
-			bool makeNoLongerReadable = false;
-			this.Apply(updateMipmaps, makeNoLongerReadable);
+			this.Apply(updateMipmaps, false);
 		}
 
-		[ExcludeFromDocs]
 		public void Apply()
 		{
-			bool makeNoLongerReadable = false;
-			bool updateMipmaps = true;
-			this.Apply(updateMipmaps, makeNoLongerReadable);
+			this.Apply(true, false);
 		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void Internal_Create([Writable] Texture3D mono, int width, int height, int depth, TextureFormat format, bool mipmap);
 	}
 }

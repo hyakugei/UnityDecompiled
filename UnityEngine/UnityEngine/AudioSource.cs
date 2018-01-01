@@ -8,7 +8,7 @@ using UnityEngine.Scripting;
 namespace UnityEngine
 {
 	[RequireComponent(typeof(Transform))]
-	public sealed class AudioSource : Behaviour
+	public sealed class AudioSource : AudioBehaviour
 	{
 		internal AudioSourceExtension spatializerExtension = null;
 

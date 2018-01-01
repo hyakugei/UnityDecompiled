@@ -109,6 +109,11 @@ namespace UnityEditor
 					{
 						if (ScriptableSingleton<TileDragAndDropManager>.instance.m_HoverData.Count > 0)
 						{
+							Tilemap componentInParent2 = Selection.activeGameObject.GetComponentInParent<Tilemap>();
+							if (componentInParent2 != null)
+							{
+								componentInParent2.ClearAllEditorPreviewTiles();
+							}
 							Event.current.Use();
 						}
 						ScriptableSingleton<TileDragAndDropManager>.instance.m_HoverData = null;

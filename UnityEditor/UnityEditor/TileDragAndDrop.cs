@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using UnityEditorInternal;
 using UnityEngine;
@@ -9,6 +10,15 @@ namespace UnityEditor
 {
 	internal static class TileDragAndDrop
 	{
+		private enum UserTileCreationMode
+		{
+			Overwrite,
+			CreateUnique,
+			Reuse
+		}
+
+		private static readonly string k_TileExtension = "asset";
+
 		public static List<Sprite> GetSpritesFromTexture(Texture2D texture)
 		{
 			string assetPath = AssetDatabase.GetAssetPath(texture);
@@ -187,16 +197,56 @@ namespace UnityEditor
 			}
 			else
 			{
+				TileDragAndDrop.UserTileCreationMode userTileCreationMode = TileDragAndDrop.UserTileCreationMode.Overwrite;
+				string text2 = "";
 				bool flag = sheet.Count > 1;
-				string text2;
 				if (flag)
 				{
+					bool flag2 = false;
 					text2 = EditorUtility.SaveFolderPanel("Generate tiles into folder ", text, "");
 					text2 = FileUtil.GetProjectRelativePath(text2);
+					foreach (UnityEngine.Object current2 in sheet.Values)
+					{
+						if (current2 is Sprite)
+						{
+							string path = FileUtil.CombinePaths(new string[]
+							{
+								text2,
+								string.Format("{0}.{1}", current2.name, TileDragAndDrop.k_TileExtension)
+							});
+							if (File.Exists(path))
+							{
+								flag2 = true;
+								break;
+							}
+						}
+					}
+					if (flag2)
+					{
+						int num = EditorUtility.DisplayDialogComplex("Overwrite?", string.Format("Assets exist at {0}. Do you wish to overwrite existing assets?", text2), "Overwrite", "Create New Copy", "Reuse");
+						if (num != 0)
+						{
+							if (num != 1)
+							{
+								if (num == 2)
+								{
+									userTileCreationMode = TileDragAndDrop.UserTileCreationMode.Reuse;
+								}
+							}
+							else
+							{
+								userTileCreationMode = TileDragAndDrop.UserTileCreationMode.CreateUnique;
+							}
+						}
+						else
+						{
+							userTileCreationMode = TileDragAndDrop.UserTileCreationMode.Overwrite;
+						}
+					}
 				}
 				else
 				{
-					text2 = EditorUtility.SaveFilePanelInProject("Generate new tile", sheet.Values.First<UnityEngine.Object>().name, "asset", "Generate new tile", text);
+					text2 = EditorUtility.SaveFilePanelInProject("Generate new tile", sheet.Values.First<UnityEngine.Object>().name, TileDragAndDrop.k_TileExtension, "Generate new tile", text);
 				}
 				if (string.IsNullOrEmpty(text2))
 				{
@@ -204,38 +254,70 @@ namespace UnityEditor
 				}
 				else
 				{
-					int num = 0;
+					int num2 = 0;
 					EditorUtility.DisplayProgressBar(string.Concat(new object[]
 					{
 						"Generating Tile Assets (",
-						num,
+						num2,
 						"/",
 						sheet.Count,
 						")"
 					}), "Generating tiles", 0f);
-					foreach (KeyValuePair<Vector2Int, UnityEngine.Object> current2 in sheet)
+					foreach (KeyValuePair<Vector2Int, UnityEngine.Object> current3 in sheet)
 					{
 						string text3 = "";
 						TileBase tileBase;
-						if (current2.Value is Sprite)
+						if (current3.Value is Sprite)
 						{
-							tileBase = TileDragAndDrop.CreateTile(current2.Value as Sprite);
-							text3 = ((!flag) ? text2 : (text2 + "/" + tileBase.name + ".asset"));
-							AssetDatabase.CreateAsset(tileBase, text3);
+							tileBase = TileDragAndDrop.CreateTile(current3.Value as Sprite);
+							text3 = ((!flag) ? text2 : FileUtil.CombinePaths(new string[]
+							{
+								text2,
+								string.Format("{0}.{1}", tileBase.name, TileDragAndDrop.k_TileExtension)
+							}));
+							if (userTileCreationMode != TileDragAndDrop.UserTileCreationMode.CreateUnique)
+							{
+								if (userTileCreationMode != TileDragAndDrop.UserTileCreationMode.Overwrite)
+								{
+									if (userTileCreationMode == TileDragAndDrop.UserTileCreationMode.Reuse)
+									{
+										if (File.Exists(text3))
+										{
+											tileBase = AssetDatabase.LoadAssetAtPath<TileBase>(text3);
+										}
+										else
+										{
+											AssetDatabase.CreateAsset(tileBase, text3);
+										}
+									}
+								}
+								else
+								{
+									AssetDatabase.CreateAsset(tileBase, text3);
+								}
+							}
+							else
+							{
+								if (File.Exists(text3))
+								{
+									text3 = AssetDatabase.GenerateUniqueAssetPath(text3);
+								}
+								AssetDatabase.CreateAsset(tileBase, text3);
+							}
 						}
 						else
 						{
-							tileBase = (current2.Value as TileBase);
+							tileBase = (current3.Value as TileBase);
 						}
 						EditorUtility.DisplayProgressBar(string.Concat(new object[]
 						{
 							"Generating Tile Assets (",
-							num,
+							num2,
 							"/",
 							sheet.Count,
 							")"
-						}), "Generating " + text3, (float)num++ / (float)sheet.Count);
-						dictionary.Add(current2.Key, tileBase);
+						}), "Generating " + text3, (float)num2++ / (float)sheet.Count);
+						dictionary.Add(current3.Key, tileBase);
 					}
 					EditorUtility.ClearProgressBar();
 					AssetDatabase.Refresh();

@@ -26,6 +26,8 @@ namespace UnityEditor
 
 		private bool m_HasModified;
 
+		private string m_ReferencesUnityEngineModule;
+
 		private PluginImporterInspector.Compatibility m_CompatibleWithAnyPlatform;
 
 		private PluginImporterInspector.Compatibility m_CompatibleWithEditor;
@@ -474,6 +476,7 @@ namespace UnityEditor
 					}
 					this.m_PluginInformation["Assembly Info"] = value;
 				}
+				this.m_ReferencesUnityEngineModule = this.importer.HasDiscouragedReferences();
 			}
 		}
 
@@ -661,6 +664,10 @@ namespace UnityEditor
 				if (EditorApplication.scriptingRuntimeVersion == ScriptingRuntimeVersion.Legacy && this.importer.dllType == DllType.ManagedNET40 && this.m_CompatibleWithEditor == PluginImporterInspector.Compatibility.Compatible)
 				{
 					EditorGUILayout.HelpBox("Plugin targets .NET 4.x and is marked as compatible with Editor, Editor can only use assemblies targeting .NET 3.5 or lower, please unselect Editor as compatible platform.", MessageType.Error);
+				}
+				if (this.m_ReferencesUnityEngineModule != null)
+				{
+					EditorGUILayout.HelpBox(string.Format("This plugin references at least one UnityEngine module assemblies directly ({0}.dll). To assure forward compatibility, only reference UnityEngine.dll, which contains type forwarders for all the module dlls.", this.m_ReferencesUnityEngineModule), MessageType.Warning);
 				}
 			}
 		}

@@ -1,7 +1,6 @@
 using System;
 using UnityEditorInternal;
 using UnityEngine;
-using UnityEngine.Rendering;
 
 namespace UnityEditor
 {
@@ -21,46 +20,46 @@ namespace UnityEditor
 
 		private class Texts
 		{
-			public GUIContent mode = EditorGUIUtility.TextContent("Mode|Animation frames can either be specified on a regular grid texture, or as a list of Sprites.");
+			public GUIContent mode = EditorGUIUtility.TrTextContent("Mode", "Animation frames can either be specified on a regular grid texture, or as a list of Sprites.", null);
 
-			public GUIContent frameOverTime = EditorGUIUtility.TextContent("Frame over Time|Controls the uv animation frame of each particle over its lifetime. On the horisontal axis you will find the lifetime. On the vertical axis you will find the sheet index.");
+			public GUIContent frameOverTime = EditorGUIUtility.TrTextContent("Frame over Time", "Controls the uv animation frame of each particle over its lifetime. On the horisontal axis you will find the lifetime. On the vertical axis you will find the sheet index.", null);
 
-			public GUIContent startFrame = EditorGUIUtility.TextContent("Start Frame|Phase the animation, so it starts on a frame other than 0.");
+			public GUIContent startFrame = EditorGUIUtility.TrTextContent("Start Frame", "Phase the animation, so it starts on a frame other than 0.", null);
 
-			public GUIContent tiles = EditorGUIUtility.TextContent("Tiles|Defines the tiling of the texture.");
+			public GUIContent tiles = EditorGUIUtility.TrTextContent("Tiles", "Defines the tiling of the texture.", null);
 
 			public GUIContent tilesX = EditorGUIUtility.TextContent("X");
 
 			public GUIContent tilesY = EditorGUIUtility.TextContent("Y");
 
-			public GUIContent animation = EditorGUIUtility.TextContent("Animation|Specifies the animation type: Whole Sheet or Single Row. Whole Sheet will animate over the whole texture sheet from left to right, top to bottom. Single Row will animate a single row in the sheet from left to right.");
+			public GUIContent animation = EditorGUIUtility.TrTextContent("Animation", "Specifies the animation type: Whole Sheet or Single Row. Whole Sheet will animate over the whole texture sheet from left to right, top to bottom. Single Row will animate a single row in the sheet from left to right.", null);
 
-			public GUIContent randomRow = EditorGUIUtility.TextContent("Random Row|If enabled, the animated row will be chosen randomly.");
+			public GUIContent randomRow = EditorGUIUtility.TrTextContent("Random Row", "If enabled, the animated row will be chosen randomly.", null);
 
-			public GUIContent row = EditorGUIUtility.TextContent("Row|The row in the sheet which will be played.");
+			public GUIContent row = EditorGUIUtility.TrTextContent("Row", "The row in the sheet which will be played.", null);
 
-			public GUIContent sprites = EditorGUIUtility.TextContent("Sprites|The list of Sprites to be played.");
+			public GUIContent sprites = EditorGUIUtility.TrTextContent("Sprites", "The list of Sprites to be played.", null);
 
-			public GUIContent frame = EditorGUIUtility.TextContent("Frame|The frame in the sheet which will be used.");
+			public GUIContent frame = EditorGUIUtility.TrTextContent("Frame", "The frame in the sheet which will be used.", null);
 
-			public GUIContent cycles = EditorGUIUtility.TextContent("Cycles|Specifies how many times the animation will loop during the lifetime of the particle.");
+			public GUIContent cycles = EditorGUIUtility.TrTextContent("Cycles", "Specifies how many times the animation will loop during the lifetime of the particle.", null);
 
-			public GUIContent uvChannelMask = EditorGUIUtility.TextContent("Enabled UV Channels|Specifies which UV channels will be animated.");
+			public GUIContent uvChannelMask = EditorGUIUtility.TrTextContent("Enabled UV Channels", "Specifies which UV channels will be animated.", null);
 
-			public GUIContent flipU = EditorGUIUtility.TextContent("Flip U|Cause some particle texture mapping to be flipped horizontally. (Set between 0 and 1, where a higher value causes more to flip)");
+			public GUIContent flipU = EditorGUIUtility.TrTextContent("Flip U", "Cause some particle texture mapping to be flipped horizontally. (Set between 0 and 1, where a higher value causes more to flip)", null);
 
-			public GUIContent flipV = EditorGUIUtility.TextContent("Flip V|Cause some particle texture mapping to be flipped vertically. (Set between 0 and 1, where a higher value causes more to flip)");
+			public GUIContent flipV = EditorGUIUtility.TrTextContent("Flip V", "Cause some particle texture mapping to be flipped vertically. (Set between 0 and 1, where a higher value causes more to flip)", null);
 
 			public GUIContent[] modes = new GUIContent[]
 			{
-				EditorGUIUtility.TextContent("Grid"),
-				EditorGUIUtility.TextContent("Sprites")
+				EditorGUIUtility.TrTextContent("Grid", null, null),
+				EditorGUIUtility.TrTextContent("Sprites", null, null)
 			};
 
 			public GUIContent[] types = new GUIContent[]
 			{
-				EditorGUIUtility.TextContent("Whole Sheet"),
-				EditorGUIUtility.TextContent("Single Row")
+				EditorGUIUtility.TrTextContent("Whole Sheet", null, null),
+				EditorGUIUtility.TrTextContent("Single Row", null, null)
 			};
 		}
 
@@ -175,7 +174,7 @@ namespace UnityEditor
 				ModuleUI.GUIFloat(UVModuleUI.s_Texts.flipU, this.m_FlipU, new GUILayoutOption[0]);
 				ModuleUI.GUIFloat(UVModuleUI.s_Texts.flipV, this.m_FlipV, new GUILayoutOption[0]);
 			}
-			this.m_UVChannelMask.intValue = (int)((UVChannelFlags)ModuleUI.GUIEnumMask(UVModuleUI.s_Texts.uvChannelMask, (UVChannelFlags)this.m_UVChannelMask.intValue, new GUILayoutOption[0]));
+			ModuleUI.GUIEnumMaskUVChannelFlags(UVModuleUI.s_Texts.uvChannelMask, this.m_UVChannelMask, new GUILayoutOption[0]);
 		}
 
 		private void DoListOfSpritesGUI()

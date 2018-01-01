@@ -1,31 +1,12 @@
 using System;
 using System.Runtime.CompilerServices;
-using UnityEngine.Scripting;
+using System.Runtime.InteropServices;
+using UnityEngine.Bindings;
 
 namespace UnityEngine
 {
 	public sealed class TrailRenderer : Renderer
 	{
-		public extern AnimationCurve widthCurve
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		public extern Gradient colorGradient
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
 		[Obsolete("Use positionCount instead (UnityUpgradable) -> positionCount", false)]
 		public int numPositions
 		{
@@ -157,9 +138,29 @@ namespace UnityEngine
 			set;
 		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern int GetPositions(Vector3[] positions);
+		public AnimationCurve widthCurve
+		{
+			get
+			{
+				return this.GetWidthCurveCopy();
+			}
+			set
+			{
+				this.SetWidthCurve(value);
+			}
+		}
+
+		public Gradient colorGradient
+		{
+			get
+			{
+				return this.GetColorGradientCopy();
+			}
+			set
+			{
+				this.SetColorGradient(value);
+			}
+		}
 
 		public Vector3 GetPosition(int index)
 		{
@@ -170,6 +171,21 @@ namespace UnityEngine
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern void Clear();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern AnimationCurve GetWidthCurveCopy();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void SetWidthCurve([NotNull] AnimationCurve curve);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern Gradient GetColorGradientCopy();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void SetColorGradient([NotNull] Gradient curve);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public extern int GetPositions([NotNull] [Out] Vector3[] positions);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern void get_startColor_Injected(out Color ret);

@@ -220,6 +220,28 @@ namespace UnityEditor
 		}
 
 		[RequiredByNativeCode]
+		private static void PreprocessAsset()
+		{
+			IEnumerator enumerator = AssetPostprocessingInternal.m_ImportProcessors.GetEnumerator();
+			try
+			{
+				while (enumerator.MoveNext())
+				{
+					AssetPostprocessor target = (AssetPostprocessor)enumerator.Current;
+					AttributeHelper.InvokeMemberIfAvailable(target, "OnPreprocessAsset", null);
+				}
+			}
+			finally
+			{
+				IDisposable disposable;
+				if ((disposable = (enumerator as IDisposable)) != null)
+				{
+					disposable.Dispose();
+				}
+			}
+		}
+
+		[RequiredByNativeCode]
 		private static void PreprocessMesh(string pathName)
 		{
 			IEnumerator enumerator = AssetPostprocessingInternal.m_ImportProcessors.GetEnumerator();
@@ -427,6 +449,32 @@ namespace UnityEditor
 		}
 
 		[RequiredByNativeCode]
+		private static void PostprocessMaterial(Material material)
+		{
+			IEnumerator enumerator = AssetPostprocessingInternal.m_ImportProcessors.GetEnumerator();
+			try
+			{
+				while (enumerator.MoveNext())
+				{
+					AssetPostprocessor target = (AssetPostprocessor)enumerator.Current;
+					object[] args = new object[]
+					{
+						material
+					};
+					AttributeHelper.InvokeMemberIfAvailable(target, "OnPostprocessMaterial", args);
+				}
+			}
+			finally
+			{
+				IDisposable disposable;
+				if ((disposable = (enumerator as IDisposable)) != null)
+				{
+					disposable.Dispose();
+				}
+			}
+		}
+
+		[RequiredByNativeCode]
 		private static void PostprocessGameObjectWithUserProperties(GameObject go, string[] prop_names, object[] prop_values)
 		{
 			IEnumerator enumerator = AssetPostprocessingInternal.m_ImportProcessors.GetEnumerator();
@@ -493,7 +541,7 @@ namespace UnityEditor
 					AssetPostprocessor assetPostprocessor = Activator.CreateInstance(current) as AssetPostprocessor;
 					Type type = assetPostprocessor.GetType();
 					bool flag = type.GetMethod("OnPreprocessTexture", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic) != null;
-					bool flag2 = type.GetMethod("OnPostprocessTexture", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic) != null;
+					bool flag2 = type.GetMethod("OnPostprocessTexture", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic) != null || type.GetMethod("OnPostprocessCubemap", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic) != null;
 					uint version = assetPostprocessor.GetVersion();
 					if (version != 0u && (flag || flag2))
 					{
@@ -548,6 +596,32 @@ namespace UnityEditor
 						tex
 					};
 					AttributeHelper.InvokeMemberIfAvailable(target, "OnPostprocessTexture", args);
+				}
+			}
+			finally
+			{
+				IDisposable disposable;
+				if ((disposable = (enumerator as IDisposable)) != null)
+				{
+					disposable.Dispose();
+				}
+			}
+		}
+
+		[RequiredByNativeCode]
+		private static void PostprocessCubemap(Cubemap tex, string pathName)
+		{
+			IEnumerator enumerator = AssetPostprocessingInternal.m_ImportProcessors.GetEnumerator();
+			try
+			{
+				while (enumerator.MoveNext())
+				{
+					AssetPostprocessor target = (AssetPostprocessor)enumerator.Current;
+					object[] args = new object[]
+					{
+						tex
+					};
+					AttributeHelper.InvokeMemberIfAvailable(target, "OnPostprocessCubemap", args);
 				}
 			}
 			finally

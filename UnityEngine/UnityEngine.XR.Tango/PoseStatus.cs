@@ -2,7 +2,7 @@ using System;
 
 namespace UnityEngine.XR.Tango
 {
-	public enum PoseStatus
+	internal enum PoseStatus
 	{
 		Initializing,
 		Valid,

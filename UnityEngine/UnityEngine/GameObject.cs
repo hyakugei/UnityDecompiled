@@ -9,6 +9,7 @@ using UnityEngineInternal;
 
 namespace UnityEngine
 {
+	[ExcludeFromPreset]
 	public sealed class GameObject : Object
 	{
 		public extern Transform transform

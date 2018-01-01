@@ -31,30 +31,34 @@ namespace UnityEngine.Experimental.UIElements
 
 		private static void AboutToReleaseFocus(Focusable focusable, Focusable willGiveFocusTo, FocusChangeDirection direction)
 		{
-			FocusOutEvent pooled = FocusEventBase<FocusOutEvent>.GetPooled(focusable, willGiveFocusTo, direction);
-			UIElementsUtility.eventDispatcher.DispatchEvent(pooled, null);
-			EventBase<FocusOutEvent>.ReleasePooled(pooled);
+			using (FocusOutEvent pooled = FocusEventBase<FocusOutEvent>.GetPooled(focusable, willGiveFocusTo, direction))
+			{
+				UIElementsUtility.eventDispatcher.DispatchEvent(pooled, null);
+			}
 		}
 
 		private static void ReleaseFocus(Focusable focusable, Focusable willGiveFocusTo, FocusChangeDirection direction)
 		{
-			BlurEvent pooled = FocusEventBase<BlurEvent>.GetPooled(focusable, willGiveFocusTo, direction);
-			UIElementsUtility.eventDispatcher.DispatchEvent(pooled, null);
-			EventBase<BlurEvent>.ReleasePooled(pooled);
+			using (BlurEvent pooled = FocusEventBase<BlurEvent>.GetPooled(focusable, willGiveFocusTo, direction))
+			{
+				UIElementsUtility.eventDispatcher.DispatchEvent(pooled, null);
+			}
 		}
 
 		private static void AboutToGrabFocus(Focusable focusable, Focusable willTakeFocusFrom, FocusChangeDirection direction)
 		{
-			FocusInEvent pooled = FocusEventBase<FocusInEvent>.GetPooled(focusable, willTakeFocusFrom, direction);
-			UIElementsUtility.eventDispatcher.DispatchEvent(pooled, null);
-			EventBase<FocusInEvent>.ReleasePooled(pooled);
+			using (FocusInEvent pooled = FocusEventBase<FocusInEvent>.GetPooled(focusable, willTakeFocusFrom, direction))
+			{
+				UIElementsUtility.eventDispatcher.DispatchEvent(pooled, null);
+			}
 		}
 
 		private static void GrabFocus(Focusable focusable, Focusable willTakeFocusFrom, FocusChangeDirection direction)
 		{
-			FocusEvent pooled = FocusEventBase<FocusEvent>.GetPooled(focusable, willTakeFocusFrom, direction);
-			UIElementsUtility.eventDispatcher.DispatchEvent(pooled, null);
-			EventBase<FocusEvent>.ReleasePooled(pooled);
+			using (FocusEvent pooled = FocusEventBase<FocusEvent>.GetPooled(focusable, willTakeFocusFrom, direction))
+			{
+				UIElementsUtility.eventDispatcher.DispatchEvent(pooled, null);
+			}
 		}
 
 		internal void SwitchFocus(Focusable newFocusedElement)
@@ -103,19 +107,16 @@ namespace UnityEngine.Experimental.UIElements
 			}
 		}
 
-		internal void SyncIMGUIFocus(IMGUIContainer imguiContainerHavingKeyboardControl)
+		internal void SyncIMGUIFocus(int imguiKeyboardControlID, IMGUIContainer imguiContainerHavingKeyboardControl)
 		{
-			if (GUIUtility.keyboardControl != this.imguiKeyboardControl)
+			this.imguiKeyboardControl = imguiKeyboardControlID;
+			if (this.imguiKeyboardControl != 0)
 			{
-				this.imguiKeyboardControl = GUIUtility.keyboardControl;
-				if (GUIUtility.keyboardControl != 0)
-				{
-					this.SwitchFocus(imguiContainerHavingKeyboardControl, FocusChangeDirection.unspecified);
-				}
-				else
-				{
-					this.SwitchFocus(null, FocusChangeDirection.unspecified);
-				}
+				this.SwitchFocus(imguiContainerHavingKeyboardControl, FocusChangeDirection.unspecified);
+			}
+			else
+			{
+				this.SwitchFocus(null, FocusChangeDirection.unspecified);
 			}
 		}
 	}

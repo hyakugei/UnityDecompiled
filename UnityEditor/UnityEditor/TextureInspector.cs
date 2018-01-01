@@ -25,21 +25,21 @@ namespace UnityEditor
 
 			public GUIStyle previewLabel;
 
-			public readonly GUIContent wrapModeLabel = EditorGUIUtility.TextContent("Wrap Mode");
+			public readonly GUIContent wrapModeLabel = EditorGUIUtility.TrTextContent("Wrap Mode", null, null);
 
-			public readonly GUIContent wrapU = EditorGUIUtility.TextContent("U axis");
+			public readonly GUIContent wrapU = EditorGUIUtility.TrTextContent("U axis", null, null);
 
-			public readonly GUIContent wrapV = EditorGUIUtility.TextContent("V axis");
+			public readonly GUIContent wrapV = EditorGUIUtility.TrTextContent("V axis", null, null);
 
-			public readonly GUIContent wrapW = EditorGUIUtility.TextContent("W axis");
+			public readonly GUIContent wrapW = EditorGUIUtility.TrTextContent("W axis", null, null);
 
 			public readonly GUIContent[] wrapModeContents = new GUIContent[]
 			{
-				EditorGUIUtility.TextContent("Repeat"),
-				EditorGUIUtility.TextContent("Clamp"),
-				EditorGUIUtility.TextContent("Mirror"),
-				EditorGUIUtility.TextContent("Mirror Once"),
-				EditorGUIUtility.TextContent("Per-axis")
+				EditorGUIUtility.TrTextContent("Repeat", null, null),
+				EditorGUIUtility.TrTextContent("Clamp", null, null),
+				EditorGUIUtility.TrTextContent("Mirror", null, null),
+				EditorGUIUtility.TrTextContent("Mirror Once", null, null),
+				EditorGUIUtility.TrTextContent("Per-axis", null, null)
 			};
 
 			public readonly int[] wrapModeValues = new int[]
@@ -468,25 +468,20 @@ namespace UnityEditor
 					float num3 = Mathf.Min(Mathf.Min(r.width / (float)num, r.height / (float)num2), 1f);
 					Rect rect = new Rect(r.x, r.y, (float)num * num3, (float)num2 * num3);
 					PreviewGUI.BeginScrollView(r, this.m_Pos, rect, "PreHorizontalScrollbar", "PreHorizontalScrollbarThumb");
-					float mipMapBias = texture.mipMapBias;
-					TextureUtil.SetMipMapBiasNoDirty(texture, mipLevelForRendering - this.Log2(Mathf.Abs((float)num / rect.width)));
 					FilterMode filterMode = texture.filterMode;
 					TextureUtil.SetFilterModeNoDirty(texture, FilterMode.Point);
+					Texture2D texture2D = texture as Texture2D;
 					if (this.m_ShowAlpha)
 					{
-						EditorGUI.DrawTextureAlpha(rect, texture);
+						EditorGUI.DrawTextureAlpha(rect, texture, ScaleMode.StretchToFill, 0f, mipLevelForRendering);
+					}
+					else if (texture2D != null && texture2D.alphaIsTransparency)
+					{
+						EditorGUI.DrawTextureTransparent(rect, texture, ScaleMode.StretchToFill, 0f, mipLevelForRendering);
 					}
 					else
 					{
-						Texture2D texture2D = texture as Texture2D;
-						if (texture2D != null && texture2D.alphaIsTransparency)
-						{
-							EditorGUI.DrawTextureTransparent(rect, texture);
-						}
-						else
-						{
-							EditorGUI.DrawPreviewTexture(rect, texture);
-						}
+						EditorGUI.DrawPreviewTexture(rect, texture, null, ScaleMode.StretchToFill, 0f, mipLevelForRendering);
 					}
 					if (rect.width > 32f && rect.height > 32f)
 					{
@@ -524,7 +519,6 @@ namespace UnityEditor
 							GL.PopMatrix();
 						}
 					}
-					TextureUtil.SetMipMapBiasNoDirty(texture, mipMapBias);
 					TextureUtil.SetFilterModeNoDirty(texture, filterMode);
 					this.m_Pos = PreviewGUI.EndScrollView();
 					if (mipLevelForRendering != 0f)
@@ -581,23 +575,8 @@ namespace UnityEditor
 					PreviewHelpers.AdjustWidthAndHeightForStaticPreview(texture.width, texture.height, ref width, ref height);
 					RenderTexture active = RenderTexture.active;
 					Rect rawViewportRect = ShaderUtil.rawViewportRect;
-					bool flag = !TextureUtil.GetLinearSampled(texture);
-					RenderTexture temporary = RenderTexture.GetTemporary(width, height, 0, RenderTextureFormat.Default, (!flag) ? RenderTextureReadWrite.Linear : RenderTextureReadWrite.sRGB);
-					Material material = EditorGUI.GetMaterialForSpecialTexture(texture);
-					GL.sRGBWrite = (QualitySettings.activeColorSpace == ColorSpace.Linear);
-					if (material)
-					{
-						if (Unsupported.IsDeveloperBuild())
-						{
-							material = new Material(material);
-						}
-						Graphics.Blit(texture, temporary, material);
-					}
-					else
-					{
-						Graphics.Blit(texture, temporary);
-					}
-					GL.sRGBWrite = false;
+					RenderTexture temporary = RenderTexture.GetTemporary(width, height, 0, RenderTextureFormat.Default, RenderTextureReadWrite.Linear);
+					Graphics.Blit(texture, temporary, EditorGUI.GetMaterialForSpecialTexture(texture, EditorGUIUtility.GUITextureBlit2SRGBMaterial));
 					RenderTexture.active = temporary;
 					Texture2D texture2D = base.target as Texture2D;
 					Texture2D texture2D2;
@@ -614,10 +593,6 @@ namespace UnityEditor
 					RenderTexture.ReleaseTemporary(temporary);
 					EditorGUIUtility.SetRenderTextureNoViewport(active);
 					ShaderUtil.rawViewportRect = rawViewportRect;
-					if (material && Unsupported.IsDeveloperBuild())
-					{
-						UnityEngine.Object.DestroyImmediate(material);
-					}
 					result = texture2D2;
 				}
 			}

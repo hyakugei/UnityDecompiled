@@ -2,10 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using UnityEngine.Scripting;
+using UnityEngine.Bindings;
 
 namespace UnityEditorInternal
 {
+	[NativeType(Header = "Editor/Platform/Windows/VisualStudioUtilities.h")]
 	internal static class VisualStudioUtil
 	{
 		public class VisualStudio
@@ -37,8 +38,7 @@ namespace UnityEditorInternal
 			return expr_0E;
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern string[] FindVisualStudioDevEnvPaths(int visualStudioVersion, string[] requiredWorkloads);
+		internal static extern string[] FindVisualStudioDevEnvPaths(int visualStudioVersion, string[] requiredWorkloads);
 	}
 }

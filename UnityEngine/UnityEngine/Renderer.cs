@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using UnityEngine.Bindings;
 using UnityEngine.Rendering;
-using UnityEngine.Scripting;
 using UnityEngineInternal;
 
 namespace UnityEngine
@@ -132,6 +132,14 @@ namespace UnityEngine
 		}
 
 		public extern ReflectionProbeUsage reflectionProbeUsage
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public extern uint renderingLayerMask
 		{
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
@@ -291,11 +299,43 @@ namespace UnityEngine
 			}
 		}
 
+		public Material[] materials
+		{
+			get
+			{
+				Material[] result;
+				if (this.IsPersistent())
+				{
+					Debug.LogError("Not allowed to access Renderer.materials on prefab object. Use Renderer.sharedMaterials instead", this);
+					result = null;
+				}
+				else
+				{
+					result = this.GetMaterialArray();
+				}
+				return result;
+			}
+			set
+			{
+				this.SetMaterialArray(value);
+			}
+		}
+
 		public Material material
 		{
 			get
 			{
-				return this.GetMaterial();
+				Material result;
+				if (this.IsPersistent())
+				{
+					Debug.LogError("Not allowed to access Renderer.material on prefab object. Use Renderer.sharedMaterial instead", this);
+					result = null;
+				}
+				else
+				{
+					result = this.GetMaterial();
+				}
+				return result;
 			}
 			set
 			{
@@ -315,18 +355,6 @@ namespace UnityEngine
 			}
 		}
 
-		public Material[] materials
-		{
-			get
-			{
-				return this.GetMaterialArray();
-			}
-			set
-			{
-				this.SetMaterialArray(value);
-			}
-		}
-
 		public Material[] sharedMaterials
 		{
 			get
@@ -337,27 +365,6 @@ namespace UnityEngine
 			{
 				this.SetMaterialArray(value);
 			}
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern void SetPropertyBlock(MaterialPropertyBlock properties);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern void GetPropertyBlock(MaterialPropertyBlock dest);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern void RenderNow(int material);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void GetClosestReflectionProbesInternal(object result);
-
-		public void GetClosestReflectionProbes(List<ReflectionProbeBlendInfo> result)
-		{
-			this.GetClosestReflectionProbesInternal(result);
 		}
 
 		private void SetStaticLightmapST(Vector4 st)
@@ -381,7 +388,45 @@ namespace UnityEngine
 		private extern Material[] GetSharedMaterialArray();
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void SetMaterialArrayImpl(Material[] m);
+		private extern void SetMaterialArray([NotNull] Material[] m);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern void Internal_SetPropertyBlock(MaterialPropertyBlock properties);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern void Internal_GetPropertyBlock([NotNull] MaterialPropertyBlock dest);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern void Internal_SetPropertyBlockMaterialIndex(MaterialPropertyBlock properties, int materialIndex);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern void Internal_GetPropertyBlockMaterialIndex([NotNull] MaterialPropertyBlock dest, int materialIndex);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public extern bool HasPropertyBlock();
+
+		public void SetPropertyBlock(MaterialPropertyBlock properties)
+		{
+			this.Internal_SetPropertyBlock(properties);
+		}
+
+		public void SetPropertyBlock(MaterialPropertyBlock properties, int materialIndex)
+		{
+			this.Internal_SetPropertyBlockMaterialIndex(properties, materialIndex);
+		}
+
+		public void GetPropertyBlock(MaterialPropertyBlock properties)
+		{
+			this.Internal_GetPropertyBlock(properties);
+		}
+
+		public void GetPropertyBlock(MaterialPropertyBlock properties, int materialIndex)
+		{
+			this.Internal_GetPropertyBlockMaterialIndex(properties, materialIndex);
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void GetClosestReflectionProbesInternal(object result);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern void SetStaticBatchInfo(int firstSubMesh, int subMeshCount);
@@ -404,13 +449,12 @@ namespace UnityEngine
 			this.SetLightmapST_Injected(ref st, lt);
 		}
 
-		private void SetMaterialArray(Material[] m)
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern bool IsPersistent();
+
+		public void GetClosestReflectionProbes(List<ReflectionProbeBlendInfo> result)
 		{
-			if (m == null)
-			{
-				throw new NullReferenceException("material array is null");
-			}
-			this.SetMaterialArrayImpl(m);
+			this.GetClosestReflectionProbesInternal(result);
 		}
 
 		[MethodImpl(MethodImplOptions.InternalCall)]

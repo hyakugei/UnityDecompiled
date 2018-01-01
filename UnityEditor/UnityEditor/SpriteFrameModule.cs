@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using UnityEditor.Experimental.U2D;
 using UnityEditor.U2D.Interface;
 using UnityEditorInternal;
 using UnityEngine;
@@ -8,6 +9,10 @@ using UnityEngine.U2D.Interface;
 
 namespace UnityEditor
 {
+	[RequireSpriteDataProvider(new Type[]
+	{
+		typeof(ITextureDataProvider)
+	})]
 	internal class SpriteFrameModule : SpriteFrameModuleBase
 	{
 		public enum AutoSlicingMethod
@@ -19,13 +24,13 @@ namespace UnityEditor
 
 		private static class SpriteFrameModuleStyles
 		{
-			public static readonly GUIContent sliceButtonLabel = EditorGUIUtility.TextContent("Slice");
+			public static readonly GUIContent sliceButtonLabel = EditorGUIUtility.TrTextContent("Slice", null, null);
 
-			public static readonly GUIContent trimButtonLabel = EditorGUIUtility.TextContent("Trim|Trims selected rectangle (T)");
+			public static readonly GUIContent trimButtonLabel = EditorGUIUtility.TrTextContent("Trim", "Trims selected rectangle (T)", null);
 
-			public static readonly GUIContent okButtonLabel = EditorGUIUtility.TextContent("Ok");
+			public static readonly GUIContent okButtonLabel = EditorGUIUtility.TrTextContent("Ok", null, null);
 
-			public static readonly GUIContent cancelButtonLabel = EditorGUIUtility.TextContent("Cancel");
+			public static readonly GUIContent cancelButtonLabel = EditorGUIUtility.TrTextContent("Cancel", null, null);
 		}
 
 		private bool[] m_AlphaPixelCache;
@@ -43,18 +48,12 @@ namespace UnityEditor
 		public override void OnModuleActivate()
 		{
 			base.OnModuleActivate();
-			this.m_RectsCache = base.spriteEditor.spriteRects;
 			base.spriteEditor.enableMouseMoveEvent = true;
-		}
-
-		public override void OnModuleDeactivate()
-		{
-			this.m_RectsCache = null;
 		}
 
 		public override bool CanBeActivated()
 		{
-			return SpriteUtility.GetSpriteImportMode(base.spriteEditor.spriteEditorDataProvider) != SpriteImportMode.Polygon;
+			return SpriteUtility.GetSpriteImportMode(base.spriteEditor.GetDataProvider<ISpriteEditorDataProvider>()) != SpriteImportMode.Polygon;
 		}
 
 		private string GetUniqueName(string prefix, int startIndex)
@@ -65,9 +64,9 @@ namespace UnityEditor
 			{
 				text = prefix + "_" + startIndex++;
 				flag = false;
-				for (int i = 0; i < this.m_RectsCache.Count; i++)
+				for (int i = 0; i < this.m_RectsCache.spriteRects.Count; i++)
 				{
-					if (this.m_RectsCache.RectAt(i).name == text)
+					if (this.m_RectsCache.spriteRects[i].name == text)
 					{
 						flag = true;
 						break;
@@ -84,7 +83,7 @@ namespace UnityEditor
 			while (rects.Count > 0)
 			{
 				Rect rect = rects[rects.Count - 1];
-				Rect sweepRect = new Rect(0f, rect.yMin, (float)base.previewTexture.width, rect.height);
+				Rect sweepRect = new Rect(0f, rect.yMin, (float)base.textureActualWidth, rect.height);
 				List<Rect> list2 = this.RectSweep(rects, sweepRect);
 				if (list2.Count <= 0)
 				{
@@ -151,11 +150,11 @@ namespace UnityEditor
 		private SpriteRect GetExistingOverlappingSprite(Rect rect)
 		{
 			SpriteRect result;
-			for (int i = 0; i < this.m_RectsCache.Count; i++)
+			for (int i = 0; i < this.m_RectsCache.spriteRects.Count; i++)
 			{
-				if (this.m_RectsCache.RectAt(i).rect.Overlaps(rect))
+				if (this.m_RectsCache.spriteRects[i].rect.Overlaps(rect))
 				{
-					result = this.m_RectsCache.RectAt(i);
+					result = this.m_RectsCache.spriteRects[i];
 					return result;
 				}
 			}
@@ -163,7 +162,7 @@ namespace UnityEditor
 			return result;
 		}
 
-		private bool PixelHasAlpha(int x, int y, ITexture2D texture)
+		private bool PixelHasAlpha(int x, int y, UnityEngine.Texture2D texture)
 		{
 			if (this.m_AlphaPixelCache == null)
 			{
@@ -188,7 +187,7 @@ namespace UnityEditor
 			spriteRect.originalName = spriteRect.name;
 			spriteRect.border = Vector4.zero;
 			base.spriteEditor.SetDataModified();
-			this.m_RectsCache.AddRect(spriteRect);
+			this.m_RectsCache.spriteRects.Add(spriteRect);
 			base.spriteEditor.SetDataModified();
 			return spriteRect;
 		}
@@ -209,9 +208,9 @@ namespace UnityEditor
 			base.undoSystem.RegisterCompleteObjectUndo(this.m_RectsCache, "Automatic Slicing");
 			if (slicingMethod == SpriteFrameModule.AutoSlicingMethod.DeleteAll)
 			{
-				this.m_RectsCache.ClearAll();
+				this.m_RectsCache.spriteRects.Clear();
 			}
-			ITexture2D readableTexture2D = base.spriteEditor.GetReadableTexture2D();
+			UnityEngine.Texture2D readableTexture2D = this.m_TextureDataProvider.GetReadableTexture2D();
 			List<Rect> list = new List<Rect>(InternalSpriteUtility.GenerateAutomaticSpriteRectangles(readableTexture2D, minimumSpriteSize, 0));
 			list = this.SortRects(list);
 			int num = 0;
@@ -226,11 +225,11 @@ namespace UnityEditor
 
 		public void DoGridSlicing(Vector2 size, Vector2 offset, Vector2 padding, int alignment, Vector2 pivot)
 		{
-			ITexture2D readableTexture2D = base.spriteEditor.GetReadableTexture2D();
+			UnityEngine.Texture2D readableTexture2D = this.m_TextureDataProvider.GetReadableTexture2D();
 			Rect[] array = InternalSpriteUtility.GenerateGridSpriteRectangles(readableTexture2D, offset, size, padding);
 			int num = 0;
 			base.undoSystem.RegisterCompleteObjectUndo(this.m_RectsCache, "Grid Slicing");
-			this.m_RectsCache.ClearAll();
+			this.m_RectsCache.spriteRects.Clear();
 			Rect[] array2 = array;
 			for (int i = 0; i < array2.Length; i++)
 			{
@@ -247,7 +246,7 @@ namespace UnityEditor
 			if (base.selected != null)
 			{
 				base.undoSystem.RegisterCompleteObjectUndo(this.m_RectsCache, "Scale sprite");
-				base.selected.rect = SpriteFrameModuleBase.ClampSpriteRect(r, (float)base.previewTexture.width, (float)base.previewTexture.height);
+				base.selected.rect = SpriteFrameModuleBase.ClampSpriteRect(r, (float)base.textureActualWidth, (float)base.textureActualHeight);
 				base.selected.border = SpriteFrameModuleBase.ClampSpriteBorderToRect(base.selected.border, base.selected.rect);
 				base.spriteEditor.SetDataModified();
 			}
@@ -255,7 +254,7 @@ namespace UnityEditor
 
 		public void TrimAlpha()
 		{
-			ITexture2D readableTexture2D = base.spriteEditor.GetReadableTexture2D();
+			UnityEngine.Texture2D readableTexture2D = this.m_TextureDataProvider.GetReadableTexture2D();
 			if (!(readableTexture2D == null))
 			{
 				Rect rect = base.selected.rect;
@@ -286,7 +285,7 @@ namespace UnityEditor
 				}
 				if (rect.width <= 0f && rect.height <= 0f)
 				{
-					this.m_RectsCache.RemoveRect(base.selected);
+					this.m_RectsCache.spriteRects.Remove(base.selected);
 					base.spriteEditor.SetDataModified();
 					base.selected = null;
 				}
@@ -313,7 +312,7 @@ namespace UnityEditor
 
 		public void CreateSprite(Rect rect)
 		{
-			rect = SpriteFrameModuleBase.ClampSpriteRect(rect, (float)base.previewTexture.width, (float)base.previewTexture.height);
+			rect = SpriteFrameModuleBase.ClampSpriteRect(rect, (float)base.textureActualWidth, (float)base.textureActualHeight);
 			base.undoSystem.RegisterCompleteObjectUndo(this.m_RectsCache, "Create sprite");
 			base.selected = this.AddSpriteWithUniqueName(rect, 0, Vector2.zero, 254, 0.25f, 0);
 		}
@@ -323,15 +322,15 @@ namespace UnityEditor
 			if (base.selected != null)
 			{
 				base.undoSystem.RegisterCompleteObjectUndo(this.m_RectsCache, "Delete sprite");
-				this.m_RectsCache.RemoveRect(base.selected);
+				this.m_RectsCache.spriteRects.Remove(base.selected);
 				base.selected = null;
 				base.spriteEditor.SetDataModified();
 			}
 		}
 
-		public override void DoTextureGUI()
+		public override void DoMainGUI()
 		{
-			base.DoTextureGUI();
+			base.DoMainGUI();
 			base.DrawSpriteRectGizmos();
 			base.HandleGizmoMode();
 			if (base.containsMultipleSprites)
@@ -360,9 +359,10 @@ namespace UnityEditor
 				this.HandleDelete();
 				this.HandleDuplicate();
 			}
+			base.spriteEditor.spriteRects = this.m_RectsCache.spriteRects;
 		}
 
-		public override void DrawToolbarGUI(Rect toolbarRect)
+		public override void DoToolbarGUI(Rect toolbarRect)
 		{
 			using (new EditorGUI.DisabledScope(!base.containsMultipleSprites || base.spriteEditor.editingDisabled))
 			{
@@ -373,7 +373,7 @@ namespace UnityEditor
 				{
 					if (GUI.Button(adjustedDrawArea, SpriteFrameModule.SpriteFrameModuleStyles.sliceButtonLabel, skin))
 					{
-						if (SpriteEditorMenu.ShowAtPosition(adjustedDrawArea, this, this.spriteEditor.previewTexture, this.spriteEditor.selectedTexture))
+						if (SpriteEditorMenu.ShowAtPosition(adjustedDrawArea, this, this.m_TextureDataProvider))
 						{
 							GUIUtility.ExitGUI();
 						}
@@ -456,7 +456,7 @@ namespace UnityEditor
 		{
 			if (base.hasSelected && !base.MouseOnTopOfInspector())
 			{
-				Rect clamp = new Rect(0f, 0f, (float)base.previewTexture.width, (float)base.previewTexture.height);
+				Rect clamp = new Rect(0f, 0f, (float)base.textureActualWidth, (float)base.textureActualHeight);
 				EditorGUI.BeginChangeCheck();
 				Rect selectedSpriteRect = base.selectedSpriteRect;
 				Rect selectedSpriteRect2 = SpriteEditorUtility.ClampedRect(SpriteEditorUtility.RoundedRect(SpriteEditorHandles.SliderRect(selectedSpriteRect)), clamp, true);
@@ -472,7 +472,7 @@ namespace UnityEditor
 			if (!base.MouseOnTopOfInspector() && !base.eventSystem.current.alt)
 			{
 				EditorGUI.BeginChangeCheck();
-				Rect rect = SpriteEditorHandles.RectCreator((float)base.previewTexture.width, (float)base.previewTexture.height, SpriteFrameModuleBase.styles.createRect);
+				Rect rect = SpriteEditorHandles.RectCreator((float)base.textureActualWidth, (float)base.textureActualHeight, SpriteFrameModuleBase.styles.createRect);
 				if (EditorGUI.EndChangeCheck() && rect.width > 0f && rect.height > 0f)
 				{
 					this.CreateSprite(rect);

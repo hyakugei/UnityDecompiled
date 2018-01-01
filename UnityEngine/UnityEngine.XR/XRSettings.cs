@@ -114,6 +114,16 @@ namespace UnityEngine.XR
 			set;
 		}
 
+		public static extern bool useOcclusionMesh
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
 		public static extern string loadedDeviceName
 		{
 			[GeneratedByOldBindingsGenerator]

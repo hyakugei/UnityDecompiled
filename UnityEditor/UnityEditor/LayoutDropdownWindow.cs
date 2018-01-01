@@ -169,8 +169,8 @@ namespace UnityEditor
 			{
 				base.editorWindow.Close();
 			}
-			GUI.Label(new Rect(rect.x + 5f, rect.y + 3f, rect.width - 10f, 16f), new GUIContent("Anchor Presets"), EditorStyles.boldLabel);
-			GUI.Label(new Rect(rect.x + 5f, rect.y + 3f + 16f, rect.width - 10f, 16f), new GUIContent("Shift: Also set pivot     Alt: Also set position"), EditorStyles.label);
+			GUI.Label(new Rect(rect.x + 5f, rect.y + 3f, rect.width - 10f, 16f), EditorGUIUtility.TrTextContent("Anchor Presets", null, null), EditorStyles.boldLabel);
+			GUI.Label(new Rect(rect.x + 5f, rect.y + 3f + 16f, rect.width - 10f, 16f), EditorGUIUtility.TrTextContent("Shift: Also set pivot     Alt: Also set position", null, null), EditorStyles.label);
 			Color color = GUI.color;
 			GUI.color = LayoutDropdownWindow.s_Styles.tableLineColor * color;
 			GUI.DrawTexture(new Rect(0f, 37f, 400f, 1f), EditorGUIUtility.whiteTexture);

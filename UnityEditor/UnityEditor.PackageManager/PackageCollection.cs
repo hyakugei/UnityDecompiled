@@ -7,23 +7,39 @@ using UnityEngine;
 namespace UnityEditor.PackageManager
 {
 	[Serializable]
-	public class PackageCollection : IEnumerable<UpmPackageInfo>, IEnumerable
+	public class PackageCollection : IEnumerable<PackageInfo>, IEnumerable
 	{
 		[SerializeField]
-		private UpmPackageInfo[] m_PackageList;
+		private PackageInfo[] m_PackageList;
+
+		[SerializeField]
+		private Error m_Error;
+
+		[SerializeField]
+		private bool m_HasError;
+
+		public Error error
+		{
+			get
+			{
+				return (!this.m_HasError) ? null : this.m_Error;
+			}
+		}
 
 		private PackageCollection()
 		{
 		}
 
-		internal PackageCollection(IEnumerable<UpmPackageInfo> packages)
+		internal PackageCollection(IEnumerable<PackageInfo> packages, Error error)
 		{
-			this.m_PackageList = (packages ?? new UpmPackageInfo[0]).ToArray<UpmPackageInfo>();
+			this.m_PackageList = (packages ?? new PackageInfo[0]).ToArray<PackageInfo>();
+			this.m_Error = error;
+			this.m_HasError = (this.m_Error != null);
 		}
 
-		IEnumerator<UpmPackageInfo> IEnumerable<UpmPackageInfo>.GetEnumerator()
+		IEnumerator<PackageInfo> IEnumerable<PackageInfo>.GetEnumerator()
 		{
-			return ((IEnumerable<UpmPackageInfo>)this.m_PackageList).GetEnumerator();
+			return ((IEnumerable<PackageInfo>)this.m_PackageList).GetEnumerator();
 		}
 
 		IEnumerator IEnumerable.GetEnumerator()

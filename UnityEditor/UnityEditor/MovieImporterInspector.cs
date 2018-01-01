@@ -13,7 +13,7 @@ namespace UnityEditor
 
 		private bool m_linearTexture;
 
-		public static GUIContent linearTextureContent = EditorGUIUtility.TextContent("Bypass sRGB Sampling|Texture will not be converted from gamma space to linear when sampled. Enable for IMGUI textures and non-color textures.");
+		public static GUIContent linearTextureContent = EditorGUIUtility.TrTextContent("Bypass sRGB Sampling", "Texture will not be converted from gamma space to linear when sampled. Enable for IMGUI textures and non-color textures.", null);
 
 		public override bool showImportedObject
 		{
@@ -59,7 +59,7 @@ namespace UnityEditor
 				GUILayout.EndVertical();
 			}
 			base.ApplyRevertGUI();
-			MovieTexture movieTexture = this.assetEditor.target as MovieTexture;
+			MovieTexture movieTexture = base.assetTarget as MovieTexture;
 			if (movieTexture && movieTexture.loop)
 			{
 				EditorGUILayout.Space();

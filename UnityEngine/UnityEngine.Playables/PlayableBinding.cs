@@ -1,9 +1,7 @@
 using System;
-using System.Runtime.InteropServices;
 
 namespace UnityEngine.Playables
 {
-	[StructLayout(LayoutKind.Sequential, Size = 1)]
 	public struct PlayableBinding
 	{
 		public static readonly PlayableBinding[] None = new PlayableBinding[0];

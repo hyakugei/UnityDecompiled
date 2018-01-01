@@ -4,7 +4,7 @@ using UnityEngine.Scripting;
 namespace UnityEngine.XR.Tango
 {
 	[UsedByNativeCode]
-	public struct GridIndex
+	internal struct GridIndex
 	{
 		public int i;
 

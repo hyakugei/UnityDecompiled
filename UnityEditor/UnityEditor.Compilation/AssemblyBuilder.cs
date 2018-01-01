@@ -172,8 +172,16 @@ namespace UnityEditor.Compilation
 				{
 					scriptAssembly
 				}, scriptAssembly.OutputDirectory, EditorScriptCompilationOptions.BuildingEmpty, 1);
-				this.compilationTask.OnCompilationStarted += new Action<ScriptAssembly, int>(this.OnCompilationStarted);
-				this.compilationTask.OnCompilationFinished += new Action<ScriptAssembly, List<UnityEditor.Scripting.Compilers.CompilerMessage>>(this.OnCompilationFinished);
+				this.compilationTask.OnCompilationStarted += delegate(ScriptAssembly assembly, int phase)
+				{
+					editorCompilation.InvokeAssemblyCompilationStarted(this.assemblyPath);
+					this.OnCompilationStarted(assembly, phase);
+				};
+				this.compilationTask.OnCompilationFinished += delegate(ScriptAssembly assembly, List<UnityEditor.Scripting.Compilers.CompilerMessage> messages)
+				{
+					editorCompilation.InvokeAssemblyCompilationFinished(this.assemblyPath, messages);
+					this.OnCompilationFinished(assembly, messages);
+				};
 				this.compilationTask.Poll();
 				editorCompilation.AddAssemblyBuilder(this);
 				result = true;

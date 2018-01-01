@@ -63,8 +63,6 @@ namespace UnityEditor
 			}
 		}
 
-		private static bool s_UseYSign = false;
-
 		private static bool s_UseYSignZoom = false;
 
 		private static Vector3[] points = new Vector3[]
@@ -116,7 +114,7 @@ namespace UnityEditor
 		{
 			get
 			{
-				return (float)((!Event.current.shift) ? 1 : 4) * ((!Event.current.alt) ? 1f : 0.25f);
+				return NumericFieldDraggerUtility.Acceleration(Event.current.shift, Event.current.alt);
 			}
 		}
 
@@ -124,29 +122,7 @@ namespace UnityEditor
 		{
 			get
 			{
-				Vector2 delta = Event.current.delta;
-				delta.y = -delta.y;
-				if (Mathf.Abs(Mathf.Abs(delta.x) - Mathf.Abs(delta.y)) / Mathf.Max(Mathf.Abs(delta.x), Mathf.Abs(delta.y)) > 0.1f)
-				{
-					if (Mathf.Abs(delta.x) > Mathf.Abs(delta.y))
-					{
-						HandleUtility.s_UseYSign = false;
-					}
-					else
-					{
-						HandleUtility.s_UseYSign = true;
-					}
-				}
-				float result;
-				if (HandleUtility.s_UseYSign)
-				{
-					result = Mathf.Sign(delta.y) * delta.magnitude * HandleUtility.acceleration;
-				}
-				else
-				{
-					result = Mathf.Sign(delta.x) * delta.magnitude * HandleUtility.acceleration;
-				}
-				return result;
+				return NumericFieldDraggerUtility.NiceDelta(Event.current.delta, HandleUtility.acceleration);
 			}
 		}
 
@@ -827,7 +803,7 @@ namespace UnityEditor
 						result = transform.gameObject;
 						return result;
 					}
-					if (AttributeHelper.GameObjectContainsAttribute(transform.gameObject, typeof(SelectionBaseAttribute)))
+					if (AttributeHelper.GameObjectContainsAttribute<SelectionBaseAttribute>(transform.gameObject))
 					{
 						result = transform.gameObject;
 						return result;

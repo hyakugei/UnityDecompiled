@@ -8,6 +8,7 @@ using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
+	[UsedByNativeCode]
 	public sealed class ComputeBuffer : IDisposable
 	{
 		internal IntPtr m_Ptr;
@@ -84,6 +85,11 @@ namespace UnityEngine
 		public void Release()
 		{
 			this.Dispose();
+		}
+
+		public bool IsValid()
+		{
+			return this.m_Ptr != IntPtr.Zero;
 		}
 
 		[SecuritySafeCritical]

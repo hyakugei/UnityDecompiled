@@ -5,6 +5,8 @@ namespace UnityEngine.Experimental.UIElements.StyleSheets
 {
 	internal static class StyleSheetApplicator
 	{
+		internal delegate CursorStyle CreateDefaultCursorStyleFunction(StyleSheet sheet, StyleValueHandle handle);
+
 		public static class Shorthand
 		{
 			private static void ReadFourSidesArea(StyleSheet sheet, StyleValueHandle[] handles, out float top, out float right, out float bottom, out float left)
@@ -78,6 +80,8 @@ namespace UnityEngine.Experimental.UIElements.StyleSheets
 			}
 		}
 
+		internal static StyleSheetApplicator.CreateDefaultCursorStyleFunction createDefaultCursorStyleFunc = null;
+
 		private static void Apply<T>(T val, int specificity, ref StyleValue<T> property)
 		{
 			property.Apply(new StyleValue<T>(val, specificity), StylePropertyApplyMode.CopyIfEqualOrGreaterSpecificity);
@@ -116,6 +120,34 @@ namespace UnityEngine.Experimental.UIElements.StyleSheets
 		{
 			Color val = sheet.ReadColor(handles[0]);
 			StyleSheetApplicator.Apply<Color>(val, specificity, ref property);
+		}
+
+		public static void ApplyCursor(StyleSheet sheet, StyleValueHandle[] handles, int specificity, ref StyleValue<CursorStyle> property)
+		{
+			StyleValueHandle handle = handles[0];
+			bool flag = handle.valueType == StyleValueType.ResourcePath;
+			if (flag)
+			{
+				string pathName = sheet.ReadResourcePath(handles[0]);
+				Texture2D texture2D = Panel.loadResourceFunc(pathName, typeof(Texture2D)) as Texture2D;
+				if (texture2D != null)
+				{
+					Vector2 zero = Vector2.zero;
+					sheet.TryReadFloat(handles, 1, out zero.x);
+					sheet.TryReadFloat(handles, 2, out zero.y);
+					CursorStyle val = new CursorStyle
+					{
+						texture = texture2D,
+						hotspot = zero
+					};
+					StyleSheetApplicator.Apply<CursorStyle>(val, specificity, ref property);
+				}
+			}
+			else if (StyleSheetApplicator.createDefaultCursorStyleFunc != null)
+			{
+				CursorStyle val2 = StyleSheetApplicator.createDefaultCursorStyleFunc(sheet, handle);
+				StyleSheetApplicator.Apply<CursorStyle>(val2, specificity, ref property);
+			}
 		}
 
 		public static void ApplyResource<T>(StyleSheet sheet, StyleValueHandle[] handles, int specificity, ref StyleValue<T> property) where T : UnityEngine.Object

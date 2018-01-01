@@ -37,6 +37,8 @@ namespace UnityEngine.Experimental.UIElements
 
 		private bool hasFocusableControls = false;
 
+		private int newKeyboardFocusControlID = 0;
+
 		private IMGUIContainer.GUIGlobals m_GUIGlobals;
 
 		internal ObjectGUIState guiState
@@ -146,33 +148,39 @@ namespace UnityEngine.Experimental.UIElements
 				int num = GUIClip.Internal_GetCount();
 				this.SaveGlobals();
 				UIElementsUtility.BeginContainerGUI(this.cache, evt, this);
-				if (this.lostFocus)
+				if (evt.type != EventType.Layout)
 				{
-					GUIUtility.keyboardControl = 0;
-					if (this.focusController != null)
+					if (this.lostFocus)
 					{
-						this.focusController.imguiKeyboardControl = 0;
-					}
-					this.lostFocus = false;
-				}
-				if (this.receivedFocus)
-				{
-					if (this.focusChangeDirection != FocusChangeDirection.unspecified && this.focusChangeDirection != FocusChangeDirection.none)
-					{
-						if (this.focusChangeDirection == VisualElementFocusChangeDirection.left)
+						if (this.focusController != null)
 						{
-							GUIUtility.SetKeyboardControlToLastControlId();
+							if (this.focusController.focusedElement == null || this.focusController.focusedElement == this || !(this.focusController.focusedElement is IMGUIContainer))
+							{
+								GUIUtility.keyboardControl = 0;
+								this.focusController.imguiKeyboardControl = 0;
+							}
 						}
-						else if (this.focusChangeDirection == VisualElementFocusChangeDirection.right)
-						{
-							GUIUtility.SetKeyboardControlToFirstControlId();
-						}
+						this.lostFocus = false;
 					}
-					this.receivedFocus = false;
-					this.focusChangeDirection = FocusChangeDirection.unspecified;
-					if (this.focusController != null)
+					if (this.receivedFocus)
 					{
-						this.focusController.imguiKeyboardControl = GUIUtility.keyboardControl;
+						if (this.focusChangeDirection != FocusChangeDirection.unspecified && this.focusChangeDirection != FocusChangeDirection.none)
+						{
+							if (this.focusChangeDirection == VisualElementFocusChangeDirection.left)
+							{
+								GUIUtility.SetKeyboardControlToLastControlId();
+							}
+							else if (this.focusChangeDirection == VisualElementFocusChangeDirection.right)
+							{
+								GUIUtility.SetKeyboardControlToFirstControlId();
+							}
+						}
+						this.receivedFocus = false;
+						this.focusChangeDirection = FocusChangeDirection.unspecified;
+						if (this.focusController != null)
+						{
+							this.focusController.imguiKeyboardControl = GUIUtility.keyboardControl;
+						}
 					}
 				}
 				this.GUIDepth = GUIUtility.Internal_GetGUIDepth();
@@ -180,7 +188,13 @@ namespace UnityEngine.Experimental.UIElements
 				bool flag = false;
 				try
 				{
-					this.m_OnGUIHandler();
+					Matrix4x4 objectTransform;
+					Rect clipRect;
+					IMGUIContainer.GetCurrentTransformAndClip(this, evt, out objectTransform, out clipRect);
+					using (new GUIClip.ParentClipScope(objectTransform, clipRect))
+					{
+						this.m_OnGUIHandler();
+					}
 				}
 				catch (Exception exception)
 				{
@@ -196,54 +210,56 @@ namespace UnityEngine.Experimental.UIElements
 				}
 				finally
 				{
-					int num2 = GUIUtility.CheckForTabEvent(evt);
-					if (this.focusController != null)
+					if (evt.type != EventType.Layout)
 					{
-						if (num2 < 0)
+						int keyboardControl = GUIUtility.keyboardControl;
+						int num2 = GUIUtility.CheckForTabEvent(evt);
+						if (this.focusController != null)
 						{
-							KeyDownEvent keyDownEvent = null;
-							if (num2 == -1)
+							if (num2 < 0)
 							{
-								keyDownEvent = KeyboardEventBase<KeyDownEvent>.GetPooled('\t', KeyCode.Tab, EventModifiers.None);
-							}
-							else if (num2 == -2)
-							{
-								keyDownEvent = KeyboardEventBase<KeyDownEvent>.GetPooled('\t', KeyCode.Tab, EventModifiers.Shift);
-							}
-							Focusable focusedElement = this.focusController.focusedElement;
-							this.focusController.SwitchFocusOnEvent(keyDownEvent);
-							EventBase<KeyDownEvent>.ReleasePooled(keyDownEvent);
-							if (focusedElement == this)
-							{
-								if (this.focusController.focusedElement == this)
+								Focusable focusedElement = this.focusController.focusedElement;
+								using (KeyDownEvent pooled = KeyboardEventBase<KeyDownEvent>.GetPooled('\t', KeyCode.Tab, (num2 != -1) ? EventModifiers.Shift : EventModifiers.None))
 								{
-									if (num2 == -2)
-									{
-										GUIUtility.SetKeyboardControlToLastControlId();
-									}
-									else if (num2 == -1)
-									{
-										GUIUtility.SetKeyboardControlToFirstControlId();
-									}
-									this.focusController.imguiKeyboardControl = GUIUtility.keyboardControl;
+									this.focusController.SwitchFocusOnEvent(pooled);
 								}
-								else
+								if (focusedElement == this)
 								{
-									GUIUtility.keyboardControl = 0;
-									this.focusController.imguiKeyboardControl = 0;
+									if (this.focusController.focusedElement == this)
+									{
+										if (num2 == -2)
+										{
+											GUIUtility.SetKeyboardControlToLastControlId();
+										}
+										else if (num2 == -1)
+										{
+											GUIUtility.SetKeyboardControlToFirstControlId();
+										}
+										this.newKeyboardFocusControlID = GUIUtility.keyboardControl;
+										this.focusController.imguiKeyboardControl = GUIUtility.keyboardControl;
+									}
+									else
+									{
+										GUIUtility.keyboardControl = 0;
+										this.focusController.imguiKeyboardControl = 0;
+									}
+								}
+							}
+							else if (num2 > 0)
+							{
+								this.focusController.imguiKeyboardControl = GUIUtility.keyboardControl;
+								this.newKeyboardFocusControlID = GUIUtility.keyboardControl;
+							}
+							else if (num2 == 0)
+							{
+								if (keyboardControl != GUIUtility.keyboardControl || type == EventType.MouseDown)
+								{
+									this.focusController.SyncIMGUIFocus(GUIUtility.keyboardControl, this);
 								}
 							}
 						}
-						else if (num2 > 0)
-						{
-							this.focusController.imguiKeyboardControl = GUIUtility.keyboardControl;
-						}
-						else if (num2 == 0 && type == EventType.MouseDown)
-						{
-							this.focusController.SyncIMGUIFocus(this);
-						}
+						this.hasFocusableControls = GUIUtility.HasFocusableControls();
 					}
-					this.hasFocusableControls = GUIUtility.HasFocusableControls();
 				}
 				EventType type2 = Event.current.type;
 				UIElementsUtility.EndContainerGUI();
@@ -303,6 +319,15 @@ namespace UnityEngine.Experimental.UIElements
 			this.DoOnGUI(e);
 			e.type = type;
 			this.DoOnGUI(e);
+			if (this.newKeyboardFocusControlID > 0)
+			{
+				this.newKeyboardFocusControlID = 0;
+				this.HandleIMGUIEvent(new Event
+				{
+					type = EventType.ExecuteCommand,
+					commandName = "NewKeyboardFocus"
+				});
+			}
 			bool result;
 			if (e.type == EventType.Used)
 			{
@@ -310,7 +335,7 @@ namespace UnityEngine.Experimental.UIElements
 			}
 			else
 			{
-				if (e.type == EventType.MouseUp && this.HasCapture())
+				if (e.type == EventType.MouseUp && this.HasMouseCapture())
 				{
 					GUIUtility.hotControl = 0;
 				}
@@ -328,7 +353,8 @@ namespace UnityEngine.Experimental.UIElements
 			if (evt.GetEventTypeId() == EventBase<BlurEvent>.TypeId())
 			{
 				BlurEvent blurEvent = evt as BlurEvent;
-				if (blurEvent.relatedTarget == null || !blurEvent.relatedTarget.canGrabFocus)
+				VisualElement visualElement = blurEvent.relatedTarget as VisualElement;
+				if (visualElement != null && (blurEvent.relatedTarget.canGrabFocus || visualElement.parent == base.panel.visualTree))
 				{
 					this.lostFocus = true;
 				}
@@ -377,6 +403,20 @@ namespace UnityEngine.Experimental.UIElements
 				num2 = desiredHeight;
 			}
 			return new Vector2(num, num2);
+		}
+
+		private static void GetCurrentTransformAndClip(IMGUIContainer container, Event evt, out Matrix4x4 transform, out Rect clipRect)
+		{
+			clipRect = container.lastWorldClip;
+			if (clipRect.width == 0f || clipRect.height == 0f)
+			{
+				clipRect = container.worldBound;
+			}
+			transform = container.worldTransform;
+			if (evt.type == EventType.Repaint && container.elementPanel != null && container.elementPanel.stylePainter != null)
+			{
+				transform = container.elementPanel.stylePainter.currentTransform;
+			}
 		}
 	}
 }

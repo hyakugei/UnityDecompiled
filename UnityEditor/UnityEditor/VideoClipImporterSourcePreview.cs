@@ -32,7 +32,7 @@ namespace UnityEditor
 		{
 			if (this.m_Title == null)
 			{
-				this.m_Title = new GUIContent("Source Info");
+				this.m_Title = EditorGUIUtility.TrTextContent("Source Info", null, null);
 			}
 			return this.m_Title;
 		}

@@ -1090,15 +1090,17 @@ namespace UnityEditor.IMGUI.Controls
 			TreeViewController expr_AE = this.m_TreeView;
 			expr_AE.selectionChangedCallback = (Action<int[]>)Delegate.Combine(expr_AE.selectionChangedCallback, new Action<int[]>(this.SelectionChanged));
 			TreeViewController expr_D6 = this.m_TreeView;
-			expr_D6.itemDoubleClickedCallback = (Action<int>)Delegate.Combine(expr_D6.itemDoubleClickedCallback, new Action<int>(this.DoubleClickedItem));
+			expr_D6.itemSingleClickedCallback = (Action<int>)Delegate.Combine(expr_D6.itemSingleClickedCallback, new Action<int>(this.SingleClickedItem));
 			TreeViewController expr_FE = this.m_TreeView;
-			expr_FE.contextClickItemCallback = (Action<int>)Delegate.Combine(expr_FE.contextClickItemCallback, new Action<int>(this.ContextClickedItem));
+			expr_FE.itemDoubleClickedCallback = (Action<int>)Delegate.Combine(expr_FE.itemDoubleClickedCallback, new Action<int>(this.DoubleClickedItem));
 			TreeViewController expr_126 = this.m_TreeView;
-			expr_126.contextClickOutsideItemsCallback = (Action)Delegate.Combine(expr_126.contextClickOutsideItemsCallback, new Action(this.ContextClicked));
+			expr_126.contextClickItemCallback = (Action<int>)Delegate.Combine(expr_126.contextClickItemCallback, new Action<int>(this.ContextClickedItem));
 			TreeViewController expr_14E = this.m_TreeView;
-			expr_14E.expandedStateChanged = (Action)Delegate.Combine(expr_14E.expandedStateChanged, new Action(this.ExpandedStateChanged));
+			expr_14E.contextClickOutsideItemsCallback = (Action)Delegate.Combine(expr_14E.contextClickOutsideItemsCallback, new Action(this.ContextClicked));
 			TreeViewController expr_176 = this.m_TreeView;
-			expr_176.keyboardInputCallback = (Action)Delegate.Combine(expr_176.keyboardInputCallback, new Action(this.KeyEvent));
+			expr_176.expandedStateChanged = (Action)Delegate.Combine(expr_176.expandedStateChanged, new Action(this.ExpandedStateChanged));
+			TreeViewController expr_19E = this.m_TreeView;
+			expr_19E.keyboardInputCallback = (Action)Delegate.Combine(expr_19E.keyboardInputCallback, new Action(this.KeyEvent));
 			this.m_TreeViewKeyControlID = GUIUtility.GetPermanentControlID();
 		}
 
@@ -1430,6 +1432,10 @@ namespace UnityEditor.IMGUI.Controls
 		}
 
 		protected virtual void SelectionChanged(IList<int> selectedIds)
+		{
+		}
+
+		protected virtual void SingleClickedItem(int id)
 		{
 		}
 

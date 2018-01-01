@@ -10,11 +10,11 @@ namespace UnityEditor
 	{
 		private class Styles
 		{
-			public readonly GUIContent m_AgentSteeringHeader = new GUIContent("Steering");
+			public readonly GUIContent m_AgentSteeringHeader = EditorGUIUtility.TrTextContent("Steering", null, null);
 
-			public readonly GUIContent m_AgentAvoidanceHeader = new GUIContent("Obstacle Avoidance");
+			public readonly GUIContent m_AgentAvoidanceHeader = EditorGUIUtility.TrTextContent("Obstacle Avoidance", null, null);
 
-			public readonly GUIContent m_AgentPathFindingHeader = new GUIContent("Path Finding");
+			public readonly GUIContent m_AgentPathFindingHeader = EditorGUIUtility.TrTextContent("Path Finding", null, null);
 		}
 
 		private SerializedProperty m_AgentTypeID;

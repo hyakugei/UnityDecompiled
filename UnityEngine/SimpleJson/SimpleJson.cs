@@ -7,10 +7,11 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Runtime.Serialization;
 using System.Text;
+using UnityEngine.Bindings;
 
 namespace SimpleJson
 {
-	[GeneratedCode("simple-json", "1.0.0")]
+	[GeneratedCode("simple-json", "1.0.0"), VisibleToOtherModules]
 	internal static class SimpleJson
 	{
 		private const int TOKEN_NONE = 0;

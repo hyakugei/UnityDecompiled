@@ -9,7 +9,7 @@ namespace UnityEditor
 		{
 			public GUIContent lockParticleSystem = new GUIContent("", "Lock the current selected Particle System");
 
-			public GUIContent previewAll = new GUIContent("Simulate All", "Simulate all particle systems that have Play On Awake set");
+			public GUIContent previewAll = EditorGUIUtility.TrTextContent("Simulate All", "Simulate all particle systems that have Play On Awake set", null);
 		}
 
 		private static ParticleSystemWindow s_Instance;
@@ -37,7 +37,7 @@ namespace UnityEditor
 		public static void CreateWindow()
 		{
 			ParticleSystemWindow.s_Instance = EditorWindow.GetWindow<ParticleSystemWindow>();
-			ParticleSystemWindow.s_Instance.titleContent = EditorGUIUtility.TextContent("Particle Effect");
+			ParticleSystemWindow.s_Instance.titleContent = EditorGUIUtility.TrTextContent("Particle Effect", null, null);
 			ParticleSystemWindow.s_Instance.minSize = ParticleEffectUI.GetMinSize();
 		}
 
@@ -56,8 +56,8 @@ namespace UnityEditor
 			ParticleSystemWindow.s_Instance = this;
 			this.m_Target = null;
 			ParticleEffectUI.m_VerticalLayout = EditorPrefs.GetBool("ShurikenVerticalLayout", false);
-			EditorApplication.hierarchyWindowChanged = (EditorApplication.CallbackFunction)Delegate.Combine(EditorApplication.hierarchyWindowChanged, new EditorApplication.CallbackFunction(this.OnHierarchyOrProjectWindowWasChanged));
-			EditorApplication.projectWindowChanged = (EditorApplication.CallbackFunction)Delegate.Combine(EditorApplication.projectWindowChanged, new EditorApplication.CallbackFunction(this.OnHierarchyOrProjectWindowWasChanged));
+			EditorApplication.hierarchyChanged += new Action(this.OnHierarchyOrProjectWindowWasChanged);
+			EditorApplication.projectChanged += new Action(this.OnHierarchyOrProjectWindowWasChanged);
 			SceneView.onSceneGUIDelegate = (SceneView.OnSceneFunc)Delegate.Combine(SceneView.onSceneGUIDelegate, new SceneView.OnSceneFunc(this.OnSceneViewGUI));
 			EditorApplication.pauseStateChanged += new Action<PauseState>(this.OnPauseStateChanged);
 			EditorApplication.playModeStateChanged += new Action<PlayModeStateChange>(this.OnPlayModeStateChanged);
@@ -68,8 +68,8 @@ namespace UnityEditor
 		private void OnDisable()
 		{
 			SceneView.onSceneGUIDelegate = (SceneView.OnSceneFunc)Delegate.Remove(SceneView.onSceneGUIDelegate, new SceneView.OnSceneFunc(this.OnSceneViewGUI));
-			EditorApplication.projectWindowChanged = (EditorApplication.CallbackFunction)Delegate.Remove(EditorApplication.projectWindowChanged, new EditorApplication.CallbackFunction(this.OnHierarchyOrProjectWindowWasChanged));
-			EditorApplication.hierarchyWindowChanged = (EditorApplication.CallbackFunction)Delegate.Remove(EditorApplication.hierarchyWindowChanged, new EditorApplication.CallbackFunction(this.OnHierarchyOrProjectWindowWasChanged));
+			EditorApplication.projectChanged -= new Action(this.OnHierarchyOrProjectWindowWasChanged);
+			EditorApplication.hierarchyChanged -= new Action(this.OnHierarchyOrProjectWindowWasChanged);
 			EditorApplication.pauseStateChanged -= new Action<PauseState>(this.OnPauseStateChanged);
 			EditorApplication.playModeStateChanged -= new Action<PlayModeStateChange>(this.OnPlayModeStateChanged);
 			Undo.undoRedoPerformed = (Undo.UndoRedoCallback)Delegate.Remove(Undo.undoRedoPerformed, new Undo.UndoRedoCallback(this.UndoRedoPerformed));
@@ -243,8 +243,7 @@ namespace UnityEditor
 				{
 					this.m_ParticleEffectUI.SetShowOnlySelectedMode(flag3);
 				}
-				ParticleSystemEditorUtils.editorPreviewAll = GUILayout.Toggle(ParticleSystemEditorUtils.editorPreviewAll, ParticleEffectUI.texts.previewAll, "ToolbarButton", new GUILayoutOption[0]);
-				ParticleSystemEditorUtils.editorResimulation = GUILayout.Toggle(ParticleSystemEditorUtils.editorResimulation, ParticleEffectUI.texts.resimulation, "ToolbarButton", new GUILayoutOption[0]);
+				ParticleSystemEditorUtils.resimulation = GUILayout.Toggle(ParticleSystemEditorUtils.resimulation, ParticleEffectUI.texts.resimulation, "ToolbarButton", new GUILayoutOption[0]);
 				ParticleEffectUI.m_ShowBounds = GUILayout.Toggle(ParticleEffectUI.m_ShowBounds, ParticleEffectUI.texts.showBounds, "ToolbarButton", new GUILayoutOption[0]);
 				if (GUILayout.Button((!ParticleEffectUI.m_VerticalLayout) ? ParticleSystemWindow.s_Icons[1] : ParticleSystemWindow.s_Icons[0], "ToolbarButton", new GUILayoutOption[0]))
 				{

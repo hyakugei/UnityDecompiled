@@ -65,7 +65,7 @@ namespace UnityEditor.Web
 		{
 			if (PurchasingSettings.enabled != enabled)
 			{
-				PurchasingSettings.enabled = enabled;
+				PurchasingSettings.SetEnabledServiceWindow(enabled);
 				EditorAnalytics.SendEventServiceInfo(new PurchasingAccess.PurchasingServiceState
 				{
 					iap = enabled

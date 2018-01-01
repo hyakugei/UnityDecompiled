@@ -20,15 +20,15 @@ namespace UnityEditor.Scripting.ScriptCompilation
 			{
 				if (EditorCompilationInterface.editorCompilation == null)
 				{
-					CompilationPipeline.ClearEditorCompilationErrors();
 					EditorCompilationInterface.editorCompilation = new EditorCompilation();
-					EditorCompilation expr_20 = EditorCompilationInterface.editorCompilation;
-					Delegate arg_43_0 = expr_20.setupErrorFlagsChanged;
+					EditorCompilation expr_1B = EditorCompilationInterface.editorCompilation;
+					Delegate arg_3E_0 = expr_1B.setupErrorFlagsChanged;
 					if (EditorCompilationInterface.<>f__mg$cache0 == null)
 					{
 						EditorCompilationInterface.<>f__mg$cache0 = new Action<EditorCompilation.CompilationSetupErrorFlags>(EditorCompilationInterface.ClearErrors);
 					}
-					expr_20.setupErrorFlagsChanged = (Action<EditorCompilation.CompilationSetupErrorFlags>)Delegate.Combine(arg_43_0, EditorCompilationInterface.<>f__mg$cache0);
+					expr_1B.setupErrorFlagsChanged = (Action<EditorCompilation.CompilationSetupErrorFlags>)Delegate.Combine(arg_3E_0, EditorCompilationInterface.<>f__mg$cache0);
+					CompilationPipeline.ClearEditorCompilationErrors();
 				}
 				return EditorCompilationInterface.editorCompilation;
 			}
@@ -106,6 +106,12 @@ namespace UnityEditor.Scripting.ScriptCompilation
 		public static bool IsExtensionSupportedByCompiler(string extension)
 		{
 			return EditorCompilationInterface.Instance.IsExtensionSupportedByCompiler(extension);
+		}
+
+		[RequiredByNativeCode]
+		public static string[] GetExtensionsSupportedByCompiler()
+		{
+			return EditorCompilationInterface.Instance.GetExtensionsSupportedByCompiler();
 		}
 
 		[RequiredByNativeCode]

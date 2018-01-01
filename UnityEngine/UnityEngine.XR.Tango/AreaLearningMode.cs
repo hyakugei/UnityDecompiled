@@ -2,7 +2,7 @@ using System;
 
 namespace UnityEngine.XR.Tango
 {
-	public enum AreaLearningMode
+	internal enum AreaLearningMode
 	{
 		None,
 		LocalAreaDescriptionWithoutLearning,

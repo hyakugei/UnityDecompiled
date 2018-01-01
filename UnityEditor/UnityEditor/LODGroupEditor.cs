@@ -702,11 +702,11 @@ namespace UnityEditor
 					GenericMenu genericMenu = new GenericMenu();
 					if (lods.Count >= 8)
 					{
-						genericMenu.AddDisabledItem(EditorGUIUtility.TextContent("Insert Before"));
+						genericMenu.AddDisabledItem(EditorGUIUtility.TrTextContent("Insert Before", null, null));
 					}
 					else
 					{
-						genericMenu.AddItem(EditorGUIUtility.TextContent("Insert Before"), false, new GenericMenu.MenuFunction(new LODGroupEditor.LODAction(lods, cameraPercent, current.mousePosition, this.m_LODs, null).InsertLOD));
+						genericMenu.AddItem(EditorGUIUtility.TrTextContent("Insert Before", null, null), false, new GenericMenu.MenuFunction(new LODGroupEditor.LODAction(lods, cameraPercent, current.mousePosition, this.m_LODs, null).InsertLOD));
 					}
 					bool flag = true;
 					if (lods.Count > 0 && lods[lods.Count - 1].RawScreenPercent < cameraPercent)
@@ -715,11 +715,11 @@ namespace UnityEditor
 					}
 					if (flag)
 					{
-						genericMenu.AddDisabledItem(EditorGUIUtility.TextContent("Delete"));
+						genericMenu.AddDisabledItem(EditorGUIUtility.TrTextContent("Delete", null, null));
 					}
 					else
 					{
-						genericMenu.AddItem(EditorGUIUtility.TextContent("Delete"), false, new GenericMenu.MenuFunction(new LODGroupEditor.LODAction(lods, cameraPercent, current.mousePosition, this.m_LODs, new LODGroupEditor.LODAction.Callback(this, ldftn(DeletedLOD))).DeleteLOD));
+						genericMenu.AddItem(EditorGUIUtility.TrTextContent("Delete", null, null), false, new GenericMenu.MenuFunction(new LODGroupEditor.LODAction(lods, cameraPercent, current.mousePosition, this.m_LODs, new LODGroupEditor.LODAction.Callback(this, ldftn(DeletedLOD))).DeleteLOD));
 					}
 					genericMenu.ShowAsContext();
 					bool flag2 = false;
@@ -737,7 +737,7 @@ namespace UnityEditor
 						this.m_SelectedLOD = -1;
 					}
 					current.Use();
-					goto IL_707;
+					goto IL_70F;
 				}
 				Rect rect = sliderPosition;
 				rect.x -= 5f;
@@ -783,7 +783,7 @@ namespace UnityEditor
 						}
 					}
 				}
-				goto IL_707;
+				goto IL_70F;
 			}
 			case EventType.MouseUp:
 				if (GUIUtility.hotControl == controlID)
@@ -793,7 +793,7 @@ namespace UnityEditor
 					this.EndLODDrag();
 					current.Use();
 				}
-				goto IL_707;
+				goto IL_70F;
 			case EventType.MouseMove:
 			case EventType.KeyDown:
 			case EventType.KeyUp:
@@ -802,10 +802,10 @@ namespace UnityEditor
 				IL_5B:
 				if (typeForControl != EventType.DragExited)
 				{
-					goto IL_707;
+					goto IL_70F;
 				}
 				current.Use();
-				goto IL_707;
+				goto IL_70F;
 			case EventType.MouseDrag:
 				if (GUIUtility.hotControl == controlID && this.m_SelectedLODSlider >= 0 && lods[this.m_SelectedLODSlider] != null)
 				{
@@ -816,10 +816,10 @@ namespace UnityEditor
 					serializedProperty.floatValue = lods[this.m_SelectedLODSlider].RawScreenPercent;
 					this.UpdateLODDrag(cameraPercent2, this.m_LODGroup);
 				}
-				goto IL_707;
+				goto IL_70F;
 			case EventType.Repaint:
 				LODGroupGUI.DrawLODSlider(sliderPosition, lods, this.activeLOD);
-				goto IL_707;
+				goto IL_70F;
 			case EventType.DragUpdated:
 			case EventType.DragPerform:
 			{
@@ -875,13 +875,13 @@ namespace UnityEditor
 						}
 					}
 					current.Use();
-					goto IL_707;
+					goto IL_70F;
 				}
-				goto IL_707;
+				goto IL_70F;
 			}
 			}
 			goto IL_5B;
-			IL_707:
+			IL_70F:
 			if (SceneView.lastActiveSceneView != null && SceneView.lastActiveSceneView.camera != null && !this.m_IsPrefab)
 			{
 				Camera camera = SceneView.lastActiveSceneView.camera;

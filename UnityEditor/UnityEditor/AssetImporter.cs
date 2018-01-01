@@ -6,6 +6,7 @@ using UnityEngine.Bindings;
 
 namespace UnityEditor
 {
+	[ExcludeFromObjectFactory]
 	public class AssetImporter : UnityEngine.Object
 	{
 		[NativeType(CodegenOptions.Custom, "MonoSourceAssetIdentifier")]
@@ -45,6 +46,12 @@ namespace UnityEditor
 		}
 
 		public extern string assetPath
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+		}
+
+		public extern bool importSettingsMissing
 		{
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
@@ -123,7 +130,7 @@ namespace UnityEditor
 		}
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern void RegisterImporter(Type importer, int importerVersion, int queuePos, string fileExt);
+		internal static extern void RegisterImporter(Type importer, int importerVersion, int queuePos, string fileExt, bool supportsImportDependencyHinting);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern void AddRemap_Injected(ref AssetImporter.SourceAssetIdentifier identifier, UnityEngine.Object externalObject);

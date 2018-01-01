@@ -13,11 +13,14 @@ namespace UnityEditor.Scripting.Compilers
 
 		private string _responseFile = null;
 
+		private bool _runAPIUpdater;
+
 		protected MonoIsland _island;
 
-		protected ScriptCompilerBase(MonoIsland island)
+		protected ScriptCompilerBase(MonoIsland island, bool runAPIUpdater)
 		{
 			this._island = island;
+			this._runAPIUpdater = runAPIUpdater;
 		}
 
 		protected abstract Program StartCompiler();
@@ -70,7 +73,7 @@ namespace UnityEditor.Scripting.Compilers
 		protected string GetMonoProfileLibDirectory()
 		{
 			string profile = BuildPipeline.CompatibilityProfileToClassLibFolder(this._island._api_compatibility_level);
-			string monoInstallation = (this._island._api_compatibility_level != ApiCompatibilityLevel.NET_4_6) ? "Mono" : "MonoBleedingEdge";
+			string monoInstallation = (!PlayerSettingsEditor.IsLatestApiCompatibility(this._island._api_compatibility_level)) ? "Mono" : "MonoBleedingEdge";
 			return MonoInstallationFinder.GetProfileDirectory(profile, monoInstallation);
 		}
 
@@ -211,6 +214,14 @@ namespace UnityEditor.Scripting.Compilers
 					Console.WriteLine(value2);
 				}
 				Console.WriteLine("-----EndCompilerOutput---------------");
+			}
+		}
+
+		protected void RunAPIUpdaterIfRequired(string responseFile)
+		{
+			if (this._runAPIUpdater)
+			{
+				APIUpdaterHelper.UpdateScripts(responseFile, this._island.GetExtensionOfSourceFiles());
 			}
 		}
 	}

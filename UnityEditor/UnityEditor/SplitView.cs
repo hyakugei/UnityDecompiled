@@ -800,7 +800,7 @@ namespace UnityEditor
 						{
 							text = dockArea.m_Panes[dockArea.m_Selected].GetType().ToString();
 						}
-						if (Unsupported.IsDeveloperBuild())
+						if (Unsupported.IsDeveloperMode())
 						{
 							Debug.LogError(string.Concat(new object[]
 							{

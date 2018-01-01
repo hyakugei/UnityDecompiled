@@ -270,7 +270,7 @@ namespace UnityEditor
 
 		public void InvokeOnGUI(Rect onGUIPosition)
 		{
-			if (Unsupported.IsDeveloperBuild() && this.actualView != null && Event.current.type == EventType.KeyUp && Event.current.keyCode == KeyCode.F5)
+			if (Unsupported.IsDeveloperMode() && this.actualView != null && Event.current.type == EventType.KeyUp && Event.current.keyCode == KeyCode.F5)
 			{
 				this.Reload(this.actualView);
 			}
@@ -449,7 +449,7 @@ namespace UnityEditor
 			Selection.activeObject = (UnityEngine.Object)userData;
 		}
 
-		private void Reload(object userData)
+		internal void Reload(object userData)
 		{
 			EditorWindow editorWindow = userData as EditorWindow;
 			if (!(editorWindow == null))
@@ -484,11 +484,11 @@ namespace UnityEditor
 			{
 				menu.AddSeparator("");
 			}
-			if (Unsupported.IsDeveloperBuild())
+			if (Unsupported.IsDeveloperMode())
 			{
-				menu.AddItem(EditorGUIUtility.TextContent("Inspect Window"), false, new GenericMenu.MenuFunction2(this.Inspect), window);
-				menu.AddItem(EditorGUIUtility.TextContent("Inspect View"), false, new GenericMenu.MenuFunction2(this.Inspect), window.m_Parent);
-				menu.AddItem(EditorGUIUtility.TextContent("Reload Window _f5"), false, new GenericMenu.MenuFunction2(this.Reload), window);
+				menu.AddItem(EditorGUIUtility.TrTextContent("Inspect Window", null, null), false, new GenericMenu.MenuFunction2(this.Inspect), window);
+				menu.AddItem(EditorGUIUtility.TrTextContent("Inspect View", null, null), false, new GenericMenu.MenuFunction2(this.Inspect), window.m_Parent);
+				menu.AddItem(EditorGUIUtility.TrTextContent("Reload Window _f5", null, null), false, new GenericMenu.MenuFunction2(this.Reload), window);
 				menu.AddSeparator("");
 			}
 		}

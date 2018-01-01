@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using UnityEngine;
@@ -15,6 +16,9 @@ namespace UnityEditor
 
 		[SerializeField]
 		private PaintableGrid m_ActiveGrid;
+
+		[SerializeField]
+		private HashSet<UnityEngine.Object> m_InterestedPainters = new HashSet<UnityEngine.Object>();
 
 		private GameObject[] m_CachedPaintTargets = null;
 
@@ -111,7 +115,14 @@ namespace UnityEditor
 				{
 					ScriptableSingleton<GridPaintingState>.instance.m_Brush = value;
 					ScriptableSingleton<GridPaintingState>.instance.m_FlushPaintTargetCache = true;
-					GridPaintingState.scenePaintTarget = ((!GridPaintingState.ValidatePaintTarget(Selection.activeGameObject)) ? null : Selection.activeGameObject);
+					if (GridPaintingState.scenePaintTarget != null && !GridPaintingState.ValidatePaintTarget(GridPaintingState.scenePaintTarget))
+					{
+						GridPaintingState.scenePaintTarget = null;
+					}
+					if (GridPaintingState.scenePaintTarget == null)
+					{
+						GridPaintingState.scenePaintTarget = ((!GridPaintingState.ValidatePaintTarget(Selection.activeGameObject)) ? null : Selection.activeGameObject);
+					}
 					if (GridPaintingState.scenePaintTarget == null)
 					{
 						GridPaintingState.AutoSelectPaintTarget();
@@ -195,6 +206,14 @@ namespace UnityEditor
 			}
 		}
 
+		public bool hasInterestedPainters
+		{
+			get
+			{
+				return this.m_InterestedPainters.Count > 0;
+			}
+		}
+
 		public bool areToolModesAvailable
 		{
 			get
@@ -205,21 +224,22 @@ namespace UnityEditor
 
 		private void OnEnable()
 		{
-			EditorApplication.hierarchyWindowChanged = (EditorApplication.CallbackFunction)Delegate.Combine(EditorApplication.hierarchyWindowChanged, new EditorApplication.CallbackFunction(this.HierarchyChanged));
+			EditorApplication.hierarchyChanged += new Action(this.HierarchyChanged);
 			Selection.selectionChanged = (Action)Delegate.Combine(Selection.selectionChanged, new Action(this.OnSelectionChange));
 			this.m_FlushPaintTargetCache = true;
 		}
 
 		private void OnDisable()
 		{
-			EditorApplication.hierarchyWindowChanged = (EditorApplication.CallbackFunction)Delegate.Remove(EditorApplication.hierarchyWindowChanged, new EditorApplication.CallbackFunction(this.HierarchyChanged));
+			this.m_InterestedPainters.Clear();
+			EditorApplication.hierarchyChanged -= new Action(this.HierarchyChanged);
 			Selection.selectionChanged = (Action)Delegate.Remove(Selection.selectionChanged, new Action(this.OnSelectionChange));
 			GridPaintingState.FlushCache();
 		}
 
 		private void OnSelectionChange()
 		{
-			if (GridPaintingState.validTargets == null && GridPaintingState.ValidatePaintTarget(Selection.activeGameObject))
+			if (this.hasInterestedPainters && GridPaintingState.validTargets == null && GridPaintingState.ValidatePaintTarget(Selection.activeGameObject))
 			{
 				GridPaintingState.scenePaintTarget = Selection.activeGameObject;
 			}
@@ -227,10 +247,13 @@ namespace UnityEditor
 
 		private void HierarchyChanged()
 		{
-			this.m_FlushPaintTargetCache = true;
-			if (GridPaintingState.validTargets == null || !GridPaintingState.validTargets.Contains(GridPaintingState.scenePaintTarget))
+			if (this.hasInterestedPainters)
 			{
-				GridPaintingState.AutoSelectPaintTarget();
+				this.m_FlushPaintTargetCache = true;
+				if (GridPaintingState.validTargets == null || !GridPaintingState.validTargets.Contains(GridPaintingState.scenePaintTarget))
+				{
+					GridPaintingState.AutoSelectPaintTarget();
+				}
 			}
 		}
 
@@ -258,6 +281,16 @@ namespace UnityEditor
 				ScriptableSingleton<GridPaintingState>.instance.m_CachedEditor = null;
 			}
 			ScriptableSingleton<GridPaintingState>.instance.m_FlushPaintTargetCache = true;
+		}
+
+		public static void RegisterPainterInterest(UnityEngine.Object painter)
+		{
+			ScriptableSingleton<GridPaintingState>.instance.m_InterestedPainters.Add(painter);
+		}
+
+		public static void UnregisterPainterInterest(UnityEngine.Object painter)
+		{
+			ScriptableSingleton<GridPaintingState>.instance.m_InterestedPainters.Remove(painter);
 		}
 
 		public Bounds GetWorldBoundsOfTargets()

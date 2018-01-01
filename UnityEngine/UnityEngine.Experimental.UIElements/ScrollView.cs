@@ -128,7 +128,7 @@ namespace UnityEngine.Experimental.UIElements
 			{
 				name = "ContentViewport"
 			};
-			this.contentViewport.clipChildren = true;
+			this.contentViewport.clippingOptions = VisualElement.ClippingOptions.ClipContents;
 			base.shadow.Add(this.contentViewport);
 			this.m_ContentContainer = new VisualElement
 			{
@@ -164,6 +164,34 @@ namespace UnityEngine.Experimental.UIElements
 			position.y = -scrollOffset.y;
 			this.contentContainer.transform.position = position;
 			base.Dirty(ChangeType.Repaint);
+		}
+
+		public void ScrollTo(VisualElement child)
+		{
+			if (!this.contentContainer.Contains(child))
+			{
+				throw new ArgumentException("Cannot scroll to null child");
+			}
+			float num = this.contentContainer.layout.height - this.contentViewport.layout.height;
+			float num2 = this.contentContainer.transform.position.y * -1f;
+			float num3 = this.contentViewport.layout.yMin + num2;
+			float num4 = this.contentViewport.layout.yMax + num2;
+			float yMin = child.layout.yMin;
+			float yMax = child.layout.yMax;
+			if (yMin < num3 || yMax > num4)
+			{
+				bool flag = false;
+				float num5 = yMax - num4;
+				if (num5 < -1f)
+				{
+					num5 = num3 - yMin;
+					flag = true;
+				}
+				float num6 = num5 * this.verticalScroller.highValue / num;
+				this.scrollOffset.Set(this.scrollOffset.x, this.scrollOffset.y + ((!flag) ? num6 : (-num6)));
+				this.verticalScroller.value = this.scrollOffset.y;
+				this.UpdateContentViewTransform();
+			}
 		}
 
 		protected internal override void ExecuteDefaultAction(EventBase evt)

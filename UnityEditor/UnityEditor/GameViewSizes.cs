@@ -35,9 +35,6 @@ namespace UnityEditor
 		private GameViewSizeGroup m_Android = new GameViewSizeGroup();
 
 		[SerializeField]
-		private GameViewSizeGroup m_WiiU = new GameViewSizeGroup();
-
-		[SerializeField]
 		private GameViewSizeGroup m_Tizen = new GameViewSizeGroup();
 
 		[SerializeField]
@@ -91,6 +88,7 @@ namespace UnityEditor
 			case GameViewSizeGroupType.Standalone:
 			case GameViewSizeGroupType.WebPlayer:
 			case GameViewSizeGroupType.PS3:
+			case GameViewSizeGroupType.WiiU:
 			case GameViewSizeGroupType.WP8:
 				result = this.m_Standalone;
 				break;
@@ -99,9 +97,6 @@ namespace UnityEditor
 				break;
 			case GameViewSizeGroupType.Android:
 				result = this.m_Android;
-				break;
-			case GameViewSizeGroupType.WiiU:
-				result = this.m_WiiU;
 				break;
 			case GameViewSizeGroupType.Tizen:
 				result = this.m_Tizen;
@@ -231,13 +226,10 @@ namespace UnityEditor
 				GameViewSize gameViewSize31 = new GameViewSize(GameViewSizeType.AspectRatio, 3, 2, "3:2 Landscape");
 				GameViewSize gameViewSize32 = new GameViewSize(GameViewSizeType.AspectRatio, 10, 16, "16:10 Portrait");
 				GameViewSize gameViewSize33 = new GameViewSize(GameViewSizeType.AspectRatio, 16, 10, "16:10 Landscape");
-				GameViewSize gameViewSize34 = new GameViewSize(GameViewSizeType.FixedResolution, 1920, 1080, "1080p (16:9)");
-				GameViewSize gameViewSize35 = new GameViewSize(GameViewSizeType.FixedResolution, 1280, 720, "720p (16:9)");
-				GameViewSize gameViewSize36 = new GameViewSize(GameViewSizeType.FixedResolution, 854, 480, "GamePad 480p (16:9)");
-				GameViewSize gameViewSize37 = new GameViewSize(GameViewSizeType.FixedResolution, 1280, 720, "16:9 Landscape");
-				GameViewSize gameViewSize38 = new GameViewSize(GameViewSizeType.FixedResolution, 720, 1280, "9:16 Portrait");
-				GameViewSize gameViewSize39 = new GameViewSize(GameViewSizeType.FixedResolution, 400, 240, "Top Screen");
-				GameViewSize gameViewSize40 = new GameViewSize(GameViewSizeType.FixedResolution, 320, 240, "Bottom Screen");
+				GameViewSize gameViewSize34 = new GameViewSize(GameViewSizeType.FixedResolution, 1280, 720, "16:9 Landscape");
+				GameViewSize gameViewSize35 = new GameViewSize(GameViewSizeType.FixedResolution, 720, 1280, "9:16 Portrait");
+				GameViewSize gameViewSize36 = new GameViewSize(GameViewSizeType.FixedResolution, 400, 240, "Top Screen");
+				GameViewSize gameViewSize37 = new GameViewSize(GameViewSizeType.FixedResolution, 320, 240, "Bottom Screen");
 				this.m_Standalone.AddBuiltinSizes(new GameViewSize[]
 				{
 					gameViewSize,
@@ -247,15 +239,6 @@ namespace UnityEditor
 					gameViewSize5,
 					gameViewSize6,
 					gameViewSize7
-				});
-				this.m_WiiU.AddBuiltinSizes(new GameViewSize[]
-				{
-					gameViewSize,
-					gameViewSize3,
-					gameViewSize6,
-					gameViewSize34,
-					gameViewSize35,
-					gameViewSize36
 				});
 				this.m_iOS.AddBuiltinSizes(new GameViewSize[]
 				{
@@ -295,14 +278,14 @@ namespace UnityEditor
 				this.m_Tizen.AddBuiltinSizes(new GameViewSize[]
 				{
 					gameViewSize,
-					gameViewSize37,
-					gameViewSize38
+					gameViewSize34,
+					gameViewSize35
 				});
 				this.m_N3DS.AddBuiltinSizes(new GameViewSize[]
 				{
 					gameViewSize,
-					gameViewSize39,
-					gameViewSize40
+					gameViewSize36,
+					gameViewSize37
 				});
 				this.m_HMD.AddBuiltinSizes(new GameViewSize[]
 				{
@@ -326,7 +309,6 @@ namespace UnityEditor
 			case GameViewSizeGroupType.Standalone:
 				result = GameViewSizes.DefaultLowResolutionSettingForStandalone();
 				return result;
-			case GameViewSizeGroupType.WiiU:
 			case GameViewSizeGroupType.N3DS:
 				result = true;
 				return result;
@@ -513,27 +495,22 @@ namespace UnityEditor
 				case BuildTargetGroup.WebPlayer:
 				case (BuildTargetGroup)3:
 					IL_35:
-					if (buildTargetGroup == BuildTargetGroup.N3DS)
-					{
-						result = GameViewSizeGroupType.N3DS;
-						return result;
-					}
-					if (buildTargetGroup == BuildTargetGroup.WiiU)
-					{
-						result = GameViewSizeGroupType.WiiU;
-						return result;
-					}
 					if (buildTargetGroup == BuildTargetGroup.Android)
 					{
 						result = GameViewSizeGroupType.Android;
 						return result;
 					}
-					if (buildTargetGroup != BuildTargetGroup.Tizen)
+					if (buildTargetGroup == BuildTargetGroup.Tizen)
+					{
+						result = GameViewSizeGroupType.Tizen;
+						return result;
+					}
+					if (buildTargetGroup != BuildTargetGroup.N3DS)
 					{
 						result = GameViewSizeGroupType.Standalone;
 						return result;
 					}
-					result = GameViewSizeGroupType.Tizen;
+					result = GameViewSizeGroupType.N3DS;
 					return result;
 				case BuildTargetGroup.iPhone:
 					result = GameViewSizeGroupType.iOS;

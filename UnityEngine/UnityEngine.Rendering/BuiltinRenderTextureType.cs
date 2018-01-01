@@ -4,8 +4,9 @@ namespace UnityEngine.Rendering
 {
 	public enum BuiltinRenderTextureType
 	{
-		PropertyName = -3,
+		PropertyName = -4,
 		BufferPtr,
+		RenderTexture,
 		BindableTexture,
 		None,
 		CurrentActive,

@@ -14,7 +14,7 @@ namespace UnityEditor
 
 			public Texture2D smallWarningIcon;
 
-			public GUIContent restartNeededWarning = new GUIContent("Some settings will not take effect until you restart Unity.");
+			public GUIContent restartNeededWarning = EditorGUIUtility.TrTextContent("Some settings will not take effect until you restart Unity.", null, null);
 
 			public Resources()
 			{
@@ -144,7 +144,7 @@ namespace UnityEditor
 				{
 					GUIStyle gUIStyle = new GUIStyle();
 					gUIStyle.normal.textColor = Color.red;
-					EditorGUI.LabelField(rect, label, new GUIContent("Unsupported type: " + diagnosticSwitch.value.GetType().Name), gUIStyle);
+					EditorGUI.LabelField(rect, label, EditorGUIUtility.TrTextContent("Unsupported type: " + diagnosticSwitch.value.GetType().Name, null, null), gUIStyle);
 				}
 			}
 			if (EditorGUI.EndChangeCheck())

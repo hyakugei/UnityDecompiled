@@ -80,7 +80,7 @@ namespace UnityEngine
 		{
 			get
 			{
-				return Physics2D.GetColliderFromInstanceID(this.m_Collider);
+				return Object.FindObjectFromInstanceID(this.m_Collider) as Collider2D;
 			}
 		}
 
@@ -88,7 +88,7 @@ namespace UnityEngine
 		{
 			get
 			{
-				return Physics2D.GetColliderFromInstanceID(this.m_OtherCollider);
+				return Object.FindObjectFromInstanceID(this.m_OtherCollider) as Collider2D;
 			}
 		}
 
@@ -96,7 +96,7 @@ namespace UnityEngine
 		{
 			get
 			{
-				return Physics2D.GetRigidbodyFromInstanceID(this.m_Rigidbody);
+				return Object.FindObjectFromInstanceID(this.m_Rigidbody) as Rigidbody2D;
 			}
 		}
 
@@ -104,7 +104,7 @@ namespace UnityEngine
 		{
 			get
 			{
-				return Physics2D.GetRigidbodyFromInstanceID(this.m_OtherRigidbody);
+				return Object.FindObjectFromInstanceID(this.m_OtherRigidbody) as Rigidbody2D;
 			}
 		}
 

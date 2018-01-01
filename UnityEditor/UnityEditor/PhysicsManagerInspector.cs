@@ -9,11 +9,11 @@ namespace UnityEditor
 	{
 		private static class Styles
 		{
-			public static readonly GUIContent interCollisionPropertiesLabel = EditorGUIUtility.TextContent("Cloth Inter-Collision");
+			public static readonly GUIContent interCollisionPropertiesLabel = EditorGUIUtility.TrTextContent("Cloth Inter-Collision", null, null);
 
-			public static readonly GUIContent interCollisionDistanceLabel = EditorGUIUtility.TextContent("Distance");
+			public static readonly GUIContent interCollisionDistanceLabel = EditorGUIUtility.TrTextContent("Distance", null, null);
 
-			public static readonly GUIContent interCollisionStiffnessLabel = EditorGUIUtility.TextContent("Stiffness");
+			public static readonly GUIContent interCollisionStiffnessLabel = EditorGUIUtility.TrTextContent("Stiffness", null, null);
 		}
 
 		private Vector2 scrollPos;
@@ -32,18 +32,21 @@ namespace UnityEditor
 
 		public override void OnInspectorGUI()
 		{
+			base.serializedObject.Update();
 			Editor.DrawPropertiesExcluding(base.serializedObject, new string[]
 			{
 				"m_ClothInterCollisionDistance",
 				"m_ClothInterCollisionStiffness",
 				"m_ClothInterCollisionSettingsToggle"
 			});
+			base.serializedObject.ApplyModifiedProperties();
 			LayerMatrixGUI.DoGUI("Layer Collision Matrix", ref this.show, ref this.scrollPos, new LayerMatrixGUI.GetValueFunc(this.GetValue), new LayerMatrixGUI.SetValueFunc(this.SetValue));
 			EditorGUI.BeginChangeCheck();
 			bool interCollisionSettingsToggle = EditorGUILayout.Toggle(PhysicsManagerInspector.Styles.interCollisionPropertiesLabel, Physics.interCollisionSettingsToggle, new GUILayoutOption[0]);
 			bool flag = EditorGUI.EndChangeCheck();
 			if (flag)
 			{
+				Undo.RecordObject(base.target, "Change inter collision settings");
 				Physics.interCollisionSettingsToggle = interCollisionSettingsToggle;
 			}
 			if (Physics.interCollisionSettingsToggle)
@@ -54,6 +57,7 @@ namespace UnityEditor
 				bool flag2 = EditorGUI.EndChangeCheck();
 				if (flag2)
 				{
+					Undo.RecordObject(base.target, "Change inter collision distance");
 					if (num < 0f)
 					{
 						num = 0f;
@@ -65,6 +69,7 @@ namespace UnityEditor
 				bool flag3 = EditorGUI.EndChangeCheck();
 				if (flag3)
 				{
+					Undo.RecordObject(base.target, "Change inter collision stiffness");
 					if (num2 < 0f)
 					{
 						num2 = 0f;

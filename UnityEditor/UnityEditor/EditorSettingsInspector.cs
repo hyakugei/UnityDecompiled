@@ -307,6 +307,7 @@ namespace UnityEditor
 						EditorUserSettings.WorkOffline = flag3;
 						EditorApplication.RequestRepaintAllViews();
 					}
+					EditorUserSettings.allowAsyncStatusUpdate = EditorGUILayout.Toggle("Allow Async Update", EditorUserSettings.allowAsyncStatusUpdate, new GUILayoutOption[0]);
 				}
 				if (Provider.hasCheckoutSupport)
 				{
@@ -341,8 +342,11 @@ namespace UnityEditor
 			GUI.enabled = enabled;
 			selectedIndex = Mathf.Clamp((int)EditorSettings.spritePackerMode, 0, this.spritePackerPopupList.Length - 1);
 			this.CreatePopupMenu("Mode", this.spritePackerPopupList, selectedIndex, new GenericMenu.MenuFunction2(this.SetSpritePackerMode));
-			selectedIndex = Mathf.Clamp(EditorSettings.spritePackerPaddingPower - 1, 0, 2);
-			this.CreatePopupMenu("Padding Power (Legacy Sprite Packer)", this.spritePackerPaddingPowerPopupList, selectedIndex, new GenericMenu.MenuFunction2(this.SetSpritePackerPaddingPower));
+			if (EditorSettings.spritePackerMode == SpritePackerMode.AlwaysOn || EditorSettings.spritePackerMode == SpritePackerMode.BuildTimeOnly)
+			{
+				selectedIndex = Mathf.Clamp(EditorSettings.spritePackerPaddingPower - 1, 0, 2);
+				this.CreatePopupMenu("Padding Power (Legacy Sprite Packer)", this.spritePackerPaddingPowerPopupList, selectedIndex, new GenericMenu.MenuFunction2(this.SetSpritePackerPaddingPower));
+			}
 			this.DoProjectGenerationSettings();
 			this.DoEtcTextureCompressionSettings();
 			this.DoInternalSettings();
@@ -369,7 +373,7 @@ namespace UnityEditor
 
 		private void DoInternalSettings()
 		{
-			if (EditorPrefs.GetBool("InternalMode", false))
+			if (EditorPrefs.GetBool("DeveloperMode", false))
 			{
 				GUILayout.Space(10f);
 				GUILayout.Label("Internal Settings", EditorStyles.boldLabel, new GUILayoutOption[0]);
@@ -453,7 +457,7 @@ namespace UnityEditor
 			int indexById = EditorSettingsInspector.GetIndexById(this.remoteDeviceList, unityRemoteDevice, 0);
 			GUIContent content = new GUIContent(this.remoteDevicePopupList[indexById].content);
 			Rect rect = GUILayoutUtility.GetRect(content, EditorStyles.popup);
-			rect = EditorGUI.PrefixLabel(rect, 0, new GUIContent("Device"));
+			rect = EditorGUI.PrefixLabel(rect, 0, EditorGUIUtility.TrTextContent("Device", null, null));
 			if (EditorGUI.DropdownButton(rect, content, FocusType.Passive, EditorStyles.popup))
 			{
 				this.DoPopup(rect, this.remoteDevicePopupList, indexById, new GenericMenu.MenuFunction2(this.SetUnityRemoteDevice));
@@ -461,7 +465,7 @@ namespace UnityEditor
 			int indexById2 = EditorSettingsInspector.GetIndexById(this.remoteCompressionList, EditorSettings.unityRemoteCompression, 0);
 			content = new GUIContent(this.remoteCompressionList[indexById2].content);
 			rect = GUILayoutUtility.GetRect(content, EditorStyles.popup);
-			rect = EditorGUI.PrefixLabel(rect, 0, new GUIContent("Compression"));
+			rect = EditorGUI.PrefixLabel(rect, 0, EditorGUIUtility.TrTextContent("Compression", null, null));
 			if (EditorGUI.DropdownButton(rect, content, FocusType.Passive, EditorStyles.popup))
 			{
 				this.DoPopup(rect, this.remoteCompressionList, indexById2, new GenericMenu.MenuFunction2(this.SetUnityRemoteCompression));
@@ -469,7 +473,7 @@ namespace UnityEditor
 			int indexById3 = EditorSettingsInspector.GetIndexById(this.remoteResolutionList, EditorSettings.unityRemoteResolution, 0);
 			content = new GUIContent(this.remoteResolutionList[indexById3].content);
 			rect = GUILayoutUtility.GetRect(content, EditorStyles.popup);
-			rect = EditorGUI.PrefixLabel(rect, 0, new GUIContent("Resolution"));
+			rect = EditorGUI.PrefixLabel(rect, 0, EditorGUIUtility.TrTextContent("Resolution", null, null));
 			if (EditorGUI.DropdownButton(rect, content, FocusType.Passive, EditorStyles.popup))
 			{
 				this.DoPopup(rect, this.remoteResolutionList, indexById3, new GenericMenu.MenuFunction2(this.SetUnityRemoteResolution));
@@ -477,7 +481,7 @@ namespace UnityEditor
 			int indexById4 = EditorSettingsInspector.GetIndexById(this.remoteJoystickSourceList, EditorSettings.unityRemoteJoystickSource, 0);
 			content = new GUIContent(this.remoteJoystickSourceList[indexById4].content);
 			rect = GUILayoutUtility.GetRect(content, EditorStyles.popup);
-			rect = EditorGUI.PrefixLabel(rect, 0, new GUIContent("Joystick Source"));
+			rect = EditorGUI.PrefixLabel(rect, 0, EditorGUIUtility.TrTextContent("Joystick Source", null, null));
 			if (EditorGUI.DropdownButton(rect, content, FocusType.Passive, EditorStyles.popup))
 			{
 				this.DoPopup(rect, this.remoteJoystickSourceList, indexById4, new GenericMenu.MenuFunction2(this.SetUnityRemoteJoystickSource));
@@ -506,6 +510,7 @@ namespace UnityEditor
 				this.DrawOverlayDescription(Asset.States.Conflicted);
 				this.DrawOverlayDescription(Asset.States.LockedLocal);
 				this.DrawOverlayDescription(Asset.States.LockedRemote);
+				this.DrawOverlayDescription(Asset.States.Updating);
 				GUILayout.EndVertical();
 				GUILayout.EndHorizontal();
 			}

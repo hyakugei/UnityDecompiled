@@ -1,27 +1,18 @@
 using System;
+using UnityEngine.Bindings;
 
 namespace UnityEngine
 {
+	[VisibleToOtherModules(new string[]
+	{
+		"UnityEngine.UIElementsModule"
+	})]
 	internal struct RectStylePainterParameters
 	{
-		public Rect layout;
+		public Rect rect;
 
 		public Color color;
 
-		public float borderLeftWidth;
-
-		public float borderTopWidth;
-
-		public float borderRightWidth;
-
-		public float borderBottomWidth;
-
-		public float borderTopLeftRadius;
-
-		public float borderTopRightRadius;
-
-		public float borderBottomRightRadius;
-
-		public float borderBottomLeftRadius;
+		public BorderParameters border;
 	}
 }

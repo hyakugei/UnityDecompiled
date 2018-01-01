@@ -1,82 +1,75 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using UnityEngine;
+using UnityEngine.Scripting;
 
 namespace UnityEditor.Experimental.AssetImporters
 {
+	[RequiredByNativeCode]
 	public class AssetImportContext
 	{
-		private List<ImportedObject> m_ImportedObjects = new List<ImportedObject>();
+		internal IntPtr m_Self;
 
-		public string assetPath
+		public extern string assetPath
 		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
 			internal set;
 		}
 
-		public BuildTarget selectedBuildTarget
+		public extern BuildTarget selectedBuildTarget
 		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			internal set;
 		}
 
-		internal List<ImportedObject> importedObjects
-		{
-			get
-			{
-				return this.m_ImportedObjects;
-			}
-		}
-
-		internal AssetImportContext()
+		private AssetImportContext()
 		{
 		}
 
-		public void SetMainObject(UnityEngine.Object obj)
-		{
-			if (!(obj == null))
-			{
-				ImportedObject importedObject = this.m_ImportedObjects.FirstOrDefault((ImportedObject x) => x.mainAssetObject);
-				if (importedObject != null)
-				{
-					if (importedObject.obj == obj)
-					{
-						return;
-					}
-					Debug.LogWarning(string.Format("An object was already set as the main object: \"{0}\" conflicting on \"{1}\"", this.assetPath, importedObject.localIdentifier));
-					importedObject.mainAssetObject = false;
-				}
-				importedObject = this.m_ImportedObjects.FirstOrDefault((ImportedObject x) => x.obj == obj);
-				if (importedObject == null)
-				{
-					throw new Exception("Before an object can be set as main, it must first be added using AddObjectToAsset.");
-				}
-				importedObject.mainAssetObject = true;
-				this.m_ImportedObjects.Remove(importedObject);
-				this.m_ImportedObjects.Insert(0, importedObject);
-			}
-		}
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void LogMessage(string msg, string file, int line, UnityEngine.Object obj, bool isAnError);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public extern void SetMainObject(UnityEngine.Object obj);
 
 		public void AddObjectToAsset(string identifier, UnityEngine.Object obj)
 		{
 			this.AddObjectToAsset(identifier, obj, null);
 		}
 
-		public void AddObjectToAsset(string identifier, UnityEngine.Object obj, Texture2D thumbnail)
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public extern void AddObjectToAsset(string identifier, UnityEngine.Object obj, Texture2D thumbnail);
+
+		internal void DependOnHashOfSourceFile(string path)
 		{
-			if (obj == null)
+			if (string.IsNullOrEmpty(path))
 			{
-				throw new ArgumentNullException("obj", "Cannot add a null object : " + (identifier ?? "<null>"));
+				throw new ArgumentNullException("path", "Cannot add a null path");
 			}
-			ImportedObject item = new ImportedObject
-			{
-				mainAssetObject = false,
-				localIdentifier = identifier,
-				obj = obj,
-				thumbnail = thumbnail
-			};
-			this.m_ImportedObjects.Add(item);
+			this.DependOnHashOfSourceFileInternal(path);
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void DependOnHashOfSourceFileInternal(string path);
+
+		public void LogImportError(string msg, UnityEngine.Object obj = null)
+		{
+			this.AddToLog(msg, true, obj);
+		}
+
+		public void LogImportWarning(string msg, UnityEngine.Object obj = null)
+		{
+			this.AddToLog(msg, false, obj);
+		}
+
+		private void AddToLog(string msg, bool isAnError, UnityEngine.Object obj)
+		{
+			StackTrace stackTrace = new StackTrace(2, true);
+			System.Diagnostics.StackFrame frame = stackTrace.GetFrame(0);
+			this.LogMessage(msg, frame.GetFileName(), frame.GetFileLineNumber(), obj, isAnError);
 		}
 	}
 }

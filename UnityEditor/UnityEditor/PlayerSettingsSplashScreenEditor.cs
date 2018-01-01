@@ -7,51 +7,50 @@ using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Rendering;
-using UnityEngine.Scripting;
 
 namespace UnityEditor
 {
-	internal sealed class PlayerSettingsSplashScreenEditor
+	internal class PlayerSettingsSplashScreenEditor
 	{
 		private class Texts
 		{
-			public GUIContent animate = EditorGUIUtility.TextContent("Animation");
+			public GUIContent animate = EditorGUIUtility.TrTextContent("Animation", null, null);
 
-			public GUIContent backgroundColor = EditorGUIUtility.TextContent("Background Color|Background color when no background image is used.");
+			public GUIContent backgroundColor = EditorGUIUtility.TrTextContent("Background Color", "Background color when no background image is used.", null);
 
-			public GUIContent backgroundImage = EditorGUIUtility.TextContent("Background Image|Image to be used in landscape and portrait(when portrait image is not set).");
+			public GUIContent backgroundImage = EditorGUIUtility.TrTextContent("Background Image", "Image to be used in landscape and portrait(when portrait image is not set).", null);
 
-			public GUIContent backgroundPortraitImage = EditorGUIUtility.TextContent("Alternate Portrait Image*|Optional image to be used in portrait mode.");
+			public GUIContent backgroundPortraitImage = EditorGUIUtility.TrTextContent("Alternate Portrait Image*", "Optional image to be used in portrait mode.", null);
 
-			public GUIContent backgroundTitle = EditorGUIUtility.TextContent("Background*");
+			public GUIContent backgroundTitle = EditorGUIUtility.TrTextContent("Background*", null, null);
 
-			public GUIContent backgroundZoom = EditorGUIUtility.TextContent("Background Zoom");
+			public GUIContent backgroundZoom = EditorGUIUtility.TrTextContent("Background Zoom", null, null);
 
-			public GUIContent configDialogBanner = EditorGUIUtility.TextContent("Application Config Dialog Banner");
+			public GUIContent configDialogBanner = EditorGUIUtility.TrTextContent("Application Config Dialog Banner", null, null);
 
-			public GUIContent drawMode = EditorGUIUtility.TextContent("Draw Mode");
+			public GUIContent drawMode = EditorGUIUtility.TrTextContent("Draw Mode", null, null);
 
-			public GUIContent logoDuration = EditorGUIUtility.TextContent("Logo Duration|The time the logo will be shown for.");
+			public GUIContent logoDuration = EditorGUIUtility.TrTextContent("Logo Duration", "The time the logo will be shown for.", null);
 
-			public GUIContent logosTitle = EditorGUIUtility.TextContent("Logos*");
+			public GUIContent logosTitle = EditorGUIUtility.TrTextContent("Logos*", null, null);
 
-			public GUIContent logoZoom = EditorGUIUtility.TextContent("Logo Zoom");
+			public GUIContent logoZoom = EditorGUIUtility.TrTextContent("Logo Zoom", null, null);
 
-			public GUIContent overlayOpacity = EditorGUIUtility.TextContent("Overlay Opacity|Overlay strength applied to improve logo visibility.");
+			public GUIContent overlayOpacity = EditorGUIUtility.TrTextContent("Overlay Opacity", "Overlay strength applied to improve logo visibility.", null);
 
-			public GUIContent previewSplash = EditorGUIUtility.TextContent("Preview|Preview the splash screen in the game view.");
+			public GUIContent previewSplash = EditorGUIUtility.TrTextContent("Preview", "Preview the splash screen in the game view.", null);
 
-			public GUIContent showLogo = EditorGUIUtility.TextContent("Show Unity Logo");
+			public GUIContent showLogo = EditorGUIUtility.TrTextContent("Show Unity Logo", null, null);
 
-			public GUIContent showSplash = EditorGUIUtility.TextContent("Show Splash Screen");
+			public GUIContent showSplash = EditorGUIUtility.TrTextContent("Show Splash Screen", null, null);
 
-			public GUIContent splashStyle = EditorGUIUtility.TextContent("Splash Style");
+			public GUIContent splashStyle = EditorGUIUtility.TrTextContent("Splash Style", null, null);
 
-			public GUIContent splashTitle = EditorGUIUtility.TextContent("Splash Screen");
+			public GUIContent splashTitle = EditorGUIUtility.TrTextContent("Splash Screen", null, null);
 
-			public GUIContent title = EditorGUIUtility.TextContent("Splash Image");
+			public GUIContent title = EditorGUIUtility.TrTextContent("Splash Image", null, null);
 
-			public GUIContent vrSplashScreen = EditorGUIUtility.TextContent("Virtual Reality Splash Image");
+			public GUIContent vrSplashScreen = EditorGUIUtility.TrTextContent("Virtual Reality Splash Image", null, null);
 		}
 
 		private PlayerSettingsEditor m_Owner;
@@ -125,9 +124,8 @@ namespace UnityEditor
 		[CompilerGenerated]
 		private static ReorderableList.CanRemoveCallbackDelegate <>f__mg$cache0;
 
-		public static extern bool licenseAllowsDisabling
+		internal static extern bool licenseAllowsDisabling
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
@@ -140,33 +138,21 @@ namespace UnityEditor
 		internal static Color GetSplashScreenActualBackgroundColor()
 		{
 			Color result;
-			PlayerSettingsSplashScreenEditor.INTERNAL_CALL_GetSplashScreenActualBackgroundColor(out result);
+			PlayerSettingsSplashScreenEditor.GetSplashScreenActualBackgroundColor_Injected(out result);
 			return result;
 		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_GetSplashScreenActualBackgroundColor(out Color value);
-
 		internal static Texture2D GetSplashScreenActualBackgroundImage(Rect windowRect)
 		{
-			return PlayerSettingsSplashScreenEditor.INTERNAL_CALL_GetSplashScreenActualBackgroundImage(ref windowRect);
+			return PlayerSettingsSplashScreenEditor.GetSplashScreenActualBackgroundImage_Injected(ref windowRect);
 		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern Texture2D INTERNAL_CALL_GetSplashScreenActualBackgroundImage(ref Rect windowRect);
 
 		internal static Rect GetSplashScreenActualUVs(Rect windowRect)
 		{
 			Rect result;
-			PlayerSettingsSplashScreenEditor.INTERNAL_CALL_GetSplashScreenActualUVs(ref windowRect, out result);
+			PlayerSettingsSplashScreenEditor.GetSplashScreenActualUVs_Injected(ref windowRect, out result);
 			return result;
 		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_GetSplashScreenActualUVs(ref Rect windowRect, out Rect value);
 
 		public void OnEnable()
 		{
@@ -483,5 +469,14 @@ namespace UnityEditor
 				PlayerSettingsSplashScreenEditor.ObjectReferencePropertyField<Sprite>(this.m_SplashScreenBackgroundPortrait, PlayerSettingsSplashScreenEditor.k_Texts.backgroundPortraitImage);
 			}
 		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void GetSplashScreenActualBackgroundColor_Injected(out Color ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern Texture2D GetSplashScreenActualBackgroundImage_Injected(ref Rect windowRect);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void GetSplashScreenActualUVs_Injected(ref Rect windowRect, out Rect ret);
 	}
 }

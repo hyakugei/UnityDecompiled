@@ -18,24 +18,8 @@ namespace UnityEditor.Scripting.Compilers
 			}
 		}
 
-		public MicrosoftCSharpCompiler(MonoIsland island, bool runUpdater) : base(island)
+		public MicrosoftCSharpCompiler(MonoIsland island, bool runUpdater) : base(island, runUpdater)
 		{
-		}
-
-		private static string[] GetReferencesFromMonoDistribution()
-		{
-			return new string[]
-			{
-				"mscorlib.dll",
-				"System.dll",
-				"System.Core.dll",
-				"System.Runtime.Serialization.dll",
-				"System.Xml.dll",
-				"System.Xml.Linq.dll",
-				"UnityScript.dll",
-				"UnityScript.Lang.dll",
-				"Boo.Lang.dll"
-			};
 		}
 
 		private string[] GetClassLibraries()
@@ -44,20 +28,7 @@ namespace UnityEditor.Scripting.Compilers
 			string[] result;
 			if (PlayerSettings.GetScriptingBackend(buildTargetGroup) != ScriptingImplementation.WinRTDotNET)
 			{
-				string monoAssemblyDirectory = base.GetMonoProfileLibDirectory();
-				List<string> list = new List<string>();
-				list.AddRange(from dll in MicrosoftCSharpCompiler.GetReferencesFromMonoDistribution()
-				select Path.Combine(monoAssemblyDirectory, dll));
-				if (PlayerSettings.GetApiCompatibilityLevel(buildTargetGroup) == ApiCompatibilityLevel.NET_4_6)
-				{
-					string path = Path.Combine(monoAssemblyDirectory, "Facades");
-					list.Add(Path.Combine(path, "System.ObjectModel.dll"));
-					list.Add(Path.Combine(path, "System.Runtime.dll"));
-					list.Add(Path.Combine(path, "System.Runtime.InteropServices.WindowsRuntime.dll"));
-					list.Add(Path.Combine(monoAssemblyDirectory, "System.Numerics.dll"));
-					list.Add(Path.Combine(monoAssemblyDirectory, "System.Numerics.Vectors.dll"));
-				}
-				result = list.ToArray();
+				result = new string[0];
 			}
 			else
 			{
@@ -139,6 +110,7 @@ namespace UnityEditor.Scripting.Compilers
 			}
 			base.AddCustomResponseFileIfPresent(arguments, "csc.rsp");
 			string text3 = CommandLineFormatter.GenerateResponseFile(arguments);
+			base.RunAPIUpdaterIfRequired(text3);
 			ProcessStartInfo si = new ProcessStartInfo
 			{
 				Arguments = string.Concat(new string[]
@@ -161,18 +133,26 @@ namespace UnityEditor.Scripting.Compilers
 		protected override Program StartCompiler()
 		{
 			string str = ScriptCompilerBase.PrepareFileName(this._island._output);
-			List<string> arguments = new List<string>
+			List<string> list = new List<string>
 			{
-				"/debug:pdbonly",
-				"/optimize+",
 				"/target:library",
 				"/nowarn:0169",
 				"/unsafe",
 				"/out:" + str
 			};
+			if (!this._island._development_player)
+			{
+				list.Add("/debug:pdbonly");
+				list.Add("/optimize+");
+			}
+			else
+			{
+				list.Add("/debug:full");
+				list.Add("/optimize-");
+			}
 			string argsPrefix;
-			this.FillCompilerOptions(arguments, out argsPrefix);
-			return this.StartCompilerImpl(arguments, argsPrefix);
+			this.FillCompilerOptions(list, out argsPrefix);
+			return this.StartCompilerImpl(list, argsPrefix);
 		}
 
 		protected override string[] GetStreamContainingCompilerMessages()

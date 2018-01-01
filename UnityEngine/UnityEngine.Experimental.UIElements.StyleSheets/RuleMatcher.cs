@@ -9,8 +9,9 @@ namespace UnityEngine.Experimental.UIElements.StyleSheets
 
 		public StyleComplexSelector complexSelector;
 
-		public int simpleSelectorIndex;
-
-		public int depth;
+		public override string ToString()
+		{
+			return this.complexSelector.ToString();
+		}
 	}
 }

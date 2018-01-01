@@ -18,7 +18,7 @@ namespace UnityEditor
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern bool GetModuleStrippable(string moduleName);
+		public static extern bool IsStrippableModule(string moduleName);
 
 		public static UnityType[] GetModuleTypes(string moduleName)
 		{

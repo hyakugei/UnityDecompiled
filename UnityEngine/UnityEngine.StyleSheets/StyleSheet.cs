@@ -1,7 +1,12 @@
 using System;
+using UnityEngine.Bindings;
 
 namespace UnityEngine.StyleSheets
 {
+	[VisibleToOtherModules(new string[]
+	{
+		"UnityEngine.UIElementsModule"
+	})]
 	[Serializable]
 	internal class StyleSheet : ScriptableObject
 	{
@@ -46,14 +51,26 @@ namespace UnityEngine.StyleSheets
 			}
 		}
 
-		private static bool TryCheckAccess<T>(T[] list, StyleValueType type, StyleValueHandle handle, out T value)
+		private static bool TryCheckAccess<T>(T[] list, StyleValueType type, StyleValueHandle[] handles, int index, out T value)
 		{
 			bool result = false;
 			value = default(T);
-			if (handle.valueType == type && handle.valueIndex >= 0 && handle.valueIndex < list.Length)
+			if (index < handles.Length)
 			{
-				value = list[handle.valueIndex];
-				result = true;
+				StyleValueHandle styleValueHandle = handles[index];
+				if (styleValueHandle.valueType == type && styleValueHandle.valueIndex >= 0 && styleValueHandle.valueIndex < list.Length)
+				{
+					value = list[styleValueHandle.valueIndex];
+					result = true;
+				}
+				else
+				{
+					Debug.LogErrorFormat("Trying to read value of type {0} while reading a value of type {1}", new object[]
+					{
+						type,
+						styleValueHandle.valueType
+					});
+				}
 			}
 			return result;
 		}
@@ -110,9 +127,9 @@ namespace UnityEngine.StyleSheets
 			return StyleSheet.CheckAccess<float>(this.floats, StyleValueType.Float, handle);
 		}
 
-		public bool TryReadFloat(StyleValueHandle handle, out float value)
+		public bool TryReadFloat(StyleValueHandle[] handles, int index, out float value)
 		{
-			return StyleSheet.TryCheckAccess<float>(this.floats, StyleValueType.Float, handle, out value);
+			return StyleSheet.TryCheckAccess<float>(this.floats, StyleValueType.Float, handles, index, out value);
 		}
 
 		public Color ReadColor(StyleValueHandle handle)
@@ -120,9 +137,9 @@ namespace UnityEngine.StyleSheets
 			return StyleSheet.CheckAccess<Color>(this.colors, StyleValueType.Color, handle);
 		}
 
-		public bool TryReadColor(StyleValueHandle handle, out Color value)
+		public bool TryReadColor(StyleValueHandle[] handles, int index, out Color value)
 		{
-			return StyleSheet.TryCheckAccess<Color>(this.colors, StyleValueType.Color, handle, out value);
+			return StyleSheet.TryCheckAccess<Color>(this.colors, StyleValueType.Color, handles, index, out value);
 		}
 
 		public string ReadString(StyleValueHandle handle)
@@ -130,9 +147,9 @@ namespace UnityEngine.StyleSheets
 			return StyleSheet.CheckAccess<string>(this.strings, StyleValueType.String, handle);
 		}
 
-		public bool TryReadString(StyleValueHandle handle, out string value)
+		public bool TryReadString(StyleValueHandle[] handles, int index, out string value)
 		{
-			return StyleSheet.TryCheckAccess<string>(this.strings, StyleValueType.String, handle, out value);
+			return StyleSheet.TryCheckAccess<string>(this.strings, StyleValueType.String, handles, index, out value);
 		}
 
 		public string ReadEnum(StyleValueHandle handle)
@@ -140,9 +157,9 @@ namespace UnityEngine.StyleSheets
 			return StyleSheet.CheckAccess<string>(this.strings, StyleValueType.Enum, handle);
 		}
 
-		public bool TryReadEnum(StyleValueHandle handle, out string value)
+		public bool TryReadEnum(StyleValueHandle[] handles, int index, out string value)
 		{
-			return StyleSheet.TryCheckAccess<string>(this.strings, StyleValueType.Enum, handle, out value);
+			return StyleSheet.TryCheckAccess<string>(this.strings, StyleValueType.Enum, handles, index, out value);
 		}
 
 		public string ReadResourcePath(StyleValueHandle handle)
@@ -150,9 +167,9 @@ namespace UnityEngine.StyleSheets
 			return StyleSheet.CheckAccess<string>(this.strings, StyleValueType.ResourcePath, handle);
 		}
 
-		public bool TryReadResourcePath(StyleValueHandle handle, out string value)
+		public bool TryReadResourcePath(StyleValueHandle[] handles, int index, out string value)
 		{
-			return StyleSheet.TryCheckAccess<string>(this.strings, StyleValueType.ResourcePath, handle, out value);
+			return StyleSheet.TryCheckAccess<string>(this.strings, StyleValueType.ResourcePath, handles, index, out value);
 		}
 	}
 }

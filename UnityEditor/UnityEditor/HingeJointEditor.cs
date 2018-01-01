@@ -6,7 +6,7 @@ namespace UnityEditor
 	[CanEditMultipleObjects, CustomEditor(typeof(HingeJoint))]
 	internal class HingeJointEditor : JointEditor<HingeJoint>
 	{
-		private static readonly GUIContent s_WarningMessage = EditorGUIUtility.TextContent("Min and max limits must be within the range [-180, 180].");
+		private static readonly GUIContent s_WarningMessage = EditorGUIUtility.TrTextContent("Min and max limits must be within the range [-180, 180].", null, null);
 
 		private SerializedProperty m_MinLimit;
 

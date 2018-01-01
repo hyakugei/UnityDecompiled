@@ -4,7 +4,7 @@ using UnityEngine.Experimental.UIElements;
 
 namespace UnityEditor.Experimental.UIElements.GraphView
 {
-	internal class ContentDragger : MouseManipulator
+	public class ContentDragger : MouseManipulator
 	{
 		private Vector2 m_Start;
 
@@ -85,14 +85,18 @@ namespace UnityEditor.Experimental.UIElements.GraphView
 
 		protected void OnMouseDown(MouseDownEvent e)
 		{
-			if (base.CanStartManipulation(e))
+			if (this.m_Active)
+			{
+				e.StopImmediatePropagation();
+			}
+			else if (base.CanStartManipulation(e))
 			{
 				GraphView graphView = base.target as GraphView;
 				if (graphView != null)
 				{
 					this.m_Start = graphView.ChangeCoordinatesTo(graphView.contentViewContainer, e.localMousePosition);
 					this.m_Active = true;
-					base.target.TakeCapture();
+					base.target.TakeMouseCapture();
 					e.StopPropagation();
 				}
 			}
@@ -100,7 +104,7 @@ namespace UnityEditor.Experimental.UIElements.GraphView
 
 		protected void OnMouseMove(MouseMoveEvent e)
 		{
-			if (this.m_Active && base.target.HasCapture())
+			if (this.m_Active && base.target.HasMouseCapture())
 			{
 				GraphView graphView = base.target as GraphView;
 				if (graphView != null)
@@ -124,7 +128,7 @@ namespace UnityEditor.Experimental.UIElements.GraphView
 					Vector3 scale = graphView.contentViewContainer.transform.scale;
 					graphView.UpdateViewTransform(position, scale);
 					this.m_Active = false;
-					base.target.ReleaseCapture();
+					base.target.ReleaseMouseCapture();
 					e.StopPropagation();
 				}
 			}

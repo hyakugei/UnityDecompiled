@@ -19,16 +19,18 @@ namespace UnityEditor.Experimental.UIElements
 				VisualElement visualElement = panel.Pick(new Vector2(mouseX, mouseY) - mouseOverView.screenPosition.position);
 				if (visualElement != null)
 				{
-					TooltipEvent pooled = EventBase<TooltipEvent>.GetPooled();
-					pooled.target = visualElement;
-					pooled.tooltip = null;
-					pooled.rect = Rect.zero;
-					mouseOverView.visualTree.panel.dispatcher.DispatchEvent(pooled, panel);
-					if (!string.IsNullOrEmpty(pooled.tooltip))
+					using (TooltipEvent pooled = EventBase<TooltipEvent>.GetPooled())
 					{
-						Rect rect = pooled.rect;
-						rect.position += mouseOverView.screenPosition.position;
-						GUIStyle.SetMouseTooltip(pooled.tooltip, rect);
+						pooled.target = visualElement;
+						pooled.tooltip = null;
+						pooled.rect = Rect.zero;
+						mouseOverView.visualTree.panel.dispatcher.DispatchEvent(pooled, panel);
+						if (!string.IsNullOrEmpty(pooled.tooltip))
+						{
+							Rect rect = pooled.rect;
+							rect.position += mouseOverView.screenPosition.position;
+							GUIStyle.SetMouseTooltip(pooled.tooltip, rect);
+						}
 					}
 				}
 			}

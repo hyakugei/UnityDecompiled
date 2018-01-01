@@ -158,23 +158,15 @@ namespace UnityEditor
 			}
 		}
 
-		public AnimationWindowSelection selection
+		public AnimationWindowSelectionItem selection
 		{
 			get
 			{
 				return this.m_State.selection;
 			}
-		}
-
-		public AnimationWindowSelectionItem selectedItem
-		{
-			get
-			{
-				return this.m_State.selectedItem;
-			}
 			set
 			{
-				this.m_State.selectedItem = value;
+				this.m_State.selection = value;
 			}
 		}
 
@@ -425,7 +417,6 @@ namespace UnityEditor
 
 		public void OnSelectionChanged()
 		{
-			this.m_State.OnSelectionChanged();
 			this.triggerFraming = true;
 			this.Repaint();
 		}
@@ -486,9 +477,9 @@ namespace UnityEditor
 					if (AnimationWindowUtility.InitializeGameobjectForAnimation(this.m_State.activeGameObject))
 					{
 						Component closestAnimationPlayerComponentInParents = AnimationWindowUtility.GetClosestAnimationPlayerComponentInParents(this.m_State.activeGameObject.transform);
-						this.m_State.selection.UpdateClip(this.m_State.selectedItem, AnimationUtility.GetAnimationClips(closestAnimationPlayerComponentInParents.gameObject)[0]);
-						GUIUtility.ExitGUI();
+						this.m_State.activeAnimationClip = AnimationUtility.GetAnimationClips(closestAnimationPlayerComponentInParents.gameObject)[0];
 					}
+					GUIUtility.ExitGUI();
 				}
 			}
 			else
@@ -508,7 +499,7 @@ namespace UnityEditor
 		{
 			eventsRect.width -= 15f;
 			GUI.Label(eventsRect, GUIContent.none, AnimationWindowStyles.eventBackground);
-			using (new EditorGUI.DisabledScope(this.m_State.selectedItem == null || !this.m_State.selectedItem.animationIsEditable))
+			using (new EditorGUI.DisabledScope(!this.selection.animationIsEditable))
 			{
 				this.m_Events.EventLineGUI(eventsRect, this.m_State);
 			}
@@ -556,8 +547,7 @@ namespace UnityEditor
 
 		private void FrameRateInputFieldOnGUI()
 		{
-			AnimationWindowSelectionItem selectedItem = this.m_State.selectedItem;
-			using (new EditorGUI.DisabledScope(selectedItem == null || !selectedItem.animationIsEditable))
+			using (new EditorGUI.DisabledScope(!this.selection.animationIsEditable))
 			{
 				GUILayout.Label(AnimationWindowStyles.samples, AnimationWindowStyles.toolbarLabel, new GUILayoutOption[0]);
 				EditorGUI.BeginChangeCheck();
@@ -590,20 +580,18 @@ namespace UnityEditor
 			if (!this.m_State.showCurveEditor)
 			{
 				Rect position2 = new Rect(position.xMin, position.yMin, position.width - 15f, position.height - 15f);
-				Rect position3 = new Rect(position2.xMin, position2.yMin, position2.width, 16f);
 				this.m_DopeSheet.BeginViewGUI();
 				GUI.Label(position, GUIContent.none, AnimationWindowStyles.dopeSheetBackground);
 				if (!this.m_State.disabled)
 				{
 					this.m_DopeSheet.TimeRuler(position2, this.m_State.frameRate, false, true, 0.12f, this.m_State.timeFormat);
-					this.m_DopeSheet.DrawMasterDopelineBackground(position3);
 				}
 				this.m_DopeSheet.OnGUI(position2, this.m_State.hierarchyState.scrollPos * -1f);
 				this.m_DopeSheet.EndViewGUI();
-				Rect position4 = new Rect(rect.xMax, rect.yMin, 15f, position2.height);
+				Rect position3 = new Rect(rect.xMax, rect.yMin, 15f, position2.height);
 				float height = this.m_Hierarchy.GetTotalRect().height;
 				float bottomValue = Mathf.Max(height, this.m_Hierarchy.GetContentSize().y);
-				this.m_State.hierarchyState.scrollPos.y = GUI.VerticalScrollbar(position4, this.m_State.hierarchyState.scrollPos.y, height, 0f, bottomValue);
+				this.m_State.hierarchyState.scrollPos.y = GUI.VerticalScrollbar(position3, this.m_State.hierarchyState.scrollPos.y, height, 0f, bottomValue);
 				if (this.m_DopeSheet.spritePreviewLoading)
 				{
 					this.Repaint();
@@ -658,23 +646,18 @@ namespace UnityEditor
 
 		private void AddEventButtonOnGUI()
 		{
-			AnimationWindowSelectionItem selectedItem = this.m_State.selectedItem;
-			if (selectedItem != null)
+			using (new EditorGUI.DisabledScope(!this.selection.animationIsEditable))
 			{
-				using (new EditorGUI.DisabledScope(!selectedItem.animationIsEditable))
+				if (GUILayout.Button(AnimationWindowStyles.addEventContent, EditorStyles.toolbarButton, new GUILayoutOption[0]))
 				{
-					if (GUILayout.Button(AnimationWindowStyles.addEventContent, EditorStyles.toolbarButton, new GUILayoutOption[0]))
-					{
-						this.m_Events.AddEvent(this.m_State.currentTime - selectedItem.timeOffset, selectedItem.rootGameObject, selectedItem.animationClip);
-					}
+					this.m_Events.AddEvent(this.m_State.currentTime, this.selection.rootGameObject, this.selection.animationClip);
 				}
 			}
 		}
 
 		private void AddKeyframeButtonOnGUI()
 		{
-			bool flag = this.m_State.selection.Find((AnimationWindowSelectionItem selectedItem) => selectedItem.animationIsEditable);
-			using (new EditorGUI.DisabledScope(!flag))
+			using (new EditorGUI.DisabledScope(!this.selection.animationIsEditable))
 			{
 				if (GUILayout.Button(AnimationWindowStyles.addKeyframeContent, EditorStyles.toolbarButton, new GUILayoutOption[0]))
 				{
@@ -740,7 +723,7 @@ namespace UnityEditor
 				if (!GUILayout.Toggle(true, AnimationWindowStyles.sequencerLinkContent, EditorStyles.toolbarButton, new GUILayoutOption[0]))
 				{
 					this.m_State.linkedWithSequencer = false;
-					this.m_State.selection.Clear();
+					this.m_State.selection = null;
 					GUIUtility.ExitGUI();
 				}
 			}
@@ -986,9 +969,9 @@ namespace UnityEditor
 		private void SynchronizeLayout()
 		{
 			this.m_HorizontalSplitter.realSizes[1] = (int)Mathf.Min(this.m_Position.width - (float)this.m_HorizontalSplitter.realSizes[0], (float)this.m_HorizontalSplitter.realSizes[1]);
-			if (this.selectedItem != null && this.selectedItem.animationClip != null)
+			if (this.selection.animationClip != null)
 			{
-				this.m_State.frameRate = this.selectedItem.animationClip.frameRate;
+				this.m_State.frameRate = this.selection.animationClip.frameRate;
 			}
 			else
 			{
@@ -1241,8 +1224,6 @@ namespace UnityEditor
 			expr_2E.onStartLiveEdit = (Action)Delegate.Combine(expr_2E.onStartLiveEdit, new Action(this.OnStartLiveEdit));
 			AnimationWindowState expr_55 = this.m_State;
 			expr_55.onEndLiveEdit = (Action)Delegate.Combine(expr_55.onEndLiveEdit, new Action(this.OnEndLiveEdit));
-			AnimationWindowSelection expr_81 = this.m_State.selection;
-			expr_81.onSelectionChanged = (Action)Delegate.Combine(expr_81.onSelectionChanged, new Action(this.OnSelectionChanged));
 		}
 	}
 }

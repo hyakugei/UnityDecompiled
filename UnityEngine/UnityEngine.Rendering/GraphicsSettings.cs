@@ -73,6 +73,10 @@ namespace UnityEngine.Rendering
 			set;
 		}
 
+		private GraphicsSettings()
+		{
+		}
+
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void SetShaderMode(BuiltinShaderType type, BuiltinShaderMode mode);

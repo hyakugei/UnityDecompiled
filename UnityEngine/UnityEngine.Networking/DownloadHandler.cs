@@ -2,6 +2,7 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
+using UnityEngine.Bindings;
 using UnityEngine.Scripting;
 
 namespace UnityEngine.Networking
@@ -9,6 +10,7 @@ namespace UnityEngine.Networking
 	[StructLayout(LayoutKind.Sequential)]
 	public class DownloadHandler : IDisposable
 	{
+		[VisibleToOtherModules]
 		[NonSerialized]
 		internal IntPtr m_Ptr;
 
@@ -36,6 +38,7 @@ namespace UnityEngine.Networking
 			}
 		}
 
+		[VisibleToOtherModules]
 		internal DownloadHandler()
 		{
 		}
@@ -160,6 +163,7 @@ namespace UnityEngine.Networking
 			return (T)((object)www.downloadHandler);
 		}
 
+		[VisibleToOtherModules]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern byte[] InternalGetByteArray(DownloadHandler dh);
 	}

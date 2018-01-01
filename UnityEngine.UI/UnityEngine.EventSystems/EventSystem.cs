@@ -22,7 +22,7 @@ namespace UnityEngine.EventSystems
 		private bool m_sendNavigationEvents = true;
 
 		[SerializeField]
-		private int m_DragThreshold = 5;
+		private int m_DragThreshold = 10;
 
 		private GameObject m_CurrentSelected;
 

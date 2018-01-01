@@ -1,11 +1,15 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using UnityEngine.Bindings;
 using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
-	[UsedByNativeCode]
+	[VisibleToOtherModules(new string[]
+	{
+		"UnityEngine.UIElementsModule"
+	}), UsedByNativeCode]
 	[StructLayout(LayoutKind.Sequential)]
 	internal sealed class StylePainter : IStylePainter
 	{
@@ -62,16 +66,17 @@ namespace UnityEngine
 
 		public void DrawRect(RectStylePainterParameters painterParams)
 		{
-			Rect layout = painterParams.layout;
+			Rect rect = painterParams.rect;
 			Color color = painterParams.color;
-			Vector4 borderWidths = new Vector4(painterParams.borderLeftWidth, painterParams.borderTopWidth, painterParams.borderRightWidth, painterParams.borderBottomWidth);
-			Vector4 borderRadiuses = new Vector4(painterParams.borderTopLeftRadius, painterParams.borderTopRightRadius, painterParams.borderBottomRightRadius, painterParams.borderBottomLeftRadius);
-			this.DrawRect_Internal(layout, color * this.m_OpacityColor, borderWidths, borderRadiuses);
+			Vector4 widths = painterParams.border.GetWidths();
+			Vector4 radiuses = painterParams.border.GetRadiuses();
+			this.DrawRect_Internal(rect, color * this.m_OpacityColor, widths, radiuses);
 		}
 
 		public void DrawTexture(TextureStylePainterParameters painterParams)
 		{
-			Rect layout = painterParams.layout;
+			Rect rect = painterParams.rect;
+			Rect sourceRect = (!(painterParams.uv != Rect.zero)) ? new Rect(0f, 0f, 1f, 1f) : painterParams.uv;
 			Texture texture = painterParams.texture;
 			Color color = painterParams.color;
 			ScaleMode scaleMode = painterParams.scaleMode;
@@ -79,10 +84,10 @@ namespace UnityEngine
 			int sliceTop = painterParams.sliceTop;
 			int sliceRight = painterParams.sliceRight;
 			int sliceBottom = painterParams.sliceBottom;
-			Rect screenRect = layout;
-			Rect sourceRect = new Rect(0f, 0f, 1f, 1f);
-			float num = (float)texture.width / (float)texture.height;
-			float num2 = layout.width / layout.height;
+			bool usePremultiplyAlpha = painterParams.usePremultiplyAlpha;
+			Rect screenRect = rect;
+			float num = (float)texture.width * sourceRect.width / ((float)texture.height * sourceRect.height);
+			float num2 = rect.width / rect.height;
 			if (scaleMode != ScaleMode.StretchToFill)
 			{
 				if (scaleMode != ScaleMode.ScaleAndCrop)
@@ -92,34 +97,36 @@ namespace UnityEngine
 						if (num2 > num)
 						{
 							float num3 = num / num2;
-							screenRect = new Rect(layout.xMin + layout.width * (1f - num3) * 0.5f, layout.yMin, num3 * layout.width, layout.height);
+							screenRect = new Rect(rect.xMin + rect.width * (1f - num3) * 0.5f, rect.yMin, num3 * rect.width, rect.height);
 						}
 						else
 						{
 							float num4 = num2 / num;
-							screenRect = new Rect(layout.xMin, layout.yMin + layout.height * (1f - num4) * 0.5f, layout.width, num4 * layout.height);
+							screenRect = new Rect(rect.xMin, rect.yMin + rect.height * (1f - num4) * 0.5f, rect.width, num4 * rect.height);
 						}
 					}
 				}
 				else if (num2 > num)
 				{
-					float num5 = num / num2;
-					sourceRect = new Rect(0f, (1f - num5) * 0.5f, 1f, num5);
+					float num5 = sourceRect.height * (num / num2);
+					float num6 = (sourceRect.height - num5) * 0.5f;
+					sourceRect = new Rect(sourceRect.x, sourceRect.y + num6, sourceRect.width, num5);
 				}
 				else
 				{
-					float num6 = num2 / num;
-					sourceRect = new Rect(0.5f - num6 * 0.5f, 0f, num6, 1f);
+					float num7 = sourceRect.width * (num2 / num);
+					float num8 = (sourceRect.width - num7) * 0.5f;
+					sourceRect = new Rect(sourceRect.x + num8, sourceRect.y, num7, sourceRect.height);
 				}
 			}
-			Vector4 borderWidths = new Vector4(painterParams.borderLeftWidth, painterParams.borderTopWidth, painterParams.borderRightWidth, painterParams.borderBottomWidth);
-			Vector4 borderRadiuses = new Vector4(painterParams.borderTopLeftRadius, painterParams.borderTopRightRadius, painterParams.borderBottomRightRadius, painterParams.borderBottomLeftRadius);
-			this.DrawTexture_Internal(screenRect, texture, sourceRect, color * this.m_OpacityColor, borderWidths, borderRadiuses, sliceLeft, sliceTop, sliceRight, sliceBottom);
+			Vector4 widths = painterParams.border.GetWidths();
+			Vector4 radiuses = painterParams.border.GetRadiuses();
+			this.DrawTexture_Internal(screenRect, texture, sourceRect, color * this.m_OpacityColor, widths, radiuses, sliceLeft, sliceTop, sliceRight, sliceBottom, usePremultiplyAlpha);
 		}
 
 		public void DrawText(TextStylePainterParameters painterParams)
 		{
-			Rect layout = painterParams.layout;
+			Rect rect = painterParams.rect;
 			string text = painterParams.text;
 			Font font = painterParams.font;
 			int fontSize = painterParams.fontSize;
@@ -130,7 +137,7 @@ namespace UnityEngine
 			float wordWrapWidth = painterParams.wordWrapWidth;
 			bool richText = painterParams.richText;
 			TextClipping clipping = painterParams.clipping;
-			this.DrawText_Internal(layout, text, font, fontSize, fontStyle, fontColor * this.m_OpacityColor, anchor, wordWrap, wordWrapWidth, richText, clipping);
+			this.DrawText_Internal(rect, text, font, fontSize, fontStyle, fontColor * this.m_OpacityColor, anchor, wordWrap, wordWrapWidth, richText, clipping);
 		}
 
 		public Vector2 GetCursorPosition(CursorPositionStylePainterParameters painterParams)
@@ -150,9 +157,9 @@ namespace UnityEngine
 				TextAnchor anchor = painterParams.anchor;
 				float wordWrapWidth = painterParams.wordWrapWidth;
 				bool richText = painterParams.richText;
-				Rect layout = painterParams.layout;
+				Rect rect = painterParams.rect;
 				int cursorIndex = painterParams.cursorIndex;
-				result = this.GetCursorPosition_Internal(text, font, fontSize, fontStyle, anchor, wordWrapWidth, richText, layout, cursorIndex);
+				result = this.GetCursorPosition_Internal(text, font, fontSize, fontStyle, anchor, wordWrapWidth, richText, rect, cursorIndex);
 			}
 			return result;
 		}
@@ -196,14 +203,14 @@ namespace UnityEngine
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern void INTERNAL_CALL_DrawRect_Internal(StylePainter self, ref Rect screenRect, ref Color color, ref Vector4 borderWidths, ref Vector4 borderRadiuses);
 
-		internal void DrawTexture_Internal(Rect screenRect, Texture texture, Rect sourceRect, Color color, Vector4 borderWidths, Vector4 borderRadiuses, int leftBorder, int topBorder, int rightBorder, int bottomBorder)
+		internal void DrawTexture_Internal(Rect screenRect, Texture texture, Rect sourceRect, Color color, Vector4 borderWidths, Vector4 borderRadiuses, int leftBorder, int topBorder, int rightBorder, int bottomBorder, bool usePremultiplyAlpha)
 		{
-			StylePainter.INTERNAL_CALL_DrawTexture_Internal(this, ref screenRect, texture, ref sourceRect, ref color, ref borderWidths, ref borderRadiuses, leftBorder, topBorder, rightBorder, bottomBorder);
+			StylePainter.INTERNAL_CALL_DrawTexture_Internal(this, ref screenRect, texture, ref sourceRect, ref color, ref borderWidths, ref borderRadiuses, leftBorder, topBorder, rightBorder, bottomBorder, usePremultiplyAlpha);
 		}
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_DrawTexture_Internal(StylePainter self, ref Rect screenRect, Texture texture, ref Rect sourceRect, ref Color color, ref Vector4 borderWidths, ref Vector4 borderRadiuses, int leftBorder, int topBorder, int rightBorder, int bottomBorder);
+		private static extern void INTERNAL_CALL_DrawTexture_Internal(StylePainter self, ref Rect screenRect, Texture texture, ref Rect sourceRect, ref Color color, ref Vector4 borderWidths, ref Vector4 borderRadiuses, int leftBorder, int topBorder, int rightBorder, int bottomBorder, bool usePremultiplyAlpha);
 
 		internal void DrawText_Internal(Rect screenRect, string text, Font font, int fontSize, FontStyle fontStyle, Color fontColor, TextAnchor anchor, bool wordWrap, float wordWrapWidth, bool richText, TextClipping textClipping)
 		{

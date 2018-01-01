@@ -29,39 +29,39 @@ namespace UnityEditor
 
 		private static class Styles
 		{
-			public static GUIContent uvSetLabel = new GUIContent("UV Set");
+			public static GUIContent uvSetLabel = EditorGUIUtility.TrTextContent("UV Set", null, null);
 
-			public static GUIContent albedoText = new GUIContent("Albedo", "Albedo (RGB) and Transparency (A)");
+			public static GUIContent albedoText = EditorGUIUtility.TrTextContent("Albedo", "Albedo (RGB) and Transparency (A)", null);
 
-			public static GUIContent alphaCutoffText = new GUIContent("Alpha Cutoff", "Threshold for alpha cutoff");
+			public static GUIContent alphaCutoffText = EditorGUIUtility.TrTextContent("Alpha Cutoff", "Threshold for alpha cutoff", null);
 
-			public static GUIContent specularMapText = new GUIContent("Specular", "Specular (RGB) and Smoothness (A)");
+			public static GUIContent specularMapText = EditorGUIUtility.TrTextContent("Specular", "Specular (RGB) and Smoothness (A)", null);
 
-			public static GUIContent metallicMapText = new GUIContent("Metallic", "Metallic (R) and Smoothness (A)");
+			public static GUIContent metallicMapText = EditorGUIUtility.TrTextContent("Metallic", "Metallic (R) and Smoothness (A)", null);
 
-			public static GUIContent smoothnessText = new GUIContent("Smoothness", "Smoothness value");
+			public static GUIContent smoothnessText = EditorGUIUtility.TrTextContent("Smoothness", "Smoothness value", null);
 
-			public static GUIContent smoothnessScaleText = new GUIContent("Smoothness", "Smoothness scale factor");
+			public static GUIContent smoothnessScaleText = EditorGUIUtility.TrTextContent("Smoothness", "Smoothness scale factor", null);
 
-			public static GUIContent smoothnessMapChannelText = new GUIContent("Source", "Smoothness texture and channel");
+			public static GUIContent smoothnessMapChannelText = EditorGUIUtility.TrTextContent("Source", "Smoothness texture and channel", null);
 
-			public static GUIContent highlightsText = new GUIContent("Specular Highlights", "Specular Highlights");
+			public static GUIContent highlightsText = EditorGUIUtility.TrTextContent("Specular Highlights", "Specular Highlights", null);
 
-			public static GUIContent reflectionsText = new GUIContent("Reflections", "Glossy Reflections");
+			public static GUIContent reflectionsText = EditorGUIUtility.TrTextContent("Reflections", "Glossy Reflections", null);
 
-			public static GUIContent normalMapText = new GUIContent("Normal Map", "Normal Map");
+			public static GUIContent normalMapText = EditorGUIUtility.TrTextContent("Normal Map", "Normal Map", null);
 
-			public static GUIContent heightMapText = new GUIContent("Height Map", "Height Map (G)");
+			public static GUIContent heightMapText = EditorGUIUtility.TrTextContent("Height Map", "Height Map (G)", null);
 
-			public static GUIContent occlusionText = new GUIContent("Occlusion", "Occlusion (G)");
+			public static GUIContent occlusionText = EditorGUIUtility.TrTextContent("Occlusion", "Occlusion (G)", null);
 
-			public static GUIContent emissionText = new GUIContent("Color", "Emission (RGB)");
+			public static GUIContent emissionText = EditorGUIUtility.TrTextContent("Color", "Emission (RGB)", null);
 
-			public static GUIContent detailMaskText = new GUIContent("Detail Mask", "Mask for Secondary Maps (A)");
+			public static GUIContent detailMaskText = EditorGUIUtility.TrTextContent("Detail Mask", "Mask for Secondary Maps (A)", null);
 
-			public static GUIContent detailAlbedoText = new GUIContent("Detail Albedo x2", "Albedo (RGB) multiplied by 2");
+			public static GUIContent detailAlbedoText = EditorGUIUtility.TrTextContent("Detail Albedo x2", "Albedo (RGB) multiplied by 2", null);
 
-			public static GUIContent detailNormalMapText = new GUIContent("Normal Map", "Normal Map");
+			public static GUIContent detailNormalMapText = EditorGUIUtility.TrTextContent("Normal Map", "Normal Map", null);
 
 			public static string primaryMapsText = "Main Maps";
 
@@ -131,10 +131,6 @@ namespace UnityEditor
 		private MaterialEditor m_MaterialEditor;
 
 		private StandardShaderGUI.WorkflowMode m_WorkflowMode = StandardShaderGUI.WorkflowMode.Specular;
-
-		private const float kMaxfp16 = 65536f;
-
-		private ColorPickerHDRConfig m_ColorPickerHDRConfig = new ColorPickerHDRConfig(0f, 65536f, 1.52587891E-05f, 3f);
 
 		private bool m_FirstTimeApply = true;
 
@@ -306,7 +302,7 @@ namespace UnityEditor
 		private void DoNormalArea()
 		{
 			this.m_MaterialEditor.TexturePropertySingleLine(StandardShaderGUI.Styles.normalMapText, this.bumpMap, (!(this.bumpMap.textureValue != null)) ? null : this.bumpScale);
-			if (this.bumpScale.floatValue != 1f && InternalEditorUtility.IsMobilePlatform(EditorUserBuildSettings.activeBuildTarget) && this.m_MaterialEditor.HelpBoxWithButton(EditorGUIUtility.TextContent("Bump scale is not supported on mobile platforms"), EditorGUIUtility.TextContent("Fix Now")))
+			if (this.bumpScale.floatValue != 1f && InternalEditorUtility.IsMobilePlatform(EditorUserBuildSettings.activeBuildTarget) && this.m_MaterialEditor.HelpBoxWithButton(EditorGUIUtility.TrTextContent("Bump scale is not supported on mobile platforms", null, null), EditorGUIUtility.TrTextContent("Fix Now", null, null)))
 			{
 				this.bumpScale.floatValue = 1f;
 			}
@@ -326,7 +322,7 @@ namespace UnityEditor
 			if (this.m_MaterialEditor.EmissionEnabledProperty())
 			{
 				bool flag = this.emissionMap.textureValue != null;
-				this.m_MaterialEditor.TexturePropertyWithHDRColor(StandardShaderGUI.Styles.emissionText, this.emissionMap, this.emissionColorForRendering, this.m_ColorPickerHDRConfig, false);
+				this.m_MaterialEditor.TexturePropertyWithHDRColor(StandardShaderGUI.Styles.emissionText, this.emissionMap, this.emissionColorForRendering, false);
 				float maxColorComponent = this.emissionColorForRendering.colorValue.maxColorComponent;
 				if (this.emissionMap.textureValue != null && !flag && maxColorComponent <= 0f)
 				{

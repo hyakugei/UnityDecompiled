@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEditor.Experimental.U2D;
 using UnityEditor.Sprites;
 using UnityEditor.U2D.Interface;
 using UnityEditorInternal;
@@ -8,18 +9,25 @@ using UnityEngine.U2D.Interface;
 
 namespace UnityEditor
 {
-	internal class SpritePolygonModeModule : SpriteFrameModuleBase, ISpriteEditorModule
+	[RequireSpriteDataProvider(new Type[]
+	{
+		typeof(ISpriteOutlineDataProvider),
+		typeof(ITextureDataProvider)
+	})]
+	internal class SpritePolygonModeModule : SpriteFrameModuleBase
 	{
 		private static class SpritePolygonModeStyles
 		{
-			public static readonly GUIContent changeShapeLabel = EditorGUIUtility.TextContent("Change Shape");
+			public static readonly GUIContent changeShapeLabel = EditorGUIUtility.TrTextContent("Change Shape", null, null);
 
-			public static readonly GUIContent sidesLabel = EditorGUIUtility.TextContent("Sides");
+			public static readonly GUIContent sidesLabel = EditorGUIUtility.TrTextContent("Sides", null, null);
 
-			public static readonly GUIContent polygonChangeShapeHelpBoxContent = EditorGUIUtility.TextContent("Sides can only be either 0 or anything between 3 and 128");
+			public static readonly GUIContent polygonChangeShapeHelpBoxContent = EditorGUIUtility.TrTextContent("Sides can only be either 0 or anything between 3 and 128", null, null);
 
-			public static readonly GUIContent changeButtonLabel = EditorGUIUtility.TextContent("Change|Change to the new number of sides");
+			public static readonly GUIContent changeButtonLabel = EditorGUIUtility.TrTextContent("Change", "Change to the new number of sides", null);
 		}
+
+		private List<List<Vector2[]>> m_Outline;
 
 		private const int k_PolygonChangeShapeWindowMargin = 17;
 
@@ -66,7 +74,12 @@ namespace UnityEditor
 		public override void OnModuleActivate()
 		{
 			base.OnModuleActivate();
-			this.m_RectsCache = base.spriteEditor.spriteRects;
+			this.m_Outline = new List<List<Vector2[]>>();
+			for (int i = 0; i < this.m_RectsCache.spriteRects.Count; i++)
+			{
+				SpriteRect spriteRect = this.m_RectsCache.spriteRects[i];
+				this.m_Outline.Add(base.spriteEditor.GetDataProvider<ISpriteOutlineDataProvider>().GetOutlines(spriteRect.spriteID));
+			}
 			this.showChangeShapeWindow = this.polygonSprite;
 			if (this.polygonSprite)
 			{
@@ -74,25 +87,16 @@ namespace UnityEditor
 			}
 		}
 
-		public override void OnModuleDeactivate()
-		{
-			this.m_RectsCache = null;
-		}
-
 		public override bool CanBeActivated()
 		{
-			return SpriteUtility.GetSpriteImportMode(base.spriteEditor.spriteEditorDataProvider) == SpriteImportMode.Polygon;
+			return SpriteUtility.GetSpriteImportMode(base.spriteEditor.GetDataProvider<ISpriteEditorDataProvider>()) == SpriteImportMode.Polygon;
 		}
 
 		private void DeterminePolygonSides()
 		{
-			if (this.polygonSprite && this.m_RectsCache.Count == 1)
+			if (this.polygonSprite && this.m_RectsCache.spriteRects.Count == 1 && this.m_Outline.Count == 1 && this.m_Outline[0].Count == 1)
 			{
-				SpriteRect spriteRect = this.m_RectsCache.RectAt(0);
-				if (spriteRect.outline.Count == 1)
-				{
-					this.polygonSides = spriteRect.outline[0].Count;
-				}
+				this.polygonSides = this.m_Outline[0][0].Length;
 			}
 			else
 			{
@@ -106,29 +110,35 @@ namespace UnityEditor
 			return this.polygonSides;
 		}
 
+		public List<Vector2[]> GetSpriteOutlineAt(int i)
+		{
+			return this.m_Outline[i];
+		}
+
 		public void GeneratePolygonOutline()
 		{
-			for (int i = 0; i < this.m_RectsCache.Count; i++)
+			for (int i = 0; i < this.m_RectsCache.spriteRects.Count; i++)
 			{
-				SpriteRect spriteRect = this.m_RectsCache.RectAt(i);
-				SpriteOutline spriteOutline = new SpriteOutline();
-				spriteOutline.AddRange(UnityEditor.Sprites.SpriteUtility.GeneratePolygonOutlineVerticesOfSize(this.polygonSides, (int)spriteRect.rect.width, (int)spriteRect.rect.height));
-				spriteRect.outline.Clear();
-				spriteRect.outline.Add(spriteOutline);
+				SpriteRect spriteRect = this.m_RectsCache.spriteRects[i];
+				Vector2[] item = UnityEditor.Sprites.SpriteUtility.GeneratePolygonOutlineVerticesOfSize(this.polygonSides, (int)spriteRect.rect.width, (int)spriteRect.rect.height);
+				this.m_Outline.Clear();
+				List<Vector2[]> list = new List<Vector2[]>();
+				list.Add(item);
+				this.m_Outline.Add(list);
 				base.spriteEditor.SetDataModified();
 			}
 			base.Repaint();
 		}
 
-		public override void OnPostGUI()
+		public override void DoPostGUI()
 		{
 			this.DoPolygonChangeShapeWindow();
-			base.OnPostGUI();
+			base.DoPostGUI();
 		}
 
-		public override void DoTextureGUI()
+		public override void DoMainGUI()
 		{
-			base.DoTextureGUI();
+			base.DoMainGUI();
 			this.DrawGizmos();
 			base.HandleGizmoMode();
 			base.HandleBorderCornerScalingHandles();
@@ -141,7 +151,7 @@ namespace UnityEditor
 			}
 		}
 
-		public override void DrawToolbarGUI(Rect toolbarRect)
+		public override void DoToolbarGUI(Rect toolbarRect)
 		{
 			using (new EditorGUI.DisabledScope(base.spriteEditor.editingDisabled))
 			{
@@ -161,7 +171,7 @@ namespace UnityEditor
 			{
 				for (int i = 0; i < base.spriteCount; i++)
 				{
-					List<SpriteOutline> spriteOutlineAt = base.GetSpriteOutlineAt(i);
+					List<Vector2[]> spriteOutlineAt = this.GetSpriteOutlineAt(i);
 					Vector2 b = base.GetSpriteRectAt(i).size * 0.5f;
 					if (spriteOutlineAt.Count > 0)
 					{
@@ -169,11 +179,11 @@ namespace UnityEditor
 						for (int j = 0; j < spriteOutlineAt.Count; j++)
 						{
 							int k = 0;
-							int index = spriteOutlineAt[j].Count - 1;
-							while (k < spriteOutlineAt[j].Count)
+							int num = spriteOutlineAt[j].Length - 1;
+							while (k < spriteOutlineAt[j].Length)
 							{
-								SpriteEditorUtility.DrawLine(spriteOutlineAt[j][index] + b, spriteOutlineAt[j][k] + b);
-								index = k;
+								SpriteEditorUtility.DrawLine(spriteOutlineAt[j][num] + b, spriteOutlineAt[j][k] + b);
+								num = k;
 								k++;
 							}
 						}

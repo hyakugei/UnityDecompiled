@@ -99,7 +99,7 @@ namespace UnityEngine.Experimental.UIElements
 
 		private new void OnMouseMove(MouseMoveEvent evt)
 		{
-			if (base.target.HasCapture())
+			if (base.target.HasMouseCapture())
 			{
 				base.OnMouseMove(evt);
 				if (this.dragDirection == ClampedDragger.DragDirection.None)

@@ -1,13 +1,10 @@
 using System;
-using System.Collections.Generic;
-using UnityEditor.Experimental.U2D;
-using UnityEditorInternal;
 using UnityEngine;
 
 namespace UnityEditor
 {
 	[Serializable]
-	internal class SpriteRect
+	public class SpriteRect
 	{
 		[SerializeField]
 		private string m_Name;
@@ -28,13 +25,9 @@ namespace UnityEditor
 		private Rect m_Rect;
 
 		[SerializeField]
-		private List<SpriteOutline> m_Outline = new List<SpriteOutline>();
+		private string m_SpriteID;
 
-		[SerializeField]
-		private List<SpriteOutline> m_PhysicsShape = new List<SpriteOutline>();
-
-		[SerializeField]
-		private float m_TessellationDetail;
+		private GUID m_GUID;
 
 		public string name
 		{
@@ -45,22 +38,6 @@ namespace UnityEditor
 			set
 			{
 				this.m_Name = value;
-			}
-		}
-
-		public string originalName
-		{
-			get
-			{
-				if (this.m_OriginalName == null)
-				{
-					this.m_OriginalName = this.name;
-				}
-				return this.m_OriginalName;
-			}
-			set
-			{
-				this.m_OriginalName = value;
 			}
 		}
 
@@ -112,162 +89,53 @@ namespace UnityEditor
 			}
 		}
 
-		public List<SpriteOutline> outline
+		internal string originalName
 		{
 			get
 			{
-				return this.m_Outline;
+				if (this.m_OriginalName == null)
+				{
+					this.m_OriginalName = this.name;
+				}
+				return this.m_OriginalName;
 			}
 			set
 			{
-				this.m_Outline = value;
+				this.m_OriginalName = value;
 			}
 		}
 
-		public List<SpriteOutline> physicsShape
+		public GUID spriteID
 		{
 			get
 			{
-				return this.m_PhysicsShape;
+				this.ValidateGUID();
+				return this.m_GUID;
 			}
 			set
 			{
-				this.m_PhysicsShape = value;
+				this.m_GUID = value;
+				this.m_SpriteID = this.m_GUID.ToString();
+				this.ValidateGUID();
 			}
 		}
 
-		public float tessellationDetail
+		private void ValidateGUID()
 		{
-			get
+			if (this.m_GUID.Empty())
 			{
-				return this.m_TessellationDetail;
-			}
-			set
-			{
-				this.m_TessellationDetail = value;
-			}
-		}
-
-		public static List<SpriteOutline> AcquireOutline(SerializedProperty outlineSP)
-		{
-			List<SpriteOutline> list = new List<SpriteOutline>();
-			for (int i = 0; i < outlineSP.arraySize; i++)
-			{
-				SpriteOutline spriteOutline = new SpriteOutline();
-				SerializedProperty arrayElementAtIndex = outlineSP.GetArrayElementAtIndex(i);
-				for (int j = 0; j < arrayElementAtIndex.arraySize; j++)
+				this.m_GUID = new GUID(this.m_SpriteID);
+				if (this.m_GUID.Empty())
 				{
-					Vector2 vector2Value = arrayElementAtIndex.GetArrayElementAtIndex(j).vector2Value;
-					spriteOutline.Add(vector2Value);
-				}
-				list.Add(spriteOutline);
-			}
-			return list;
-		}
-
-		public static List<SpriteOutline> AcquireOutline(List<Vector2[]> outlineSP)
-		{
-			List<SpriteOutline> list = new List<SpriteOutline>();
-			if (outlineSP != null)
-			{
-				for (int i = 0; i < outlineSP.Count; i++)
-				{
-					SpriteOutline spriteOutline = new SpriteOutline();
-					spriteOutline.m_Path.AddRange(outlineSP[i]);
-					list.Add(spriteOutline);
-				}
-			}
-			return list;
-		}
-
-		public static void ApplyOutlineChanges(SerializedProperty outlineSP, List<SpriteOutline> outline)
-		{
-			outlineSP.ClearArray();
-			for (int i = 0; i < outline.Count; i++)
-			{
-				outlineSP.InsertArrayElementAtIndex(i);
-				SpriteOutline spriteOutline = outline[i];
-				SerializedProperty arrayElementAtIndex = outlineSP.GetArrayElementAtIndex(i);
-				arrayElementAtIndex.ClearArray();
-				for (int j = 0; j < spriteOutline.Count; j++)
-				{
-					arrayElementAtIndex.InsertArrayElementAtIndex(j);
-					arrayElementAtIndex.GetArrayElementAtIndex(j).vector2Value = spriteOutline[j];
+					this.m_GUID = GUID.Generate();
+					this.m_SpriteID = this.m_GUID.ToString();
 				}
 			}
 		}
 
-		public static List<Vector2[]> ApplyOutlineChanges(List<SpriteOutline> outline)
+		public static GUID GetSpriteIDFromSerializedProperty(SerializedProperty sp)
 		{
-			List<Vector2[]> list = new List<Vector2[]>();
-			if (outline != null)
-			{
-				for (int i = 0; i < outline.Count; i++)
-				{
-					list.Add(outline[i].m_Path.ToArray());
-				}
-			}
-			return list;
-		}
-
-		public void ApplyToSerializedProperty(SerializedProperty sp)
-		{
-			sp.FindPropertyRelative("m_Rect").rectValue = this.rect;
-			sp.FindPropertyRelative("m_Border").vector4Value = this.border;
-			sp.FindPropertyRelative("m_Name").stringValue = this.name;
-			sp.FindPropertyRelative("m_Alignment").intValue = (int)this.alignment;
-			sp.FindPropertyRelative("m_Pivot").vector2Value = this.pivot;
-			sp.FindPropertyRelative("m_TessellationDetail").floatValue = this.tessellationDetail;
-			SerializedProperty serializedProperty = sp.FindPropertyRelative("m_Outline");
-			serializedProperty.ClearArray();
-			if (this.outline != null)
-			{
-				SpriteRect.ApplyOutlineChanges(serializedProperty, this.outline);
-			}
-			SerializedProperty serializedProperty2 = sp.FindPropertyRelative("m_PhysicsShape");
-			serializedProperty2.ClearArray();
-			if (this.physicsShape != null)
-			{
-				SpriteRect.ApplyOutlineChanges(serializedProperty2, this.physicsShape);
-			}
-		}
-
-		public void LoadFromSerializedProperty(SerializedProperty sp)
-		{
-			this.rect = sp.FindPropertyRelative("m_Rect").rectValue;
-			this.border = sp.FindPropertyRelative("m_Border").vector4Value;
-			this.name = sp.FindPropertyRelative("m_Name").stringValue;
-			this.alignment = (SpriteAlignment)sp.FindPropertyRelative("m_Alignment").intValue;
-			this.pivot = SpriteEditorUtility.GetPivotValue(this.alignment, sp.FindPropertyRelative("m_Pivot").vector2Value);
-			this.tessellationDetail = sp.FindPropertyRelative("m_TessellationDetail").floatValue;
-			SerializedProperty outlineSP = sp.FindPropertyRelative("m_Outline");
-			this.outline = SpriteRect.AcquireOutline(outlineSP);
-			outlineSP = sp.FindPropertyRelative("m_PhysicsShape");
-			this.physicsShape = SpriteRect.AcquireOutline(outlineSP);
-		}
-
-		public void LoadFromSpriteData(SpriteDataBase sp)
-		{
-			this.rect = sp.rect;
-			this.border = sp.border;
-			this.name = sp.name;
-			this.alignment = sp.alignment;
-			this.pivot = SpriteEditorUtility.GetPivotValue(this.alignment, sp.pivot);
-			this.tessellationDetail = sp.tessellationDetail;
-			this.outline = SpriteRect.AcquireOutline(sp.outline);
-			this.physicsShape = SpriteRect.AcquireOutline(sp.physicsShape);
-		}
-
-		public void ApplyToSpriteData(SpriteDataBase sp)
-		{
-			sp.rect = this.rect;
-			sp.border = this.border;
-			sp.name = this.name;
-			sp.alignment = this.alignment;
-			sp.pivot = this.pivot;
-			sp.tessellationDetail = this.tessellationDetail;
-			sp.outline = SpriteRect.ApplyOutlineChanges(this.outline);
-			sp.physicsShape = SpriteRect.ApplyOutlineChanges(this.physicsShape);
+			return new GUID(sp.FindPropertyRelative("m_SpriteID").stringValue);
 		}
 	}
 }

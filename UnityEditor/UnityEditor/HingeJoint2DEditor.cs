@@ -21,10 +21,10 @@ namespace UnityEditor
 			static Styles()
 			{
 				HingeJoint2DEditor.Styles.editAngularLimitsButton = new GUIContent(EditorGUIUtility.IconContent("JointAngularLimits"));
-				HingeJoint2DEditor.Styles.editAngularLimitsUndoMessage = EditorGUIUtility.TextContent("Change Joint Angular Limits").text;
+				HingeJoint2DEditor.Styles.editAngularLimitsUndoMessage = EditorGUIUtility.TrTextContent("Change Joint Angular Limits", null, null).text;
 				HingeJoint2DEditor.Styles.handleColor = new Color(0f, 1f, 0f, 0.7f);
 				HingeJoint2DEditor.Styles.handleRadius = 0.8f;
-				HingeJoint2DEditor.Styles.editAngularLimitsButton.tooltip = EditorGUIUtility.TextContent("Edit joint angular limits.").text;
+				HingeJoint2DEditor.Styles.editAngularLimitsButton.tooltip = EditorGUIUtility.TrTextContent("Edit joint angular limits.", null, null).text;
 			}
 		}
 

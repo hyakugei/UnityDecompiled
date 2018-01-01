@@ -69,9 +69,7 @@ namespace UnityEditor
 
 		public static int GetAssetsFolderInstanceID()
 		{
-			string path = "Assets";
-			string guid = AssetDatabase.AssetPathToGUID(path);
-			return AssetDatabase.GetInstanceIDFromGUID(guid);
+			return AssetDatabase.GetMainAssetOrInProgressProxyInstanceID("Assets");
 		}
 
 		public override void FetchData()
@@ -85,12 +83,11 @@ namespace UnityEditor
 			TreeViewItem treeViewItem = new TreeViewItem(assetsFolderInstanceID, num, this.m_RootItem, displayName);
 			this.ReadAssetDatabase(HierarchyType.Assets, treeViewItem, num + 1);
 			TreeViewItem treeViewItem2 = null;
-			if (Unsupported.IsDeveloperBuild() && EditorPrefs.GetBool("ShowPackagesFolder"))
+			if (Unsupported.IsDeveloperMode() && EditorPrefs.GetBool("ShowPackagesFolder"))
 			{
-				string guid = AssetDatabase.AssetPathToGUID(AssetDatabase.GetPackagesRootPath());
-				int instanceIDFromGUID = AssetDatabase.GetInstanceIDFromGUID(guid);
-				string packagesRootPath = AssetDatabase.GetPackagesRootPath();
-				treeViewItem2 = new TreeViewItem(instanceIDFromGUID, num, this.m_RootItem, packagesRootPath);
+				int mainAssetOrInProgressProxyInstanceID = AssetDatabase.GetMainAssetOrInProgressProxyInstanceID(AssetDatabase.GetPackagesMountPoint());
+				string packagesMountPoint = AssetDatabase.GetPackagesMountPoint();
+				treeViewItem2 = new TreeViewItem(mainAssetOrInProgressProxyInstanceID, num, this.m_RootItem, packagesMountPoint);
 				this.ReadAssetDatabase(HierarchyType.Packages, treeViewItem2, num + 1);
 			}
 			TreeViewItem treeViewItem3 = SavedSearchFilters.ConvertToTreeView();
@@ -112,7 +109,7 @@ namespace UnityEditor
 
 		private void ReadAssetDatabase(HierarchyType htype, TreeViewItem parent, int baseDepth)
 		{
-			IHierarchyProperty hierarchyProperty = new HierarchyProperty(htype);
+			IHierarchyProperty hierarchyProperty = new HierarchyProperty(htype, false);
 			hierarchyProperty.Reset();
 			Texture2D texture2D = EditorGUIUtility.FindTexture(EditorResourcesUtility.folderIconName);
 			Texture2D texture2D2 = EditorGUIUtility.FindTexture(EditorResourcesUtility.emptyFolderIconName);

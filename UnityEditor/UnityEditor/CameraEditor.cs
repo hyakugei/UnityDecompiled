@@ -13,8 +13,330 @@ using UnityEngine.Scripting;
 namespace UnityEditor
 {
 	[CanEditMultipleObjects, CustomEditor(typeof(Camera))]
-	internal class CameraEditor : Editor
+	public class CameraEditor : Editor
 	{
+		public sealed class Settings
+		{
+			private SerializedObject m_SerializedObject;
+
+			private static readonly GUIContent[] kCameraRenderPaths = new GUIContent[]
+			{
+				EditorGUIUtility.TrTextContent("Use Graphics Settings", null, null),
+				EditorGUIUtility.TrTextContent("Forward", null, null),
+				EditorGUIUtility.TrTextContent("Deferred", null, null),
+				EditorGUIUtility.TrTextContent("Legacy Vertex Lit", null, null),
+				EditorGUIUtility.TrTextContent("Legacy Deferred (light prepass)", null, null)
+			};
+
+			private static readonly int[] kCameraRenderPathValues = new int[]
+			{
+				-1,
+				1,
+				3,
+				0,
+				2
+			};
+
+			private static readonly GUIContent[] kTargetEyes = new GUIContent[]
+			{
+				EditorGUIUtility.TrTextContent("Both", null, null),
+				EditorGUIUtility.TrTextContent("Left", null, null),
+				EditorGUIUtility.TrTextContent("Right", null, null),
+				EditorGUIUtility.TrTextContent("None (Main Display)", null, null)
+			};
+
+			private static readonly int[] kTargetEyeValues = new int[]
+			{
+				3,
+				1,
+				2,
+				0
+			};
+
+			public SerializedProperty clearFlags
+			{
+				get;
+				private set;
+			}
+
+			public SerializedProperty backgroundColor
+			{
+				get;
+				private set;
+			}
+
+			public SerializedProperty normalizedViewPortRect
+			{
+				get;
+				private set;
+			}
+
+			public SerializedProperty fieldOfView
+			{
+				get;
+				private set;
+			}
+
+			public SerializedProperty orthographic
+			{
+				get;
+				private set;
+			}
+
+			public SerializedProperty orthographicSize
+			{
+				get;
+				private set;
+			}
+
+			public SerializedProperty depth
+			{
+				get;
+				private set;
+			}
+
+			public SerializedProperty cullingMask
+			{
+				get;
+				private set;
+			}
+
+			public SerializedProperty renderingPath
+			{
+				get;
+				private set;
+			}
+
+			public SerializedProperty occlusionCulling
+			{
+				get;
+				private set;
+			}
+
+			public SerializedProperty targetTexture
+			{
+				get;
+				private set;
+			}
+
+			public SerializedProperty HDR
+			{
+				get;
+				private set;
+			}
+
+			public SerializedProperty allowMSAA
+			{
+				get;
+				private set;
+			}
+
+			public SerializedProperty allowDynamicResolution
+			{
+				get;
+				private set;
+			}
+
+			public SerializedProperty stereoConvergence
+			{
+				get;
+				private set;
+			}
+
+			public SerializedProperty stereoSeparation
+			{
+				get;
+				private set;
+			}
+
+			public SerializedProperty nearClippingPlane
+			{
+				get;
+				private set;
+			}
+
+			public SerializedProperty farClippingPlane
+			{
+				get;
+				private set;
+			}
+
+			public SerializedProperty targetDisplay
+			{
+				get;
+				private set;
+			}
+
+			public SerializedProperty targetEye
+			{
+				get;
+				private set;
+			}
+
+			public Settings(SerializedObject so)
+			{
+				this.m_SerializedObject = so;
+			}
+
+			public void OnEnable()
+			{
+				this.clearFlags = this.m_SerializedObject.FindProperty("m_ClearFlags");
+				this.backgroundColor = this.m_SerializedObject.FindProperty("m_BackGroundColor");
+				this.normalizedViewPortRect = this.m_SerializedObject.FindProperty("m_NormalizedViewPortRect");
+				this.nearClippingPlane = this.m_SerializedObject.FindProperty("near clip plane");
+				this.farClippingPlane = this.m_SerializedObject.FindProperty("far clip plane");
+				this.fieldOfView = this.m_SerializedObject.FindProperty("field of view");
+				this.orthographic = this.m_SerializedObject.FindProperty("orthographic");
+				this.orthographicSize = this.m_SerializedObject.FindProperty("orthographic size");
+				this.depth = this.m_SerializedObject.FindProperty("m_Depth");
+				this.cullingMask = this.m_SerializedObject.FindProperty("m_CullingMask");
+				this.renderingPath = this.m_SerializedObject.FindProperty("m_RenderingPath");
+				this.occlusionCulling = this.m_SerializedObject.FindProperty("m_OcclusionCulling");
+				this.targetTexture = this.m_SerializedObject.FindProperty("m_TargetTexture");
+				this.HDR = this.m_SerializedObject.FindProperty("m_HDR");
+				this.allowMSAA = this.m_SerializedObject.FindProperty("m_AllowMSAA");
+				this.allowDynamicResolution = this.m_SerializedObject.FindProperty("m_AllowDynamicResolution");
+				this.stereoConvergence = this.m_SerializedObject.FindProperty("m_StereoConvergence");
+				this.stereoSeparation = this.m_SerializedObject.FindProperty("m_StereoSeparation");
+				this.targetDisplay = this.m_SerializedObject.FindProperty("m_TargetDisplay");
+				this.targetEye = this.m_SerializedObject.FindProperty("m_TargetEye");
+			}
+
+			public void Update()
+			{
+				this.m_SerializedObject.Update();
+			}
+
+			public void ApplyModifiedProperties()
+			{
+				this.m_SerializedObject.ApplyModifiedProperties();
+			}
+
+			public void DrawClearFlags()
+			{
+				EditorGUILayout.PropertyField(this.clearFlags, EditorGUIUtility.TextContent("Clear Flags|What to display in empty areas of this Camera's view.\n\nChoose Skybox to display a skybox in empty areas, defaulting to a background color if no skybox is found.\n\nChoose Solid Color to display a background color in empty areas.\n\nChoose Depth Only to display nothing in empty areas.\n\nChoose Don't Clear to display whatever was displayed in the previous frame in empty areas."), new GUILayoutOption[0]);
+			}
+
+			public void DrawBackgroundColor()
+			{
+				EditorGUILayout.PropertyField(this.backgroundColor, EditorGUIUtility.TextContent("Background|The Camera clears the screen to this color before rendering."), new GUILayoutOption[0]);
+			}
+
+			public void DrawCullingMask()
+			{
+				EditorGUILayout.PropertyField(this.cullingMask, new GUILayoutOption[0]);
+			}
+
+			public void DrawProjection()
+			{
+				CameraEditor.ProjectionType projectionType = (!this.orthographic.boolValue) ? CameraEditor.ProjectionType.Perspective : CameraEditor.ProjectionType.Orthographic;
+				EditorGUI.BeginChangeCheck();
+				EditorGUI.showMixedValue = this.orthographic.hasMultipleDifferentValues;
+				projectionType = (CameraEditor.ProjectionType)EditorGUILayout.EnumPopup(EditorGUIUtility.TextContent("Projection|How the Camera renders perspective.\n\nChoose Perspective to render objects with perspective.\n\nChoose Orthographic to render objects uniformly, with no sense of perspective."), projectionType, new GUILayoutOption[0]);
+				EditorGUI.showMixedValue = false;
+				if (EditorGUI.EndChangeCheck())
+				{
+					this.orthographic.boolValue = (projectionType == CameraEditor.ProjectionType.Orthographic);
+				}
+				if (!this.orthographic.hasMultipleDifferentValues)
+				{
+					if (projectionType == CameraEditor.ProjectionType.Orthographic)
+					{
+						EditorGUILayout.PropertyField(this.orthographicSize, new GUIContent("Size"), new GUILayoutOption[0]);
+					}
+					else
+					{
+						EditorGUILayout.Slider(this.fieldOfView, 1f, 179f, EditorGUIUtility.TextContent("Field of View|The width of the Camera’s view angle, measured in degrees along the local Y axis."), new GUILayoutOption[0]);
+					}
+				}
+			}
+
+			public void DrawClippingPlanes()
+			{
+				EditorGUILayout.PropertiesField(EditorGUI.s_ClipingPlanesLabel, new SerializedProperty[]
+				{
+					this.nearClippingPlane,
+					this.farClippingPlane
+				}, EditorGUI.s_NearAndFarLabels, 35f, new GUILayoutOption[0]);
+			}
+
+			public void DrawNormalizedViewPort()
+			{
+				EditorGUILayout.PropertyField(this.normalizedViewPortRect, EditorGUIUtility.TextContent("Viewport Rect|Four values that indicate where on the screen this camera view will be drawn. Measured in Viewport Coordinates (values 0–1)."), new GUILayoutOption[0]);
+			}
+
+			public void DrawDepth()
+			{
+				EditorGUILayout.PropertyField(this.depth, new GUILayoutOption[0]);
+			}
+
+			public void DrawRenderingPath()
+			{
+				EditorGUILayout.IntPopup(this.renderingPath, CameraEditor.Settings.kCameraRenderPaths, CameraEditor.Settings.kCameraRenderPathValues, EditorGUIUtility.TempContent("Rendering Path"), new GUILayoutOption[0]);
+			}
+
+			public void DrawTargetTexture(bool deferred)
+			{
+				EditorGUILayout.PropertyField(this.targetTexture, new GUILayoutOption[0]);
+				if (!this.targetTexture.hasMultipleDifferentValues)
+				{
+					RenderTexture renderTexture = this.targetTexture.objectReferenceValue as RenderTexture;
+					if (renderTexture && renderTexture.antiAliasing > 1 && deferred)
+					{
+						EditorGUILayout.HelpBox("Manual MSAA target set with deferred rendering. This will lead to undefined behavior.", MessageType.Warning, true);
+					}
+				}
+			}
+
+			public void DrawOcclusionCulling()
+			{
+				EditorGUILayout.PropertyField(this.occlusionCulling, new GUILayoutOption[0]);
+			}
+
+			public void DrawHDR()
+			{
+				EditorGUILayout.PropertyField(this.HDR, EditorGUIUtility.TempContent("Allow HDR"), new GUILayoutOption[0]);
+			}
+
+			public void DrawMSAA()
+			{
+				EditorGUILayout.PropertyField(this.allowMSAA, new GUILayoutOption[0]);
+			}
+
+			public void DrawDynamicResolution()
+			{
+				EditorGUILayout.PropertyField(this.allowDynamicResolution, new GUILayoutOption[0]);
+			}
+
+			public void DrawVR()
+			{
+				if (PlayerSettings.virtualRealitySupported)
+				{
+					EditorGUILayout.PropertyField(this.stereoSeparation, new GUILayoutOption[0]);
+					EditorGUILayout.PropertyField(this.stereoConvergence, new GUILayoutOption[0]);
+				}
+			}
+
+			public void DrawMultiDisplay()
+			{
+				if (ModuleManager.ShouldShowMultiDisplayOption())
+				{
+					int intValue = this.targetDisplay.intValue;
+					EditorGUILayout.Space();
+					EditorGUILayout.IntPopup(this.targetDisplay, DisplayUtility.GetDisplayNames(), DisplayUtility.GetDisplayIndices(), EditorGUIUtility.TempContent("Target Display"), new GUILayoutOption[0]);
+					if (intValue != this.targetDisplay.intValue)
+					{
+						GameView.RepaintAll();
+					}
+				}
+			}
+
+			public void DrawTargetEye()
+			{
+				EditorGUILayout.IntPopup(this.targetEye, CameraEditor.Settings.kTargetEyes, CameraEditor.Settings.kTargetEyeValues, EditorGUIUtility.TempContent("Target Eye"), new GUILayoutOption[0]);
+			}
+		}
+
 		private class Styles
 		{
 			public static GUIContent iconRemove = EditorGUIUtility.IconContent("Toolbar Minus", "|Remove command buffer");
@@ -28,78 +350,6 @@ namespace UnityEditor
 			Orthographic
 		}
 
-		private static readonly GUIContent[] kCameraRenderPaths = new GUIContent[]
-		{
-			new GUIContent("Use Graphics Settings"),
-			new GUIContent("Forward"),
-			new GUIContent("Deferred"),
-			new GUIContent("Legacy Vertex Lit"),
-			new GUIContent("Legacy Deferred (light prepass)")
-		};
-
-		private static readonly int[] kCameraRenderPathValues = new int[]
-		{
-			-1,
-			1,
-			3,
-			0,
-			2
-		};
-
-		private SerializedProperty m_ClearFlags;
-
-		private SerializedProperty m_BackgroundColor;
-
-		private SerializedProperty m_NormalizedViewPortRect;
-
-		private SerializedProperty m_FieldOfView;
-
-		private SerializedProperty m_Orthographic;
-
-		private SerializedProperty m_OrthographicSize;
-
-		private SerializedProperty m_Depth;
-
-		private SerializedProperty m_CullingMask;
-
-		private SerializedProperty m_RenderingPath;
-
-		private SerializedProperty m_OcclusionCulling;
-
-		private SerializedProperty m_TargetTexture;
-
-		private SerializedProperty m_HDR;
-
-		private SerializedProperty m_AllowMSAA;
-
-		private SerializedProperty m_AllowDynamicResolution;
-
-		private SerializedProperty[] m_NearAndFarClippingPlanes;
-
-		private SerializedProperty m_StereoConvergence;
-
-		private SerializedProperty m_StereoSeparation;
-
-		private SerializedProperty m_TargetDisplay;
-
-		private SerializedProperty m_TargetEye;
-
-		private static readonly GUIContent[] kTargetEyes = new GUIContent[]
-		{
-			new GUIContent("Both"),
-			new GUIContent("Left"),
-			new GUIContent("Right"),
-			new GUIContent("None (Main Display)")
-		};
-
-		private static readonly int[] kTargetEyeValues = new int[]
-		{
-			3,
-			1,
-			2,
-			0
-		};
-
 		private readonly AnimBool m_ShowBGColorOptions = new AnimBool();
 
 		private readonly AnimBool m_ShowOrthoOptions = new AnimBool();
@@ -108,13 +358,15 @@ namespace UnityEditor
 
 		private Camera m_PreviewCamera;
 
+		private RenderTexture m_PreviewTexture;
+
 		private static readonly Color kGizmoCamera = new Color(0.9137255f, 0.9137255f, 0.9137255f, 0.5019608f);
 
 		private const float kPreviewNormalizedSize = 0.2f;
 
-		private readonly GUIContent m_ViewportLabel = EditorGUIUtility.TextContent("Viewport Rect|Four values that indicate where on the screen this camera view will be drawn. Measured in Viewport Coordinates (values 0–1).");
-
 		private bool m_CommandBuffersShown = true;
+
+		private CameraEditor.Settings m_Settings;
 
 		[CompilerGenerated]
 		private static Handles.CapFunction <>f__mg$cache0;
@@ -137,7 +389,7 @@ namespace UnityEditor
 			}
 		}
 
-		private Camera previewCamera
+		protected Camera previewCamera
 		{
 			get
 			{
@@ -154,6 +406,42 @@ namespace UnityEditor
 			}
 		}
 
+		protected CameraEditor.Settings settings
+		{
+			get
+			{
+				if (this.m_Settings == null)
+				{
+					this.m_Settings = new CameraEditor.Settings(base.serializedObject);
+				}
+				return this.m_Settings;
+			}
+		}
+
+		private bool clearFlagsHasMultipleValues
+		{
+			get
+			{
+				return this.settings.clearFlags.hasMultipleDifferentValues;
+			}
+		}
+
+		private bool orthographicHasMultipleValues
+		{
+			get
+			{
+				return this.settings.orthographic.hasMultipleDifferentValues;
+			}
+		}
+
+		private int targetEyeValue
+		{
+			get
+			{
+				return this.settings.targetEye.intValue;
+			}
+		}
+
 		private static bool IsDeferredRenderingPath(RenderingPath rp)
 		{
 			return rp == RenderingPath.DeferredLighting || rp == RenderingPath.DeferredShading;
@@ -161,33 +449,11 @@ namespace UnityEditor
 
 		public void OnEnable()
 		{
-			this.m_ClearFlags = base.serializedObject.FindProperty("m_ClearFlags");
-			this.m_BackgroundColor = base.serializedObject.FindProperty("m_BackGroundColor");
-			this.m_NormalizedViewPortRect = base.serializedObject.FindProperty("m_NormalizedViewPortRect");
-			this.m_NearAndFarClippingPlanes = new SerializedProperty[]
-			{
-				base.serializedObject.FindProperty("near clip plane"),
-				base.serializedObject.FindProperty("far clip plane")
-			};
-			this.m_FieldOfView = base.serializedObject.FindProperty("field of view");
-			this.m_Orthographic = base.serializedObject.FindProperty("orthographic");
-			this.m_OrthographicSize = base.serializedObject.FindProperty("orthographic size");
-			this.m_Depth = base.serializedObject.FindProperty("m_Depth");
-			this.m_CullingMask = base.serializedObject.FindProperty("m_CullingMask");
-			this.m_RenderingPath = base.serializedObject.FindProperty("m_RenderingPath");
-			this.m_OcclusionCulling = base.serializedObject.FindProperty("m_OcclusionCulling");
-			this.m_TargetTexture = base.serializedObject.FindProperty("m_TargetTexture");
-			this.m_HDR = base.serializedObject.FindProperty("m_HDR");
-			this.m_AllowMSAA = base.serializedObject.FindProperty("m_AllowMSAA");
-			this.m_AllowDynamicResolution = base.serializedObject.FindProperty("m_AllowDynamicResolution");
-			this.m_StereoConvergence = base.serializedObject.FindProperty("m_StereoConvergence");
-			this.m_StereoSeparation = base.serializedObject.FindProperty("m_StereoSeparation");
-			this.m_TargetDisplay = base.serializedObject.FindProperty("m_TargetDisplay");
-			this.m_TargetEye = base.serializedObject.FindProperty("m_TargetEye");
+			this.settings.OnEnable();
 			Camera camera = (Camera)base.target;
-			this.m_ShowBGColorOptions.value = (!this.m_ClearFlags.hasMultipleDifferentValues && (camera.clearFlags == CameraClearFlags.Color || camera.clearFlags == CameraClearFlags.Skybox));
+			this.m_ShowBGColorOptions.value = (!this.clearFlagsHasMultipleValues && (camera.clearFlags == CameraClearFlags.Color || camera.clearFlags == CameraClearFlags.Skybox));
 			this.m_ShowOrthoOptions.value = camera.orthographic;
-			this.m_ShowTargetEyeOption.value = (this.m_TargetEye.intValue != 3 || PlayerSettings.virtualRealitySupported);
+			this.m_ShowTargetEyeOption.value = (this.targetEyeValue != 3 || PlayerSettings.virtualRealitySupported);
 			this.m_ShowBGColorOptions.valueChanged.AddListener(new UnityAction(base.Repaint));
 			this.m_ShowOrthoOptions.valueChanged.AddListener(new UnityAction(base.Repaint));
 			this.m_ShowTargetEyeOption.valueChanged.AddListener(new UnityAction(base.Repaint));
@@ -324,84 +590,40 @@ namespace UnityEditor
 
 		public override void OnInspectorGUI()
 		{
-			base.serializedObject.Update();
+			this.settings.Update();
 			Camera camera = (Camera)base.target;
-			this.m_ShowBGColorOptions.target = (!this.m_ClearFlags.hasMultipleDifferentValues && (camera.clearFlags == CameraClearFlags.Color || camera.clearFlags == CameraClearFlags.Skybox));
-			this.m_ShowOrthoOptions.target = (!this.m_Orthographic.hasMultipleDifferentValues && camera.orthographic);
-			this.m_ShowTargetEyeOption.target = (this.m_TargetEye.intValue != 3 || PlayerSettings.virtualRealitySupported);
-			EditorGUILayout.PropertyField(this.m_ClearFlags, EditorGUIUtility.TextContent("Clear Flags|What to display in empty areas of this Camera's view.\n\nChoose Skybox to display a skybox in empty areas, defaulting to a background color if no skybox is found.\n\nChoose Solid Color to display a background color in empty areas.\n\nChoose Depth Only to display nothing in empty areas.\n\nChoose Don't Clear to display whatever was displayed in the previous frame in empty areas."), new GUILayoutOption[0]);
-			if (EditorGUILayout.BeginFadeGroup(this.m_ShowBGColorOptions.faded))
+			this.m_ShowBGColorOptions.target = (!this.clearFlagsHasMultipleValues && (camera.clearFlags == CameraClearFlags.Color || camera.clearFlags == CameraClearFlags.Skybox));
+			this.m_ShowOrthoOptions.target = (!this.orthographicHasMultipleValues && camera.orthographic);
+			this.m_ShowTargetEyeOption.target = (this.targetEyeValue != 3 || PlayerSettings.virtualRealitySupported);
+			this.settings.DrawClearFlags();
+			using (new EditorGUILayout.FadeGroupScope(this.m_ShowBGColorOptions.faded))
 			{
-				EditorGUILayout.PropertyField(this.m_BackgroundColor, EditorGUIUtility.TextContent("Background|The Camera clears the screen to this color before rendering."), new GUILayoutOption[0]);
+				this.settings.DrawBackgroundColor();
 			}
-			EditorGUILayout.EndFadeGroup();
-			EditorGUILayout.PropertyField(this.m_CullingMask, new GUILayoutOption[0]);
+			this.settings.DrawCullingMask();
 			EditorGUILayout.Space();
-			CameraEditor.ProjectionType projectionType = (!this.m_Orthographic.boolValue) ? CameraEditor.ProjectionType.Perspective : CameraEditor.ProjectionType.Orthographic;
-			EditorGUI.BeginChangeCheck();
-			EditorGUI.showMixedValue = this.m_Orthographic.hasMultipleDifferentValues;
-			projectionType = (CameraEditor.ProjectionType)EditorGUILayout.EnumPopup(EditorGUIUtility.TextContent("Projection|How the Camera renders perspective.\n\nChoose Perspective to render objects with perspective.\n\nChoose Orthographic to render objects uniformly, with no sense of perspective."), projectionType, new GUILayoutOption[0]);
-			EditorGUI.showMixedValue = false;
-			if (EditorGUI.EndChangeCheck())
-			{
-				this.m_Orthographic.boolValue = (projectionType == CameraEditor.ProjectionType.Orthographic);
-			}
-			if (!this.m_Orthographic.hasMultipleDifferentValues)
-			{
-				if (EditorGUILayout.BeginFadeGroup(this.m_ShowOrthoOptions.faded))
-				{
-					EditorGUILayout.PropertyField(this.m_OrthographicSize, new GUIContent("Size"), new GUILayoutOption[0]);
-				}
-				EditorGUILayout.EndFadeGroup();
-				if (EditorGUILayout.BeginFadeGroup(1f - this.m_ShowOrthoOptions.faded))
-				{
-					EditorGUILayout.Slider(this.m_FieldOfView, 1f, 179f, EditorGUIUtility.TextContent("Field of View|The width of the Camera’s view angle, measured in degrees along the local Y axis."), new GUILayoutOption[0]);
-				}
-				EditorGUILayout.EndFadeGroup();
-			}
-			EditorGUILayout.PropertiesField(EditorGUI.s_ClipingPlanesLabel, this.m_NearAndFarClippingPlanes, EditorGUI.s_NearAndFarLabels, 35f, new GUILayoutOption[0]);
-			EditorGUILayout.PropertyField(this.m_NormalizedViewPortRect, this.m_ViewportLabel, new GUILayoutOption[0]);
+			this.settings.DrawProjection();
+			this.settings.DrawClippingPlanes();
+			this.settings.DrawNormalizedViewPort();
 			EditorGUILayout.Space();
-			EditorGUILayout.PropertyField(this.m_Depth, new GUILayoutOption[0]);
-			EditorGUILayout.IntPopup(this.m_RenderingPath, CameraEditor.kCameraRenderPaths, CameraEditor.kCameraRenderPathValues, EditorGUIUtility.TempContent("Rendering Path"), new GUILayoutOption[0]);
+			this.settings.DrawDepth();
+			this.settings.DrawRenderingPath();
 			if (this.m_ShowOrthoOptions.target && this.wantDeferredRendering)
 			{
 				EditorGUILayout.HelpBox("Deferred rendering does not work with Orthographic camera, will use Forward.", MessageType.Warning, true);
 			}
-			EditorGUILayout.PropertyField(this.m_TargetTexture, new GUILayoutOption[0]);
-			if (!this.m_TargetTexture.hasMultipleDifferentValues)
-			{
-				RenderTexture renderTexture = this.m_TargetTexture.objectReferenceValue as RenderTexture;
-				if (renderTexture && renderTexture.antiAliasing > 1 && this.wantDeferredRendering)
-				{
-					EditorGUILayout.HelpBox("Manual MSAA target set with deferred rendering. This will lead to undefined behavior.", MessageType.Warning, true);
-				}
-			}
-			EditorGUILayout.PropertyField(this.m_OcclusionCulling, new GUILayoutOption[0]);
-			EditorGUILayout.PropertyField(this.m_HDR, EditorGUIUtility.TempContent("Allow HDR"), new GUILayoutOption[0]);
-			EditorGUILayout.PropertyField(this.m_AllowMSAA, new GUILayoutOption[0]);
-			EditorGUILayout.PropertyField(this.m_AllowDynamicResolution, new GUILayoutOption[0]);
+			this.settings.DrawTargetTexture(this.wantDeferredRendering);
+			this.settings.DrawOcclusionCulling();
+			this.settings.DrawHDR();
+			this.settings.DrawMSAA();
+			this.settings.DrawDynamicResolution();
 			this.DisplayCameraWarnings();
-			if (PlayerSettings.virtualRealitySupported)
+			this.settings.DrawVR();
+			this.settings.DrawMultiDisplay();
+			using (new EditorGUILayout.FadeGroupScope(this.m_ShowTargetEyeOption.faded))
 			{
-				EditorGUILayout.PropertyField(this.m_StereoSeparation, new GUILayoutOption[0]);
-				EditorGUILayout.PropertyField(this.m_StereoConvergence, new GUILayoutOption[0]);
+				this.settings.DrawTargetEye();
 			}
-			if (ModuleManager.ShouldShowMultiDisplayOption())
-			{
-				int intValue = this.m_TargetDisplay.intValue;
-				EditorGUILayout.Space();
-				EditorGUILayout.IntPopup(this.m_TargetDisplay, DisplayUtility.GetDisplayNames(), DisplayUtility.GetDisplayIndices(), EditorGUIUtility.TempContent("Target Display"), new GUILayoutOption[0]);
-				if (intValue != this.m_TargetDisplay.intValue)
-				{
-					GameView.RepaintAll();
-				}
-			}
-			if (EditorGUILayout.BeginFadeGroup(this.m_ShowTargetEyeOption.faded))
-			{
-				EditorGUILayout.IntPopup(this.m_TargetEye, CameraEditor.kTargetEyes, CameraEditor.kTargetEyeValues, EditorGUIUtility.TempContent("Target Eye"), new GUILayoutOption[0]);
-			}
-			EditorGUILayout.EndFadeGroup();
 			this.DepthTextureModeGUI();
 			this.CommandBufferGUI();
 			base.serializedObject.ApplyModifiedProperties();
@@ -420,7 +642,7 @@ namespace UnityEditor
 			}
 		}
 
-		public void OnOverlayGUI(UnityEngine.Object target, SceneView sceneView)
+		public virtual void OnOverlayGUI(UnityEngine.Object target, SceneView sceneView)
 		{
 			if (!(target == null))
 			{
@@ -467,16 +689,27 @@ namespace UnityEditor
 								component.enabled = false;
 							}
 						}
-						this.previewCamera.targetTexture = RenderTexture.GetTemporary((int)mainGameViewTargetSize.x, (int)mainGameViewTargetSize.y, 24, (!this.previewCamera.allowHDR) ? RenderTextureFormat.ARGB32 : RenderTextureFormat.ARGBHalf);
+						RenderTexture previewTextureWithSize = this.GetPreviewTextureWithSize((int)rect2.width, (int)rect2.height);
+						previewTextureWithSize.antiAliasing = QualitySettings.antiAliasing;
+						this.previewCamera.targetTexture = previewTextureWithSize;
+						this.previewCamera.pixelRect = new Rect(0f, 0f, rect2.width, rect2.height);
 						Handles.EmitGUIGeometryForCamera(camera, this.previewCamera);
-						this.previewCamera.Render();
 						GL.sRGBWrite = (QualitySettings.activeColorSpace == ColorSpace.Linear);
-						GUI.DrawTexture(rect2, this.previewCamera.targetTexture, ScaleMode.StretchToFill, false);
+						this.previewCamera.Render();
 						GL.sRGBWrite = false;
-						RenderTexture.ReleaseTemporary(this.previewCamera.targetTexture);
+						Graphics.DrawTexture(rect2, previewTextureWithSize, new Rect(0f, 0f, 1f, 1f), 0, 0, 0, 0, GUI.color, EditorGUIUtility.GUITextureBlit2SRGBMaterial);
 					}
 				}
 			}
+		}
+
+		private RenderTexture GetPreviewTextureWithSize(int width, int height)
+		{
+			if (this.m_PreviewTexture == null || this.m_PreviewTexture.width != width || this.m_PreviewTexture.height != height)
+			{
+				this.m_PreviewTexture = new RenderTexture(width, height, 24, RenderTextureFormat.Default, RenderTextureReadWrite.Linear);
+			}
+			return this.m_PreviewTexture;
 		}
 
 		[RequiredByNativeCode]
@@ -568,12 +801,12 @@ namespace UnityEditor
 			return normalizedViewPortRect.width > 0f && normalizedViewPortRect.height > 0f && normalizedViewPortRect.x < 1f && normalizedViewPortRect.xMax > 0f && normalizedViewPortRect.y < 1f && normalizedViewPortRect.yMax > 0f;
 		}
 
-		public void OnSceneGUI()
+		public virtual void OnSceneGUI()
 		{
 			Camera camera = (Camera)base.target;
 			if (CameraEditor.IsViewPortRectValidToRender(camera.rect))
 			{
-				SceneViewOverlay.Window(new GUIContent("Camera Preview"), new SceneViewOverlay.WindowFunction(this.OnOverlayGUI), -100, base.target, SceneViewOverlay.WindowDisplayOption.OneWindowPerTarget);
+				SceneViewOverlay.Window(EditorGUIUtility.TrTextContent("Camera Preview", null, null), new SceneViewOverlay.WindowFunction(this.OnOverlayGUI), -100, base.target, SceneViewOverlay.WindowDisplayOption.OneWindowPerTarget);
 				Color color = Handles.color;
 				Color color2 = CameraEditor.kGizmoCamera;
 				color2.a *= 2f;

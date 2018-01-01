@@ -4,6 +4,7 @@ using System.Linq;
 using UnityEditor.Audio;
 using UnityEditor.IMGUI.Controls;
 using UnityEngine;
+using UnityEngine.Audio;
 
 namespace UnityEditor
 {
@@ -11,11 +12,11 @@ namespace UnityEditor
 	{
 		private class Styles
 		{
-			public GUIContent header = new GUIContent("Groups", "An Audio Mixer Group is used by e.g Audio Sources to modify the audio output before it reaches the Audio Listener. An Audio Mixer Group will route its output to another Audio Mixer Group if it is made a child of that group. The Master Group will route its output to the Audio Listener if it doesn't route its output into another Mixer.");
+			public GUIContent header = EditorGUIUtility.TrTextContent("Groups", "An Audio Mixer Group is used by e.g Audio Sources to modify the audio output before it reaches the Audio Listener. An Audio Mixer Group will route its output to another Audio Mixer Group if it is made a child of that group. The Master Group will route its output to the Audio Listener if it doesn't route its output into another Mixer.", null);
 
-			public GUIContent addText = new GUIContent("+", "Add child group");
+			public GUIContent addText = EditorGUIUtility.TrTextContent("+", "Add child group", null);
 
-			public Texture2D audioMixerGroupIcon = EditorGUIUtility.FindTexture("AudioMixerGroup Icon");
+			public Texture2D audioMixerGroupIcon = EditorGUIUtility.FindTexture(typeof(AudioMixerGroup));
 		}
 
 		private AudioMixerController m_Controller;
@@ -219,12 +220,12 @@ namespace UnityEditor
 					GenericMenu genericMenu = new GenericMenu();
 					if (!EditorApplication.isPlaying)
 					{
-						genericMenu.AddItem(new GUIContent("Add child group"), false, new GenericMenu.MenuFunction2(this.AddChildGroupPopupCallback), new AudioMixerGroupPopupContext(this.m_Controller, audioMixerTreeViewNode.group));
+						genericMenu.AddItem(EditorGUIUtility.TrTextContent("Add child group", null, null), false, new GenericMenu.MenuFunction2(this.AddChildGroupPopupCallback), new AudioMixerGroupPopupContext(this.m_Controller, audioMixerTreeViewNode.group));
 						if (audioMixerTreeViewNode.group != this.m_Controller.masterGroup)
 						{
-							genericMenu.AddItem(new GUIContent("Add sibling group"), false, new GenericMenu.MenuFunction2(this.AddSiblingGroupPopupCallback), new AudioMixerGroupPopupContext(this.m_Controller, audioMixerTreeViewNode.group));
+							genericMenu.AddItem(EditorGUIUtility.TrTextContent("Add sibling group", null, null), false, new GenericMenu.MenuFunction2(this.AddSiblingGroupPopupCallback), new AudioMixerGroupPopupContext(this.m_Controller, audioMixerTreeViewNode.group));
 							genericMenu.AddSeparator("");
-							genericMenu.AddItem(new GUIContent("Rename"), false, new GenericMenu.MenuFunction2(this.RenameGroupCallback), treeViewItem);
+							genericMenu.AddItem(EditorGUIUtility.TrTextContent("Rename", null, null), false, new GenericMenu.MenuFunction2(this.RenameGroupCallback), treeViewItem);
 							AudioMixerGroupController[] array = this.GetGroupSelectionWithoutMasterGroup().ToArray();
 							genericMenu.AddItem(new GUIContent((array.Length <= 1) ? "Duplicate group (and children)" : "Duplicate groups (and children)"), false, new GenericMenu.MenuFunction2(this.DuplicateGroupPopupCallback), this);
 							genericMenu.AddItem(new GUIContent((array.Length <= 1) ? "Remove group (and children)" : "Remove groups (and children)"), false, new GenericMenu.MenuFunction2(this.DeleteGroupsPopupCallback), this);
@@ -232,7 +233,7 @@ namespace UnityEditor
 					}
 					else
 					{
-						genericMenu.AddDisabledItem(new GUIContent("Modifying group topology in play mode is not allowed"));
+						genericMenu.AddDisabledItem(EditorGUIUtility.TrTextContent("Modifying group topology in play mode is not allowed", null, null));
 					}
 					genericMenu.ShowAsContext();
 				}

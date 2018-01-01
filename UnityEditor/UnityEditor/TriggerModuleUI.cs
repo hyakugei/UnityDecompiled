@@ -15,27 +15,27 @@ namespace UnityEditor
 
 		private class Texts
 		{
-			public GUIContent collisionShapes = EditorGUIUtility.TextContent("Colliders|The list of collision shapes to use for the trigger.");
+			public GUIContent collisionShapes = EditorGUIUtility.TrTextContent("Colliders", "The list of collision shapes to use for the trigger.", null);
 
-			public GUIContent createCollisionShape = EditorGUIUtility.TextContent("|Create a GameObject containing a sphere collider and assigns it to the list.");
+			public GUIContent createCollisionShape = EditorGUIUtility.TrTextContent("", "Create a GameObject containing a sphere collider and assigns it to the list.", null);
 
-			public GUIContent inside = EditorGUIUtility.TextContent("Inside|What to do for particles that are inside the collision volume.");
+			public GUIContent inside = EditorGUIUtility.TrTextContent("Inside", "What to do for particles that are inside the collision volume.", null);
 
-			public GUIContent outside = EditorGUIUtility.TextContent("Outside|What to do for particles that are outside the collision volume.");
+			public GUIContent outside = EditorGUIUtility.TrTextContent("Outside", "What to do for particles that are outside the collision volume.", null);
 
-			public GUIContent enter = EditorGUIUtility.TextContent("Enter|Triggered once when particles enter the collison volume.");
+			public GUIContent enter = EditorGUIUtility.TrTextContent("Enter", "Triggered once when particles enter the collison volume.", null);
 
-			public GUIContent exit = EditorGUIUtility.TextContent("Exit|Triggered once when particles leave the collison volume.");
+			public GUIContent exit = EditorGUIUtility.TrTextContent("Exit", "Triggered once when particles leave the collison volume.", null);
 
-			public GUIContent radiusScale = EditorGUIUtility.TextContent("Radius Scale|Scale particle bounds by this amount to get more precise collisions.");
+			public GUIContent radiusScale = EditorGUIUtility.TrTextContent("Radius Scale", "Scale particle bounds by this amount to get more precise collisions.", null);
 
-			public GUIContent visualizeBounds = EditorGUIUtility.TextContent("Visualize Bounds|Render the collision bounds of the particles.");
+			public GUIContent visualizeBounds = EditorGUIUtility.TrTextContent("Visualize Bounds", "Render the collision bounds of the particles.", null);
 
 			public GUIContent[] overlapOptions = new GUIContent[]
 			{
-				EditorGUIUtility.TextContent("Ignore"),
-				EditorGUIUtility.TextContent("Kill"),
-				EditorGUIUtility.TextContent("Callback")
+				EditorGUIUtility.TrTextContent("Ignore", null, null),
+				EditorGUIUtility.TrTextContent("Kill", null, null),
+				EditorGUIUtility.TrTextContent("Callback", null, null)
 			};
 		}
 
@@ -171,7 +171,7 @@ namespace UnityEditor
 					this.m_ShownCollisionShapes = list.ToArray();
 				}
 			}
-			if (this.m_ShownCollisionShapes.Length < 6)
+			if (this.m_ShownCollisionShapes.Length < 6 && !this.m_ParticleSystemUI.multiEdit)
 			{
 				rect.x += 17f;
 				if (ModuleUI.PlusButton(rect))
@@ -204,20 +204,23 @@ namespace UnityEditor
 				for (int i = 0; i < particleSystems.Length; i++)
 				{
 					ParticleSystem particleSystem = particleSystems[i];
-					ParticleSystem.Particle[] array5 = new ParticleSystem.Particle[particleSystem.particleCount];
-					int particles = particleSystem.GetParticles(array5);
-					Matrix4x4 lhs = Matrix4x4.identity;
-					if (particleSystem.main.simulationSpace == ParticleSystemSimulationSpace.Local)
+					if (particleSystem.trigger.enabled)
 					{
-						lhs = particleSystem.GetLocalToWorldMatrix();
-					}
-					for (int j = 0; j < particles; j++)
-					{
-						ParticleSystem.Particle particle = array5[j];
-						Vector3 currentSize3D = particle.GetCurrentSize3D(particleSystem);
-						float num = Math.Max(currentSize3D.x, Math.Max(currentSize3D.y, currentSize3D.z)) * 0.5f * particleSystem.trigger.radiusScale;
-						Handles.matrix = lhs * Matrix4x4.TRS(particle.position, Quaternion.identity, new Vector3(num, num, num));
-						Handles.DrawPolyLine(array4);
+						ParticleSystem.Particle[] array5 = new ParticleSystem.Particle[particleSystem.particleCount];
+						int particles = particleSystem.GetParticles(array5);
+						Matrix4x4 lhs = Matrix4x4.identity;
+						if (particleSystem.main.simulationSpace == ParticleSystemSimulationSpace.Local)
+						{
+							lhs = particleSystem.GetLocalToWorldMatrix();
+						}
+						for (int j = 0; j < particles; j++)
+						{
+							ParticleSystem.Particle particle = array5[j];
+							Vector3 currentSize3D = particle.GetCurrentSize3D(particleSystem);
+							float num = Math.Max(currentSize3D.x, Math.Max(currentSize3D.y, currentSize3D.z)) * 0.5f * particleSystem.trigger.radiusScale;
+							Handles.matrix = lhs * Matrix4x4.TRS(particle.position, Quaternion.identity, new Vector3(num, num, num));
+							Handles.DrawPolyLine(array4);
+						}
 					}
 				}
 				Handles.color = color;

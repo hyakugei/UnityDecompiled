@@ -2,9 +2,11 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
+using UnityEditor.Experimental.UIElements;
 using UnityEditor.StyleSheets;
 using UnityEngine;
 using UnityEngine.Experimental.UIElements;
+using UnityEngine.Experimental.UIElements.StyleSheets;
 using UnityEngine.Scripting;
 
 namespace UnityEditor
@@ -13,6 +15,12 @@ namespace UnityEditor
 	[StructLayout(LayoutKind.Sequential)]
 	internal class GUIView : View
 	{
+		private Panel m_Panel = null;
+
+		private EditorCursorManager m_CursorManager = new EditorCursorManager();
+
+		private static EditorContextualMenuManager s_ContextualMenuManager;
+
 		private int m_DepthBufferBits = 0;
 
 		private EventInterests m_EventInterests;
@@ -23,6 +31,9 @@ namespace UnityEditor
 
 		[CompilerGenerated]
 		private static LoadResourceFunction <>f__mg$cache0;
+
+		[CompilerGenerated]
+		private static StyleSheetApplicator.CreateDefaultCursorStyleFunction <>f__mg$cache1;
 
 		internal static event Action<GUIView> positionChanged
 		{
@@ -88,21 +99,28 @@ namespace UnityEditor
 			set;
 		}
 
+		internal extern bool disableInputEvents
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
 		protected Panel panel
 		{
 			get
 			{
-				if (Panel.loadResourceFunc == null)
+				if (this.m_Panel == null)
 				{
-					if (GUIView.<>f__mg$cache0 == null)
-					{
-						GUIView.<>f__mg$cache0 = new LoadResourceFunction(StyleSheetResourceUtil.LoadResource);
-					}
-					Panel.loadResourceFunc = GUIView.<>f__mg$cache0;
+					UXMLEditorFactories.RegisterAll();
+					this.m_Panel = UIElementsUtility.FindOrCreatePanel(this, ContextType.Editor, DataWatchService.sharedInstance);
+					this.m_Panel.cursorManager = this.m_CursorManager;
+					this.m_Panel.contextualMenuManager = GUIView.s_ContextualMenuManager;
 				}
-				Panel panel = UIElementsUtility.FindOrCreatePanel(this, ContextType.Editor, DataWatchService.sharedInstance);
-				GUIView.AddDefaultEditorStyleSheets(panel.visualTree);
-				return panel;
+				return this.m_Panel;
 			}
 		}
 
@@ -212,6 +230,23 @@ namespace UnityEditor
 			}
 		}
 
+		static GUIView()
+		{
+			GUIView.positionChanged = null;
+			GUIView.s_ContextualMenuManager = new EditorContextualMenuManager();
+			if (GUIView.<>f__mg$cache0 == null)
+			{
+				GUIView.<>f__mg$cache0 = new LoadResourceFunction(StyleSheetResourceUtil.LoadResource);
+			}
+			Panel.loadResourceFunc = GUIView.<>f__mg$cache0;
+			if (GUIView.<>f__mg$cache1 == null)
+			{
+				GUIView.<>f__mg$cache1 = new StyleSheetApplicator.CreateDefaultCursorStyleFunction(UIElementsEditorUtility.CreateDefaultCursorStyle);
+			}
+			StyleSheetApplicator.createDefaultCursorStyleFunc = GUIView.<>f__mg$cache1;
+			Panel.TimeSinceStartup = (() => (long)(EditorApplication.timeSinceStartup * 1000.0));
+		}
+
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern void SetTitle(string title);
@@ -290,7 +325,7 @@ namespace UnityEditor
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern void Focus();
 
-		[GeneratedByOldBindingsGenerator]
+		[GeneratedByOldBindingsGenerator, ThreadAndSerializationSafe]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern void Repaint();
 
@@ -326,22 +361,6 @@ namespace UnityEditor
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern void INTERNAL_CALL_GrabPixels(GUIView self, RenderTexture rd, ref Rect rect);
-
-		internal static void AddDefaultEditorStyleSheets(VisualElement p)
-		{
-			if (p.styleSheets == null)
-			{
-				p.AddStyleSheetPath("StyleSheets/DefaultCommon.uss");
-				if (EditorGUIUtility.isProSkin)
-				{
-					p.AddStyleSheetPath("StyleSheets/DefaultCommonDark.uss");
-				}
-				else
-				{
-					p.AddStyleSheetPath("StyleSheets/DefaultCommonLight.uss");
-				}
-			}
-		}
 
 		internal bool SendEvent(Event e)
 		{
@@ -395,9 +414,9 @@ namespace UnityEditor
 
 		protected virtual void OnDisable()
 		{
-			if (this.imguiContainer.HasCapture())
+			if (this.imguiContainer.HasMouseCapture())
 			{
-				this.imguiContainer.RemoveCapture();
+				MouseCaptureController.ReleaseMouseCapture();
 			}
 			this.visualTree.Remove(this.imguiContainer);
 		}
@@ -451,12 +470,6 @@ namespace UnityEditor
 			{
 				base.window.HandleWindowDecorationEnd(base.windowPosition);
 			}
-		}
-
-		static GUIView()
-		{
-			// Note: this type is marked as 'beforefieldinit'.
-			GUIView.positionChanged = null;
 		}
 	}
 }

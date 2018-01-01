@@ -125,7 +125,7 @@ namespace UnityEditor
 			{
 				float labelWidth = EditorGUIUtility.labelWidth;
 				float fieldWidth = EditorGUIUtility.fieldWidth;
-				this.propertyDrawer.OnGUISafe(position, property.Copy(), label ?? EditorGUIUtility.TempContent(property.displayName));
+				this.propertyDrawer.OnGUISafe(position, property.Copy(), label ?? EditorGUIUtility.TempContent(property.localizedDisplayName));
 				EditorGUIUtility.labelWidth = labelWidth;
 				EditorGUIUtility.fieldWidth = fieldWidth;
 				result = false;

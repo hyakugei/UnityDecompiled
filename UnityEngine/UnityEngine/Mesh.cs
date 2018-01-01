@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using UnityEngine.Internal;
 using UnityEngine.Rendering;
 
@@ -13,12 +14,16 @@ namespace UnityEngine
 		{
 			Vertex,
 			Normal,
+			Tangent,
 			Color,
 			TexCoord0,
 			TexCoord1,
 			TexCoord2,
 			TexCoord3,
-			Tangent
+			TexCoord4,
+			TexCoord5,
+			TexCoord6,
+			TexCoord7
 		}
 
 		internal enum InternalVertexChannelType
@@ -282,10 +287,10 @@ namespace UnityEngine
 		private extern void SetIndicesImpl(int submesh, MeshTopology topology, Array indices, int arraySize, bool calculateBounds, int baseVertex);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void GetTrianglesNonAllocImpl(Array values, int submesh, bool applyBaseVertex);
+		private extern void GetTrianglesNonAllocImpl([Out] int[] values, int submesh, bool applyBaseVertex);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void GetIndicesNonAllocImpl(Array values, int submesh, bool applyBaseVertex);
+		private extern void GetIndicesNonAllocImpl([Out] int[] values, int submesh, bool applyBaseVertex);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern void PrintErrorCantAccessChannel(Mesh.InternalShaderChannel ch);
@@ -336,10 +341,10 @@ namespace UnityEngine
 		private extern int GetBindposeCount();
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void GetBoneWeightsNonAllocImpl(Array values);
+		private extern void GetBoneWeightsNonAllocImpl([Out] BoneWeight[] values);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void GetBindposesNonAllocImpl(Array values);
+		private extern void GetBindposesNonAllocImpl([Out] Matrix4x4[] values);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern void ClearImpl(bool keepVertexLayout);
@@ -357,7 +362,7 @@ namespace UnityEngine
 		private extern void MarkDynamicImpl();
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void UploadMeshDataImpl(bool markNoLogerReadable);
+		private extern void UploadMeshDataImpl(bool markNoLongerReadable);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern MeshTopology GetTopologyImpl(int submesh);
@@ -466,19 +471,9 @@ namespace UnityEngine
 			}
 			else if (this.HasChannel(channel))
 			{
-				this.PrepareUserBuffer<T>(buffer, capacity);
+				NoAllocHelpers.EnsureListElemCount<T>(buffer, capacity);
 				this.GetArrayFromChannelImpl(channel, channelType, dim, NoAllocHelpers.ExtractArrayFromList(buffer));
 			}
-		}
-
-		private void PrepareUserBuffer<T>(List<T> buffer, int capacity)
-		{
-			buffer.Clear();
-			if (buffer.Capacity < capacity)
-			{
-				buffer.Capacity = capacity;
-			}
-			NoAllocHelpers.ResizeList(buffer, capacity);
 		}
 
 		public void GetVertices(List<Vector3> vertices)
@@ -666,8 +661,8 @@ namespace UnityEngine
 			{
 				throw new IndexOutOfRangeException("Specified sub mesh is out of range. Must be greater or equal to 0 and less than subMeshCount.");
 			}
-			this.PrepareUserBuffer<int>(triangles, (int)this.GetIndexCount(submesh));
-			this.GetTrianglesNonAllocImpl(NoAllocHelpers.ExtractArrayFromList(triangles), submesh, applyBaseVertex);
+			NoAllocHelpers.EnsureListElemCount<int>(triangles, (int)this.GetIndexCount(submesh));
+			this.GetTrianglesNonAllocImpl(NoAllocHelpers.ExtractArrayFromListT<int>(triangles), submesh, applyBaseVertex);
 		}
 
 		public int[] GetIndices(int submesh)
@@ -695,8 +690,8 @@ namespace UnityEngine
 			{
 				throw new IndexOutOfRangeException("Specified sub mesh is out of range. Must be greater or equal to 0 and less than subMeshCount.");
 			}
-			this.PrepareUserBuffer<int>(indices, (int)this.GetIndexCount(submesh));
-			this.GetIndicesNonAllocImpl(NoAllocHelpers.ExtractArrayFromList(indices), submesh, applyBaseVertex);
+			NoAllocHelpers.EnsureListElemCount<int>(indices, (int)this.GetIndexCount(submesh));
+			this.GetIndicesNonAllocImpl(NoAllocHelpers.ExtractArrayFromListT<int>(indices), submesh, applyBaseVertex);
 		}
 
 		public uint GetIndexStart(int submesh)
@@ -791,8 +786,8 @@ namespace UnityEngine
 			{
 				throw new ArgumentNullException("The result bindposes list cannot be null.", "bindposes");
 			}
-			this.PrepareUserBuffer<Matrix4x4>(bindposes, this.GetBindposeCount());
-			this.GetBindposesNonAllocImpl(NoAllocHelpers.ExtractArrayFromList(bindposes));
+			NoAllocHelpers.EnsureListElemCount<Matrix4x4>(bindposes, this.GetBindposeCount());
+			this.GetBindposesNonAllocImpl(NoAllocHelpers.ExtractArrayFromListT<Matrix4x4>(bindposes));
 		}
 
 		public void GetBoneWeights(List<BoneWeight> boneWeights)
@@ -801,8 +796,8 @@ namespace UnityEngine
 			{
 				throw new ArgumentNullException("The result boneWeights list cannot be null.", "boneWeights");
 			}
-			this.PrepareUserBuffer<BoneWeight>(boneWeights, this.GetBoneWeightCount());
-			this.GetBoneWeightsNonAllocImpl(NoAllocHelpers.ExtractArrayFromList(boneWeights));
+			NoAllocHelpers.EnsureListElemCount<BoneWeight>(boneWeights, this.GetBoneWeightCount());
+			this.GetBoneWeightsNonAllocImpl(NoAllocHelpers.ExtractArrayFromListT<BoneWeight>(boneWeights));
 		}
 
 		public void Clear(bool keepVertexLayout)
@@ -859,11 +854,11 @@ namespace UnityEngine
 			}
 		}
 
-		public void UploadMeshData(bool markNoLogerReadable)
+		public void UploadMeshData(bool markNoLongerReadable)
 		{
 			if (this.canAccess)
 			{
-				this.UploadMeshDataImpl(markNoLogerReadable);
+				this.UploadMeshDataImpl(markNoLongerReadable);
 			}
 		}
 

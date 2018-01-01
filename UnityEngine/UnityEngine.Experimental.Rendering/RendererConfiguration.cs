@@ -12,6 +12,10 @@ namespace UnityEngine.Experimental.Rendering
 		PerObjectLightmaps = 8,
 		ProvideLightIndices = 16,
 		PerObjectMotionVectors = 32,
-		PerObjectLightIndices8 = 64
+		PerObjectLightIndices8 = 64,
+		ProvideReflectionProbeIndices = 128,
+		PerObjectOcclusionProbe = 256,
+		PerObjectOcclusionProbeProxyVolume = 512,
+		PerObjectShadowMask = 1024
 	}
 }

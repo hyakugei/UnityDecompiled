@@ -42,7 +42,7 @@ namespace UnityEngine.Experimental.UIElements
 
 		protected void ResetStartTime()
 		{
-			this.startMs = (long)(Time.realtimeSinceStartup * 1000f);
+			this.startMs = Panel.TimeSinceStartupMs();
 		}
 
 		public void SetDuration(long durationMs)
@@ -61,7 +61,7 @@ namespace UnityEngine.Experimental.UIElements
 			bool result;
 			if (this.endTimeMs > 0L)
 			{
-				if (Time.realtimeSinceStartup * 1000f > (float)this.endTimeMs)
+				if (Panel.TimeSinceStartupMs() > this.endTimeMs)
 				{
 					result = true;
 					return result;

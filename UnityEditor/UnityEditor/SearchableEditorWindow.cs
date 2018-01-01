@@ -37,8 +37,6 @@ namespace UnityEditor
 
 		private bool m_HasSearchFilterFocus = false;
 
-		private int m_SearchFieldControlId;
-
 		internal bool hasSearchFilter
 		{
 			get
@@ -283,14 +281,14 @@ namespace UnityEditor
 				this.SetSearchFilter("", (SearchableEditorWindow.SearchMode)searchMode, true);
 			}
 			string[] names = Enum.GetNames((this.m_HierarchyType != HierarchyType.GameObjects) ? typeof(SearchableEditorWindow.SearchMode) : typeof(SearchableEditorWindow.SearchModeHierarchyWindow));
-			this.m_SearchFieldControlId = GUIUtility.GetControlID(SearchableEditorWindow.s_SearchableEditorWindowSearchField, FocusType.Keyboard, rect);
+			int controlID = GUIUtility.GetControlID(SearchableEditorWindow.s_SearchableEditorWindowSearchField, FocusType.Keyboard, rect);
 			EditorGUI.BeginChangeCheck();
-			string searchFilter = EditorGUI.ToolbarSearchField(this.m_SearchFieldControlId, rect, names, ref searchMode, this.m_SearchFilter);
+			string searchFilter = EditorGUI.ToolbarSearchField(controlID, rect, names, ref searchMode, this.m_SearchFilter);
 			if (EditorGUI.EndChangeCheck())
 			{
 				this.SetSearchFilter(searchFilter, (SearchableEditorWindow.SearchMode)searchMode, true);
 			}
-			this.m_HasSearchFilterFocus = (GUIUtility.keyboardControl == this.m_SearchFieldControlId);
+			this.m_HasSearchFilterFocus = (GUIUtility.keyboardControl == controlID);
 			if (Event.current.type == EventType.KeyDown && Event.current.keyCode == KeyCode.Escape && this.m_SearchFilter != "" && GUIUtility.hotControl == 0)
 			{
 				this.m_SearchFilter = "";

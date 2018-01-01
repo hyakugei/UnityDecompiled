@@ -1,9 +1,7 @@
 using System;
-using System.Runtime.InteropServices;
 
 namespace UnityEditor.Scripting.ScriptCompilation
 {
-	[StructLayout(LayoutKind.Sequential, Size = 1)]
 	internal struct CustomScriptAssemblyPlatform
 	{
 		public string Name

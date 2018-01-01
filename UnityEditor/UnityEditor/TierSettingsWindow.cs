@@ -32,7 +32,7 @@ namespace UnityEditor
 		{
 			TierSettingsWindow.s_Instance = EditorWindow.GetWindow<TierSettingsWindow>();
 			TierSettingsWindow.s_Instance.minSize = new Vector2(600f, 300f);
-			TierSettingsWindow.s_Instance.titleContent = EditorGUIUtility.TextContent("Tier Settings");
+			TierSettingsWindow.s_Instance.titleContent = EditorGUIUtility.TrTextContent("Tier Settings", null, null);
 		}
 
 		internal static TierSettingsWindow GetInstance()

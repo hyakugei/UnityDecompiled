@@ -151,6 +151,19 @@ namespace UnityEditor
 			this.CopyFromSerializedPropertyInternal(prop);
 		}
 
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern bool CopyFromSerializedPropertyIfDifferentInternal(SerializedProperty prop);
+
+		public bool CopyFromSerializedPropertyIfDifferent(SerializedProperty prop)
+		{
+			if (prop == null)
+			{
+				throw new ArgumentNullException("prop");
+			}
+			return this.CopyFromSerializedPropertyIfDifferentInternal(prop);
+		}
+
 		~SerializedObject()
 		{
 			this.Dispose();

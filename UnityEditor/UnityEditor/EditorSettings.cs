@@ -229,6 +229,10 @@ namespace UnityEditor
 			set;
 		}
 
+		private EditorSettings()
+		{
+		}
+
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern void SetEtcTextureCompressorLegacyBehavior();

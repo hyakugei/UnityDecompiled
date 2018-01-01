@@ -21,7 +21,7 @@ namespace UnityEditor.PackageManager.Requests
 		{
 		}
 
-		internal RemoveRequest(long operationId, NativeClient.StatusCode initialStatus, string packageName) : base(operationId, initialStatus)
+		internal RemoveRequest(long operationId, NativeStatusCode initialStatus, string packageName) : base(operationId, initialStatus)
 		{
 			this.m_PackageIdOrName = packageName;
 		}

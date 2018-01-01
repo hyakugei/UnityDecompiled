@@ -3,17 +3,16 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.U2D
 {
-	internal interface ISpriteEditorDataProvider
+	public interface ISpriteEditorDataProvider
 	{
 		SpriteImportMode spriteImportMode
 		{
 			get;
 		}
 
-		int spriteDataCount
+		float pixelsPerUnit
 		{
 			get;
-			set;
 		}
 
 		UnityEngine.Object targetObject
@@ -21,12 +20,16 @@ namespace UnityEditor.Experimental.U2D
 			get;
 		}
 
-		SpriteDataBase GetSpriteData(int i);
+		SpriteRect[] GetSpriteRects();
 
-		void Apply(SerializedObject so);
+		void SetSpriteRects(SpriteRect[] spriteRects);
 
-		void GetTextureActualWidthAndHeight(out int width, out int height);
+		void Apply();
 
-		void InitSpriteEditorDataProvider(SerializedObject so);
+		void InitSpriteEditorDataProvider();
+
+		T GetDataProvider<T>() where T : class;
+
+		bool HasDataProvider(Type type);
 	}
 }

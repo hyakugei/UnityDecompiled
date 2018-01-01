@@ -59,7 +59,7 @@ namespace UnityEditor
 					{
 						AssemblyResolver = assemblyResolver
 					});
-					if (!ignoreSystemDlls || !AssemblyReferenceChecker.IsIgnoredSystemDll(assemblyDefinition.Name.Name))
+					if (!ignoreSystemDlls || !AssemblyReferenceChecker.IsIgnoredSystemDll(assemblyDefinition))
 					{
 						this._assemblyFileNames.Add(current);
 						this._assemblyDefinitions.Add(assemblyDefinition);
@@ -107,7 +107,7 @@ namespace UnityEditor
 					{
 						AssemblyResolver = assemblyResolver
 					});
-					if (!ignoreSystemDlls || !AssemblyReferenceChecker.IsIgnoredSystemDll(assemblyDefinition.Name.Name))
+					if (!ignoreSystemDlls || !AssemblyReferenceChecker.IsIgnoredSystemDll(assemblyDefinition))
 					{
 						this._assemblyFileNames.Add(Path.GetFileName(text));
 						this._assemblyDefinitions.Add(assemblyDefinition);
@@ -126,7 +126,7 @@ namespace UnityEditor
 		{
 			foreach (AssemblyDefinition current in assemblyDefinitions)
 			{
-				bool isSystem = AssemblyReferenceChecker.IsIgnoredSystemDll(current.Name.Name);
+				bool isSystem = AssemblyReferenceChecker.IsIgnoredSystemDll(current);
 				foreach (TypeDefinition current2 in current.MainModule.Types)
 				{
 					this.CollectReferencedAndDefinedMethods(current2, isSystem);
@@ -255,7 +255,7 @@ namespace UnityEditor
 			string result;
 			foreach (AssemblyDefinition current in this._assemblyDefinitions)
 			{
-				if (!ignoreSystemDlls || !AssemblyReferenceChecker.IsIgnoredSystemDll(current.Name.Name))
+				if (!ignoreSystemDlls || !AssemblyReferenceChecker.IsIgnoredSystemDll(current))
 				{
 					AssemblyDefinition[] assemblies = new AssemblyDefinition[]
 					{
@@ -273,9 +273,19 @@ namespace UnityEditor
 			return result;
 		}
 
-		public static bool IsIgnoredSystemDll(string name)
+		public static bool IsIgnoredSystemDll(AssemblyDefinition assembly)
 		{
-			return name.StartsWith("System") || name.Equals("UnityEngine") || (name.StartsWith("UnityEngine.") && name.EndsWith("Module")) || name.Equals("UnityEngine.Networking") || name.Equals("Mono.Posix") || name.Equals("Moq");
+			bool result;
+			if (AssemblyHelper.IsUnityEngineModule(assembly))
+			{
+				result = true;
+			}
+			else
+			{
+				string name = assembly.Name.Name;
+				result = (name.StartsWith("System") || name.Equals("UnityEngine") || name.Equals("UnityEngine.Networking") || name.Equals("Mono.Posix") || name.Equals("Moq"));
+			}
+			return result;
 		}
 
 		public static bool GetScriptsHaveMouseEvents(string path)

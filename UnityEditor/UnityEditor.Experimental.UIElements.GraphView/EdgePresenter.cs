@@ -4,15 +4,15 @@ using UnityEngine;
 namespace UnityEditor.Experimental.UIElements.GraphView
 {
 	[Serializable]
-	internal class EdgePresenter : GraphElementPresenter
+	public class EdgePresenter : GraphElementPresenter
 	{
 		[SerializeField]
-		private NodeAnchorPresenter m_OutputPresenter;
+		protected PortPresenter m_OutputPresenter;
 
 		[SerializeField]
-		private NodeAnchorPresenter m_InputPresenter;
+		protected PortPresenter m_InputPresenter;
 
-		public virtual NodeAnchorPresenter output
+		public virtual PortPresenter output
 		{
 			get
 			{
@@ -32,7 +32,7 @@ namespace UnityEditor.Experimental.UIElements.GraphView
 			}
 		}
 
-		public virtual NodeAnchorPresenter input
+		public virtual PortPresenter input
 		{
 			get
 			{

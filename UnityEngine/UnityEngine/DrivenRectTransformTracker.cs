@@ -1,15 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using UnityEngine.Internal;
 using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
 	public struct DrivenRectTransformTracker
 	{
-		private Object m_Driver;
-
 		private List<RectTransform> m_Tracked;
 
 		[GeneratedByOldBindingsGenerator]
@@ -22,20 +19,22 @@ namespace UnityEngine
 			{
 				this.m_Tracked = new List<RectTransform>();
 			}
-			Debug.AssertFormat(this.m_Driver == driver || this.m_Driver == null, "DrivenRectTransformTracker only supports a single driver.", new object[0]);
-			rectTransform.AddDrivenProperties(driver, drivenProperties);
-			this.m_Driver = driver;
+			rectTransform.drivenByObject = driver;
+			rectTransform.drivenProperties |= drivenProperties;
+			if (!Application.isPlaying && DrivenRectTransformTracker.CanRecordModifications())
+			{
+				RuntimeUndo.RecordObject(rectTransform, "Driving RectTransform");
+			}
 			this.m_Tracked.Add(rectTransform);
 		}
 
-		[ExcludeFromDocs]
-		public void Clear()
+		[Obsolete("revertValues parameter is ignored. Please use Clear() instead.")]
+		public void Clear(bool revertValues)
 		{
-			bool revertValues = true;
-			this.Clear(revertValues);
+			this.Clear();
 		}
 
-		public void Clear([DefaultValue("true")] bool revertValues)
+		public void Clear()
 		{
 			if (this.m_Tracked != null)
 			{
@@ -43,10 +42,13 @@ namespace UnityEngine
 				{
 					if (this.m_Tracked[i] != null)
 					{
-						this.m_Tracked[i].ClearDrivenProperties(this.m_Driver, revertValues);
+						if (!Application.isPlaying && DrivenRectTransformTracker.CanRecordModifications())
+						{
+							RuntimeUndo.RecordObject(this.m_Tracked[i], "Driving RectTransform");
+						}
+						this.m_Tracked[i].drivenByObject = null;
 					}
 				}
-				this.m_Driver = null;
 				this.m_Tracked.Clear();
 			}
 		}

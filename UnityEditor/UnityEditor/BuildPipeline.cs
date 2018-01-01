@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
-using UnityEditor.BuildReporting;
+using UnityEditor.Build.Reporting;
 using UnityEngine;
 using UnityEngine.Scripting;
 
@@ -65,7 +65,7 @@ namespace UnityEditor
 			EditorApplication.Exit(1);
 		}
 
-		public static string BuildPlayer(EditorBuildSettingsScene[] levels, string locationPathName, BuildTarget target, BuildOptions options)
+		public static BuildReport BuildPlayer(EditorBuildSettingsScene[] levels, string locationPathName, BuildTarget target, BuildOptions options)
 		{
 			return BuildPipeline.BuildPlayer(new BuildPlayerOptions
 			{
@@ -76,7 +76,7 @@ namespace UnityEditor
 			});
 		}
 
-		public static string BuildPlayer(string[] levels, string locationPathName, BuildTarget target, BuildOptions options)
+		public static BuildReport BuildPlayer(string[] levels, string locationPathName, BuildTarget target, BuildOptions options)
 		{
 			BuildTargetGroup buildTargetGroup = BuildPipeline.GetBuildTargetGroup(target);
 			return BuildPipeline.BuildPlayer(new BuildPlayerOptions
@@ -89,41 +89,35 @@ namespace UnityEditor
 			});
 		}
 
-		public static string BuildPlayer(BuildPlayerOptions buildPlayerOptions)
+		public static BuildReport BuildPlayer(BuildPlayerOptions buildPlayerOptions)
 		{
 			return BuildPipeline.BuildPlayer(buildPlayerOptions.scenes, buildPlayerOptions.locationPathName, buildPlayerOptions.assetBundleManifestPath, buildPlayerOptions.targetGroup, buildPlayerOptions.target, buildPlayerOptions.options);
 		}
 
-		private static string BuildPlayer(string[] scenes, string locationPathName, string assetBundleManifestPath, BuildTargetGroup buildTargetGroup, BuildTarget target, BuildOptions options)
+		private static BuildReport BuildPlayer(string[] scenes, string locationPathName, string assetBundleManifestPath, BuildTargetGroup buildTargetGroup, BuildTarget target, BuildOptions options)
 		{
-			string result;
 			if (BuildPipeline.isBuildingPlayer)
 			{
-				result = "Cannot start a new build because there is already a build in progress.";
+				throw new InvalidOperationException("Cannot start a new build because there is already a build in progress.");
 			}
-			else
+			if (buildTargetGroup == BuildTargetGroup.Unknown)
 			{
-				if (buildTargetGroup == BuildTargetGroup.Unknown)
-				{
-					buildTargetGroup = BuildPipeline.GetBuildTargetGroup(target);
-				}
-				string text;
-				if (!BuildPipeline.ValidateLocationPathNameForBuildTargetGroup(locationPathName, buildTargetGroup, target, options, out text))
-				{
-					result = text;
-				}
-				else
-				{
-					try
-					{
-						result = BuildPipeline.BuildPlayerInternal(scenes, locationPathName, assetBundleManifestPath, buildTargetGroup, target, options).SummarizeErrors();
-					}
-					catch (Exception exception)
-					{
-						BuildPipeline.LogBuildExceptionAndExit("BuildPipeline.BuildPlayer", exception);
-						result = "";
-					}
-				}
+				buildTargetGroup = BuildPipeline.GetBuildTargetGroup(target);
+			}
+			string message;
+			if (!BuildPipeline.ValidateLocationPathNameForBuildTargetGroup(locationPathName, buildTargetGroup, target, options, out message))
+			{
+				throw new ArgumentException(message);
+			}
+			BuildReport result;
+			try
+			{
+				result = BuildPipeline.BuildPlayerInternal(scenes, locationPathName, assetBundleManifestPath, buildTargetGroup, target, options);
+			}
+			catch (Exception exception)
+			{
+				BuildPipeline.LogBuildExceptionAndExit("BuildPipeline.BuildPlayer", exception);
+				result = null;
 			}
 			return result;
 		}
@@ -162,13 +156,13 @@ namespace UnityEditor
 		[Obsolete("BuildStreamedSceneAssetBundle has been made obsolete. Please use the new AssetBundle build system introduced in 5.0 and check BuildAssetBundles documentation for details.")]
 		public static string BuildStreamedSceneAssetBundle(string[] levels, string locationPath, BuildTarget target, BuildOptions options)
 		{
-			return BuildPipeline.BuildPlayer(levels, locationPath, target, options | BuildOptions.BuildAdditionalStreamedScenes);
+			return BuildPipeline.BuildPlayer(levels, locationPath, target, options | BuildOptions.BuildAdditionalStreamedScenes).SummarizeErrors();
 		}
 
 		[Obsolete("BuildStreamedSceneAssetBundle has been made obsolete. Please use the new AssetBundle build system introduced in 5.0 and check BuildAssetBundles documentation for details.")]
 		public static string BuildStreamedSceneAssetBundle(string[] levels, string locationPath, BuildTarget target)
 		{
-			return BuildPipeline.BuildPlayer(levels, locationPath, target, BuildOptions.BuildAdditionalStreamedScenes);
+			return BuildPipeline.BuildPlayer(levels, locationPath, target, BuildOptions.BuildAdditionalStreamedScenes).SummarizeErrors();
 		}
 
 		[Obsolete("BuildStreamedSceneAssetBundle has been made obsolete. Please use the new AssetBundle build system introduced in 5.0 and check BuildAssetBundles documentation for details.")]
@@ -186,7 +180,7 @@ namespace UnityEditor
 			try
 			{
 				BuildReport buildReport = BuildPipeline.BuildPlayerInternal(levels, locationPath, null, buildTargetGroup, target, options | BuildOptions.BuildAdditionalStreamedScenes | BuildOptions.ComputeCRC);
-				crc = buildReport.crc;
+				crc = buildReport.summary.crc;
 				string text = buildReport.SummarizeErrors();
 				UnityEngine.Object.DestroyImmediate(buildReport, true);
 				result = text;
@@ -338,7 +332,7 @@ namespace UnityEditor
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern bool IsBuildTargetSupported(BuildTargetGroup buildTargetGroup, BuildTarget target);
+		public static extern bool IsBuildTargetSupported(BuildTargetGroup buildTargetGroup, BuildTarget target);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -366,7 +360,7 @@ namespace UnityEditor
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern void SetPlaybackEngineDirectory(BuildTarget target, BuildOptions options, string playbackEngineDirectory);
 
-		[GeneratedByOldBindingsGenerator]
+		[GeneratedByOldBindingsGenerator, ThreadAndSerializationSafe]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern string GetBuildToolsDirectory(BuildTarget target);
 

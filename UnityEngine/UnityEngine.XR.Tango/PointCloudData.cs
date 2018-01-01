@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace UnityEngine.XR.Tango
 {
-	public struct PointCloudData
+	internal struct PointCloudData
 	{
 		public uint version;
 

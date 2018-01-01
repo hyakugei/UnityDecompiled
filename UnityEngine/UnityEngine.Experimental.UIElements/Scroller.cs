@@ -131,7 +131,7 @@ namespace UnityEngine.Experimental.UIElements
 
 		public void Adjust(float factor)
 		{
-			this.SetEnabled(factor < 1f);
+			base.SetEnabled(factor < 1f);
 			this.slider.AdjustDragElement(factor);
 		}
 

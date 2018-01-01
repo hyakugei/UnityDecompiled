@@ -1,54 +1,38 @@
 using System;
 using System.Runtime.CompilerServices;
 using UnityEngine;
-using UnityEngine.Scripting;
 
 namespace UnityEditor
 {
-	internal sealed class LocalizationDatabase
+	internal class LocalizationDatabase
 	{
-		internal static extern bool enableEditorLocalization
+		public static extern SystemLanguage currentEditorLanguage
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern SystemLanguage GetDefaultEditorLanguage();
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern void SetCurrentEditorLanguage(SystemLanguage lang);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern SystemLanguage GetCurrentEditorLanguage();
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern void ReadNativeEditorLocalizationResources();
-
-		internal static void ReadEditorLocalizationResources()
+		public static extern bool enableEditorLocalization
 		{
-			LocalizationDatabase.ReadNativeEditorLocalizationResources();
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern SystemLanguage[] GetAvailableEditorLanguages();
+		public static extern SystemLanguage GetDefaultEditorLanguage();
 
-		[GeneratedByOldBindingsGenerator, ThreadAndSerializationSafe]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern SystemLanguage[] GetAvailableEditorLanguages();
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern string GetLocalizedString(string original);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern string GetLocalizationResourceFolder();
+		public static extern string GetLocalizationResourceFolder();
 
 		public static string MarkForTranslation(string value)
 		{

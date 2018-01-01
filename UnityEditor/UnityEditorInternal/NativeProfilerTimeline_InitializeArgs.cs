@@ -1,16 +1,9 @@
 using System;
-using UnityEngine;
 
 namespace UnityEditorInternal
 {
 	public struct NativeProfilerTimeline_InitializeArgs
 	{
-		public Color[] profilerColors;
-
-		public Color allocationSampleColor;
-
-		public Color internalSampleColor;
-
 		public float ghostAlpha;
 
 		public float nonSelectedAlpha;
@@ -25,9 +18,6 @@ namespace UnityEditorInternal
 
 		public void Reset()
 		{
-			this.profilerColors = null;
-			this.allocationSampleColor = Color.clear;
-			this.internalSampleColor = Color.clear;
 			this.ghostAlpha = 0f;
 			this.nonSelectedAlpha = 0f;
 			this.guiStyle = (IntPtr)0;

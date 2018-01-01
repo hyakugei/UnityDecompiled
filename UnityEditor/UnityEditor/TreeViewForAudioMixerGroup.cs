@@ -4,6 +4,7 @@ using UnityEditor.Audio;
 using UnityEditor.IMGUI.Controls;
 using UnityEditorInternal;
 using UnityEngine;
+using UnityEngine.Audio;
 
 namespace UnityEditor
 {
@@ -11,9 +12,9 @@ namespace UnityEditor
 	{
 		private class GroupTreeViewGUI : TreeViewGUI
 		{
-			private readonly Texture2D k_AudioGroupIcon = EditorGUIUtility.FindTexture("AudioMixerGroup Icon");
+			private readonly Texture2D k_AudioGroupIcon = EditorGUIUtility.FindTexture(typeof(AudioMixerGroup));
 
-			private readonly Texture2D k_AudioListenerIcon = EditorGUIUtility.FindTexture("AudioListener Icon");
+			private readonly Texture2D k_AudioListenerIcon = EditorGUIUtility.FindTexture(typeof(AudioListener));
 
 			private const float k_SpaceBetween = 25f;
 

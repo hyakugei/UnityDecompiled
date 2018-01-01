@@ -9,39 +9,37 @@ namespace UnityEditor
 	{
 		private static class Contents
 		{
-			public static readonly GUIContent physicsDebug = new GUIContent("Physics Debug");
+			public static readonly GUIContent physicsDebug = EditorGUIUtility.TrTextContent("Physics Debug", null, null);
 
-			public static readonly GUIContent workflow = new GUIContent("Workflow", "The \"Hide\" mode is useful for fast discovery while the \"Show\" mode is useful for finding specific items.");
+			public static readonly GUIContent workflow = EditorGUIUtility.TrTextContent("Workflow", "The \"Hide\" mode is useful for fast discovery while the \"Show\" mode is useful for finding specific items.", null);
 
-			public static readonly GUIContent staticColor = new GUIContent("Static Colliders");
+			public static readonly GUIContent staticColor = EditorGUIUtility.TrTextContent("Static Colliders", null, null);
 
-			public static readonly GUIContent triggerColor = new GUIContent("Triggers");
+			public static readonly GUIContent triggerColor = EditorGUIUtility.TrTextContent("Triggers", null, null);
 
-			public static readonly GUIContent rigidbodyColor = new GUIContent("Rigidbodies");
+			public static readonly GUIContent rigidbodyColor = EditorGUIUtility.TrTextContent("Rigidbodies", null, null);
 
-			public static readonly GUIContent kinematicColor = new GUIContent("Kinematic Bodies");
+			public static readonly GUIContent kinematicColor = EditorGUIUtility.TrTextContent("Kinematic Bodies", null, null);
 
-			public static readonly GUIContent sleepingBodyColor = new GUIContent("Sleeping Bodies");
+			public static readonly GUIContent sleepingBodyColor = EditorGUIUtility.TrTextContent("Sleeping Bodies", null, null);
 
-			public static readonly GUIContent forceOverdraw = EditorGUIUtility.TextContent("Force Overdraw|Draws Collider geometry on top of render geometry");
+			public static readonly GUIContent forceOverdraw = EditorGUIUtility.TrTextContent("Force Overdraw", "Draws Collider geometry on top of render geometry", null);
 
-			public static readonly GUIContent viewDistance = EditorGUIUtility.TextContent("View Distance|Lower bound on distance from camera to physics geometry.");
+			public static readonly GUIContent viewDistance = EditorGUIUtility.TrTextContent("View Distance", "Lower bound on distance from camera to physics geometry.", null);
 
-			public static readonly GUIContent terrainTilesMax = EditorGUIUtility.TextContent("Terrain Tiles Max|Number of mesh tiles to drawn.");
+			public static readonly GUIContent terrainTilesMax = EditorGUIUtility.TrTextContent("Terrain Tiles Max", "Number of mesh tiles to drawn.", null);
 
-			public static readonly GUIContent devOptions = EditorGUIUtility.TextContent("devOptions");
+			public static readonly GUIContent devOptions = EditorGUIUtility.TrTextContent("devOptions", null, null);
 
-			public static readonly GUIContent forceDot = EditorGUIUtility.TextContent("Force Dot");
+			public static readonly GUIContent forceDot = EditorGUIUtility.TrTextContent("Force Dot", null, null);
 
-			public static readonly GUIContent toolsHidden = EditorGUIUtility.TextContent("Hide tools");
+			public static readonly GUIContent toolsHidden = EditorGUIUtility.TrTextContent("Hide tools", null, null);
 
-			public static readonly GUIContent showCollisionGeometry = EditorGUIUtility.TextContent("Collision Geometry");
+			public static readonly GUIContent showCollisionGeometry = EditorGUIUtility.TrTextContent("Collision Geometry", null, null);
 
-			public static readonly GUIContent enableMouseSelect = EditorGUIUtility.TextContent("Mouse Select");
+			public static readonly GUIContent enableMouseSelect = EditorGUIUtility.TrTextContent("Mouse Select", null, null);
 
-			public static readonly GUIContent useSceneCam = EditorGUIUtility.TextContent("Use Scene Cam");
-
-			public static readonly ColorPickerHDRConfig pickerConfig = new ColorPickerHDRConfig(0f, 99f, 0.01010101f, 3f);
+			public static readonly GUIContent useSceneCam = EditorGUIUtility.TrTextContent("Use Scene Cam", null, null);
 		}
 
 		[SerializeField]
@@ -205,11 +203,11 @@ namespace UnityEditor
 			if (this.m_ColorFoldout)
 			{
 				EditorGUI.indentLevel++;
-				PhysicsVisualizationSettings.staticColor = EditorGUILayout.ColorField(PhysicsDebugWindow.Contents.staticColor, PhysicsVisualizationSettings.staticColor, false, true, false, PhysicsDebugWindow.Contents.pickerConfig, new GUILayoutOption[0]);
-				PhysicsVisualizationSettings.triggerColor = EditorGUILayout.ColorField(PhysicsDebugWindow.Contents.triggerColor, PhysicsVisualizationSettings.triggerColor, false, true, false, PhysicsDebugWindow.Contents.pickerConfig, new GUILayoutOption[0]);
-				PhysicsVisualizationSettings.rigidbodyColor = EditorGUILayout.ColorField(PhysicsDebugWindow.Contents.rigidbodyColor, PhysicsVisualizationSettings.rigidbodyColor, false, true, false, PhysicsDebugWindow.Contents.pickerConfig, new GUILayoutOption[0]);
-				PhysicsVisualizationSettings.kinematicColor = EditorGUILayout.ColorField(PhysicsDebugWindow.Contents.kinematicColor, PhysicsVisualizationSettings.kinematicColor, false, true, false, PhysicsDebugWindow.Contents.pickerConfig, new GUILayoutOption[0]);
-				PhysicsVisualizationSettings.sleepingBodyColor = EditorGUILayout.ColorField(PhysicsDebugWindow.Contents.sleepingBodyColor, PhysicsVisualizationSettings.sleepingBodyColor, false, true, false, PhysicsDebugWindow.Contents.pickerConfig, new GUILayoutOption[0]);
+				PhysicsVisualizationSettings.staticColor = EditorGUILayout.ColorField(PhysicsDebugWindow.Contents.staticColor, PhysicsVisualizationSettings.staticColor, new GUILayoutOption[0]);
+				PhysicsVisualizationSettings.triggerColor = EditorGUILayout.ColorField(PhysicsDebugWindow.Contents.triggerColor, PhysicsVisualizationSettings.triggerColor, new GUILayoutOption[0]);
+				PhysicsVisualizationSettings.rigidbodyColor = EditorGUILayout.ColorField(PhysicsDebugWindow.Contents.rigidbodyColor, PhysicsVisualizationSettings.rigidbodyColor, new GUILayoutOption[0]);
+				PhysicsVisualizationSettings.kinematicColor = EditorGUILayout.ColorField(PhysicsDebugWindow.Contents.kinematicColor, PhysicsVisualizationSettings.kinematicColor, new GUILayoutOption[0]);
+				PhysicsVisualizationSettings.sleepingBodyColor = EditorGUILayout.ColorField(PhysicsDebugWindow.Contents.sleepingBodyColor, PhysicsVisualizationSettings.sleepingBodyColor, new GUILayoutOption[0]);
 				PhysicsVisualizationSettings.colorVariance = EditorGUILayout.Slider("Variation", PhysicsVisualizationSettings.colorVariance, 0f, 1f, new GUILayoutOption[0]);
 				EditorGUI.indentLevel--;
 			}
@@ -223,7 +221,7 @@ namespace UnityEditor
 				PhysicsVisualizationSettings.terrainTilesMax = EditorGUILayout.IntField(PhysicsDebugWindow.Contents.terrainTilesMax, PhysicsVisualizationSettings.terrainTilesMax, new GUILayoutOption[0]);
 				EditorGUI.indentLevel--;
 			}
-			if (Unsupported.IsDeveloperBuild() || PhysicsVisualizationSettings.devOptions)
+			if (Unsupported.IsDeveloperMode() || PhysicsVisualizationSettings.devOptions)
 			{
 				PhysicsVisualizationSettings.devOptions = EditorGUILayout.Toggle(PhysicsDebugWindow.Contents.devOptions, PhysicsVisualizationSettings.devOptions, new GUILayoutOption[0]);
 			}

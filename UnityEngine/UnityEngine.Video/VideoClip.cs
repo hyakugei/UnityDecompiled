@@ -69,6 +69,10 @@ namespace UnityEngine.Video
 			get;
 		}
 
+		private VideoClip()
+		{
+		}
+
 		public ushort GetAudioChannelCount(ushort audioTrackIdx)
 		{
 			return VideoClip.INTERNAL_CALL_GetAudioChannelCount(this, audioTrackIdx);

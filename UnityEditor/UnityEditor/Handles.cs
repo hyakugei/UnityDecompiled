@@ -12,7 +12,7 @@ namespace UnityEditor
 {
 	public sealed class Handles
 	{
-		internal enum FilterMode
+		internal enum CameraFilterMode
 		{
 			Off,
 			ShowFiltered,
@@ -197,7 +197,7 @@ namespace UnityEditor
 				Camera
 			}
 
-			public static Handles.PositionHandleParam DefaultHandle = new Handles.PositionHandleParam(Handles.PositionHandleParam.Handle.X | Handles.PositionHandleParam.Handle.Y | Handles.PositionHandleParam.Handle.Z | Handles.PositionHandleParam.Handle.XY | Handles.PositionHandleParam.Handle.YZ | Handles.PositionHandleParam.Handle.XZ, Vector3.zero, Vector3.one, Vector3.zero, Vector3.one * 0.25f, Handles.PositionHandleParam.Orientation.Signed, Handles.PositionHandleParam.Orientation.Signed);
+			public static Handles.PositionHandleParam DefaultHandle = new Handles.PositionHandleParam(Handles.PositionHandleParam.Handle.X | Handles.PositionHandleParam.Handle.Y | Handles.PositionHandleParam.Handle.Z | Handles.PositionHandleParam.Handle.XY | Handles.PositionHandleParam.Handle.YZ | Handles.PositionHandleParam.Handle.XZ, Vector3.zero, Vector3.one, Vector3.zero, Vector3.one * 0.25f, Handles.PositionHandleParam.Orientation.Signed, Handles.PositionHandleParam.Orientation.Camera);
 
 			public static Handles.PositionHandleParam DefaultFreeMoveHandle = new Handles.PositionHandleParam(Handles.PositionHandleParam.Handle.X | Handles.PositionHandleParam.Handle.Y | Handles.PositionHandleParam.Handle.Z | Handles.PositionHandleParam.Handle.XYZ, Vector3.zero, Vector3.one, Vector3.zero, Vector3.one * 0.25f, Handles.PositionHandleParam.Orientation.Signed, Handles.PositionHandleParam.Orientation.Signed);
 
@@ -587,7 +587,7 @@ namespace UnityEditor
 
 		internal struct TransformHandleParam
 		{
-			private static Handles.TransformHandleParam s_Default = new Handles.TransformHandleParam(new Handles.PositionHandleParam(Handles.PositionHandleParam.Handle.X | Handles.PositionHandleParam.Handle.Y | Handles.PositionHandleParam.Handle.Z | Handles.PositionHandleParam.Handle.XY | Handles.PositionHandleParam.Handle.YZ | Handles.PositionHandleParam.Handle.XZ, Vector3.one * 0.15f, Vector3.one, Vector3.zero, Vector3.one * 0.375f, Handles.PositionHandleParam.Orientation.Signed, Handles.PositionHandleParam.Orientation.Signed), new Handles.RotationHandleParam(Handles.RotationHandleParam.Handle.X | Handles.RotationHandleParam.Handle.Y | Handles.RotationHandleParam.Handle.Z | Handles.RotationHandleParam.Handle.CameraAxis | Handles.RotationHandleParam.Handle.XYZ, Vector3.one * 1.4f, 1.4f, 1.5f, false, false), new Handles.ScaleHandleParam(Handles.ScaleHandleParam.Handle.XYZ, Vector3.zero, Vector3.one, Vector3.one, 1f, Handles.ScaleHandleParam.Orientation.Signed), new Handles.PositionHandleParam(Handles.PositionHandleParam.Handle.X | Handles.PositionHandleParam.Handle.Y | Handles.PositionHandleParam.Handle.XY, Vector3.one * 0.15f, Vector3.one, Vector3.zero, Vector3.one * 0.375f, Handles.PositionHandleParam.Orientation.Signed, Handles.PositionHandleParam.Orientation.Signed), new Handles.RotationHandleParam(Handles.RotationHandleParam.Handle.Z | Handles.RotationHandleParam.Handle.XYZ, Vector3.one * 1.4f, 1.4f, 1.5f, false, false), new Handles.ScaleHandleParam(Handles.ScaleHandleParam.Handle.XYZ, Vector3.zero, Vector3.one, Vector3.one, 1f, Handles.ScaleHandleParam.Orientation.Signed), new Handles.PositionHandleParam(Handles.PositionHandleParam.Handle.X | Handles.PositionHandleParam.Handle.Y | Handles.PositionHandleParam.Handle.Z | Handles.PositionHandleParam.Handle.XY | Handles.PositionHandleParam.Handle.YZ | Handles.PositionHandleParam.Handle.XZ, Vector3.one * 0.15f, Vector3.one, Vector3.zero, Vector3.one * 0.375f, Handles.PositionHandleParam.Orientation.Signed, Handles.PositionHandleParam.Orientation.Signed), new Handles.RotationHandleParam(Handles.RotationHandleParam.Handle.X | Handles.RotationHandleParam.Handle.Y | Handles.RotationHandleParam.Handle.Z | Handles.RotationHandleParam.Handle.CameraAxis | Handles.RotationHandleParam.Handle.XYZ, Vector3.one * 1.4f, 1.4f, 1.5f, false, false), new Handles.ScaleHandleParam(Handles.ScaleHandleParam.Handle.X | Handles.ScaleHandleParam.Handle.Y | Handles.ScaleHandleParam.Handle.Z | Handles.ScaleHandleParam.Handle.XYZ, Vector3.one * 1.5f, Vector3.one, Vector3.one * 0.25f, 1f, Handles.ScaleHandleParam.Orientation.Signed), new Handles.PositionHandleParam(Handles.PositionHandleParam.Handle.X | Handles.PositionHandleParam.Handle.Y | Handles.PositionHandleParam.Handle.Z | Handles.PositionHandleParam.Handle.XYZ, Vector3.one * 0.15f, Vector3.one, Vector3.zero, Vector3.one * 0.375f, Handles.PositionHandleParam.Orientation.Signed, Handles.PositionHandleParam.Orientation.Signed), new Handles.RotationHandleParam((Handles.RotationHandleParam.Handle)0, Vector3.one * 1.4f, 1.4f, 1.5f, false, false), new Handles.ScaleHandleParam((Handles.ScaleHandleParam.Handle)0, Vector3.one * 1.5f, Vector3.one, Vector3.one * 0.25f, 1f, Handles.ScaleHandleParam.Orientation.Signed));
+			private static Handles.TransformHandleParam s_Default = new Handles.TransformHandleParam(new Handles.PositionHandleParam(Handles.PositionHandleParam.Handle.X | Handles.PositionHandleParam.Handle.Y | Handles.PositionHandleParam.Handle.Z | Handles.PositionHandleParam.Handle.XY | Handles.PositionHandleParam.Handle.YZ | Handles.PositionHandleParam.Handle.XZ, Vector3.one * 0.15f, Vector3.one, Vector3.zero, Vector3.one * 0.375f, Handles.PositionHandleParam.Orientation.Signed, Handles.PositionHandleParam.Orientation.Camera), new Handles.RotationHandleParam(Handles.RotationHandleParam.Handle.X | Handles.RotationHandleParam.Handle.Y | Handles.RotationHandleParam.Handle.Z | Handles.RotationHandleParam.Handle.CameraAxis | Handles.RotationHandleParam.Handle.XYZ, Vector3.one * 1.4f, 1.4f, 1.5f, false, false), new Handles.ScaleHandleParam(Handles.ScaleHandleParam.Handle.XYZ, Vector3.zero, Vector3.one, Vector3.one, 1f, Handles.ScaleHandleParam.Orientation.Signed), new Handles.PositionHandleParam(Handles.PositionHandleParam.Handle.X | Handles.PositionHandleParam.Handle.Y | Handles.PositionHandleParam.Handle.XY, Vector3.one * 0.15f, Vector3.one, Vector3.zero, Vector3.one * 0.375f, Handles.PositionHandleParam.Orientation.Signed, Handles.PositionHandleParam.Orientation.Signed), new Handles.RotationHandleParam(Handles.RotationHandleParam.Handle.Z | Handles.RotationHandleParam.Handle.XYZ, Vector3.one * 1.4f, 1.4f, 1.5f, false, false), new Handles.ScaleHandleParam(Handles.ScaleHandleParam.Handle.XYZ, Vector3.zero, Vector3.one, Vector3.one, 1f, Handles.ScaleHandleParam.Orientation.Signed), new Handles.PositionHandleParam(Handles.PositionHandleParam.Handle.X | Handles.PositionHandleParam.Handle.Y | Handles.PositionHandleParam.Handle.Z | Handles.PositionHandleParam.Handle.XY | Handles.PositionHandleParam.Handle.YZ | Handles.PositionHandleParam.Handle.XZ, Vector3.one * 0.15f, Vector3.one, Vector3.zero, Vector3.one * 0.375f, Handles.PositionHandleParam.Orientation.Signed, Handles.PositionHandleParam.Orientation.Camera), new Handles.RotationHandleParam(Handles.RotationHandleParam.Handle.X | Handles.RotationHandleParam.Handle.Y | Handles.RotationHandleParam.Handle.Z | Handles.RotationHandleParam.Handle.CameraAxis | Handles.RotationHandleParam.Handle.XYZ, Vector3.one * 1.4f, 1.4f, 1.5f, false, false), new Handles.ScaleHandleParam(Handles.ScaleHandleParam.Handle.X | Handles.ScaleHandleParam.Handle.Y | Handles.ScaleHandleParam.Handle.Z | Handles.ScaleHandleParam.Handle.XYZ, Vector3.one * 1.5f, Vector3.one, Vector3.one * 0.25f, 1f, Handles.ScaleHandleParam.Orientation.Signed), new Handles.PositionHandleParam(Handles.PositionHandleParam.Handle.X | Handles.PositionHandleParam.Handle.Y | Handles.PositionHandleParam.Handle.Z | Handles.PositionHandleParam.Handle.XYZ, Vector3.one * 0.15f, Vector3.one, Vector3.zero, Vector3.one * 0.375f, Handles.PositionHandleParam.Orientation.Signed, Handles.PositionHandleParam.Orientation.Signed), new Handles.RotationHandleParam((Handles.RotationHandleParam.Handle)0, Vector3.one * 1.4f, 1.4f, 1.5f, false, false), new Handles.ScaleHandleParam((Handles.ScaleHandleParam.Handle)0, Vector3.one * 1.5f, Vector3.one, Vector3.one * 0.25f, 1f, Handles.ScaleHandleParam.Orientation.Signed));
 
 			public readonly Handles.PositionHandleParam position;
 
@@ -1767,36 +1767,7 @@ namespace UnityEditor
 						disposable.Dispose();
 					}
 				}
-				if (Application.platform == RuntimePlatform.WindowsEditor)
-				{
-					Handles.ReplaceFontForWindows((Font)EditorGUIUtility.LoadRequired(EditorResourcesUtility.fontsPath + "Lucida Grande.ttf"));
-					Handles.ReplaceFontForWindows((Font)EditorGUIUtility.LoadRequired(EditorResourcesUtility.fontsPath + "Lucida Grande Bold.ttf"));
-					Handles.ReplaceFontForWindows((Font)EditorGUIUtility.LoadRequired(EditorResourcesUtility.fontsPath + "Lucida Grande Small.ttf"));
-					Handles.ReplaceFontForWindows((Font)EditorGUIUtility.LoadRequired(EditorResourcesUtility.fontsPath + "Lucida Grande Small Bold.ttf"));
-					Handles.ReplaceFontForWindows((Font)EditorGUIUtility.LoadRequired(EditorResourcesUtility.fontsPath + "Lucida Grande Big.ttf"));
-				}
 			}
-		}
-
-		private static void ReplaceFontForWindows(Font font)
-		{
-			if (font.name.Contains("Bold"))
-			{
-				font.fontNames = new string[]
-				{
-					"Verdana Bold",
-					"Tahoma Bold"
-				};
-			}
-			else
-			{
-				font.fontNames = new string[]
-				{
-					"Verdana",
-					"Tahoma"
-				};
-			}
-			font.hideFlags = HideFlags.HideAndDontSave;
 		}
 
 		public static void Label(Vector3 position, string text)
@@ -1954,11 +1925,11 @@ namespace UnityEditor
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern void SetCameraFilterMode(Camera camera, Handles.FilterMode mode);
+		internal static extern void SetCameraFilterMode(Camera camera, Handles.CameraFilterMode mode);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern Handles.FilterMode GetCameraFilterMode(Camera camera);
+		internal static extern Handles.CameraFilterMode GetCameraFilterMode(Camera camera);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -2060,6 +2031,11 @@ namespace UnityEditor
 		internal static Color GetColorByAxis(int axis)
 		{
 			return Handles.s_AxisColor[axis];
+		}
+
+		internal static Color ToActiveColorSpace(Color color)
+		{
+			return (QualitySettings.activeColorSpace != ColorSpace.Linear) ? color : color.linear;
 		}
 
 		private static Vector3 GetAxisVector(int axis)
@@ -2960,34 +2936,35 @@ namespace UnityEditor
 						{
 							Handles.color = Handles.selectedColor;
 						}
+						Handles.color = Handles.ToActiveColorSpace(Handles.color);
 						Handles.s_DoPositionHandle_ArrowCapConeOffset = ((!flag2) ? Vector3.zero : (rotation * Vector3.Scale(Vector3.Scale(axisVector, param.axisOffset), Handles.s_DoPositionHandle_AxisHandlesOctant)));
-						int arg_485_0 = ids[l];
-						Vector3 arg_485_1 = position;
-						Vector3 arg_485_2 = vector4;
-						Vector3 arg_485_3 = vector3;
-						float arg_485_4 = handleSize * param.axisSize[l];
+						int arg_494_0 = ids[l];
+						Vector3 arg_494_1 = position;
+						Vector3 arg_494_2 = vector4;
+						Vector3 arg_494_3 = vector3;
+						float arg_494_4 = handleSize * param.axisSize[l];
 						if (Handles.<>f__mg$cache2 == null)
 						{
 							Handles.<>f__mg$cache2 = new Handles.CapFunction(Handles.DoPositionHandle_ArrowCap);
 						}
-						position = Handles.Slider(arg_485_0, arg_485_1, arg_485_2, arg_485_3, arg_485_4, Handles.<>f__mg$cache2, (!GridSnapping.active) ? SnapSettings.move[l] : 0f);
+						position = Handles.Slider(arg_494_0, arg_494_1, arg_494_2, arg_494_3, arg_494_4, Handles.<>f__mg$cache2, (!GridSnapping.active) ? SnapSettings.move[l] : 0f);
 					}
 				}
 			}
 			VertexSnapping.HandleKeyAndMouseMove(ids.xyz);
 			if (param.ShouldShow(Handles.PositionHandleParam.Handle.XYZ) && ((flag2 && ids.xyz == GUIUtility.hotControl) || !flag2))
 			{
-				Handles.color = Handles.centerColor;
+				Handles.color = Handles.ToActiveColorSpace(Handles.centerColor);
 				GUI.SetNextControlName("FreeMoveAxis");
-				int arg_531_0 = ids.xyz;
-				Vector3 arg_531_1 = position;
-				float arg_531_3 = handleSize * 0.15f;
-				Vector3 arg_531_4 = (!GridSnapping.active) ? SnapSettings.move : Vector3.zero;
+				int arg_545_0 = ids.xyz;
+				Vector3 arg_545_1 = position;
+				float arg_545_3 = handleSize * 0.15f;
+				Vector3 arg_545_4 = (!GridSnapping.active) ? SnapSettings.move : Vector3.zero;
 				if (Handles.<>f__mg$cache3 == null)
 				{
 					Handles.<>f__mg$cache3 = new Handles.CapFunction(Handles.RectangleHandleCap);
 				}
-				position = Handles.FreeMoveHandle(arg_531_0, arg_531_1, rotation, arg_531_3, arg_531_4, Handles.<>f__mg$cache3);
+				position = Handles.FreeMoveHandle(arg_545_0, arg_545_1, rotation, arg_545_3, arg_545_4, Handles.<>f__mg$cache3);
 			}
 			Handles.color = color;
 			if (GridSnapping.active)
@@ -3018,6 +2995,7 @@ namespace UnityEditor
 			{
 				flag2 = true;
 			}
+			Handles.color = Handles.ToActiveColorSpace(Handles.color);
 			if (!Handles.currentlyDragging)
 			{
 				if (orientation != Handles.PositionHandleParam.Orientation.Camera)
@@ -3051,18 +3029,20 @@ namespace UnityEditor
 			Handles.verts[1] = position + b + vector + (-vector2 + vector3) * handleSize * 0.5f;
 			Handles.verts[2] = position + b + vector + (-vector2 - vector3) * handleSize * 0.5f;
 			Handles.verts[3] = position + b + vector + (vector2 - vector3) * handleSize * 0.5f;
-			Handles.DrawSolidRectangleWithOutline(Handles.verts, (!flag2) ? Handles.color : new Color(Handles.color.r, Handles.color.g, Handles.color.b, 0.1f), Color.clear);
-			Vector3 arg_397_1 = position;
-			Vector3 arg_397_2 = vector + b;
-			Vector3 arg_397_3 = vector4;
-			Vector3 arg_397_4 = vector2;
-			Vector3 arg_397_5 = vector3;
-			float arg_397_6 = handleSize * 0.5f;
+			Color color2 = (!flag2) ? Handles.color : new Color(Handles.color.r, Handles.color.g, Handles.color.b, 0.1f);
+			color2 = Handles.ToActiveColorSpace(color2);
+			Handles.DrawSolidRectangleWithOutline(Handles.verts, color2, Color.clear);
+			Vector3 arg_3B3_1 = position;
+			Vector3 arg_3B3_2 = vector + b;
+			Vector3 arg_3B3_3 = vector4;
+			Vector3 arg_3B3_4 = vector2;
+			Vector3 arg_3B3_5 = vector3;
+			float arg_3B3_6 = handleSize * 0.5f;
 			if (Handles.<>f__mg$cache4 == null)
 			{
 				Handles.<>f__mg$cache4 = new Handles.CapFunction(Handles.RectangleHandleCap);
 			}
-			position = Handles.Slider2D(id, arg_397_1, arg_397_2, arg_397_3, arg_397_4, arg_397_5, arg_397_6, Handles.<>f__mg$cache4, (!GridSnapping.active) ? new Vector2(SnapSettings.move[planePrimaryAxis], SnapSettings.move[index]) : Vector2.zero, false);
+			position = Handles.Slider2D(id, arg_3B3_1, arg_3B3_2, arg_3B3_3, arg_3B3_4, arg_3B3_5, arg_3B3_6, Handles.<>f__mg$cache4, (!GridSnapping.active) ? new Vector2(SnapSettings.move[planePrimaryAxis], SnapSettings.move[index]) : Vector2.zero, false);
 			Handles.color = color;
 			return position;
 		}
@@ -3163,19 +3143,19 @@ namespace UnityEditor
 					{
 						color2.a = Mathf.Clamp01(color.a * 2f);
 					}
-					Handles.color = color2;
+					Handles.color = Handles.ToActiveColorSpace(color2);
 					Vector3 vector3 = position + radius * array[k];
 					bool changed = GUI.changed;
 					GUI.changed = false;
-					int arg_41A_0 = controlID;
-					Vector3 arg_41A_1 = vector3;
-					Vector3 arg_41A_2 = array[k];
-					float arg_41A_3 = HandleUtility.GetHandleSize(vector3) * 0.03f;
+					int arg_41F_0 = controlID;
+					Vector3 arg_41F_1 = vector3;
+					Vector3 arg_41F_2 = array[k];
+					float arg_41F_3 = HandleUtility.GetHandleSize(vector3) * 0.03f;
 					if (Handles.<>f__mg$cache5 == null)
 					{
 						Handles.<>f__mg$cache5 = new Handles.CapFunction(Handles.DotHandleCap);
 					}
-					vector3 = Slider1D.Do(arg_41A_0, arg_41A_1, arg_41A_2, arg_41A_3, Handles.<>f__mg$cache5, 0f);
+					vector3 = Slider1D.Do(arg_41F_0, arg_41F_1, arg_41F_2, arg_41F_3, Handles.<>f__mg$cache5, 0f);
 					if (GUI.changed)
 					{
 						radius = Vector3.Distance(vector3, position);
@@ -3243,6 +3223,7 @@ namespace UnityEditor
 				{
 					Color colorByAxis = Handles.GetColorByAxis(i);
 					Handles.color = ((!flag) ? colorByAxis : Color.Lerp(colorByAxis, Handles.staticColor, Handles.staticBlend));
+					Handles.color = Handles.ToActiveColorSpace(Handles.color);
 					Vector3 axisVector = Handles.GetAxisVector(i);
 					float num2 = handleSize * param.axisSize[i];
 					num = Mathf.Max(num2, num);
@@ -3256,12 +3237,12 @@ namespace UnityEditor
 			}
 			if (flag2 && current.type == EventType.Repaint)
 			{
-				Handles.color = Handles.s_DisabledHandleColor;
+				Handles.color = Handles.ToActiveColorSpace(Handles.s_DisabledHandleColor);
 				Handles.DrawWireDisc(position, transform.forward, handleSize * param.axisSize[0]);
 			}
 			if (!flag && param.ShouldShow(Handles.RotationHandleParam.Handle.CameraAxis) && ((flag2 && ids.cameraAxis == GUIUtility.hotControl) || !flag2))
 			{
-				Handles.color = Handles.centerColor;
+				Handles.color = Handles.ToActiveColorSpace(Handles.centerColor);
 				rotation = UnityEditorInternal.Disc.Do(ids.cameraAxis, rotation, position, Camera.current.transform.forward, handleSize * param.cameraAxisSize, false, 0f, param.enableRayDrag, true, Handles.k_RotationPieColor);
 			}
 			Handles.color = color;
@@ -3327,22 +3308,23 @@ namespace UnityEditor
 						{
 							Handles.color = Handles.selectedColor;
 						}
+						Handles.color = Handles.ToActiveColorSpace(Handles.color);
 						scale[i] = SliderScale.DoAxis(num, scale[i], position, rotation * vector, rotation, handleSize * param.axisSize[i], SnapSettings.scale, handleOffset, a[i]);
 					}
 				}
 			}
 			if (param.ShouldShow(Handles.ScaleHandleParam.Handle.XYZ) && ((flag2 && ids.xyz == GUIUtility.hotControl) || !flag2))
 			{
-				Handles.color = Handles.centerColor;
+				Handles.color = Handles.ToActiveColorSpace(Handles.centerColor);
 				EditorGUI.BeginChangeCheck();
-				int arg_2F5_0 = ids.xyz;
-				float arg_2F5_1 = scale.x;
-				float arg_2F5_4 = handleSize * param.xyzSize;
+				int arg_309_0 = ids.xyz;
+				float arg_309_1 = scale.x;
+				float arg_309_4 = handleSize * param.xyzSize;
 				if (Handles.<>f__mg$cache6 == null)
 				{
 					Handles.<>f__mg$cache6 = new Handles.CapFunction(Handles.CubeHandleCap);
 				}
-				float num3 = Handles.ScaleValueHandle(arg_2F5_0, arg_2F5_1, position, rotation, arg_2F5_4, Handles.<>f__mg$cache6, SnapSettings.scale);
+				float num3 = Handles.ScaleValueHandle(arg_309_0, arg_309_1, position, rotation, arg_309_4, Handles.<>f__mg$cache6, SnapSettings.scale);
 				if (EditorGUI.EndChangeCheck() && !Mathf.Approximately(scale.x, 0f))
 				{
 					float num4 = num3 / scale.x;

@@ -155,7 +155,11 @@ namespace UnityEditor
 		public static string GetInspectorTitle(UnityEngine.Object obj)
 		{
 			string result;
-			if (!obj)
+			if (obj == null && obj != null && (obj is MonoBehaviour || obj is ScriptableObject))
+			{
+				result = " (Script)";
+			}
+			else if (obj == null)
 			{
 				result = "Nothing Selected";
 			}

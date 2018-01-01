@@ -1,10 +1,10 @@
 using System;
 using System.Runtime.CompilerServices;
-using UnityEngine.Scripting;
+using UnityEngine.Bindings;
 
 namespace UnityEngine
 {
-	public sealed class AvatarBuilder
+	public class AvatarBuilder
 	{
 		public static Avatar BuildHumanAvatar(GameObject go, HumanDescription humanDescription)
 		{
@@ -12,20 +12,18 @@ namespace UnityEngine
 			{
 				throw new NullReferenceException();
 			}
-			return AvatarBuilder.BuildHumanAvatarMono(go, humanDescription);
+			return AvatarBuilder.BuildHumanAvatarInternal(go, humanDescription);
 		}
 
-		private static Avatar BuildHumanAvatarMono(GameObject go, HumanDescription monoHumanDescription)
+		private static Avatar BuildHumanAvatarInternal(GameObject go, HumanDescription humanDescription)
 		{
-			return AvatarBuilder.INTERNAL_CALL_BuildHumanAvatarMono(go, ref monoHumanDescription);
+			return AvatarBuilder.BuildHumanAvatarInternal_Injected(go, ref humanDescription);
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern Avatar INTERNAL_CALL_BuildHumanAvatarMono(GameObject go, ref HumanDescription monoHumanDescription);
+		public static extern Avatar BuildGenericAvatar([NotNull] GameObject go, [NotNull] string rootMotionTransformName);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern Avatar BuildGenericAvatar(GameObject go, string rootMotionTransformName);
+		private static extern Avatar BuildHumanAvatarInternal_Injected(GameObject go, ref HumanDescription humanDescription);
 	}
 }

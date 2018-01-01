@@ -7,7 +7,7 @@ namespace UnityEngine
 		AlwaysAnimate,
 		CullUpdateTransforms,
 		CullCompletely,
-		[Obsolete("Enum member AnimatorCullingMode.BasedOnRenderers has been deprecated. Use AnimatorCullingMode.CullUpdateTransforms instead (UnityUpgradable) -> CullUpdateTransforms", true)]
+		[Obsolete("Enum member AnimatorCullingMode.BasedOnRenderers has been deprecated. Use AnimatorCullingMode.CullUpdateTransforms instead. (UnityUpgradable) -> CullUpdateTransforms", true)]
 		BasedOnRenderers = 1
 	}
 }

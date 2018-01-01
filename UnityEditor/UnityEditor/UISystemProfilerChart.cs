@@ -38,7 +38,7 @@ namespace UnityEditor
 				for (int i = 0; i < this.m_Markers.Length; i++)
 				{
 					EventMarker eventMarker = this.m_Markers[i];
-					Color color = ProfilerColors.currentColors[(int)(checked((IntPtr)(unchecked((ulong)this.m_Series.Length % (ulong)((long)ProfilerColors.currentColors.Length)))))];
+					Color color = ProfilerColors.chartAreaColors[(int)(checked((IntPtr)(unchecked((ulong)this.m_Series.Length % (ulong)((long)ProfilerColors.chartAreaColors.Length)))))];
 					Chart.DrawVerticalLine(eventMarker.frame, this.m_Data, lastRect, color.AlphaMultiplied(0.3f), color.AlphaMultiplied(0.4f), 1f);
 				}
 				this.DrawMarkerLabels(this.m_Data, lastRect, this.m_Markers, this.m_MarkerNames);
@@ -66,7 +66,7 @@ namespace UnityEditor
 						if (num4 >= 0)
 						{
 							float num6 = r.x + num2 * (float)num4;
-							Color a = ProfilerColors.currentColors[(int)(checked((IntPtr)(unchecked((ulong)this.m_Series.Length % (ulong)((long)ProfilerColors.currentColors.Length)))))];
+							Color a = ProfilerColors.chartAreaColors[(int)(checked((IntPtr)(unchecked((ulong)this.m_Series.Length % (ulong)((long)ProfilerColors.chartAreaColors.Length)))))];
 							GUI.contentColor = (a + Color.white) * 0.5f;
 							Chart.DoLabel(num6 + -1f, r.y + r.height - (float)((i % num3 + 1) * 12), markerNames[i], 0f);
 						}
@@ -81,7 +81,7 @@ namespace UnityEditor
 		{
 			Rect rect = base.DoSeriesList(position, chartControlID, chartType, cdata);
 			GUIContent label = EditorGUIUtility.TempContent("Markers");
-			Color color = ProfilerColors.currentColors[cdata.numSeries % ProfilerColors.currentColors.Length];
+			Color color = ProfilerColors.chartAreaColors[cdata.numSeries % ProfilerColors.chartAreaColors.Length];
 			base.DoSeriesToggle(rect, label, ref this.showMarkers, color, cdata);
 			rect.y += rect.height;
 			return rect;

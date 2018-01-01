@@ -18,19 +18,23 @@ namespace UnityEngine.Networking
 			{
 				throw new ArgumentException("Cannot create a preallocated-buffer DownloadHandlerScript backed by a null or zero-length array");
 			}
-			this.InternalCreateScript();
-			this.SetPreallocatedBuffer(preallocatedBuffer);
+			this.InternalCreateScript(preallocatedBuffer);
 		}
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern IntPtr Create(DownloadHandlerScript obj);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern IntPtr CreatePreallocated(DownloadHandlerScript obj, byte[] preallocatedBuffer);
 
 		private void InternalCreateScript()
 		{
 			this.m_Ptr = DownloadHandlerScript.Create(this);
 		}
 
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void SetPreallocatedBuffer(byte[] buffer);
+		private void InternalCreateScript(byte[] preallocatedBuffer)
+		{
+			this.m_Ptr = DownloadHandlerScript.CreatePreallocated(this, preallocatedBuffer);
+		}
 	}
 }

@@ -1,13 +1,12 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Threading;
-using UnityEngine.Internal;
 using UnityEngine.Scripting;
 
 namespace UnityEngine.XR.Tango
 {
-	[RequiredByNativeCode]
-	public static class TangoInputTracking
+	[UsedByNativeCode]
+	internal static class TangoInputTracking
 	{
 		private enum TrackingStateEventType
 		{
@@ -15,7 +14,7 @@ namespace UnityEngine.XR.Tango
 			TrackingLost
 		}
 
-		public static event Action<CoordinateFrame> trackingAcquired
+		internal static event Action<CoordinateFrame> trackingAcquired
 		{
 			add
 			{
@@ -41,7 +40,7 @@ namespace UnityEngine.XR.Tango
 			}
 		}
 
-		public static event Action<CoordinateFrame> trackingLost
+		internal static event Action<CoordinateFrame> trackingLost
 		{
 			add
 			{
@@ -68,14 +67,19 @@ namespace UnityEngine.XR.Tango
 		}
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern bool TryGetPoseAtTime(CoordinateFrame baseFrame, CoordinateFrame targetFrame, out PoseData pose, [DefaultValue("0.0f")] double time);
+		private static extern bool Internal_TryGetPoseAtTime(double time, ScreenOrientation screenOrientation, CoordinateFrame baseFrame, CoordinateFrame targetFrame, out PoseData pose);
 
-		public static bool TryGetPoseAtTime(CoordinateFrame baseFrame, CoordinateFrame targetFrame, out PoseData pose)
+		internal static bool TryGetPoseAtTime(out PoseData pose, CoordinateFrame baseFrame, CoordinateFrame targetFrame, double time, ScreenOrientation screenOrientation)
 		{
-			return TangoInputTracking.TryGetPoseAtTime(baseFrame, targetFrame, out pose, 0.0);
+			return TangoInputTracking.Internal_TryGetPoseAtTime(time, screenOrientation, baseFrame, targetFrame, out pose);
 		}
 
-		[RequiredByNativeCode]
+		internal static bool TryGetPoseAtTime(out PoseData pose, CoordinateFrame baseFrame, CoordinateFrame targetFrame, double time = 0.0)
+		{
+			return TangoInputTracking.Internal_TryGetPoseAtTime(time, Screen.orientation, baseFrame, targetFrame, out pose);
+		}
+
+		[UsedByNativeCode]
 		private static void InvokeTangoTrackingEvent(TangoInputTracking.TrackingStateEventType eventType, CoordinateFrame frame)
 		{
 			Action<CoordinateFrame> action;

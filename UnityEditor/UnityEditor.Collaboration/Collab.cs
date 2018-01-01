@@ -119,6 +119,58 @@ namespace UnityEditor.Collaboration
 			}
 		}
 
+		public event StateChangedDelegate RevisionUpdated
+		{
+			add
+			{
+				StateChangedDelegate stateChangedDelegate = this.RevisionUpdated;
+				StateChangedDelegate stateChangedDelegate2;
+				do
+				{
+					stateChangedDelegate2 = stateChangedDelegate;
+					stateChangedDelegate = Interlocked.CompareExchange<StateChangedDelegate>(ref this.RevisionUpdated, (StateChangedDelegate)Delegate.Combine(stateChangedDelegate2, value), stateChangedDelegate);
+				}
+				while (stateChangedDelegate != stateChangedDelegate2);
+			}
+			remove
+			{
+				StateChangedDelegate stateChangedDelegate = this.RevisionUpdated;
+				StateChangedDelegate stateChangedDelegate2;
+				do
+				{
+					stateChangedDelegate2 = stateChangedDelegate;
+					stateChangedDelegate = Interlocked.CompareExchange<StateChangedDelegate>(ref this.RevisionUpdated, (StateChangedDelegate)Delegate.Remove(stateChangedDelegate2, value), stateChangedDelegate);
+				}
+				while (stateChangedDelegate != stateChangedDelegate2);
+			}
+		}
+
+		public event StateChangedDelegate JobsCompleted
+		{
+			add
+			{
+				StateChangedDelegate stateChangedDelegate = this.JobsCompleted;
+				StateChangedDelegate stateChangedDelegate2;
+				do
+				{
+					stateChangedDelegate2 = stateChangedDelegate;
+					stateChangedDelegate = Interlocked.CompareExchange<StateChangedDelegate>(ref this.JobsCompleted, (StateChangedDelegate)Delegate.Combine(stateChangedDelegate2, value), stateChangedDelegate);
+				}
+				while (stateChangedDelegate != stateChangedDelegate2);
+			}
+			remove
+			{
+				StateChangedDelegate stateChangedDelegate = this.JobsCompleted;
+				StateChangedDelegate stateChangedDelegate2;
+				do
+				{
+					stateChangedDelegate2 = stateChangedDelegate;
+					stateChangedDelegate = Interlocked.CompareExchange<StateChangedDelegate>(ref this.JobsCompleted, (StateChangedDelegate)Delegate.Remove(stateChangedDelegate2, value), stateChangedDelegate);
+				}
+				while (stateChangedDelegate != stateChangedDelegate2);
+			}
+		}
+
 		public extern CollabInfo collabInfo
 		{
 			[GeneratedByOldBindingsGenerator]
@@ -391,10 +443,6 @@ namespace UnityEditor.Collaboration
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern Revision[] GetRevisions();
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern bool AreTestsRunning();
 
 		[GeneratedByOldBindingsGenerator]
@@ -449,6 +497,26 @@ namespace UnityEditor.Collaboration
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern void TestClearSoftLockAsCollaborator(string projectGuid, string projectPath, string machineGuid, string softLockHash);
 
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern Revision[] InternalGetRevisions(bool withChanges = false, int startIndex = 0, int numRevisions = -1);
+
+		public Revision[] GetRevisions(bool withChanges = false, int startIndex = 0, int numRevisions = -1)
+		{
+			return Collab.InternalGetRevisions(withChanges, startIndex, numRevisions);
+		}
+
+		private static RevisionsData InternalGetRevisionsData(bool withChanges, int startIndex, int numRevisions)
+		{
+			RevisionsData result;
+			Collab.InternalGetRevisionsData_Injected(withChanges, startIndex, numRevisions, out result);
+			return result;
+		}
+
+		public RevisionsData GetRevisionsData(bool withChanges, int startIndex, int numRevisions)
+		{
+			return Collab.InternalGetRevisionsData(withChanges, startIndex, numRevisions);
+		}
+
 		public static string GetProjectClientType()
 		{
 			string configValue = EditorUserSettings.GetConfigValue(Collab.editorPrefCollabClientType);
@@ -458,7 +526,7 @@ namespace UnityEditor.Collaboration
 		[MenuItem("Window/Collab/Get Revisions", false, 1000, true)]
 		public static void TestGetRevisions()
 		{
-			Revision[] revisions = Collab.instance.GetRevisions();
+			Revision[] revisions = Collab.instance.GetRevisions(false, 0, -1);
 			if (revisions.Length == 0)
 			{
 				Debug.Log("No revisions");
@@ -608,6 +676,25 @@ namespace UnityEditor.Collaboration
 			}
 		}
 
+		private static void OnRevisionUpdated()
+		{
+			StateChangedDelegate revisionUpdated = Collab.instance.RevisionUpdated;
+			if (revisionUpdated != null)
+			{
+				revisionUpdated(Collab.instance.collabInfo);
+			}
+		}
+
+		private static void OnJobsCompleted()
+		{
+			StateChangedDelegate jobsCompleted = Collab.instance.JobsCompleted;
+			if (jobsCompleted != null)
+			{
+				jobsCompleted(Collab.instance.collabInfo);
+			}
+			CollabTesting.OnJobsCompleted();
+		}
+
 		private static void PublishDialog(string changelist)
 		{
 			if (EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
@@ -714,5 +801,8 @@ namespace UnityEditor.Collaboration
 				}
 			}
 		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void InternalGetRevisionsData_Injected(bool withChanges, int startIndex, int numRevisions, out RevisionsData ret);
 	}
 }

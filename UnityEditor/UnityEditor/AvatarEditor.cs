@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditor.Animations;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -15,13 +14,13 @@ namespace UnityEditor
 		{
 			public GUIContent[] tabs = new GUIContent[]
 			{
-				EditorGUIUtility.TextContent("Mapping"),
-				EditorGUIUtility.TextContent("Muscles & Settings")
+				EditorGUIUtility.TrTextContent("Mapping", null, null),
+				EditorGUIUtility.TrTextContent("Muscles & Settings", null, null)
 			};
 
-			public GUIContent editCharacter = EditorGUIUtility.TextContent("Configure Avatar");
+			public GUIContent editCharacter = EditorGUIUtility.TrTextContent("Configure Avatar", null, null);
 
-			public GUIContent reset = EditorGUIUtility.TextContent("Reset");
+			public GUIContent reset = EditorGUIUtility.TrTextContent("Reset", null, null);
 		}
 
 		private enum EditMode
@@ -333,15 +332,6 @@ namespace UnityEditor
 			{
 				AnimatorUtility.DeoptimizeTransformHierarchy(this.m_GameObject);
 			}
-			Animator component = this.m_GameObject.GetComponent<Animator>();
-			if (component != null && component.runtimeAnimatorController == null)
-			{
-				AnimatorController animatorController = new AnimatorController();
-				animatorController.hideFlags = HideFlags.DontSave;
-				animatorController.AddLayer("preview");
-				animatorController.layers[0].stateMachine.hideFlags = HideFlags.DontSave;
-				component.runtimeAnimatorController = animatorController;
-			}
 			Dictionary<Transform, bool> modelBones = AvatarSetupTool.GetModelBones(this.m_GameObject.transform, true, null);
 			AvatarSetupTool.BoneWrapper[] humanBones = AvatarSetupTool.GetHumanBones(base.serializedObject, modelBones);
 			this.m_ModelBones = AvatarSetupTool.GetModelBones(this.m_GameObject.transform, false, humanBones);
@@ -402,29 +392,13 @@ namespace UnityEditor
 			this.m_EditMode = AvatarEditor.EditMode.Stopping;
 			this.DestroyEditor();
 			this.ChangeInspectorLock(this.m_InspectorLocked);
-			if (!EditorApplication.isUpdating && !Unsupported.IsDestroyScriptableObject(this))
-			{
-				string path = SceneManager.GetActiveScene().path;
-				if (path.Length <= 0)
-				{
-					if (this.sceneSetup != null && this.sceneSetup.Length > 0)
-					{
-						EditorSceneManager.RestoreSceneManagerSetup(this.sceneSetup);
-						this.sceneSetup = null;
-					}
-					else
-					{
-						EditorSceneManager.NewScene(NewSceneSetup.DefaultGameObjects);
-					}
-				}
-			}
-			else if (Unsupported.IsDestroyScriptableObject(this))
+			if (!EditorApplication.isPlaying)
 			{
 				EditorApplication.CallbackFunction CleanUpSceneOnDestroy = null;
 				CleanUpSceneOnDestroy = delegate
 				{
-					string path2 = SceneManager.GetActiveScene().path;
-					if (path2.Length <= 0)
+					string path = SceneManager.GetActiveScene().path;
+					if (path.Length <= 0)
 					{
 						if (this.sceneSetup != null && this.sceneSetup.Length > 0)
 						{

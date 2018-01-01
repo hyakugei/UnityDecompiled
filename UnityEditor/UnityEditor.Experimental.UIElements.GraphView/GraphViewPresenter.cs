@@ -6,19 +6,43 @@ using UnityEngine;
 namespace UnityEditor.Experimental.UIElements.GraphView
 {
 	[Serializable]
-	internal abstract class GraphViewPresenter : ScriptableObject
+	public abstract class GraphViewPresenter : ScriptableObject
 	{
 		[SerializeField]
-		protected List<GraphElementPresenter> m_Elements = new List<GraphElementPresenter>();
+		protected List<GraphElementPresenter> m_Elements;
 
 		[SerializeField]
-		private List<GraphElementPresenter> m_TempElements = new List<GraphElementPresenter>();
+		private List<GraphElementPresenter> m_TempElements;
 
 		[SerializeField]
-		public Vector3 position;
+		private Vector3 m_Position;
 
 		[SerializeField]
-		public Vector3 scale;
+		private Vector3 m_Scale;
+
+		public virtual Vector3 position
+		{
+			get
+			{
+				return this.m_Position;
+			}
+			set
+			{
+				this.m_Position = value;
+			}
+		}
+
+		public virtual Vector3 scale
+		{
+			get
+			{
+				return this.m_Scale;
+			}
+			set
+			{
+				this.m_Scale = value;
+			}
+		}
 
 		public IEnumerable<GraphElementPresenter> allChildren
 		{
@@ -54,6 +78,14 @@ namespace UnityEditor.Experimental.UIElements.GraphView
 
 		protected void OnEnable()
 		{
+			if (this.m_Elements == null)
+			{
+				this.m_Elements = new List<GraphElementPresenter>();
+			}
+			if (this.m_TempElements == null)
+			{
+				this.m_TempElements = new List<GraphElementPresenter>();
+			}
 			this.m_Elements.Clear();
 			this.m_TempElements.Clear();
 		}
@@ -74,11 +106,11 @@ namespace UnityEditor.Experimental.UIElements.GraphView
 			this.m_TempElements.Clear();
 		}
 
-		public virtual List<NodeAnchorPresenter> GetCompatibleAnchors(NodeAnchorPresenter startAnchor, NodeAdapter nodeAdapter)
+		public virtual List<PortPresenter> GetCompatiblePorts(PortPresenter startPort, NodeAdapter nodeAdapter)
 		{
-			return (from nap in this.allChildren.OfType<NodeAnchorPresenter>()
-			where nap.IsConnectable() && nap.orientation == startAnchor.orientation && nap.direction != startAnchor.direction && nodeAdapter.GetAdapter(nap.source, startAnchor.source) != null
-			select nap).ToList<NodeAnchorPresenter>();
+			return (from nap in this.allChildren.OfType<PortPresenter>()
+			where nap.IsConnectable() && nap.orientation == startPort.orientation && nap.direction != startPort.direction && nodeAdapter.GetAdapter(nap.source, startPort.source) != null
+			select nap).ToList<PortPresenter>();
 		}
 	}
 }

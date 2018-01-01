@@ -9,85 +9,89 @@ namespace UnityEditor
 {
 	internal class ModelImporterMaterialEditor : BaseAssetImporterTabUI
 	{
-		private class Styles
+		private static class Styles
 		{
-			public GUIContent ImportMaterials = EditorGUIUtility.TextContent("Import Materials");
+			public static GUIContent ImportMaterials = EditorGUIUtility.TrTextContent("Import Materials", null, null);
 
-			public GUIContent MaterialLocation = EditorGUIUtility.TextContent("Material Location");
+			public static GUIContent MaterialLocation = EditorGUIUtility.TrTextContent("Location", null, null);
 
-			public GUIContent[] MaterialLocationOpt = new GUIContent[]
+			public static GUIContent[] MaterialLocationOpt = new GUIContent[]
 			{
-				EditorGUIUtility.TextContent("Use External Materials (Legacy)|Use external materials if found in the project."),
-				EditorGUIUtility.TextContent("Use Embedded Materials|Embed the material inside the imported asset.")
+				EditorGUIUtility.TrTextContent("Use External Materials (Legacy)", "Use external materials if found in the project.", null),
+				EditorGUIUtility.TrTextContent("Use Embedded Materials", "Embed the material inside the imported asset.", null)
 			};
 
-			public GUIContent MaterialName = EditorGUIUtility.TextContent("Material Naming");
+			public static GUIContent MaterialName = EditorGUIUtility.TrTextContent("Naming", null, null);
 
-			public GUIContent[] MaterialNameOptMain = new GUIContent[]
+			public static GUIContent[] MaterialNameOptMain = new GUIContent[]
 			{
-				EditorGUIUtility.TextContent("By Base Texture Name"),
-				EditorGUIUtility.TextContent("From Model's Material"),
-				EditorGUIUtility.TextContent("Model Name + Model's Material")
+				EditorGUIUtility.TrTextContent("By Base Texture Name", null, null),
+				EditorGUIUtility.TrTextContent("From Model's Material", null, null),
+				EditorGUIUtility.TrTextContent("Model Name + Model's Material", null, null)
 			};
 
-			public GUIContent[] MaterialNameOptAll = new GUIContent[]
+			public static GUIContent[] MaterialNameOptAll = new GUIContent[]
 			{
-				EditorGUIUtility.TextContent("By Base Texture Name"),
-				EditorGUIUtility.TextContent("From Model's Material"),
-				EditorGUIUtility.TextContent("Model Name + Model's Material"),
-				EditorGUIUtility.TextContent("Texture Name or Model Name + Model's Material (Obsolete)")
+				EditorGUIUtility.TrTextContent("By Base Texture Name", null, null),
+				EditorGUIUtility.TrTextContent("From Model's Material", null, null),
+				EditorGUIUtility.TrTextContent("Model Name + Model's Material", null, null),
+				EditorGUIUtility.TrTextContent("Texture Name or Model Name + Model's Material (Obsolete)", null, null)
 			};
 
-			public GUIContent MaterialSearch = EditorGUIUtility.TextContent("Material Search");
+			public static GUIContent MaterialSearch = EditorGUIUtility.TrTextContent("Search", null, null);
 
-			public GUIContent[] MaterialSearchOpt = new GUIContent[]
+			public static GUIContent[] MaterialSearchOpt = new GUIContent[]
 			{
-				EditorGUIUtility.TextContent("Local Materials Folder"),
-				EditorGUIUtility.TextContent("Recursive-Up"),
-				EditorGUIUtility.TextContent("Project-Wide")
+				EditorGUIUtility.TrTextContent("Local Materials Folder", null, null),
+				EditorGUIUtility.TrTextContent("Recursive-Up", null, null),
+				EditorGUIUtility.TrTextContent("Project-Wide", null, null)
 			};
 
-			public GUIContent AutoMapExternalMaterials = EditorGUIUtility.TextContent("Map External Materials|Map the external materials found in the project automatically every time the asset is reimported.");
+			public static GUIContent NoMaterialHelp = EditorGUIUtility.TrTextContent("Do not generate materials. Use Unity's default material instead.", null, null);
 
-			public GUIContent NoMaterialHelp = EditorGUIUtility.TextContent("Do not generate materials. Use Unity's default material instead.");
+			public static GUIContent ExternalMaterialHelpStart = EditorGUIUtility.TrTextContent("For each imported material, Unity first looks for an existing material named %MAT%.", null, null);
 
-			public GUIContent ExternalMaterialHelpStart = EditorGUIUtility.TextContent("For each imported material, Unity first looks for an existing material named %MAT%.");
-
-			public GUIContent[] ExternalMaterialNameHelp = new GUIContent[]
+			public static GUIContent[] ExternalMaterialNameHelp = new GUIContent[]
 			{
-				EditorGUIUtility.TextContent("[BaseTextureName]"),
-				EditorGUIUtility.TextContent("[MaterialName]"),
-				EditorGUIUtility.TextContent("[ModelFileName]-[MaterialName]"),
-				EditorGUIUtility.TextContent("[BaseTextureName] or [ModelFileName]-[MaterialName] if no base texture can be found")
+				EditorGUIUtility.TrTextContent("[BaseTextureName]", null, null),
+				EditorGUIUtility.TrTextContent("[MaterialName]", null, null),
+				EditorGUIUtility.TrTextContent("[ModelFileName]-[MaterialName]", null, null),
+				EditorGUIUtility.TrTextContent("[BaseTextureName] or [ModelFileName]-[MaterialName] if no base texture can be found", null, null)
 			};
 
-			public GUIContent[] ExternalMaterialSearchHelp = new GUIContent[]
+			public static GUIContent[] ExternalMaterialSearchHelp = new GUIContent[]
 			{
-				EditorGUIUtility.TextContent("Unity will look for it in the local Materials folder."),
-				EditorGUIUtility.TextContent("Unity will do a recursive-up search for it in all Materials folders up to the Assets folder."),
-				EditorGUIUtility.TextContent("Unity will search for it anywhere inside the Assets folder.")
+				EditorGUIUtility.TrTextContent("Unity will look for it in the local Materials folder.", null, null),
+				EditorGUIUtility.TrTextContent("Unity will do a recursive-up search for it in all Materials folders up to the Assets folder.", null, null),
+				EditorGUIUtility.TrTextContent("Unity will search for it anywhere inside the Assets folder.", null, null)
 			};
 
-			public GUIContent ExternalMaterialHelpEnd = EditorGUIUtility.TextContent("If it doesn't exist, a new one is created in the local Materials folder.");
+			public static GUIContent ExternalMaterialHelpEnd = EditorGUIUtility.TrTextContent("If it doesn't exist, a new one is created in the local Materials folder.", null, null);
 
-			public GUIContent InternalMaterialHelp = EditorGUIUtility.TextContent("Materials are embedded inside the imported asset.");
+			public static GUIContent InternalMaterialHelp = EditorGUIUtility.TrTextContent("Materials are embedded inside the imported asset.", null, null);
 
-			public GUIContent MaterialAssignmentsHelp = EditorGUIUtility.TextContent("Material assignments can be remapped below.");
+			public static GUIContent MaterialAssignmentsHelp = EditorGUIUtility.TrTextContent("Material assignments can be remapped below.", null, null);
 
-			public GUIContent ExternalMaterialMappings = EditorGUIUtility.TextContent("Remapped Materials|External materials to use for each embedded material.");
+			public static GUIContent ExternalMaterialMappings = EditorGUIUtility.TrTextContent("Remapped Materials", "External materials to use for each embedded material.", null);
 
-			public GUIContent NoMaterialMappingsHelp = EditorGUIUtility.TextContent("Re-import the asset to see the list of used materials.");
+			public static GUIContent NoMaterialMappingsHelp = EditorGUIUtility.TrTextContent("Re-import the asset to see the list of used materials.", null, null);
 
-			public GUIContent Textures = EditorGUIUtility.TextContent("Textures");
+			public static GUIContent Textures = EditorGUIUtility.TrTextContent("Textures", null, null);
 
-			public GUIContent ExtractEmbeddedTextures = EditorGUIUtility.TextContent("Extract Textures...|Click on this button to extract the embedded textures.");
+			public static GUIContent ExtractEmbeddedTextures = EditorGUIUtility.TrTextContent("Extract Textures...", "Click on this button to extract the embedded textures.", null);
 
-			public GUIContent Materials = EditorGUIUtility.TextContent("Materials");
+			public static GUIContent Materials = EditorGUIUtility.TrTextContent("Materials", null, null);
 
-			public GUIContent ExtractEmbeddedMaterials = EditorGUIUtility.TextContent("Extract Materials...|Click on this button to extract the embedded materials.");
+			public static GUIContent ExtractEmbeddedMaterials = EditorGUIUtility.TrTextContent("Extract Materials...", "Click on this button to extract the embedded materials.", null);
+
+			public static GUIContent RemapOptions = EditorGUIUtility.TrTextContent("On Demand Remap", null, null);
+
+			public static GUIContent RemapMaterialsInProject = EditorGUIUtility.TrTextContent("Search and Remap", "Click on this button to search and remap the materials from the project.", null);
 		}
 
 		private bool m_ShowAllMaterialNameOptions = true;
+
+		private bool m_ShowMaterialRemapOptions = false;
 
 		private SerializedProperty m_ImportMaterials;
 
@@ -106,8 +110,6 @@ namespace UnityEditor
 		private SerializedProperty m_SupportsEmbeddedMaterials;
 
 		private bool m_HasEmbeddedMaterials = false;
-
-		private static ModelImporterMaterialEditor.Styles styles;
 
 		public ModelImporterMaterialEditor(AssetImporterEditor panelContainer) : base(panelContainer)
 		{
@@ -141,11 +143,15 @@ namespace UnityEditor
 					Dictionary<AssetImporter.SourceAssetIdentifier, UnityEngine.Object> externalObjectMap = modelImporter.GetExternalObjectMap();
 					AssetImporter.SourceAssetIdentifier[] sourceMaterials = modelImporter.sourceMaterials;
 					int num = 0;
-					foreach (KeyValuePair<AssetImporter.SourceAssetIdentifier, UnityEngine.Object> current in externalObjectMap)
+					using (Dictionary<AssetImporter.SourceAssetIdentifier, UnityEngine.Object>.Enumerator enumerator = externalObjectMap.GetEnumerator())
 					{
-						if (current.Key.type == typeof(Material))
+						while (enumerator.MoveNext())
 						{
-							num++;
+							KeyValuePair<AssetImporter.SourceAssetIdentifier, UnityEngine.Object> entry = enumerator.Current;
+							if (entry.Key.type == typeof(Material) && Array.Exists<AssetImporter.SourceAssetIdentifier>(sourceMaterials, (AssetImporter.SourceAssetIdentifier x) => x.name == entry.Key.name))
+							{
+								num++;
+							}
 						}
 					}
 					this.m_HasEmbeddedMaterials = (this.m_HasEmbeddedMaterials && num != sourceMaterials.Length);
@@ -181,21 +187,17 @@ namespace UnityEditor
 
 		public override void OnInspectorGUI()
 		{
-			if (ModelImporterMaterialEditor.styles == null)
-			{
-				ModelImporterMaterialEditor.styles = new ModelImporterMaterialEditor.Styles();
-			}
-			this.MaterialsGUI();
+			this.DoMaterialsGUI();
 		}
 
-		private void TexturesGUI()
+		private void ExtractTexturesGUI()
 		{
 			using (new EditorGUILayout.HorizontalScope(new GUILayoutOption[0]))
 			{
-				EditorGUILayout.PrefixLabel(ModelImporterMaterialEditor.styles.Textures);
+				EditorGUILayout.PrefixLabel(ModelImporterMaterialEditor.Styles.Textures);
 				using (new EditorGUI.DisabledScope(!this.m_HasEmbeddedTextures.boolValue && !this.m_HasEmbeddedTextures.hasMultipleDifferentValues))
 				{
-					if (GUILayout.Button(ModelImporterMaterialEditor.styles.ExtractEmbeddedTextures, new GUILayoutOption[0]))
+					if (GUILayout.Button(ModelImporterMaterialEditor.Styles.ExtractEmbeddedTextures, new GUILayoutOption[0]))
 					{
 						List<Tuple<UnityEngine.Object, string>> list = new List<Tuple<UnityEngine.Object, string>>();
 						string text = (base.target as ModelImporter).assetPath;
@@ -260,75 +262,135 @@ namespace UnityEditor
 			}
 		}
 
-		private void MaterialsGUI()
+		private bool ExtractMaterialsGUI()
+		{
+			bool result;
+			using (new EditorGUILayout.HorizontalScope(new GUILayoutOption[0]))
+			{
+				EditorGUILayout.PrefixLabel(ModelImporterMaterialEditor.Styles.Materials);
+				using (new EditorGUI.DisabledScope(!this.HasEmbeddedMaterials()))
+				{
+					if (GUILayout.Button(ModelImporterMaterialEditor.Styles.ExtractEmbeddedMaterials, new GUILayoutOption[0]))
+					{
+						string text = (base.target as ModelImporter).assetPath;
+						text = EditorUtility.SaveFolderPanel("Select Materials Folder", FileUtil.DeleteLastPathNameComponent(text), "");
+						if (string.IsNullOrEmpty(text))
+						{
+							result = false;
+							return result;
+						}
+						text = FileUtil.GetProjectRelativePath(text);
+						try
+						{
+							AssetDatabase.StartAssetEditing();
+							PrefabUtility.ExtractMaterialsFromAsset(base.targets, text);
+						}
+						finally
+						{
+							AssetDatabase.StopAssetEditing();
+						}
+						result = true;
+						return result;
+					}
+				}
+			}
+			result = false;
+			return result;
+		}
+
+		private bool MaterialRemapOptons()
+		{
+			this.m_ShowMaterialRemapOptions = EditorGUILayout.Foldout(this.m_ShowMaterialRemapOptions, ModelImporterMaterialEditor.Styles.RemapOptions);
+			bool result;
+			if (this.m_ShowMaterialRemapOptions)
+			{
+				EditorGUI.indentLevel++;
+				EditorGUILayout.Popup(this.m_MaterialName, (!this.m_ShowAllMaterialNameOptions) ? ModelImporterMaterialEditor.Styles.MaterialNameOptMain : ModelImporterMaterialEditor.Styles.MaterialNameOptAll, ModelImporterMaterialEditor.Styles.MaterialName, new GUILayoutOption[0]);
+				EditorGUILayout.Popup(this.m_MaterialSearch, ModelImporterMaterialEditor.Styles.MaterialSearchOpt, ModelImporterMaterialEditor.Styles.MaterialSearch, new GUILayoutOption[0]);
+				string message = ModelImporterMaterialEditor.Styles.ExternalMaterialHelpStart.text.Replace("%MAT%", ModelImporterMaterialEditor.Styles.ExternalMaterialNameHelp[this.m_MaterialName.intValue].text) + "\n" + ModelImporterMaterialEditor.Styles.ExternalMaterialSearchHelp[this.m_MaterialSearch.intValue].text;
+				EditorGUILayout.HelpBox(message, MessageType.Info);
+				EditorGUI.indentLevel--;
+				using (new EditorGUILayout.HorizontalScope(new GUILayoutOption[0]))
+				{
+					GUILayout.FlexibleSpace();
+					using (new EditorGUI.DisabledScope(base.assetTarget == null))
+					{
+						if (GUILayout.Button(ModelImporterMaterialEditor.Styles.RemapMaterialsInProject, new GUILayoutOption[0]))
+						{
+							try
+							{
+								AssetDatabase.StartAssetEditing();
+								UnityEngine.Object[] targets = base.targets;
+								for (int i = 0; i < targets.Length; i++)
+								{
+									UnityEngine.Object @object = targets[i];
+									ModelImporter modelImporter = @object as ModelImporter;
+									modelImporter.SearchAndRemapMaterials((ModelImporterMaterialName)this.m_MaterialName.intValue, (ModelImporterMaterialSearch)this.m_MaterialSearch.intValue);
+									AssetDatabase.WriteImportSettingsIfDirty(modelImporter.assetPath);
+									AssetDatabase.ImportAsset(modelImporter.assetPath, ImportAssetOptions.ForceUpdate);
+								}
+							}
+							finally
+							{
+								AssetDatabase.StopAssetEditing();
+							}
+							result = true;
+							return result;
+						}
+					}
+				}
+				EditorGUILayout.Space();
+			}
+			result = false;
+			return result;
+		}
+
+		private void DoMaterialsGUI()
 		{
 			base.serializedObject.UpdateIfRequiredOrScript();
-			EditorGUILayout.PropertyField(this.m_ImportMaterials, ModelImporterMaterialEditor.styles.ImportMaterials, new GUILayoutOption[0]);
+			EditorGUILayout.PropertyField(this.m_ImportMaterials, ModelImporterMaterialEditor.Styles.ImportMaterials, new GUILayoutOption[0]);
 			string text = string.Empty;
 			if (!this.m_ImportMaterials.hasMultipleDifferentValues)
 			{
 				if (this.m_ImportMaterials.boolValue)
 				{
-					EditorGUILayout.Popup(this.m_MaterialLocation, ModelImporterMaterialEditor.styles.MaterialLocationOpt, ModelImporterMaterialEditor.styles.MaterialLocation, new GUILayoutOption[0]);
+					EditorGUILayout.Popup(this.m_MaterialLocation, ModelImporterMaterialEditor.Styles.MaterialLocationOpt, ModelImporterMaterialEditor.Styles.MaterialLocation, new GUILayoutOption[0]);
 					if (!this.m_MaterialLocation.hasMultipleDifferentValues)
 					{
 						if (this.m_MaterialLocation.intValue == 0)
 						{
-							EditorGUILayout.Popup(this.m_MaterialName, (!this.m_ShowAllMaterialNameOptions) ? ModelImporterMaterialEditor.styles.MaterialNameOptMain : ModelImporterMaterialEditor.styles.MaterialNameOptAll, ModelImporterMaterialEditor.styles.MaterialName, new GUILayoutOption[0]);
-							EditorGUILayout.Popup(this.m_MaterialSearch, ModelImporterMaterialEditor.styles.MaterialSearchOpt, ModelImporterMaterialEditor.styles.MaterialSearch, new GUILayoutOption[0]);
+							EditorGUILayout.Popup(this.m_MaterialName, (!this.m_ShowAllMaterialNameOptions) ? ModelImporterMaterialEditor.Styles.MaterialNameOptMain : ModelImporterMaterialEditor.Styles.MaterialNameOptAll, ModelImporterMaterialEditor.Styles.MaterialName, new GUILayoutOption[0]);
+							EditorGUILayout.Popup(this.m_MaterialSearch, ModelImporterMaterialEditor.Styles.MaterialSearchOpt, ModelImporterMaterialEditor.Styles.MaterialSearch, new GUILayoutOption[0]);
 							text = string.Concat(new string[]
 							{
-								ModelImporterMaterialEditor.styles.ExternalMaterialHelpStart.text.Replace("%MAT%", ModelImporterMaterialEditor.styles.ExternalMaterialNameHelp[this.m_MaterialName.intValue].text),
+								ModelImporterMaterialEditor.Styles.ExternalMaterialHelpStart.text.Replace("%MAT%", ModelImporterMaterialEditor.Styles.ExternalMaterialNameHelp[this.m_MaterialName.intValue].text),
 								"\n",
-								ModelImporterMaterialEditor.styles.ExternalMaterialSearchHelp[this.m_MaterialSearch.intValue].text,
+								ModelImporterMaterialEditor.Styles.ExternalMaterialSearchHelp[this.m_MaterialSearch.intValue].text,
 								"\n",
-								ModelImporterMaterialEditor.styles.ExternalMaterialHelpEnd.text
+								ModelImporterMaterialEditor.Styles.ExternalMaterialHelpEnd.text
 							});
 						}
-						else if (this.m_Materials.arraySize > 0)
+						else if (this.m_Materials.arraySize > 0 && this.HasEmbeddedMaterials())
 						{
-							text = ModelImporterMaterialEditor.styles.InternalMaterialHelp.text;
+							text = ModelImporterMaterialEditor.Styles.InternalMaterialHelp.text;
 						}
 					}
 					if (base.targets.Length == 1 && this.m_Materials.arraySize > 0 && this.m_MaterialLocation.intValue != 0)
 					{
-						text = text + " " + ModelImporterMaterialEditor.styles.MaterialAssignmentsHelp.text;
+						text = text + " " + ModelImporterMaterialEditor.Styles.MaterialAssignmentsHelp.text;
 					}
 					if (this.m_MaterialLocation.intValue != 0 && !this.m_MaterialLocation.hasMultipleDifferentValues)
 					{
-						this.TexturesGUI();
-						using (new EditorGUILayout.HorizontalScope(new GUILayoutOption[0]))
+						this.ExtractTexturesGUI();
+						if (this.ExtractMaterialsGUI())
 						{
-							EditorGUILayout.PrefixLabel(ModelImporterMaterialEditor.styles.Materials);
-							using (new EditorGUI.DisabledScope(!this.HasEmbeddedMaterials()))
-							{
-								if (GUILayout.Button(ModelImporterMaterialEditor.styles.ExtractEmbeddedMaterials, new GUILayoutOption[0]))
-								{
-									string text2 = (base.target as ModelImporter).assetPath;
-									text2 = EditorUtility.SaveFolderPanel("Select Materials Folder", FileUtil.DeleteLastPathNameComponent(text2), "");
-									if (string.IsNullOrEmpty(text2))
-									{
-										return;
-									}
-									text2 = FileUtil.GetProjectRelativePath(text2);
-									try
-									{
-										AssetDatabase.StartAssetEditing();
-										PrefabUtility.ExtractMaterialsFromAsset(base.targets, text2);
-									}
-									finally
-									{
-										AssetDatabase.StopAssetEditing();
-									}
-									return;
-								}
-							}
+							return;
 						}
 					}
 				}
 				else
 				{
-					text = ModelImporterMaterialEditor.styles.NoMaterialHelp.text;
+					text = ModelImporterMaterialEditor.Styles.NoMaterialHelp.text;
 				}
 			}
 			if (!string.IsNullOrEmpty(text))
@@ -338,64 +400,67 @@ namespace UnityEditor
 			if ((base.targets.Length == 1 || !this.m_SupportsEmbeddedMaterials.hasMultipleDifferentValues) && !this.m_SupportsEmbeddedMaterials.boolValue && this.m_MaterialLocation.intValue != 0 && !this.m_MaterialLocation.hasMultipleDifferentValues)
 			{
 				EditorGUILayout.Space();
-				EditorGUILayout.HelpBox(ModelImporterMaterialEditor.styles.NoMaterialMappingsHelp.text, MessageType.Warning);
+				EditorGUILayout.HelpBox(ModelImporterMaterialEditor.Styles.NoMaterialMappingsHelp.text, MessageType.Warning);
 			}
 			if (this.m_ImportMaterials.boolValue && base.targets.Length == 1 && this.m_Materials.arraySize > 0 && this.m_MaterialLocation.intValue != 0 && !this.m_MaterialLocation.hasMultipleDifferentValues)
 			{
-				GUILayout.Label(ModelImporterMaterialEditor.styles.ExternalMaterialMappings, EditorStyles.boldLabel, new GUILayoutOption[0]);
-				for (int i = 0; i < this.m_Materials.arraySize; i++)
+				GUILayout.Label(ModelImporterMaterialEditor.Styles.ExternalMaterialMappings, EditorStyles.boldLabel, new GUILayoutOption[0]);
+				if (!this.MaterialRemapOptons())
 				{
-					SerializedProperty arrayElementAtIndex = this.m_Materials.GetArrayElementAtIndex(i);
-					string stringValue = arrayElementAtIndex.FindPropertyRelative("name").stringValue;
-					string stringValue2 = arrayElementAtIndex.FindPropertyRelative("type").stringValue;
-					string stringValue3 = arrayElementAtIndex.FindPropertyRelative("assembly").stringValue;
-					SerializedProperty serializedProperty = null;
-					Material material = null;
-					int index = 0;
-					int j = 0;
-					int arraySize = this.m_ExternalObjects.arraySize;
-					while (j < arraySize)
+					for (int i = 0; i < this.m_Materials.arraySize; i++)
 					{
-						SerializedProperty arrayElementAtIndex2 = this.m_ExternalObjects.GetArrayElementAtIndex(j);
-						string stringValue4 = arrayElementAtIndex2.FindPropertyRelative("first.name").stringValue;
-						string stringValue5 = arrayElementAtIndex2.FindPropertyRelative("first.type").stringValue;
-						if (stringValue4 == stringValue && stringValue5 == stringValue2)
+						SerializedProperty arrayElementAtIndex = this.m_Materials.GetArrayElementAtIndex(i);
+						string stringValue = arrayElementAtIndex.FindPropertyRelative("name").stringValue;
+						string stringValue2 = arrayElementAtIndex.FindPropertyRelative("type").stringValue;
+						string stringValue3 = arrayElementAtIndex.FindPropertyRelative("assembly").stringValue;
+						SerializedProperty serializedProperty = null;
+						Material material = null;
+						int index = 0;
+						int j = 0;
+						int arraySize = this.m_ExternalObjects.arraySize;
+						while (j < arraySize)
 						{
-							serializedProperty = arrayElementAtIndex2.FindPropertyRelative("second");
-							material = ((serializedProperty == null) ? null : (serializedProperty.objectReferenceValue as Material));
-							index = j;
-							break;
-						}
-						j++;
-					}
-					GUIContent gUIContent = EditorGUIUtility.TextContent(stringValue);
-					gUIContent.tooltip = stringValue;
-					if (serializedProperty != null)
-					{
-						EditorGUI.BeginChangeCheck();
-						EditorGUILayout.ObjectField(serializedProperty, typeof(Material), gUIContent, new GUILayoutOption[0]);
-						if (EditorGUI.EndChangeCheck())
-						{
-							if (serializedProperty.objectReferenceValue == null)
+							SerializedProperty arrayElementAtIndex2 = this.m_ExternalObjects.GetArrayElementAtIndex(j);
+							string stringValue4 = arrayElementAtIndex2.FindPropertyRelative("first.name").stringValue;
+							string stringValue5 = arrayElementAtIndex2.FindPropertyRelative("first.type").stringValue;
+							if (stringValue4 == stringValue && stringValue5 == stringValue2)
 							{
-								this.m_ExternalObjects.DeleteArrayElementAtIndex(index);
+								serializedProperty = arrayElementAtIndex2.FindPropertyRelative("second");
+								material = ((serializedProperty == null) ? null : (serializedProperty.objectReferenceValue as Material));
+								index = j;
+								break;
+							}
+							j++;
+						}
+						GUIContent gUIContent = EditorGUIUtility.TextContent(stringValue);
+						gUIContent.tooltip = stringValue;
+						if (serializedProperty != null)
+						{
+							EditorGUI.BeginChangeCheck();
+							EditorGUILayout.ObjectField(serializedProperty, typeof(Material), gUIContent, new GUILayoutOption[0]);
+							if (EditorGUI.EndChangeCheck())
+							{
+								if (serializedProperty.objectReferenceValue == null)
+								{
+									this.m_ExternalObjects.DeleteArrayElementAtIndex(index);
+								}
 							}
 						}
-					}
-					else
-					{
-						EditorGUI.BeginChangeCheck();
-						material = (EditorGUILayout.ObjectField(gUIContent, material, typeof(Material), false, new GUILayoutOption[0]) as Material);
-						if (EditorGUI.EndChangeCheck())
+						else
 						{
-							if (material != null)
+							EditorGUI.BeginChangeCheck();
+							material = (EditorGUILayout.ObjectField(gUIContent, material, typeof(Material), false, new GUILayoutOption[0]) as Material);
+							if (EditorGUI.EndChangeCheck())
 							{
-								int index2 = this.m_ExternalObjects.arraySize++;
-								SerializedProperty arrayElementAtIndex3 = this.m_ExternalObjects.GetArrayElementAtIndex(index2);
-								arrayElementAtIndex3.FindPropertyRelative("first.name").stringValue = stringValue;
-								arrayElementAtIndex3.FindPropertyRelative("first.type").stringValue = stringValue2;
-								arrayElementAtIndex3.FindPropertyRelative("first.assembly").stringValue = stringValue3;
-								arrayElementAtIndex3.FindPropertyRelative("second").objectReferenceValue = material;
+								if (material != null)
+								{
+									int index2 = this.m_ExternalObjects.arraySize++;
+									SerializedProperty arrayElementAtIndex3 = this.m_ExternalObjects.GetArrayElementAtIndex(index2);
+									arrayElementAtIndex3.FindPropertyRelative("first.name").stringValue = stringValue;
+									arrayElementAtIndex3.FindPropertyRelative("first.type").stringValue = stringValue2;
+									arrayElementAtIndex3.FindPropertyRelative("first.assembly").stringValue = stringValue3;
+									arrayElementAtIndex3.FindPropertyRelative("second").objectReferenceValue = material;
+								}
 							}
 						}
 					}

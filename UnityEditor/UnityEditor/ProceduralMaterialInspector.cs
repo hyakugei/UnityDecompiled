@@ -12,27 +12,27 @@ namespace UnityEditor
 	{
 		private class Styles
 		{
-			public GUIContent hslContent = new GUIContent("HSL Adjustment", "Hue_Shift, Saturation, Luminosity");
+			public GUIContent hslContent = EditorGUIUtility.TrTextContent("HSL Adjustment", "Hue_Shift, Saturation, Luminosity", null);
 
-			public GUIContent randomSeedContent = new GUIContent("Random Seed", "$randomseed : the overall random aspect of the texture.");
+			public GUIContent randomSeedContent = EditorGUIUtility.TrTextContent("Random Seed", "$randomseed : the overall random aspect of the texture.", null);
 
-			public GUIContent randomizeButtonContent = new GUIContent("Randomize");
+			public GUIContent randomizeButtonContent = EditorGUIUtility.TrTextContent("Randomize", null, null);
 
-			public GUIContent generateAllOutputsContent = new GUIContent("Generate all outputs", "Force the generation of all Substance outputs.");
+			public GUIContent generateAllOutputsContent = EditorGUIUtility.TrTextContent("Generate all outputs", "Force the generation of all Substance outputs.", null);
 
-			public GUIContent animatedContent = new GUIContent("Animation update rate", "Set the animation update rate in millisecond");
+			public GUIContent animatedContent = EditorGUIUtility.TrTextContent("Animation update rate", "Set the animation update rate in millisecond", null);
 
-			public GUIContent defaultPlatform = EditorGUIUtility.TextContent("Default");
+			public GUIContent defaultPlatform = EditorGUIUtility.TrTextContent("Default", null, null);
 
-			public GUIContent targetWidth = new GUIContent("Target Width");
+			public GUIContent targetWidth = EditorGUIUtility.TrTextContent("Target Width", null, null);
 
-			public GUIContent targetHeight = new GUIContent("Target Height");
+			public GUIContent targetHeight = EditorGUIUtility.TrTextContent("Target Height", null, null);
 
-			public GUIContent textureFormat = EditorGUIUtility.TextContent("Format");
+			public GUIContent textureFormat = EditorGUIUtility.TrTextContent("Format", null, null);
 
-			public GUIContent loadBehavior = new GUIContent("Load Behavior");
+			public GUIContent loadBehavior = EditorGUIUtility.TrTextContent("Load Behavior", null, null);
 
-			public GUIContent mipmapContent = new GUIContent("Generate Mip Maps");
+			public GUIContent mipmapContent = EditorGUIUtility.TrTextContent("Generate Mip Maps", null, null);
 		}
 
 		[Serializable]

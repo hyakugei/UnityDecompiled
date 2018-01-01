@@ -9,7 +9,7 @@ using UnityEngine.Scripting;
 
 namespace UnityEditor
 {
-	[UsedByNativeCode]
+	[ExcludeFromObjectFactory, UsedByNativeCode]
 	public class EditorWindow : ScriptableObject
 	{
 		[HideInInspector, SerializeField]
@@ -24,7 +24,7 @@ namespace UnityEditor
 		[HideInInspector, SerializeField]
 		internal GUIContent m_TitleContent;
 
-		[HideInInspector, SerializeField]
+		[HideInInspector]
 		private int m_DepthBufferBits = 0;
 
 		[HideInInspector, SerializeField]
@@ -32,7 +32,7 @@ namespace UnityEditor
 
 		private VisualElement m_RootVisualContainer;
 
-		[SerializeField]
+		[HideInInspector, SerializeField]
 		private SerializableJsonDictionary m_PersistentViewDataDictionary;
 
 		private bool m_EnableViewDataPersistence;
@@ -45,7 +45,9 @@ namespace UnityEditor
 
 		private bool m_DontClearBackground;
 
-		private EventInterests m_EventInterests;
+		private EventInterests m_EventInterests = default(EventInterests);
+
+		private bool m_DisableInputEvents;
 
 		[NonSerialized]
 		internal HostView m_Parent;
@@ -72,6 +74,7 @@ namespace UnityEditor
 						pickingMode = PickingMode.Ignore,
 						persistenceKey = "rootVisualContainer"
 					};
+					UIElementsEditorUtility.AddDefaultEditorStyleSheets(this.m_RootVisualContainer);
 				}
 				return this.m_RootVisualContainer;
 			}
@@ -181,6 +184,22 @@ namespace UnityEditor
 			get
 			{
 				return this.m_Parent != null && this.m_Parent.window != null && !this.m_Parent.window.IsNotDocked();
+			}
+		}
+
+		internal bool disableInputEvents
+		{
+			get
+			{
+				return this.m_DisableInputEvents;
+			}
+			set
+			{
+				if (this.m_DisableInputEvents != value)
+				{
+					this.m_DisableInputEvents = value;
+					this.MakeParentsSettingsMatchMe();
+				}
 			}
 		}
 
@@ -480,7 +499,7 @@ namespace UnityEditor
 				}
 				else
 				{
-					result = EditorGUIUtility.TrTextContent(editorWindowTitleAttribute.title);
+					result = EditorGUIUtility.TrTextContent(editorWindowTitleAttribute.title, null, null);
 				}
 			}
 			else
@@ -624,6 +643,7 @@ namespace UnityEditor
 				this.m_Parent.depthBufferBits = this.m_DepthBufferBits;
 				this.m_Parent.SetInternalGameViewDimensions(this.m_GameViewRect, this.m_GameViewClippedRect, this.m_GameViewTargetSize);
 				this.m_Parent.eventInterests = this.m_EventInterests;
+				this.m_Parent.disableInputEvents = this.m_DisableInputEvents;
 				Vector2 b = new Vector2((float)(this.m_Parent.borderSize.left + this.m_Parent.borderSize.right), (float)(this.m_Parent.borderSize.top + this.m_Parent.borderSize.bottom));
 				this.m_Parent.SetMinMaxSizes(this.minSize + b, this.maxSize + b);
 				if (flag)

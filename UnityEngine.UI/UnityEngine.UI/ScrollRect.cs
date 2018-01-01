@@ -554,6 +554,7 @@ namespace UnityEngine.UI
 				this.m_VerticalScrollbar.onValueChanged.AddListener(new UnityAction<float>(this.SetVerticalNormalizedPosition));
 			}
 			CanvasUpdateRegistry.RegisterCanvasElementForLayoutRebuild(this);
+			this.SetDirty();
 		}
 
 		protected override void OnDisable()
@@ -568,7 +569,7 @@ namespace UnityEngine.UI
 				this.m_VerticalScrollbar.onValueChanged.RemoveListener(new UnityAction<float>(this.SetVerticalNormalizedPosition));
 			}
 			this.m_HasRebuiltLayout = false;
-			this.m_Tracker.Clear(true);
+			this.m_Tracker.Clear();
 			this.m_Velocity = Vector2.zero;
 			LayoutRebuilder.MarkLayoutForRebuild(this.rectTransform);
 			base.OnDisable();
@@ -711,7 +712,6 @@ namespace UnityEngine.UI
 			if (this.m_Content)
 			{
 				this.EnsureLayoutHasRebuilt();
-				this.UpdateScrollbarVisibility();
 				this.UpdateBounds();
 				float unscaledDeltaTime = Time.unscaledDeltaTime;
 				Vector2 vector = this.CalculateOffset(Vector2.zero);
@@ -746,15 +746,12 @@ namespace UnityEngine.UI
 							this.m_Velocity[i] = 0f;
 						}
 					}
-					if (this.m_Velocity != Vector2.zero)
+					if (this.m_MovementType == ScrollRect.MovementType.Clamped)
 					{
-						if (this.m_MovementType == ScrollRect.MovementType.Clamped)
-						{
-							vector = this.CalculateOffset(vector2 - this.m_Content.anchoredPosition);
-							vector2 += vector;
-						}
-						this.SetContentAnchoredPosition(vector2);
+						vector = this.CalculateOffset(vector2 - this.m_Content.anchoredPosition);
+						vector2 += vector;
 					}
+					this.SetContentAnchoredPosition(vector2);
 				}
 				if (this.m_Dragging && this.m_Inertia)
 				{
@@ -768,6 +765,7 @@ namespace UnityEngine.UI
 					this.m_OnValueChanged.Invoke(this.normalizedPosition);
 					this.UpdatePrevData();
 				}
+				this.UpdateScrollbarVisibility();
 			}
 		}
 
@@ -860,7 +858,7 @@ namespace UnityEngine.UI
 
 		public virtual void SetLayoutHorizontal()
 		{
-			this.m_Tracker.Clear(true);
+			this.m_Tracker.Clear();
 			if (this.m_HSliderExpand || this.m_VSliderExpand)
 			{
 				this.m_Tracker.Add(this, this.viewRect, DrivenTransformProperties.AnchoredPositionX | DrivenTransformProperties.AnchoredPositionY | DrivenTransformProperties.AnchorMinX | DrivenTransformProperties.AnchorMinY | DrivenTransformProperties.AnchorMaxX | DrivenTransformProperties.AnchorMaxY | DrivenTransformProperties.SizeDeltaX | DrivenTransformProperties.SizeDeltaY);

@@ -1,7 +1,8 @@
 using System;
 using System.Runtime.CompilerServices;
+using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
-using UnityEngine.Collections;
 
 namespace UnityEditor.Media
 {
@@ -52,7 +53,7 @@ namespace UnityEditor.Media
 
 		public bool AddSamples(ushort trackIndex, NativeArray<float> interleavedSamples)
 		{
-			return MediaEncoder.Internal_AddSamples(this.m_Ptr, trackIndex, interleavedSamples.UnsafeReadOnlyPtr, interleavedSamples.Length);
+			return MediaEncoder.Internal_AddSamples(this.m_Ptr, trackIndex, interleavedSamples.GetUnsafeReadOnlyPtr<float>(), interleavedSamples.Length);
 		}
 
 		public bool AddSamples(NativeArray<float> interleavedSamples)

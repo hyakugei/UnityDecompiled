@@ -2,27 +2,12 @@ using System;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.Bindings;
-using UnityEngine.Scripting;
 
 namespace UnityEditor
 {
 	[NativeType(Header = "Editor/Src/AssetPipeline/ModelImporting/ModelImporter.h")]
 	public class ModelImporter : AssetImporter
 	{
-		public HumanDescription humanDescription
-		{
-			get
-			{
-				HumanDescription result;
-				this.INTERNAL_get_humanDescription(out result);
-				return result;
-			}
-			set
-			{
-				this.INTERNAL_set_humanDescription(ref value);
-			}
-		}
-
 		[Obsolete("Use importMaterials, materialName and materialSearch instead")]
 		public extern ModelImporterGenerateMaterials generateMaterials
 		{
@@ -49,6 +34,14 @@ namespace UnityEditor
 		}
 
 		public extern ModelImporterMaterialSearch materialSearch
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public extern ModelImporterMaterialLocation materialLocation
 		{
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
@@ -468,6 +461,14 @@ namespace UnityEditor
 			set;
 		}
 
+		public extern bool importConstraints
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
 		public extern float animationRotationError
 		{
 			[MethodImpl(MethodImplOptions.InternalCall)]
@@ -528,11 +529,11 @@ namespace UnityEditor
 		{
 			get
 			{
-				return this.sourceAvatarInternal;
+				return this.GetSourceAvatar();
 			}
 			set
 			{
-				Avatar sourceAvatarInternal = value;
+				Avatar value2 = value;
 				if (value != null)
 				{
 					ModelImporter modelImporter = AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(value)) as ModelImporter;
@@ -543,22 +544,24 @@ namespace UnityEditor
 					else
 					{
 						Debug.LogError("Avatar must be from a ModelImporter, otherwise use ModelImporter.humanDescription");
-						sourceAvatarInternal = null;
+						value2 = null;
 					}
 				}
-				this.sourceAvatarInternal = sourceAvatarInternal;
+				ModelImporter.SetSourceAvatarInternal(this, value2);
 			}
 		}
 
-		internal Avatar sourceAvatarInternal
+		public HumanDescription humanDescription
 		{
 			get
 			{
-				return ModelImporter.GetSourceAvatarInternal(this);
+				HumanDescription result;
+				this.get_humanDescription_Injected(out result);
+				return result;
 			}
 			set
 			{
-				ModelImporter.SetSourceAvatarInternal(this, value);
+				this.set_humanDescription_Injected(ref value);
 			}
 		}
 
@@ -600,18 +603,6 @@ namespace UnityEditor
 			get;
 		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void INTERNAL_get_humanDescription(out HumanDescription value);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void INTERNAL_set_humanDescription(ref HumanDescription value);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern void UpdateSkeletonPose(SkeletonBone[] skeletonBones, SerializedProperty serializedProperty);
-
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern string[] INTERNAL_GetReferencedClips(ModelImporter self);
 
@@ -628,10 +619,10 @@ namespace UnityEditor
 		private static extern void INTERNAL_set_extraUserProperties([Writable] ModelImporter self, string[] value);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern Avatar GetSourceAvatarInternal(ModelImporter self);
+		private extern Avatar GetSourceAvatar();
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void SetSourceAvatarInternal([Writable] ModelImporter self, Avatar value);
+		private static extern void SetSourceAvatarInternal(ModelImporter self, Avatar value);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern ModelImporterClipAnimation[] GetClipAnimations(ModelImporter self);
@@ -644,6 +635,9 @@ namespace UnityEditor
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern void UpdateTransformMask(AvatarMask mask, SerializedProperty serializedProperty);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void UpdateSkeletonPose(SkeletonBone[] skeletonBones, [NotNull] SerializedProperty serializedProperty);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern AnimationClip GetPreviewAnimationClipForTake(string takeName);
@@ -677,5 +671,14 @@ namespace UnityEditor
 			}
 			return this.ExtractTexturesInternal(folderPath);
 		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public extern bool SearchAndRemapMaterials(ModelImporterMaterialName nameOption, ModelImporterMaterialSearch searchOption);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void get_humanDescription_Injected(out HumanDescription ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void set_humanDescription_Injected(ref HumanDescription value);
 	}
 }

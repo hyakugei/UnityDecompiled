@@ -3,15 +3,14 @@ using System;
 namespace UnityEditor.Experimental.UIElements.GraphView
 {
 	[Flags]
-	internal enum Capabilities
+	public enum Capabilities
 	{
-		Normal = 1,
-		Selectable = 2,
-		DoesNotCollapse = 4,
-		Floating = 8,
-		Resizable = 16,
-		Movable = 32,
-		Deletable = 64,
-		Droppable = 128
+		Selectable = 1,
+		Collapsible = 2,
+		Resizable = 4,
+		Movable = 8,
+		Deletable = 16,
+		Droppable = 32,
+		Ascendable = 64
 	}
 }

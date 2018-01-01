@@ -55,7 +55,7 @@ namespace UnityEditor
 			{
 				get
 				{
-					return InternalEditorUtility.GetMonolithicEngineAssemblyPath();
+					return InternalEditorUtility.GetEngineAssemblyPath();
 				}
 			}
 

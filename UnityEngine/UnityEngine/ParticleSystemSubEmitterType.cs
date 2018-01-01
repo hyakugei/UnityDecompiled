@@ -6,6 +6,8 @@ namespace UnityEngine
 	{
 		Birth,
 		Collision,
-		Death
+		Death,
+		Trigger,
+		Manual
 	}
 }

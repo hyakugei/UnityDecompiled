@@ -1,7 +1,6 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Threading;
-using UnityEngine.Internal;
 using UnityEngine.Scripting;
 
 namespace UnityEngine
@@ -147,6 +146,26 @@ namespace UnityEngine
 			}
 		}
 
+		internal extern Object drivenByObject
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		internal extern DrivenTransformProperties drivenProperties
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
 		public Vector2 offsetMin
 		{
 			get
@@ -218,25 +237,6 @@ namespace UnityEngine
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern void INTERNAL_set_pivot(ref Vector2 value);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern void AddDrivenProperties(Object driver, DrivenTransformProperties drivenProperties);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern void ClearDrivenProperties(Object driver, bool revertValues);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern bool IsDriven([DefaultValue("DrivenTransformProperties.All")] DrivenTransformProperties properties);
-
-		[ExcludeFromDocs]
-		internal bool IsDriven()
-		{
-			DrivenTransformProperties properties = DrivenTransformProperties.All;
-			return this.IsDriven(properties);
-		}
 
 		[RequiredByNativeCode]
 		internal static void SendReapplyDrivenProperties(RectTransform driven)

@@ -6,6 +6,10 @@ namespace UnityEngine
 {
 	public sealed class AssetBundleManifest : Object
 	{
+		private AssetBundleManifest()
+		{
+		}
+
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern string[] GetAllAssetBundles();

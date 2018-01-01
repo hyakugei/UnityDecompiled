@@ -143,7 +143,7 @@ namespace UnityEditor
 			}
 			else
 			{
-				result = new HierarchyProperty(filteredHierarchy.hierarchyType);
+				result = new HierarchyProperty(filteredHierarchy.hierarchyType, false);
 			}
 			return result;
 		}

@@ -30,13 +30,7 @@ namespace UnityEditor
 
 			public UnityEngine.Object watchedObject;
 
-			private DataWatchService service
-			{
-				get
-				{
-					return DataWatchService.sharedInstance;
-				}
-			}
+			private DataWatchService service;
 
 			public bool isModified
 			{
@@ -44,11 +38,12 @@ namespace UnityEditor
 				set;
 			}
 
-			public Watchers(UnityEngine.Object watched)
+			public Watchers(UnityEngine.Object watched, DataWatchService dataWatch)
 			{
 				this.spyList = new List<DataWatchService.Spy>();
 				this.tracker = ChangeTrackerHandle.AcquireTracker(watched);
 				this.watchedObject = watched;
+				this.service = dataWatch;
 			}
 
 			public void AddSpy(int handle, Action<UnityEngine.Object> onDataChanged)
@@ -95,6 +90,18 @@ namespace UnityEditor
 		private static List<DataWatchService.Spy> notificationTmpSpies = new List<DataWatchService.Spy>();
 
 		private static int s_WatchID;
+
+		internal bool disableThrottling
+		{
+			get
+			{
+				return this.m_Scheduler.disableThrottling;
+			}
+			set
+			{
+				this.m_Scheduler.disableThrottling = value;
+			}
+		}
 
 		public DataWatchService()
 		{
@@ -171,7 +178,7 @@ namespace UnityEditor
 			DataWatchService.Watchers watchers;
 			if (!this.m_Watched.TryGetValue(watched, out watchers))
 			{
-				watchers = new DataWatchService.Watchers(watched);
+				watchers = new DataWatchService.Watchers(watched, this);
 				this.m_Watched[watched] = watchers;
 				watchers.scheduledItem = this.m_Scheduler.ScheduleUntil(new Action<TimerState>(watchers.OnTimerPoolForChanges), 0L, 0L, null);
 			}
@@ -197,10 +204,10 @@ namespace UnityEditor
 							{
 								this.DoRemoveWatcher(watchers);
 							}
-							return;
 						}
 					}
 				}
+				return;
 			}
 			throw new ArgumentException("Data watch was not registered");
 		}

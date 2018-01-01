@@ -1,9 +1,11 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
+using UnityEngine.Scripting;
 
 namespace UnityEditor.Experimental.Build.Player
 {
+	[UsedByNativeCode]
 	[Serializable]
 	public class TypeDB : ISerializable, IDisposable
 	{

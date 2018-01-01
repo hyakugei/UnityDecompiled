@@ -13,7 +13,7 @@ namespace UnityEditor.UI
 
 			public Styles()
 			{
-				this.navigationContent = new GUIContent("Navigation");
+				this.navigationContent = EditorGUIUtility.TrTextContent("Navigation", null, null);
 			}
 		}
 

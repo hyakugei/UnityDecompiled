@@ -29,11 +29,13 @@ namespace UnityEditor
 		Tizen,
 		PSP2,
 		PS4,
+		[Obsolete("warning PSM has been removed in >= 5.3")]
 		PSM,
 		XboxOne,
 		[Obsolete("SamsungTV has been removed as of 2017.3")]
 		SamsungTV,
 		N3DS,
+		[Obsolete("Wii U support was removed in 2018.1")]
 		WiiU,
 		tvOS,
 		Facebook,

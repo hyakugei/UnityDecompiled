@@ -112,6 +112,10 @@ namespace UnityEditor
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern void ClearShaderErrors(Shader s);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern int GetComputeShaderPlatformCount(ComputeShader s);
 
 		[GeneratedByOldBindingsGenerator]
@@ -180,11 +184,19 @@ namespace UnityEditor
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern bool IsShaderPropertyNonModifiableTexureProperty(Shader s, int propertyIdx);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern string[] GetShaderPropertyAttributes(Shader s, string name);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern bool HasInstancing(Shader s);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern bool HasProceduralInstancing(Shader s);
 
 		internal static bool MaterialsUseInstancingShader(SerializedProperty materialsArray)
 		{
@@ -327,6 +339,10 @@ namespace UnityEditor
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern void RegisterShader(Shader shader);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void UpdateShaderAsset(Shader shader, string source);
 
 		[GeneratedByOldBindingsGenerator]
@@ -361,5 +377,8 @@ namespace UnityEditor
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern void ApplyMaterialPropertyToMaterialPropertyBlock(MaterialProperty materialProperty, int propertyMask, MaterialPropertyBlock propertyBlock);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern ShaderInfo[] GetAllShaderInfo();
 	}
 }

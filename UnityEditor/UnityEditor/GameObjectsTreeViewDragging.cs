@@ -20,6 +20,10 @@ namespace UnityEditor
 		public override void StartDrag(TreeViewItem draggedItem, List<int> draggedItemIDs)
 		{
 			DragAndDrop.PrepareStartDrag();
+			if (Event.current.control || Event.current.command)
+			{
+				draggedItemIDs.Add(draggedItem.id);
+			}
 			draggedItemIDs = this.m_TreeView.SortIDsInVisiblityOrder(draggedItemIDs);
 			if (!draggedItemIDs.Contains(draggedItem.id))
 			{

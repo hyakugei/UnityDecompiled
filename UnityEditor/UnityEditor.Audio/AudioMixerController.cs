@@ -9,6 +9,7 @@ using UnityEngine.Scripting;
 
 namespace UnityEditor.Audio
 {
+	[ExcludeFromPreset]
 	internal sealed class AudioMixerController : AudioMixer
 	{
 		public class ConnectionNode

@@ -45,35 +45,37 @@ namespace UnityEditor.Experimental.UIElements.Debugger
 				alignment = TextAnchor.MiddleCenter
 			};
 
-			public static readonly GUIContent elementStylesContent = new GUIContent("Element styles");
+			public static readonly GUIContent elementStylesContent = EditorGUIUtility.TrTextContent("Element styles", null, null);
 
-			public static readonly GUIContent showDefaultsContent = new GUIContent("Show defaults");
+			public static readonly GUIContent showDefaultsContent = EditorGUIUtility.TrTextContent("Show defaults", null, null);
 
-			public static readonly GUIContent sortContent = new GUIContent("Sort");
+			public static readonly GUIContent sortContent = EditorGUIUtility.TrTextContent("Sort", null, null);
 
-			public static readonly GUIContent inlineContent = new GUIContent("INLINE");
+			public static readonly GUIContent inlineContent = EditorGUIUtility.TrTextContent("INLINE", null, null);
 
-			public static readonly GUIContent marginContent = new GUIContent("Margin");
+			public static readonly GUIContent marginContent = EditorGUIUtility.TrTextContent("Margin", null, null);
 
-			public static readonly GUIContent borderContent = new GUIContent("Border");
+			public static readonly GUIContent borderContent = EditorGUIUtility.TrTextContent("Border", null, null);
 
-			public static readonly GUIContent paddingContent = new GUIContent("Padding");
+			public static readonly GUIContent paddingContent = EditorGUIUtility.TrTextContent("Padding", null, null);
 
-			public static readonly GUIContent cancelPickingContent = new GUIContent("Cancel picking");
+			public static readonly GUIContent cancelPickingContent = EditorGUIUtility.TrTextContent("Cancel picking", null, null);
 
-			public static readonly GUIContent pickPanelContent = new GUIContent("Pick Panel");
+			public static readonly GUIContent pickPanelContent = EditorGUIUtility.TrTextContent("Pick Panel", null, null);
 
-			public static readonly GUIContent pickElementInPanelContent = new GUIContent("Pick Element in panel");
+			public static readonly GUIContent pickElementInPanelContent = EditorGUIUtility.TrTextContent("Pick Element in panel", null, null);
 
-			public static readonly GUIContent overlayContent = new GUIContent("Overlay");
+			public static readonly GUIContent overlayContent = EditorGUIUtility.TrTextContent("Overlay", null, null);
 
-			public static readonly GUIContent uxmlContent = new GUIContent("UXML Dump");
+			public static readonly GUIContent liveReloadContent = EditorGUIUtility.TrTextContent("UXML Live Reload", null, null);
 
-			public static readonly GUIContent stylesheetsContent = new GUIContent("Stylesheets");
+			public static readonly GUIContent uxmlContent = EditorGUIUtility.TrTextContent("UXML Dump", null, null);
 
-			public static readonly GUIContent selectorsContent = new GUIContent("Matching Selectors");
+			public static readonly GUIContent stylesheetsContent = EditorGUIUtility.TrTextContent("Stylesheets", null, null);
 
-			public static readonly GUIContent includeShadowHierarchyContent = new GUIContent("Include Shadow Hierarchy");
+			public static readonly GUIContent selectorsContent = EditorGUIUtility.TrTextContent("Matching Selectors", null, null);
+
+			public static readonly GUIContent includeShadowHierarchyContent = EditorGUIUtility.TrTextContent("Include Shadow Hierarchy", null, null);
 
 			private static readonly Color k_SeparatorColorPro = new Color(0.15f, 0.15f, 0.15f);
 
@@ -174,7 +176,7 @@ namespace UnityEditor.Experimental.UIElements.Debugger
 			{
 				result = false;
 			}
-			else if (!Event.current.isMouse)
+			else if (Event.current == null || !Event.current.isMouse)
 			{
 				result = false;
 			}
@@ -256,6 +258,12 @@ namespace UnityEditor.Experimental.UIElements.Debugger
 				}
 			}
 			this.m_Overlay = GUILayout.Toggle(this.m_Overlay, UIElementsDebugger.Styles.overlayContent, EditorStyles.toolbarButton, new GUILayoutOption[0]);
+			bool uxmlLiveReloadIsEnabled = RetainedMode.UxmlLiveReloadIsEnabled;
+			bool flag4 = GUILayout.Toggle(uxmlLiveReloadIsEnabled, UIElementsDebugger.Styles.liveReloadContent, EditorStyles.toolbarButton, new GUILayoutOption[0]);
+			if (flag4 != uxmlLiveReloadIsEnabled)
+			{
+				RetainedMode.UxmlLiveReloadIsEnabled = flag4;
+			}
 			EditorGUILayout.EndHorizontal();
 			if (flag)
 			{
@@ -415,8 +423,8 @@ namespace UnityEditor.Experimental.UIElements.Debugger
 			{
 				UIElementsDebugger.s_MatchedRulesExtractor.selectedElementRules.Clear();
 				UIElementsDebugger.s_MatchedRulesExtractor.selectedElementStylesheets.Clear();
-				UIElementsDebugger.s_MatchedRulesExtractor.target = this.m_SelectedElement;
-				UIElementsDebugger.s_MatchedRulesExtractor.Traverse(this.m_SelectedElement.elementPanel.visualTree, 0, UIElementsDebugger.s_MatchedRulesExtractor.ruleMatchers);
+				UIElementsDebugger.s_MatchedRulesExtractor.SetupTarget(this.m_SelectedElement);
+				UIElementsDebugger.s_MatchedRulesExtractor.TraverseRecursive(this.m_SelectedElement.elementPanel.visualTree, 0, UIElementsDebugger.s_MatchedRulesExtractor.ruleMatchers);
 				UIElementsDebugger.s_MatchedRulesExtractor.ruleMatchers.Clear();
 			}
 		}
@@ -430,8 +438,12 @@ namespace UnityEditor.Experimental.UIElements.Debugger
 		{
 			EditorGUILayout.LabelField(UIElementsDebugger.Styles.elementStylesContent, UIElementsDebugger.Styles.KInspectorTitle, new GUILayoutOption[0]);
 			this.m_SelectedElement.name = EditorGUILayout.TextField("Name", this.m_SelectedElement.name, new GUILayoutOption[0]);
-			this.m_SelectedElement.text = EditorGUILayout.TextField("Text", this.m_SelectedElement.text, new GUILayoutOption[0]);
-			this.m_SelectedElement.usePixelCaching = EditorGUILayout.Toggle("Use Pixel Caching", this.m_SelectedElement.usePixelCaching, new GUILayoutOption[0]);
+			BaseTextElement baseTextElement = this.m_SelectedElement as BaseTextElement;
+			if (baseTextElement != null)
+			{
+				baseTextElement.text = EditorGUILayout.TextField("Text", baseTextElement.text, new GUILayoutOption[0]);
+			}
+			this.m_SelectedElement.clippingOptions = (VisualElement.ClippingOptions)EditorGUILayout.EnumPopup("Clipping Option", this.m_SelectedElement.clippingOptions, new GUILayoutOption[0]);
 			this.m_SelectedElement.visible = EditorGUILayout.Toggle("Visible", this.m_SelectedElement.visible, new GUILayoutOption[0]);
 			EditorGUILayout.LabelField("Layout", this.m_SelectedElement.layout.ToString(), new GUILayoutOption[0]);
 			EditorGUILayout.LabelField("World Bound", this.m_SelectedElement.worldBound.ToString(), new GUILayoutOption[0]);
@@ -626,12 +638,12 @@ namespace UnityEditor.Experimental.UIElements.Debugger
 						{
 							if (previousRelationship == StyleSelectorRelationship.Descendent)
 							{
-								stringBuilder.Append(" > ");
+								stringBuilder.Append(" ");
 							}
 						}
 						else
 						{
-							stringBuilder.Append(" ");
+							stringBuilder.Append(" > ");
 						}
 						for (int j = 0; j < styleSelector.parts.Length; j++)
 						{
@@ -737,7 +749,7 @@ namespace UnityEditor.Experimental.UIElements.Debugger
 		public void OnEnable()
 		{
 			this.m_PickingData = new PickingData();
-			base.titleContent = new GUIContent("UIElements Debugger");
+			base.titleContent = EditorGUIUtility.TrTextContent("UIElements Debugger", null, null);
 			this.m_VisualTreeTreeViewState = new TreeViewState();
 			this.m_VisualTreeTreeView = new VisualTreeTreeView(this.m_VisualTreeTreeViewState);
 			if (this.m_SplitterState == null)

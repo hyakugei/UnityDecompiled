@@ -7,7 +7,7 @@ namespace UnityEditor
 	{
 		private class Texts
 		{
-			public GUIContent color = EditorGUIUtility.TextContent("Color|Controls the color of each particle during its lifetime.");
+			public GUIContent color = EditorGUIUtility.TrTextContent("Color", "Controls the color of each particle during its lifetime.", null);
 		}
 
 		private static ColorModuleUI.Texts s_Texts;

@@ -16,9 +16,9 @@ internal class ParticleSystemCurveEditor
 
 		public GUIStyle yAxisHeader = new GUIStyle(ParticleSystemStyles.Get().label);
 
-		public GUIContent optimizeCurveText = new GUIContent("Optimize", "Click to optimize curve. Optimized curves are defined by having at most 3 keys, with a key at both ends, and do not support loop or ping pong wrapping.");
+		public GUIContent optimizeCurveText = EditorGUIUtility.TrTextContent("Optimize", "Click to optimize curve. Optimized curves are defined by having at most 3 keys, with a key at both ends, and do not support loop or ping pong wrapping.", null);
 
-		public GUIContent removeCurveText = new GUIContent("Remove", "Remove selected curve(s)");
+		public GUIContent removeCurveText = EditorGUIUtility.TrTextContent("Remove", "Remove selected curve(s)", null);
 
 		public GUIContent curveLibraryPopup = new GUIContent("", "Open curve library");
 
@@ -619,6 +619,10 @@ internal class ParticleSystemCurveEditor
 						num8 += num4;
 					}
 					Rect rect = new Rect(num8, num7, num2, num3);
+					if (rect.xMax > position.width)
+					{
+						break;
+					}
 					ParticleSystemCurveEditor.s_Styles.presetTooltip.tooltip = currentLib.GetName(i);
 					if (GUI.Button(rect, ParticleSystemCurveEditor.s_Styles.presetTooltip, GUIStyle.none))
 					{
@@ -642,10 +646,11 @@ internal class ParticleSystemCurveEditor
 
 	private void DoOptimizeCurveButton(Rect rect)
 	{
+		bool flag = false;
+		Vector2 vector = new Vector2(64f, 14f);
+		Rect position = new Rect(rect.xMax - 80f - vector.x, rect.y + (rect.height - vector.y) * 0.5f, vector.x, vector.y);
 		if (!this.m_CurveEditor.IsDraggingCurveOrRegion())
 		{
-			Vector2 vector = new Vector2(64f, 14f);
-			Rect position = new Rect(rect.xMax - 80f - vector.x, rect.y + (rect.height - vector.y) * 0.5f, vector.x, vector.y);
 			int num = 0;
 			List<CurveSelection> selectedCurves = this.m_CurveEditor.selectedCurves;
 			int curveID;
@@ -658,6 +663,7 @@ internal class ParticleSystemCurveEditor
 				}
 				if (selectedCurves.Count != num)
 				{
+					flag = true;
 					if (GUI.Button(position, ParticleSystemCurveEditor.s_Styles.optimizeCurveText))
 					{
 						for (int j = 0; j < selectedCurves.Count; j++)
@@ -681,6 +687,7 @@ internal class ParticleSystemCurveEditor
 				CurveWrapper curveWrapperFromID = this.m_CurveEditor.GetCurveWrapperFromID(curveID);
 				if (!AnimationUtility.IsValidOptimizedPolynomialCurve(curveWrapperFromID.curve))
 				{
+					flag = true;
 					if (GUI.Button(position, ParticleSystemCurveEditor.s_Styles.optimizeCurveText))
 					{
 						curveWrapperFromID.curve.preWrapMode = WrapMode.Once;
@@ -692,11 +699,18 @@ internal class ParticleSystemCurveEditor
 				}
 			}
 		}
+		if (!flag)
+		{
+			using (new EditorGUI.DisabledScope(true))
+			{
+				GUI.Button(position, ParticleSystemCurveEditor.s_Styles.optimizeCurveText);
+			}
+		}
 	}
 
 	private void DoRemoveSelectedButton(Rect rect)
 	{
-		if (this.m_CurveEditor.animationCurves.Length != 0)
+		using (new EditorGUI.DisabledScope(this.m_CurveEditor.animationCurves.Length == 0))
 		{
 			Vector2 vector = new Vector2(64f, 14f);
 			Rect position = new Rect(rect.x + rect.width - vector.x - 10f, rect.y + (rect.height - vector.y) * 0.5f, vector.x, vector.y);

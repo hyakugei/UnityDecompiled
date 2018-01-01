@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.UIElements.GraphView
 {
-	internal class NodeAdapter
+	public class NodeAdapter
 	{
 		private static List<MethodInfo> s_TypeAdapters;
 
@@ -102,7 +102,21 @@ namespace UnityEditor.Experimental.UIElements.GraphView
 							if (parameters.Length == 3)
 							{
 								string text = parameters[1].ParameterType + parameters[2].ParameterType.ToString();
-								NodeAdapter.s_NodeAdapterDictionary.Add(text.GetHashCode(), current);
+								int hashCode = text.GetHashCode();
+								if (NodeAdapter.s_NodeAdapterDictionary.ContainsKey(hashCode))
+								{
+									Debug.Log(string.Concat(new object[]
+									{
+										"NodeAdapter: multiple extensions have the same signature:\n1: ",
+										current,
+										"\n2: ",
+										NodeAdapter.s_NodeAdapterDictionary[hashCode]
+									}));
+								}
+								else
+								{
+									NodeAdapter.s_NodeAdapterDictionary.Add(hashCode, current);
+								}
 							}
 						}
 					}

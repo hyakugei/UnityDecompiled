@@ -53,11 +53,20 @@ namespace UnityEngine.Events
 				}
 				else
 				{
-					if (this.m_InvokeArray == null)
+					InvokableCall invokableCall2 = list[i] as InvokableCall;
+					if (invokableCall2 != null)
 					{
-						this.m_InvokeArray = new object[0];
+						invokableCall2.Invoke();
 					}
-					base.Invoke(this.m_InvokeArray);
+					else
+					{
+						BaseInvokableCall baseInvokableCall = list[i];
+						if (this.m_InvokeArray == null)
+						{
+							this.m_InvokeArray = new object[0];
+						}
+						baseInvokableCall.Invoke(this.m_InvokeArray);
+					}
 				}
 			}
 		}
@@ -137,12 +146,21 @@ namespace UnityEngine.Events
 				}
 				else
 				{
-					if (this.m_InvokeArray == null)
+					InvokableCall invokableCall2 = list[i] as InvokableCall;
+					if (invokableCall2 != null)
 					{
-						this.m_InvokeArray = new object[1];
+						invokableCall2.Invoke();
 					}
-					this.m_InvokeArray[0] = arg0;
-					base.Invoke(this.m_InvokeArray);
+					else
+					{
+						BaseInvokableCall baseInvokableCall = list[i];
+						if (this.m_InvokeArray == null)
+						{
+							this.m_InvokeArray = new object[1];
+						}
+						this.m_InvokeArray[0] = arg0;
+						baseInvokableCall.Invoke(this.m_InvokeArray);
+					}
 				}
 			}
 		}
@@ -223,13 +241,22 @@ namespace UnityEngine.Events
 				}
 				else
 				{
-					if (this.m_InvokeArray == null)
+					InvokableCall invokableCall2 = list[i] as InvokableCall;
+					if (invokableCall2 != null)
 					{
-						this.m_InvokeArray = new object[2];
+						invokableCall2.Invoke();
 					}
-					this.m_InvokeArray[0] = arg0;
-					this.m_InvokeArray[1] = arg1;
-					base.Invoke(this.m_InvokeArray);
+					else
+					{
+						BaseInvokableCall baseInvokableCall = list[i];
+						if (this.m_InvokeArray == null)
+						{
+							this.m_InvokeArray = new object[2];
+						}
+						this.m_InvokeArray[0] = arg0;
+						this.m_InvokeArray[1] = arg1;
+						baseInvokableCall.Invoke(this.m_InvokeArray);
+					}
 				}
 			}
 		}
@@ -311,14 +338,23 @@ namespace UnityEngine.Events
 				}
 				else
 				{
-					if (this.m_InvokeArray == null)
+					InvokableCall invokableCall2 = list[i] as InvokableCall;
+					if (invokableCall2 != null)
 					{
-						this.m_InvokeArray = new object[3];
+						invokableCall2.Invoke();
 					}
-					this.m_InvokeArray[0] = arg0;
-					this.m_InvokeArray[1] = arg1;
-					this.m_InvokeArray[2] = arg2;
-					base.Invoke(this.m_InvokeArray);
+					else
+					{
+						BaseInvokableCall baseInvokableCall = list[i];
+						if (this.m_InvokeArray == null)
+						{
+							this.m_InvokeArray = new object[3];
+						}
+						this.m_InvokeArray[0] = arg0;
+						this.m_InvokeArray[1] = arg1;
+						this.m_InvokeArray[2] = arg2;
+						baseInvokableCall.Invoke(this.m_InvokeArray);
+					}
 				}
 			}
 		}
@@ -401,15 +437,24 @@ namespace UnityEngine.Events
 				}
 				else
 				{
-					if (this.m_InvokeArray == null)
+					InvokableCall invokableCall2 = list[i] as InvokableCall;
+					if (invokableCall2 != null)
 					{
-						this.m_InvokeArray = new object[4];
+						invokableCall2.Invoke();
 					}
-					this.m_InvokeArray[0] = arg0;
-					this.m_InvokeArray[1] = arg1;
-					this.m_InvokeArray[2] = arg2;
-					this.m_InvokeArray[3] = arg3;
-					base.Invoke(this.m_InvokeArray);
+					else
+					{
+						BaseInvokableCall baseInvokableCall = list[i];
+						if (this.m_InvokeArray == null)
+						{
+							this.m_InvokeArray = new object[4];
+						}
+						this.m_InvokeArray[0] = arg0;
+						this.m_InvokeArray[1] = arg1;
+						this.m_InvokeArray[2] = arg2;
+						this.m_InvokeArray[3] = arg3;
+						baseInvokableCall.Invoke(this.m_InvokeArray);
+					}
 				}
 			}
 		}

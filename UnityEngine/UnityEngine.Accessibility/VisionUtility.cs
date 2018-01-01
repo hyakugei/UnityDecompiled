@@ -25,7 +25,7 @@ namespace UnityEngine.Accessibility
 		private static readonly float[] s_ColorBlindSafePaletteLuminanceValues = (from c in VisionUtility.s_ColorBlindSafePalette
 		select VisionUtility.ComputePerceivedLuminance(c)).ToArray<float>();
 
-		private static float ComputePerceivedLuminance(Color color)
+		internal static float ComputePerceivedLuminance(Color color)
 		{
 			color = color.linear;
 			return Mathf.LinearToGammaSpace(0.2126f * color.r + 0.7152f * color.g + 0.0722f * color.b);

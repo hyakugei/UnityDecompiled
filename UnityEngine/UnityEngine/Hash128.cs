@@ -33,23 +33,20 @@ namespace UnityEngine
 
 		public override string ToString()
 		{
-			return Hash128.Internal_Hash128ToString(this.m_u32_0, this.m_u32_1, this.m_u32_2, this.m_u32_3);
+			return Hash128.Internal_Hash128ToString(this);
 		}
 
 		public static Hash128 Parse(string hashString)
 		{
 			Hash128 result;
-			Hash128.INTERNAL_CALL_Parse(hashString, out result);
+			Hash128.Parse_Injected(hashString, out result);
 			return result;
 		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_Parse(string hashString, out Hash128 value);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern string Internal_Hash128ToString(uint d0, uint d1, uint d2, uint d3);
+		internal static string Internal_Hash128ToString(Hash128 hash128)
+		{
+			return Hash128.Internal_Hash128ToString_Injected(ref hash128);
+		}
 
 		public override bool Equals(object obj)
 		{
@@ -70,5 +67,11 @@ namespace UnityEngine
 		{
 			return !(hash1 == hash2);
 		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void Parse_Injected(string hashString, out Hash128 ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern string Internal_Hash128ToString_Injected(ref Hash128 hash128);
 	}
 }

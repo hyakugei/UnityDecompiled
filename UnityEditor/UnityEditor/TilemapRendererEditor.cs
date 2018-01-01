@@ -9,7 +9,9 @@ namespace UnityEditor
 	{
 		private static class Styles
 		{
-			public static readonly GUIContent materialLabel = EditorGUIUtility.TextContent("Material");
+			public static readonly GUIContent materialLabel = EditorGUIUtility.TrTextContent("Material", "Material to be used by TilemapRenderer", null);
+
+			public static readonly GUIContent maskInteractionLabel = EditorGUIUtility.TrTextContent("Mask Interaction", "TilemapRenderer's interaction with a Sprite Mask", null);
 		}
 
 		private SerializedProperty m_Material;
@@ -33,7 +35,8 @@ namespace UnityEditor
 			EditorGUILayout.PropertyField(this.m_SortOrder, new GUILayoutOption[0]);
 			base.RenderSortingLayerFields();
 			EditorGUILayout.Space();
-			EditorGUILayout.PropertyField(this.m_MaskInteraction, new GUILayoutOption[0]);
+			EditorGUILayout.PropertyField(this.m_MaskInteraction, TilemapRendererEditor.Styles.maskInteractionLabel, new GUILayoutOption[0]);
+			base.RenderRenderingLayer();
 			base.serializedObject.ApplyModifiedProperties();
 		}
 	}

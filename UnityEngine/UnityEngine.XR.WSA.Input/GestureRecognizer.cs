@@ -513,7 +513,7 @@ namespace UnityEngine.XR.WSA.Input
 			}
 		}
 
-		[Obsolete("TappedEvent is deprecated, and will be removed in a future release. Use OnTappedEvent instead.", false)]
+		[Obsolete("TappedEvent is deprecated, and will be removed in a future release. Use Tapped instead.", false)]
 		public event GestureRecognizer.TappedEventDelegate TappedEvent
 		{
 			add

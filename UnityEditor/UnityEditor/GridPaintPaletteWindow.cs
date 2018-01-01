@@ -50,6 +50,8 @@ namespace UnityEditor
 
 			public static readonly GUIContent edit;
 
+			public static readonly GUIContent editModified;
+
 			public static readonly GUIStyle ToolbarStyle;
 
 			public static readonly GUIStyle ToolbarTitleStyle;
@@ -83,14 +85,14 @@ namespace UnityEditor
 					"",
 					"Cursors/macOS",
 					"Cursors/Windows",
-					""
+					"Cursors/Linux"
 				};
 				GridPaintPaletteWindow.Styles.mouseCursorOSHotspot = new Vector2[]
 				{
 					Vector2.zero,
 					new Vector2(6f, 4f),
 					new Vector2(6f, 4f),
-					Vector2.zero
+					new Vector2(6f, 4f)
 				};
 				GridPaintPaletteWindow.Styles.mouseCursorTexturePaths = new string[]
 				{
@@ -102,19 +104,20 @@ namespace UnityEditor
 					"Grid.EraserTool.png",
 					"Grid.FillTool.png"
 				};
-				GridPaintPaletteWindow.Styles.emptyProjectInfo = EditorGUIUtility.TextContent("Create a new palette in the dropdown above.");
-				GridPaintPaletteWindow.Styles.emptyClipboardInfo = EditorGUIUtility.TextContent("Drag Tile, Sprite or Sprite Texture assets here.");
-				GridPaintPaletteWindow.Styles.invalidClipboardInfo = EditorGUIUtility.TextContent("This is an invalid clipboard. Did you delete the clipboard asset?");
-				GridPaintPaletteWindow.Styles.selectPaintTarget = EditorGUIUtility.TextContent("Select Paint Target");
-				GridPaintPaletteWindow.Styles.selectPalettePrefab = EditorGUIUtility.TextContent("Select Palette Prefab");
-				GridPaintPaletteWindow.Styles.selectTileAsset = EditorGUIUtility.TextContent("Select Tile Asset");
-				GridPaintPaletteWindow.Styles.unlockPaletteEditing = EditorGUIUtility.TextContent("Unlock Palette Editing");
-				GridPaintPaletteWindow.Styles.lockPaletteEditing = EditorGUIUtility.TextContent("Lock Palette Editing");
-				GridPaintPaletteWindow.Styles.createNewPalette = EditorGUIUtility.TextContent("Create New Palette");
-				GridPaintPaletteWindow.Styles.focusLabel = EditorGUIUtility.TextContent("Focus On");
-				GridPaintPaletteWindow.Styles.rendererOverlayTitleLabel = EditorGUIUtility.TextContent("Tilemap");
-				GridPaintPaletteWindow.Styles.activeTargetLabel = EditorGUIUtility.TextContent("Active Tilemap|Specifies the currently active Tilemap used for painting in the Scene View.");
-				GridPaintPaletteWindow.Styles.edit = EditorGUIUtility.TextContent("Edit");
+				GridPaintPaletteWindow.Styles.emptyProjectInfo = EditorGUIUtility.TrTextContent("Create a new palette in the dropdown above.", null, null);
+				GridPaintPaletteWindow.Styles.emptyClipboardInfo = EditorGUIUtility.TrTextContent("Drag Tile, Sprite or Sprite Texture assets here.", null, null);
+				GridPaintPaletteWindow.Styles.invalidClipboardInfo = EditorGUIUtility.TrTextContent("This is an invalid clipboard. Did you delete the clipboard asset?", null, null);
+				GridPaintPaletteWindow.Styles.selectPaintTarget = EditorGUIUtility.TrTextContent("Select Paint Target", null, null);
+				GridPaintPaletteWindow.Styles.selectPalettePrefab = EditorGUIUtility.TrTextContent("Select Palette Prefab", null, null);
+				GridPaintPaletteWindow.Styles.selectTileAsset = EditorGUIUtility.TrTextContent("Select Tile Asset", null, null);
+				GridPaintPaletteWindow.Styles.unlockPaletteEditing = EditorGUIUtility.TrTextContent("Unlock Palette Editing", null, null);
+				GridPaintPaletteWindow.Styles.lockPaletteEditing = EditorGUIUtility.TrTextContent("Lock Palette Editing", null, null);
+				GridPaintPaletteWindow.Styles.createNewPalette = EditorGUIUtility.TrTextContent("Create New Palette", null, null);
+				GridPaintPaletteWindow.Styles.focusLabel = EditorGUIUtility.TrTextContent("Focus On", null, null);
+				GridPaintPaletteWindow.Styles.rendererOverlayTitleLabel = EditorGUIUtility.TrTextContent("Tilemap", null, null);
+				GridPaintPaletteWindow.Styles.activeTargetLabel = EditorGUIUtility.TrTextContent("Active Tilemap", "Specifies the currently active Tilemap used for painting in the Scene View.", null);
+				GridPaintPaletteWindow.Styles.edit = EditorGUIUtility.TrTextContent("Edit", null, null);
+				GridPaintPaletteWindow.Styles.editModified = EditorGUIUtility.TextContent("Edit*");
 				GridPaintPaletteWindow.Styles.ToolbarStyle = "preToolbar";
 				GridPaintPaletteWindow.Styles.ToolbarTitleStyle = "preToolbar";
 				GridPaintPaletteWindow.Styles.mouseCursorTextures = new Texture2D[GridPaintPaletteWindow.Styles.mouseCursorTexturePaths.Length];
@@ -159,6 +162,25 @@ namespace UnityEditor
 			}
 		}
 
+		public class PaletteAssetModificationProcessor : AssetModificationProcessor
+		{
+			private static string[] OnWillSaveAssets(string[] paths)
+			{
+				if (!GridPaintingState.savingPalette)
+				{
+					foreach (GridPaintPaletteWindow current in GridPaintPaletteWindow.instances)
+					{
+						if (current.clipboardView.isModified)
+						{
+							current.clipboardView.SavePaletteIfNecessary();
+							current.Repaint();
+						}
+					}
+				}
+				return paths;
+			}
+		}
+
 		private const float k_DropdownWidth = 200f;
 
 		private const float k_ActiveTargetLabelWidth = 90f;
@@ -175,7 +197,7 @@ namespace UnityEditor
 
 		private const float k_ResizerDragRectPadding = 10f;
 
-		public static readonly GUIContent tilePalette = EditorGUIUtility.TextContent("Tile Palette");
+		public static readonly GUIContent tilePalette = EditorGUIUtility.TrTextContent("Tile Palette", null, null);
 
 		private PaintableSceneViewGrid m_PaintableSceneViewGrid;
 
@@ -383,6 +405,7 @@ namespace UnityEditor
 			if (this.palette != null)
 			{
 				this.m_PaletteInstance = this.previewUtility.InstantiatePrefabInScene(this.palette);
+				PrefabUtility.DisconnectPrefabInstance(this.m_PaletteInstance);
 				EditorUtility.InitInstantiatedPreviewRecursive(this.m_PaletteInstance);
 				this.m_PaletteInstance.transform.position = new Vector3(0f, 0f, 0f);
 				this.m_PaletteInstance.transform.rotation = Quaternion.identity;
@@ -596,11 +619,12 @@ namespace UnityEditor
 			EditorApplication.globalEventHandler = (EditorApplication.CallbackFunction)Delegate.Combine(EditorApplication.globalEventHandler, new EditorApplication.CallbackFunction(this.HotkeyHandler));
 			EditMode.editModeStarted += new Action<IToolModeOwner, EditMode.SceneViewEditMode>(this.OnEditModeStart);
 			EditMode.editModeEnded += new Action<IToolModeOwner>(this.OnEditModeEnd);
-			Undo.undoRedoPerformed = (Undo.UndoRedoCallback)Delegate.Combine(Undo.undoRedoPerformed, new Undo.UndoRedoCallback(this.OnUndoRedoPerformed));
 			GridSelection.gridSelectionChanged += new Action(this.OnGridSelectionChanged);
+			GridPaintingState.RegisterPainterInterest(this);
 			GridPaintingState.scenePaintTargetChanged += new Action<GameObject>(this.OnScenePaintTargetChanged);
-			SceneView.onSceneGUIDelegate = (SceneView.OnSceneFunc)Delegate.Combine(SceneView.onSceneGUIDelegate, new SceneView.OnSceneFunc(this.OnSceneViewGUI));
 			GridPaintingState.brushChanged += new Action<GridBrushBase>(this.OnBrushChanged);
+			SceneView.onSceneGUIDelegate = (SceneView.OnSceneFunc)Delegate.Combine(SceneView.onSceneGUIDelegate, new SceneView.OnSceneFunc(this.OnSceneViewGUI));
+			PrefabUtility.prefabInstanceUpdated = (PrefabUtility.PrefabInstanceUpdated)Delegate.Combine(PrefabUtility.prefabInstanceUpdated, new PrefabUtility.PrefabInstanceUpdated(this.PrefabInstanceUpdated));
 			AssetPreview.SetPreviewTextureCacheSize(256, base.GetInstanceID());
 			base.wantsMouseMove = true;
 			base.wantsMouseEnterLeaveWindow = true;
@@ -615,6 +639,15 @@ namespace UnityEditor
 				this.palette = TilemapEditorUserSettings.lastUsedPalette;
 			}
 			Tools.onToolChanged = (Tools.OnToolChangedFunc)Delegate.Combine(Tools.onToolChanged, new Tools.OnToolChangedFunc(this.ToolChanged));
+		}
+
+		private void PrefabInstanceUpdated(GameObject updatedPrefab)
+		{
+			if (this.m_PaletteInstance != null && PrefabUtility.GetPrefabParent(updatedPrefab) == this.m_Palette && !GridPaintingState.savingPalette)
+			{
+				this.ResetPreviewInstance();
+				base.Repaint();
+			}
 		}
 
 		private void OnBrushChanged(GridBrushBase brush)
@@ -649,12 +682,13 @@ namespace UnityEditor
 			EditorApplication.globalEventHandler = (EditorApplication.CallbackFunction)Delegate.Remove(EditorApplication.globalEventHandler, new EditorApplication.CallbackFunction(this.HotkeyHandler));
 			EditMode.editModeStarted -= new Action<IToolModeOwner, EditMode.SceneViewEditMode>(this.OnEditModeStart);
 			EditMode.editModeEnded -= new Action<IToolModeOwner>(this.OnEditModeEnd);
-			Undo.undoRedoPerformed = (Undo.UndoRedoCallback)Delegate.Remove(Undo.undoRedoPerformed, new Undo.UndoRedoCallback(this.OnUndoRedoPerformed));
 			Tools.onToolChanged = (Tools.OnToolChangedFunc)Delegate.Remove(Tools.onToolChanged, new Tools.OnToolChangedFunc(this.ToolChanged));
 			GridSelection.gridSelectionChanged -= new Action(this.OnGridSelectionChanged);
-			GridPaintingState.scenePaintTargetChanged -= new Action<GameObject>(this.OnScenePaintTargetChanged);
 			SceneView.onSceneGUIDelegate = (SceneView.OnSceneFunc)Delegate.Remove(SceneView.onSceneGUIDelegate, new SceneView.OnSceneFunc(this.OnSceneViewGUI));
+			GridPaintingState.scenePaintTargetChanged -= new Action<GameObject>(this.OnScenePaintTargetChanged);
 			GridPaintingState.brushChanged -= new Action<GridBrushBase>(this.OnBrushChanged);
+			GridPaintingState.UnregisterPainterInterest(this);
+			PrefabUtility.prefabInstanceUpdated = (PrefabUtility.PrefabInstanceUpdated)Delegate.Remove(PrefabUtility.prefabInstanceUpdated, new PrefabUtility.PrefabInstanceUpdated(this.PrefabInstanceUpdated));
 		}
 
 		private void OnScenePaintTargetChanged(GameObject scenePaintTarget)
@@ -848,11 +882,6 @@ namespace UnityEditor
 			}
 		}
 
-		public void OnUndoRedoPerformed()
-		{
-			base.Repaint();
-		}
-
 		private void OnBrushInspectorGUI()
 		{
 			GridBrushBase gridBrush = GridPaintingState.gridBrush;
@@ -920,7 +949,7 @@ namespace UnityEditor
 			this.DoPalettesDropdown();
 			using (new EditorGUI.DisabledScope(this.palette == null))
 			{
-				this.clipboardView.unlocked = GUILayout.Toggle(this.clipboardView.unlocked, GridPaintPaletteWindow.Styles.edit, EditorStyles.toolbarButton, new GUILayoutOption[0]);
+				this.clipboardView.unlocked = GUILayout.Toggle(this.clipboardView.unlocked, (!this.clipboardView.isModified) ? GridPaintPaletteWindow.Styles.edit : GridPaintPaletteWindow.Styles.editModified, EditorStyles.toolbarButton, new GUILayoutOption[0]);
 			}
 			GUILayout.FlexibleSpace();
 			EditorGUILayout.EndHorizontal();

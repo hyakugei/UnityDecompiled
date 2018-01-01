@@ -113,12 +113,12 @@ namespace UnityEditor
 			this.m_Cache.Clear();
 		}
 
-		private Texture2D Generate(int renderDataIndex, int renderDataCount, bool overdraw)
+		private Texture2D Generate(int frameIndex, int renderDataIndex, int renderDataCount, bool overdraw)
 		{
-			return (!this.m_Disposed) ? ProfilerProperty.UISystemProfilerRender(renderDataIndex, renderDataCount, overdraw) : null;
+			return (!this.m_Disposed) ? ProfilerProperty.UISystemProfilerRender(frameIndex, renderDataIndex, renderDataCount, overdraw) : null;
 		}
 
-		public Texture2D GetThumbnail(int renderDataIndex, int infoRenderDataCount, bool overdraw)
+		public Texture2D GetThumbnail(int frameIndex, int renderDataIndex, int infoRenderDataCount, bool overdraw)
 		{
 			Texture2D result;
 			if (this.m_Disposed)
@@ -127,15 +127,10 @@ namespace UnityEditor
 			}
 			else
 			{
-				long key = (long)((ushort)renderDataIndex) << 32 | (long)((ushort)infoRenderDataCount & 32767) | (long)((!overdraw) ? 0 : 32768);
-				Texture2D texture2D = this.m_Cache.Get(key);
+				Texture2D texture2D = null;
 				if (texture2D == null)
 				{
-					texture2D = this.Generate(renderDataIndex, infoRenderDataCount, overdraw);
-					if (texture2D != null)
-					{
-						this.m_Cache.Add(key, texture2D);
-					}
+					texture2D = this.Generate(frameIndex, renderDataIndex, infoRenderDataCount, overdraw);
 				}
 				result = texture2D;
 			}

@@ -1,6 +1,6 @@
 using System;
 using System.Runtime.CompilerServices;
-using UnityEngine;
+using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine.Scripting;
 
 namespace UnityEngineInternal.Input
@@ -9,20 +9,19 @@ namespace UnityEngineInternal.Input
 	{
 		public static NativeUpdateCallback onUpdate;
 
-		public static NativeEventCallback onEvents;
+		public static NativeBeforeUpdateCallback onBeforeUpdate;
 
 		private static NativeDeviceDiscoveredCallback s_OnDeviceDiscoveredCallback;
 
-		public static event NativeDeviceDiscoveredCallback onDeviceDiscovered
+		public static NativeDeviceDiscoveredCallback onDeviceDiscovered
 		{
-			add
+			get
 			{
-				NativeInputSystem.s_OnDeviceDiscoveredCallback = (NativeDeviceDiscoveredCallback)Delegate.Combine(NativeInputSystem.s_OnDeviceDiscoveredCallback, value);
-				NativeInputSystem.hasDeviceDiscoveredCallback = (NativeInputSystem.s_OnDeviceDiscoveredCallback != null);
+				return NativeInputSystem.s_OnDeviceDiscoveredCallback;
 			}
-			remove
+			set
 			{
-				NativeInputSystem.s_OnDeviceDiscoveredCallback = (NativeDeviceDiscoveredCallback)Delegate.Remove(NativeInputSystem.s_OnDeviceDiscoveredCallback, value);
+				NativeInputSystem.s_OnDeviceDiscoveredCallback = value;
 				NativeInputSystem.hasDeviceDiscoveredCallback = (NativeInputSystem.s_OnDeviceDiscoveredCallback != null);
 			}
 		}
@@ -45,22 +44,22 @@ namespace UnityEngineInternal.Input
 		}
 
 		[RequiredByNativeCode]
-		internal static void NotifyUpdate(NativeInputUpdateType updateType)
+		internal static void NotifyBeforeUpdate(NativeInputUpdateType updateType)
 		{
-			NativeUpdateCallback nativeUpdateCallback = NativeInputSystem.onUpdate;
-			if (nativeUpdateCallback != null)
+			NativeBeforeUpdateCallback nativeBeforeUpdateCallback = NativeInputSystem.onBeforeUpdate;
+			if (nativeBeforeUpdateCallback != null)
 			{
-				nativeUpdateCallback(updateType);
+				nativeBeforeUpdateCallback(updateType);
 			}
 		}
 
 		[RequiredByNativeCode]
-		internal static void NotifyEvents(int eventCount, IntPtr eventData)
+		internal static void NotifyUpdate(NativeInputUpdateType updateType, int eventCount, IntPtr eventData)
 		{
-			NativeEventCallback nativeEventCallback = NativeInputSystem.onEvents;
-			if (nativeEventCallback != null)
+			NativeUpdateCallback nativeUpdateCallback = NativeInputSystem.onUpdate;
+			if (nativeUpdateCallback != null)
 			{
-				nativeEventCallback(eventCount, eventData);
+				nativeUpdateCallback(updateType, eventCount, eventData);
 			}
 		}
 
@@ -74,29 +73,22 @@ namespace UnityEngineInternal.Input
 			}
 		}
 
-		public static void SendInput<TInputEvent>(TInputEvent inputEvent) where TInputEvent : struct
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern int AllocateDeviceId();
+
+		public static void QueueInputEvent<TInputEvent>(ref TInputEvent inputEvent) where TInputEvent : struct
 		{
-			NativeInputSystem.SendInput(UnsafeUtility.AddressOf<TInputEvent>(ref inputEvent));
+			NativeInputSystem.QueueInputEvent(UnsafeUtility.AddressOf<TInputEvent>(ref inputEvent));
 		}
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern void SendInput(IntPtr inputEvent);
-
-		public static bool SendOutput<TOutputEvent>(int deviceId, int type, TOutputEvent outputEvent) where TOutputEvent : struct
-		{
-			return NativeInputSystem.SendOutput(deviceId, type, UnsafeUtility.SizeOf<TOutputEvent>(), UnsafeUtility.AddressOf<TOutputEvent>(ref outputEvent));
-		}
+		public static extern void QueueInputEvent(IntPtr inputEvent);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern bool SendOutput(int deviceId, int type, int sizeInBytes, IntPtr data);
-
-		public static string GetDeviceConfiguration(int deviceId)
-		{
-			return null;
-		}
+		public static extern int ReadDeviceData(int deviceId, int type, IntPtr data, int sizeInBytes);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern string GetControlConfiguration(int deviceId, int controlIndex);
+		public static extern int WriteDeviceData(int deviceId, int type, IntPtr data, int sizeInBytes);
 
 		public static void SetPollingFrequency(float hertz)
 		{
@@ -111,18 +103,15 @@ namespace UnityEngineInternal.Input
 		private static extern void SetPollingFrequencyInternal(float hertz);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void SendEvents();
+		public static extern void Update(NativeInputUpdateType updateType);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void Update(NativeInputUpdateType updateType);
+		public static extern int ReportNewInputDevice(string descriptor);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern int ReportNewInputDevice(string descriptor);
+		public static extern void ReportInputDeviceDisconnect(int nativeDeviceId);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void ReportInputDeviceDisconnect(int nativeDeviceId);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void ReportInputDeviceReconnect(int nativeDeviceId);
+		public static extern void ReportInputDeviceReconnect(int nativeDeviceId);
 	}
 }

@@ -25,10 +25,15 @@ namespace UnityEditor.U2D.Common
 				formatValues = TextureImportPlatformSettings.kTextureFormatsValueWebGL;
 				formatStrings = TextureImporterInspector.s_TextureFormatStringsWebGL;
 			}
-			else if (buildTarget == BuildTarget.WiiU)
+			else if (buildTarget == BuildTarget.PSP2)
 			{
-				formatValues = TextureImportPlatformSettings.kTextureFormatsValueWiiU;
-				formatStrings = TextureImporterInspector.s_TextureFormatStringsWiiU;
+				formatValues = TextureImportPlatformSettings.kTextureFormatsValuePSP2;
+				formatStrings = TextureImporterInspector.s_TextureFormatStringsPSP2;
+			}
+			else if (buildTarget == BuildTarget.Switch)
+			{
+				formatValues = TextureImportPlatformSettings.kTextureFormatsValueSwitch;
+				formatStrings = TextureImporterInspector.s_TextureFormatStringsSwitch;
 			}
 			else
 			{

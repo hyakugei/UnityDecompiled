@@ -4,6 +4,7 @@ namespace UnityEngine
 {
 	public enum ScreenOrientation
 	{
+		[Obsolete("Enum member Unknown has been deprecated.", false)]
 		Unknown,
 		Portrait,
 		PortraitUpsideDown,

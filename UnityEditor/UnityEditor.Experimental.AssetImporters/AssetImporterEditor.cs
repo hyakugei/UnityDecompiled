@@ -12,15 +12,39 @@ namespace UnityEditor.Experimental.AssetImporters
 
 		private Editor m_AssetEditor;
 
-		protected internal virtual Editor assetEditor
+		internal Editor assetEditor
 		{
-			get
+			private get
 			{
 				return this.m_AssetEditor;
 			}
-			internal set
+			set
 			{
 				this.m_AssetEditor = value;
+			}
+		}
+
+		protected internal UnityEngine.Object[] assetTargets
+		{
+			get
+			{
+				return (!(this.m_AssetEditor != null)) ? null : this.m_AssetEditor.targets;
+			}
+		}
+
+		protected internal UnityEngine.Object assetTarget
+		{
+			get
+			{
+				return (!(this.m_AssetEditor != null)) ? null : this.m_AssetEditor.target;
+			}
+		}
+
+		protected internal SerializedObject assetSerializedObject
+		{
+			get
+			{
+				return (!(this.m_AssetEditor != null)) ? null : this.m_AssetEditor.serializedObject;
 			}
 		}
 
@@ -28,20 +52,7 @@ namespace UnityEditor.Experimental.AssetImporters
 		{
 			get
 			{
-				string arg = string.Empty;
-				if (this.assetEditor != null && this.assetEditor.target == null)
-				{
-					this.assetEditor.InternalSetTargets(this.assetEditor.serializedObject.targetObjects);
-				}
-				if (this.assetEditor == null || this.assetEditor.target == null)
-				{
-					Debug.LogError("AssetImporterEditor: assetEditor has null targets!");
-				}
-				else
-				{
-					arg = this.assetEditor.targetTitle;
-				}
-				return string.Format("{0} Import Settings", arg);
+				return string.Format(L10n.Tr("{0} Import Settings"), (!(this.assetEditor == null)) ? this.assetEditor.targetTitle : string.Empty);
 			}
 		}
 
@@ -124,12 +135,12 @@ namespace UnityEditor.Experimental.AssetImporters
 			AssetImporter assetImporter = base.target as AssetImporter;
 			if (Unsupported.IsDestroyScriptableObject(this) && this.m_MightHaveModified && assetImporter != null && !InternalEditorUtility.ignoreInspectorChanges && this.HasModified() && !this.AssetWasUpdated())
 			{
-				string message = "Unapplied import settings for '" + assetImporter.assetPath + "'";
+				string message = string.Format(L10n.Tr("Unapplied import settings for '{0}'"), assetImporter.assetPath);
 				if (base.targets.Length > 1)
 				{
-					message = "Unapplied import settings for '" + base.targets.Length + "' files";
+					message = string.Format(L10n.Tr("Unapplied import settings for '{0}' files"), base.targets.Length);
 				}
-				if (EditorUtility.DisplayDialog("Unapplied import settings", message, "Apply", "Revert"))
+				if (EditorUtility.DisplayDialog(L10n.Tr("Unapplied import settings"), message, L10n.Tr("Apply"), L10n.Tr("Revert")))
 				{
 					this.Apply();
 					this.m_MightHaveModified = false;
@@ -233,7 +244,7 @@ namespace UnityEditor.Experimental.AssetImporters
 
 		protected void RevertButton()
 		{
-			this.RevertButton("Revert");
+			this.RevertButton(L10n.Tr("Revert"));
 		}
 
 		protected void RevertButton(string buttonText)
@@ -252,7 +263,7 @@ namespace UnityEditor.Experimental.AssetImporters
 
 		protected bool ApplyButton()
 		{
-			return this.ApplyButton("Apply");
+			return this.ApplyButton(L10n.Tr("Apply"));
 		}
 
 		protected bool ApplyButton(string buttonText)
@@ -283,26 +294,33 @@ namespace UnityEditor.Experimental.AssetImporters
 
 		protected void ApplyRevertGUI()
 		{
-			this.m_MightHaveModified = true;
-			EditorGUILayout.Space();
-			GUILayout.BeginHorizontal(new GUILayoutOption[0]);
-			GUILayout.FlexibleSpace();
-			bool flag = this.OnApplyRevertGUI();
-			if (this.AssetWasUpdated() && Event.current.type != EventType.Layout)
+			if (this.assetEditor == null || this.assetEditor.target == null)
 			{
-				IPreviewable preview = this.preview;
-				if (preview != null)
-				{
-					preview.ReloadPreviewInstances();
-				}
-				this.ResetTimeStamp();
-				this.ResetValues();
-				base.Repaint();
+				this.Apply();
 			}
-			GUILayout.EndHorizontal();
-			if (flag)
+			else
 			{
-				GUIUtility.ExitGUI();
+				this.m_MightHaveModified = true;
+				EditorGUILayout.Space();
+				GUILayout.BeginHorizontal(new GUILayoutOption[0]);
+				GUILayout.FlexibleSpace();
+				bool flag = this.OnApplyRevertGUI();
+				if (this.AssetWasUpdated() && Event.current.type != EventType.Layout)
+				{
+					IPreviewable preview = this.preview;
+					if (preview != null)
+					{
+						preview.ReloadPreviewInstances();
+					}
+					this.ResetTimeStamp();
+					this.ResetValues();
+					base.Repaint();
+				}
+				GUILayout.EndHorizontal();
+				if (flag)
+				{
+					GUIUtility.ExitGUI();
+				}
 			}
 		}
 	}

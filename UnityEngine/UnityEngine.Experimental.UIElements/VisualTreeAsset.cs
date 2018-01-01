@@ -213,12 +213,7 @@ namespace UnityEngine.Experimental.UIElements
 			}
 			TemplateAsset templateAsset = root as TemplateAsset;
 			List<VisualElementAsset> list;
-			VisualElement result;
-			if (!idToChildren.TryGetValue(root.id, out list))
-			{
-				result = visualElement;
-			}
-			else
+			if (idToChildren.TryGetValue(root.id, out list))
 			{
 				using (List<VisualElementAsset>.Enumerator enumerator = list.GetEnumerator())
 				{
@@ -262,13 +257,12 @@ namespace UnityEngine.Experimental.UIElements
 						}
 					}
 				}
-				if (templateAsset != null && context.slotInsertionPoints != null)
-				{
-					context.slotInsertionPoints.Clear();
-				}
-				result = visualElement;
 			}
-			return result;
+			if (templateAsset != null && context.slotInsertionPoints != null)
+			{
+				context.slotInsertionPoints.Clear();
+			}
+			return visualElement;
 		}
 
 		internal bool SlotDefinitionExists(string slotName)

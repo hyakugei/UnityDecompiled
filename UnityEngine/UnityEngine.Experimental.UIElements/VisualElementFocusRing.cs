@@ -184,7 +184,7 @@ namespace UnityEngine.Experimental.UIElements
 				{
 					KeyDownEvent keyDownEvent = e as KeyDownEvent;
 					EventModifiers modifiers = keyDownEvent.modifiers;
-					if (keyDownEvent.keyCode == KeyCode.Tab)
+					if (keyDownEvent.character == '\t')
 					{
 						if (currentFocusable == null)
 						{

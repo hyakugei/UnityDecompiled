@@ -16,6 +16,8 @@ namespace UnityEditor
 
 		internal SerializedObject m_SerializedObject;
 
+		internal string m_CachedLocalizedDisplayName = "";
+
 		public extern bool hasMultipleDifferentValues
 		{
 			[GeneratedByOldBindingsGenerator]
@@ -290,7 +292,7 @@ namespace UnityEditor
 			get;
 		}
 
-		internal extern string layerMaskStringValue
+		internal extern uint layerMaskBits
 		{
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
@@ -492,6 +494,16 @@ namespace UnityEditor
 			get;
 		}
 
+		internal extern bool isValidDisplayNameCache
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
 		public SerializedObject serializedObject
 		{
 			get
@@ -572,6 +584,50 @@ namespace UnityEditor
 			}
 		}
 
+		private bool isUnityAssembly
+		{
+			get
+			{
+				return EditorUtility.IsUnityAssembly(this.m_SerializedObject.targetObject);
+			}
+		}
+
+		internal string localizedDisplayName
+		{
+			get
+			{
+				if (!this.isValidDisplayNameCache)
+				{
+					this.isValidDisplayNameCache = true;
+					this.m_CachedLocalizedDisplayName = ((!this.isUnityAssembly) ? this.displayName : L10n.Tr(this.displayName));
+				}
+				return this.m_CachedLocalizedDisplayName;
+			}
+		}
+
+		internal string[] enumLocalizedDisplayNames
+		{
+			get
+			{
+				string[] enumDisplayNames = this.enumDisplayNames;
+				string[] result;
+				if (!this.isUnityAssembly)
+				{
+					result = enumDisplayNames;
+				}
+				else
+				{
+					string[] array = new string[enumDisplayNames.Length];
+					for (int i = 0; i < array.Length; i++)
+					{
+						array[i] = L10n.Tr(enumDisplayNames[i]);
+					}
+					result = array;
+				}
+				return result;
+			}
+		}
+
 		internal SerializedProperty()
 		{
 		}
@@ -607,6 +663,10 @@ namespace UnityEditor
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern void AppendFoldoutPPtrValue(UnityEngine.Object obj);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern string GetLayerMaskStringValue(uint layers);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -751,11 +811,15 @@ namespace UnityEditor
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern int[] GetLayerMaskSelectedIndex();
+		internal static extern int[] GetLayerMaskSelectedIndex(uint layers);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern string[] GetLayerMaskNames();
+		internal static extern string[] GetLayerMaskNames(uint layers);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern uint ToggleLayerMask(uint layers, int index);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Experimental.Rendering;
 
 namespace UnityEditor
 {
@@ -9,17 +10,17 @@ namespace UnityEditor
 	{
 		private class Styles
 		{
-			public static GUIContent colorGradient = EditorGUIUtility.TextContent("Color|The gradient describing the color along the trail.");
+			public static GUIContent colorGradient = EditorGUIUtility.TrTextContent("Color", "The gradient describing the color along the trail.", null);
 
-			public static GUIContent numCornerVertices = EditorGUIUtility.TextContent("Corner Vertices|How many vertices to add for each corner.");
+			public static GUIContent numCornerVertices = EditorGUIUtility.TrTextContent("Corner Vertices", "How many vertices to add for each corner.", null);
 
-			public static GUIContent numCapVertices = EditorGUIUtility.TextContent("End Cap Vertices|How many vertices to add at each end.");
+			public static GUIContent numCapVertices = EditorGUIUtility.TrTextContent("End Cap Vertices", "How many vertices to add at each end.", null);
 
-			public static GUIContent alignment = EditorGUIUtility.TextContent("Alignment|Trails can rotate to face their transform component or the camera. Note that when using Local mode, trails will face the XY plane of the Transform.");
+			public static GUIContent alignment = EditorGUIUtility.TrTextContent("Alignment", "Trails can rotate to face their transform component or the camera. Note that when using Local mode, trails will face the XY plane of the Transform.", null);
 
-			public static GUIContent textureMode = EditorGUIUtility.TextContent("Texture Mode|Should the U coordinate be stretched or tiled?");
+			public static GUIContent textureMode = EditorGUIUtility.TrTextContent("Texture Mode", "Should the U coordinate be stretched or tiled?", null);
 
-			public static GUIContent generateLightingData = EditorGUIUtility.TextContent("Generate Lighting Data|Toggle generation of normal and tangent data, for use in lit shaders.");
+			public static GUIContent generateLightingData = EditorGUIUtility.TrTextContent("Generate Lighting Data", "Toggle generation of normal and tangent data, for use in lit shaders.", null);
 		}
 
 		private string[] m_ExcludedProperties;
@@ -67,7 +68,17 @@ namespace UnityEditor
 		public override void OnInspectorGUI()
 		{
 			base.serializedObject.Update();
-			Editor.DrawPropertiesExcluding(this.m_SerializedObject, this.m_ExcludedProperties);
+			List<string> list = new List<string>();
+			if (!SupportedRenderingFeatures.active.rendererSupportsMotionVectors)
+			{
+				list.Add("m_MotionVectors");
+			}
+			if (!SupportedRenderingFeatures.active.rendererSupportsReceiveShadows)
+			{
+				list.Add("m_ReceiveShadows");
+			}
+			list.AddRange(this.m_ExcludedProperties);
+			Editor.DrawPropertiesExcluding(this.m_SerializedObject, list.ToArray());
 			this.m_CurveEditor.CheckCurveChangedExternally();
 			this.m_CurveEditor.OnInspectorGUI();
 			EditorGUILayout.PropertyField(this.m_ColorGradient, TrailRendererInspector.Styles.colorGradient, new GUILayoutOption[0]);
@@ -79,6 +90,7 @@ namespace UnityEditor
 			EditorGUILayout.Space();
 			base.RenderSortingLayerFields();
 			this.m_Probes.OnGUI(base.targets, (Renderer)base.target, false);
+			base.RenderRenderingLayer();
 			base.serializedObject.ApplyModifiedProperties();
 		}
 	}

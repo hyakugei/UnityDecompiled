@@ -17,7 +17,7 @@ namespace UnityEditor
 		protected override void OnEnable()
 		{
 			base.OnEnable();
-			base.titleContent = EditorGUIUtility.TextContent("Preview");
+			base.titleContent = EditorGUIUtility.TrTextContent("Preview", null, null);
 			base.minSize = new Vector2(260f, 220f);
 		}
 
@@ -35,7 +35,7 @@ namespace UnityEditor
 			}
 		}
 
-		public override Editor GetLastInteractedEditor()
+		internal override Editor GetLastInteractedEditor()
 		{
 			return this.m_ParentInspectorWindow.GetLastInteractedEditor();
 		}

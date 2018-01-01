@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.Scripting;
@@ -14,9 +15,13 @@ namespace UnityEditor
 	[EditorWindowTitle(title = "Console", useTypeNameAsIconName = true)]
 	internal class ConsoleWindow : EditorWindow, IHasCustomMenu
 	{
+		internal delegate void EntryDoubleClickedDelegate(LogEntry entry);
+
 		internal class Constants
 		{
 			private static bool ms_Loaded;
+
+			private static int ms_logStyleLineCount;
 
 			public static GUIStyle Box;
 
@@ -84,8 +89,18 @@ namespace UnityEditor
 
 			public static int LogStyleLineCount
 			{
-				get;
-				set;
+				get
+				{
+					return ConsoleWindow.Constants.ms_logStyleLineCount;
+				}
+				set
+				{
+					ConsoleWindow.Constants.ms_logStyleLineCount = value;
+					if (ConsoleWindow.Constants.ms_Loaded)
+					{
+						ConsoleWindow.Constants.UpdateLogStyleFixedHeights();
+					}
+				}
 			}
 
 			public static void Init()
@@ -120,11 +135,10 @@ namespace UnityEditor
 					ConsoleWindow.Constants.StatusLog = new GUIStyle("CN StatusInfo");
 					ConsoleWindow.Constants.CountBadge = new GUIStyle("CN CountBadge");
 					ConsoleWindow.Constants.LogStyleLineCount = EditorPrefs.GetInt("ConsoleWindowLogLineCount", 2);
-					ConsoleWindow.Constants.UpdateLogStyleFixedHeights();
 				}
 			}
 
-			public static void UpdateLogStyleFixedHeights()
+			private static void UpdateLogStyleFixedHeights()
 			{
 				ConsoleWindow.Constants.ErrorStyle.fixedHeight = (float)ConsoleWindow.Constants.LogStyleLineCount * ConsoleWindow.Constants.ErrorStyle.lineHeight + (float)ConsoleWindow.Constants.ErrorStyle.border.top;
 				ConsoleWindow.Constants.WarningStyle.fixedHeight = (float)ConsoleWindow.Constants.LogStyleLineCount * ConsoleWindow.Constants.WarningStyle.lineHeight + (float)ConsoleWindow.Constants.WarningStyle.border.top;
@@ -166,9 +180,9 @@ namespace UnityEditor
 				{
 					this.additionalMenuItems = new List<string>();
 					this.additionalMenuItems.Add("Player Logging");
-					if (Unsupported.IsDeveloperBuild())
+					if (Unsupported.IsDeveloperMode())
 					{
-						this.additionalMenuItems.Add("Full Log (Development Editor only)");
+						this.additionalMenuItems.Add("Full Log (Developer Mode Only)");
 					}
 					this.additionalMenuItems.Add("");
 				}
@@ -181,7 +195,7 @@ namespace UnityEditor
 				if (flag)
 				{
 					list2.Add(0);
-					if (Unsupported.IsDeveloperBuild())
+					if (Unsupported.IsDeveloperMode())
 					{
 						if (ScriptableSingleton<PlayerConnectionLogReceiver>.instance.State == PlayerConnectionLogReceiver.ConnectionState.FullLog)
 						{
@@ -208,7 +222,7 @@ namespace UnityEditor
 			}
 		}
 
-		private enum Mode
+		internal enum Mode
 		{
 			Error = 1,
 			Assert,
@@ -230,7 +244,8 @@ namespace UnityEditor
 			DontExtractStacktrace = 262144,
 			ShouldClearOnPlay = 524288,
 			GraphCompileError = 1048576,
-			ScriptingAssertion = 2097152
+			ScriptingAssertion = 2097152,
+			VisualScriptingError = 4194304
 		}
 
 		private enum ConsoleFlags
@@ -244,7 +259,8 @@ namespace UnityEditor
 			Autoscroll = 64,
 			LogLevelLog = 128,
 			LogLevelWarning = 256,
-			LogLevelError = 512
+			LogLevelError = 512,
+			ShowTimestamp = 1024
 		}
 
 		public struct StackTraceLogTypeData
@@ -311,6 +327,32 @@ namespace UnityEditor
 
 		[CompilerGenerated]
 		private static GenericMenu.MenuFunction <>f__mg$cache1;
+
+		private static event ConsoleWindow.EntryDoubleClickedDelegate entryWithManagedCallbackDoubleClicked
+		{
+			add
+			{
+				ConsoleWindow.EntryDoubleClickedDelegate entryDoubleClickedDelegate = ConsoleWindow.entryWithManagedCallbackDoubleClicked;
+				ConsoleWindow.EntryDoubleClickedDelegate entryDoubleClickedDelegate2;
+				do
+				{
+					entryDoubleClickedDelegate2 = entryDoubleClickedDelegate;
+					entryDoubleClickedDelegate = Interlocked.CompareExchange<ConsoleWindow.EntryDoubleClickedDelegate>(ref ConsoleWindow.entryWithManagedCallbackDoubleClicked, (ConsoleWindow.EntryDoubleClickedDelegate)Delegate.Combine(entryDoubleClickedDelegate2, value), entryDoubleClickedDelegate);
+				}
+				while (entryDoubleClickedDelegate != entryDoubleClickedDelegate2);
+			}
+			remove
+			{
+				ConsoleWindow.EntryDoubleClickedDelegate entryDoubleClickedDelegate = ConsoleWindow.entryWithManagedCallbackDoubleClicked;
+				ConsoleWindow.EntryDoubleClickedDelegate entryDoubleClickedDelegate2;
+				do
+				{
+					entryDoubleClickedDelegate2 = entryDoubleClickedDelegate;
+					entryDoubleClickedDelegate = Interlocked.CompareExchange<ConsoleWindow.EntryDoubleClickedDelegate>(ref ConsoleWindow.entryWithManagedCallbackDoubleClicked, (ConsoleWindow.EntryDoubleClickedDelegate)Delegate.Remove(entryDoubleClickedDelegate2, value), entryDoubleClickedDelegate);
+				}
+				while (entryDoubleClickedDelegate != entryDoubleClickedDelegate2);
+			}
+		}
 
 		private int RowHeight
 		{
@@ -382,7 +424,7 @@ namespace UnityEditor
 		{
 			base.titleContent = base.GetLocalizedTitleContent();
 			ConsoleWindow.ms_ConsoleWindow = this;
-			this.m_DevBuild = Unsupported.IsDeveloperBuild();
+			this.m_DevBuild = Unsupported.IsDeveloperMode();
 			ConsoleWindow.Constants.LogStyleLineCount = EditorPrefs.GetInt("ConsoleWindowLogLineCount", 2);
 		}
 
@@ -828,34 +870,40 @@ namespace UnityEditor
 		{
 			if (Application.platform == RuntimePlatform.OSXEditor)
 			{
-				GUIContent arg_34_1 = new GUIContent("Open Player Log");
-				bool arg_34_2 = false;
+				GUIContent arg_36_1 = EditorGUIUtility.TrTextContent("Open Player Log", null, null);
+				bool arg_36_2 = false;
 				if (ConsoleWindow.<>f__mg$cache0 == null)
 				{
 					ConsoleWindow.<>f__mg$cache0 = new GenericMenu.MenuFunction(InternalEditorUtility.OpenPlayerConsole);
 				}
-				menu.AddItem(arg_34_1, arg_34_2, ConsoleWindow.<>f__mg$cache0);
+				menu.AddItem(arg_36_1, arg_36_2, ConsoleWindow.<>f__mg$cache0);
 			}
-			GUIContent arg_62_1 = new GUIContent("Open Editor Log");
-			bool arg_62_2 = false;
+			GUIContent arg_66_1 = EditorGUIUtility.TrTextContent("Open Editor Log", null, null);
+			bool arg_66_2 = false;
 			if (ConsoleWindow.<>f__mg$cache1 == null)
 			{
 				ConsoleWindow.<>f__mg$cache1 = new GenericMenu.MenuFunction(InternalEditorUtility.OpenEditorConsole);
 			}
-			menu.AddItem(arg_62_1, arg_62_2, ConsoleWindow.<>f__mg$cache1);
+			menu.AddItem(arg_66_1, arg_66_2, ConsoleWindow.<>f__mg$cache1);
+			menu.AddItem(EditorGUIUtility.TrTextContent("Show Timestamp", null, null), ConsoleWindow.HasFlag(ConsoleWindow.ConsoleFlags.ShowTimestamp), new GenericMenu.MenuFunction(this.SetTimestamp));
 			for (int i = 1; i <= 10; i++)
 			{
-				menu.AddItem(new GUIContent(string.Format("Log Entry/{0} Lines", i)), i == ConsoleWindow.Constants.LogStyleLineCount, new GenericMenu.MenuFunction2(this.SetLogLineCount), i);
+				string arg = (i != 1) ? "Lines" : "Line";
+				menu.AddItem(new GUIContent(string.Format("Log Entry/{0} {1}", i, arg)), i == ConsoleWindow.Constants.LogStyleLineCount, new GenericMenu.MenuFunction2(this.SetLogLineCount), i);
 			}
 			this.AddStackTraceLoggingMenu(menu);
+		}
+
+		private void SetTimestamp()
+		{
+			ConsoleWindow.SetFlag(ConsoleWindow.ConsoleFlags.ShowTimestamp, !ConsoleWindow.HasFlag(ConsoleWindow.ConsoleFlags.ShowTimestamp));
 		}
 
 		private void SetLogLineCount(object obj)
 		{
 			int num = (int)obj;
-			ConsoleWindow.Constants.LogStyleLineCount = num;
 			EditorPrefs.SetInt("ConsoleWindowLogLineCount", num);
-			ConsoleWindow.Constants.UpdateLogStyleFixedHeights();
+			ConsoleWindow.Constants.LogStyleLineCount = num;
 			this.UpdateListView();
 		}
 
@@ -876,13 +924,13 @@ namespace UnityEditor
 							ConsoleWindow.StackTraceLogTypeData stackTraceLogTypeData;
 							stackTraceLogTypeData.logType = logType;
 							stackTraceLogTypeData.stackTraceLogType = stackTraceLogType;
-							menu.AddItem(new GUIContent(string.Concat(new object[]
+							menu.AddItem(EditorGUIUtility.TrTextContent(string.Concat(new object[]
 							{
 								"Stack Trace Logging/",
 								logType,
 								"/",
 								stackTraceLogType
-							})), PlayerSettings.GetStackTraceLogType(logType) == stackTraceLogType, new GenericMenu.MenuFunction2(this.ToggleLogStackTraces), stackTraceLogTypeData);
+							}), null, null), PlayerSettings.GetStackTraceLogType(logType) == stackTraceLogType, new GenericMenu.MenuFunction2(this.ToggleLogStackTraces), stackTraceLogTypeData);
 						}
 					}
 					finally
@@ -931,7 +979,7 @@ namespace UnityEditor
 				while (enumerator4.MoveNext())
 				{
 					StackTraceLogType stackTraceLogType2 = (StackTraceLogType)enumerator4.Current;
-					menu.AddItem(new GUIContent("Stack Trace Logging/All/" + stackTraceLogType2), num == (int)stackTraceLogType2, new GenericMenu.MenuFunction2(this.ToggleLogStackTracesForAll), stackTraceLogType2);
+					menu.AddItem(EditorGUIUtility.TrTextContent("Stack Trace Logging/All/" + stackTraceLogType2, null, null), num == (int)stackTraceLogType2, new GenericMenu.MenuFunction2(this.ToggleLogStackTracesForAll), stackTraceLogType2);
 				}
 			}
 			finally
@@ -941,6 +989,14 @@ namespace UnityEditor
 				{
 					disposable4.Dispose();
 				}
+			}
+		}
+
+		private static void SendEntryDoubleClicked(LogEntry entry)
+		{
+			if (ConsoleWindow.entryWithManagedCallbackDoubleClicked != null)
+			{
+				ConsoleWindow.entryWithManagedCallbackDoubleClicked(entry);
 			}
 		}
 	}

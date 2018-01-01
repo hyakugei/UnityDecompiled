@@ -4,27 +4,37 @@ using UnityEngine.Experimental.UIElements;
 
 namespace UnityEditor.Experimental.UIElements.GraphView
 {
-	internal class ContentZoomer : Manipulator
+	public class ContentZoomer : Manipulator
 	{
-		public static readonly Vector3 DefaultMinScale = new Vector3(0.1f, 0.1f, 1f);
+		public static readonly float DefaultReferenceScale = 1f;
 
-		public static readonly Vector3 DefaultMaxScale = new Vector3(3f, 3f, 1f);
+		public static readonly float DefaultMinScale = 0.25f;
+
+		public static readonly float DefaultMaxScale = 1f;
+
+		public static readonly float DefaultScaleStep = 0.15f;
 
 		private IVisualElementScheduledItem m_OnTimerTicker;
 
-		public float zoomStep
+		public float referenceScale
 		{
 			get;
 			set;
 		}
 
-		public Vector3 minScale
+		public float minScale
 		{
 			get;
 			set;
 		}
 
-		public Vector3 maxScale
+		public float maxScale
+		{
+			get;
+			set;
+		}
+
+		public float scaleStep
 		{
 			get;
 			set;
@@ -44,18 +54,11 @@ namespace UnityEditor.Experimental.UIElements.GraphView
 
 		public ContentZoomer()
 		{
-			this.zoomStep = 0.01f;
-			this.minScale = ContentZoomer.DefaultMinScale;
-			this.maxScale = ContentZoomer.DefaultMaxScale;
-			this.keepPixelCacheOnZoom = false;
-		}
-
-		public ContentZoomer(Vector3 minScale, Vector3 maxScale)
-		{
-			this.zoomStep = 0.01f;
-			this.minScale = minScale;
-			this.maxScale = maxScale;
-			this.keepPixelCacheOnZoom = false;
+			this.<referenceScale>k__BackingField = ContentZoomer.DefaultReferenceScale;
+			this.<minScale>k__BackingField = ContentZoomer.DefaultMinScale;
+			this.<maxScale>k__BackingField = ContentZoomer.DefaultMaxScale;
+			this.<scaleStep>k__BackingField = ContentZoomer.DefaultScaleStep;
+			base..ctor();
 		}
 
 		protected override void RegisterCallbacksOnTarget()
@@ -85,36 +88,94 @@ namespace UnityEditor.Experimental.UIElements.GraphView
 			}
 		}
 
+		private static float CalculateNewZoom(float currentZoom, float wheelDelta, float zoomStep, float referenceZoom, float minZoom, float maxZoom)
+		{
+			float result;
+			if (minZoom <= 0f)
+			{
+				Debug.LogError(string.Format("The minimum zoom ({0}) must be greater than zero.", minZoom));
+				result = currentZoom;
+			}
+			else if (referenceZoom < minZoom)
+			{
+				Debug.LogError(string.Format("The reference zoom ({0}) must be greater than or equal to the minimum zoom ({1}).", referenceZoom, minZoom));
+				result = currentZoom;
+			}
+			else if (referenceZoom > maxZoom)
+			{
+				Debug.LogError(string.Format("The reference zoom ({0}) must be less than or equal to the maximum zoom ({1}).", referenceZoom, maxZoom));
+				result = currentZoom;
+			}
+			else if (zoomStep < 0f)
+			{
+				Debug.LogError(string.Format("The zoom step ({0}) must be greater than or equal to zero.", zoomStep));
+				result = currentZoom;
+			}
+			else
+			{
+				currentZoom = Mathf.Clamp(currentZoom, minZoom, maxZoom);
+				if (Mathf.Approximately(wheelDelta, 0f))
+				{
+					result = currentZoom;
+				}
+				else
+				{
+					double num = Math.Log((double)referenceZoom, (double)(1f + zoomStep));
+					double num2 = (double)referenceZoom - Math.Pow((double)(1f + zoomStep), num);
+					double num3 = Math.Log((double)minZoom - num2, (double)(1f + zoomStep)) - num;
+					double num4 = Math.Log((double)maxZoom - num2, (double)(1f + zoomStep)) - num;
+					double num5 = Math.Log((double)currentZoom - num2, (double)(1f + zoomStep)) - num;
+					wheelDelta = (float)Math.Sign(wheelDelta);
+					num5 += (double)wheelDelta;
+					if (num5 > num4 - 0.5)
+					{
+						result = maxZoom;
+					}
+					else if (num5 < num3 + 0.5)
+					{
+						result = minZoom;
+					}
+					else
+					{
+						num5 = Math.Round(num5);
+						result = (float)(Math.Pow((double)(1f + zoomStep), num5 + num) + num2);
+					}
+				}
+			}
+			return result;
+		}
+
 		private void OnWheel(WheelEvent evt)
 		{
 			GraphView graphView = base.target as GraphView;
 			if (graphView != null)
 			{
-				Vector3 vector = graphView.viewTransform.position;
-				Vector3 vector2 = graphView.viewTransform.scale;
-				Vector2 vector3 = base.target.ChangeCoordinatesTo(graphView.contentViewContainer, evt.localMousePosition);
-				float x = vector3.x + graphView.contentViewContainer.layout.x;
-				float y = vector3.y + graphView.contentViewContainer.layout.y;
-				vector += Vector3.Scale(new Vector3(x, y, 0f), vector2);
-				Vector3 b = Vector3.one - Vector3.one * evt.delta.y * this.zoomStep;
-				b.z = 1f;
-				vector2 = Vector3.Scale(vector2, b);
-				vector2.x = Mathf.Max(Mathf.Min(this.maxScale.x, vector2.x), this.minScale.x);
-				vector2.y = Mathf.Max(Mathf.Min(this.maxScale.y, vector2.y), this.minScale.y);
-				vector2.z = Mathf.Max(Mathf.Min(this.maxScale.z, vector2.z), this.minScale.z);
-				vector -= Vector3.Scale(new Vector3(x, y, 0f), vector2);
-				if (graphView.elementPanel != null && this.keepPixelCacheOnZoom)
+				if (!MouseCaptureController.IsMouseCaptureTaken())
 				{
-					graphView.elementPanel.keepPixelCacheOnWorldBoundChange = true;
-					if (this.m_OnTimerTicker == null)
+					Vector3 vector = graphView.viewTransform.position;
+					Vector3 scale = graphView.viewTransform.scale;
+					Vector2 vector2 = base.target.ChangeCoordinatesTo(graphView.contentViewContainer, evt.localMousePosition);
+					float x = vector2.x + graphView.contentViewContainer.layout.x;
+					float y = vector2.y + graphView.contentViewContainer.layout.y;
+					vector += Vector3.Scale(new Vector3(x, y, 0f), scale);
+					float num = ContentZoomer.CalculateNewZoom(scale.y, -evt.delta.y, this.scaleStep, this.referenceScale, this.minScale, this.maxScale);
+					scale.x = num;
+					scale.y = num;
+					scale.z = 1f;
+					vector -= Vector3.Scale(new Vector3(x, y, 0f), scale);
+					if (graphView.elementPanel != null && this.keepPixelCacheOnZoom)
 					{
-						this.m_OnTimerTicker = graphView.schedule.Execute(new Action<TimerState>(this.OnTimer));
+						graphView.elementPanel.keepPixelCacheOnWorldBoundChange = true;
+						if (this.m_OnTimerTicker == null)
+						{
+							this.m_OnTimerTicker = graphView.schedule.Execute(new Action<TimerState>(this.OnTimer));
+						}
+						this.m_OnTimerTicker.ExecuteLater(500L);
+						this.delayRepaintScheduled = true;
 					}
-					this.m_OnTimerTicker.ExecuteLater(500L);
-					this.delayRepaintScheduled = true;
+					graphView.UpdateViewTransform(vector, scale);
+					evt.StopPropagation();
 				}
-				graphView.UpdateViewTransform(vector, vector2);
-				evt.StopPropagation();
 			}
 		}
 	}

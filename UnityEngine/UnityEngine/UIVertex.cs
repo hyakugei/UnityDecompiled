@@ -10,6 +10,8 @@ namespace UnityEngine
 
 		public Vector3 normal;
 
+		public Vector4 tangent;
+
 		public Color32 color;
 
 		public Vector2 uv0;
@@ -19,8 +21,6 @@ namespace UnityEngine
 		public Vector2 uv2;
 
 		public Vector2 uv3;
-
-		public Vector4 tangent;
 
 		private static readonly Color32 s_DefaultColor = new Color32(255, 255, 255, 255);
 

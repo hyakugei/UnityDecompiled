@@ -1,85 +1,105 @@
 using System;
 using System.Runtime.CompilerServices;
 using UnityEngine;
+using UnityEngine.Bindings;
 using UnityEngine.Scripting;
 
 namespace UnityEditor.VersionControl
 {
-	public sealed class Provider
+	public class Provider
 	{
+		[UsedByNativeCode]
+		private struct Traits
+		{
+			public bool requiresNetwork;
+
+			public bool enablesCheckout;
+
+			public bool enablesVersioningFolders;
+
+			public bool enablesChangelists;
+		}
+
 		public static extern bool enabled
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
 
 		public static extern bool isActive
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
 
-		public static extern bool requiresNetwork
+		private static Provider.Traits activeTraits
 		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
+			get
+			{
+				Provider.Traits result;
+				Provider.get_activeTraits_Injected(out result);
+				return result;
+			}
 		}
 
-		public static extern bool hasChangelistSupport
+		public static bool requiresNetwork
 		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
+			get
+			{
+				return Provider.activeTraits.requiresNetwork;
+			}
 		}
 
-		public static extern bool hasCheckoutSupport
+		public static bool hasChangelistSupport
 		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
+			get
+			{
+				return Provider.activeTraits.enablesChangelists;
+			}
 		}
 
-		public static extern bool isVersioningFolders
+		public static bool hasCheckoutSupport
 		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
+			get
+			{
+				return Provider.activeTraits.enablesCheckout;
+			}
+		}
+
+		public static bool isVersioningFolders
+		{
+			get
+			{
+				return Provider.activeTraits.enablesVersioningFolders;
+			}
 		}
 
 		public static extern OnlineState onlineState
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
 
 		public static extern string offlineReason
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
 
 		public static extern Task activeTask
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
 
 		internal static extern Texture2D overlayAtlas
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
 
 		internal static extern CustomCommand[] customCommands
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
@@ -87,207 +107,154 @@ namespace UnityEditor.VersionControl
 		internal static Rect GetAtlasRectForState(int state)
 		{
 			Rect result;
-			Provider.INTERNAL_CALL_GetAtlasRectForState(state, out result);
+			Provider.GetAtlasRectForState_Injected(state, out result);
 			return result;
 		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_GetAtlasRectForState(int state, out Rect value);
-
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern Plugin GetActivePlugin();
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern ConfigField[] GetActiveConfigFields();
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern bool IsCustomCommandEnabled(string name);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern Asset Internal_CacheStatus(string assetPath);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern Task Internal_Status(Asset[] assets, bool recursively);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern Task Internal_StatusStrings(string[] assetsProjectPaths, bool recursively);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern Task Internal_StatusAbsolutePath(string assetPath);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern bool Internal_CheckoutIsValid(Asset[] assets, CheckoutMode mode);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern Task Internal_Checkout(Asset[] assets, CheckoutMode mode);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern Task Internal_CheckoutStrings(string[] assets, CheckoutMode mode);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern bool Internal_PromptAndCheckoutIfNeeded(string[] assets, string promptIfCheckoutIsNeeded);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern Task Internal_Delete(Asset[] assets);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern Task Internal_DeleteAtProjectPath(string assetProjectPath);
+		private static extern Task Internal_DeleteAtProjectPath([NotNull] string assetProjectPath);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern Task Internal_MoveAsStrings(string from, string to);
+		private static extern Task Internal_MoveAsStrings([NotNull] string from, [NotNull] string to);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern bool Internal_AddIsValid(Asset[] assets);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern Task Internal_Add(Asset[] assets, bool recursive);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern bool Internal_DeleteChangeSetsIsValid(ChangeSet[] changes);
+		private static extern bool Internal_DeleteChangeSetsIsValid(ChangeSet[] changesets);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern Task Internal_DeleteChangeSets(ChangeSet[] changesets);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern Task Internal_RevertChangeSets(ChangeSet[] changesets, RevertMode mode);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern bool Internal_SubmitIsValid(ChangeSet changeset, Asset[] assets);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern Task Internal_Submit(ChangeSet changeset, Asset[] assets, string description, bool saveOnly);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern bool Internal_DiffIsValid(Asset[] assets);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern Task Internal_DiffHead(Asset[] assets, bool includingMetaFiles);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern bool Internal_ResolveIsValid(Asset[] assets);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern Task Internal_Resolve(Asset[] assets, ResolveMethod resolveMethod);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern Task Internal_Merge(Asset[] assets, MergeMethod method);
+		private static extern Task Internal_Merge(Asset[] assets, MergeMethod mergeMethod);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern bool Internal_LockIsValid(Asset[] assets);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern bool Internal_UnlockIsValid(Asset[] assets);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern Task Internal_Lock(Asset[] assets, bool locked);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern bool Internal_RevertIsValid(Asset[] assets, RevertMode mode);
+		private static extern bool Internal_RevertIsValid(Asset[] assets, RevertMode revertMode);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern Task Internal_Revert(Asset[] assets, RevertMode mode);
+		private static extern Task Internal_Revert(Asset[] assets, RevertMode revertMode);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern bool Internal_GetLatestIsValid(Asset[] assets);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern Task Internal_GetLatest(Asset[] assets);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern Task Internal_SetFileMode(Asset[] assets, FileMode mode);
+		private static extern Task Internal_SetFileMode(Asset[] assets, FileMode fileMode);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern Task Internal_SetFileModeStrings(string[] assets, FileMode mode);
+		private static extern Task Internal_SetFileModeStrings(string[] assets, FileMode fileMode);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern Task Internal_ChangeSetDescription(ChangeSet changeset);
+		private static extern Task Internal_ChangeSetDescription([NotNull] ChangeSet changeset);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern Task Internal_ChangeSetStatus(ChangeSet changeset);
+		private static extern Task Internal_ChangeSetStatus([NotNull] ChangeSet changeset);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern Task ChangeSets();
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern Task Internal_ChangeSetMove(Asset[] assets, ChangeSet target);
+		private static extern Task Internal_ChangeSetMove(Asset[] assets, [NotNull] ChangeSet target);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern Task Incoming();
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern Task Internal_IncomingChangeSetAssets(ChangeSet changeset);
+		private static extern Task Internal_IncomingChangeSetAssets([NotNull] ChangeSet changeset);
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern bool IsOpenForEdit(Asset asset);
-
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern Task UpdateSettings();
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern Asset GetAssetByPath(string unityPath);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern Asset GetAssetByGUID(string guid);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern Asset[] Internal_GetAssetArrayFromSelection();
 
-		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern bool IsOpenForEdit([NotNull] Asset asset);
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern int GenerateID();
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void ClearCache();
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern void InvalidateCache();
 
@@ -686,5 +653,11 @@ namespace UnityEditor.VersionControl
 			}
 			return assetList;
 		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void get_activeTraits_Injected(out Provider.Traits ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void GetAtlasRectForState_Injected(int state, out Rect ret);
 	}
 }

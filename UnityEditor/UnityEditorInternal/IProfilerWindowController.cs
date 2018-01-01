@@ -1,4 +1,5 @@
 using System;
+using UnityEditorInternal.Profiling;
 
 namespace UnityEditorInternal
 {
@@ -8,15 +9,17 @@ namespace UnityEditorInternal
 
 		void ClearSelectedPropertyPath();
 
+		void SetClearOnPlay(bool enabled);
+
+		bool GetClearOnPlay();
+
 		ProfilerProperty GetRootProfilerProperty(ProfilerColumn sortType);
+
+		FrameDataView GetFrameDataView(ProfilerViewType viewType, ProfilerColumn profilerSortColumn, bool sortAscending);
 
 		int GetActiveVisibleFrameIndex();
 
-		void SetSearch(string searchString);
-
-		string GetSearch();
-
-		bool IsSearching();
+		bool IsRecording();
 
 		void Repaint();
 	}

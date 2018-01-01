@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.UIElements.GraphView
 {
 	[Serializable]
-	internal abstract class GraphElementPresenter : ScriptableObject
+	public abstract class GraphElementPresenter : ScriptableObject
 	{
 		[SerializeField]
 		private bool m_Selected;
@@ -56,6 +57,15 @@ namespace UnityEditor.Experimental.UIElements.GraphView
 			}
 		}
 
+		public virtual bool isFloating
+		{
+			[CompilerGenerated]
+			get
+			{
+				return false;
+			}
+		}
+
 		public virtual IEnumerable<GraphElementPresenter> allChildren
 		{
 			get
@@ -86,7 +96,7 @@ namespace UnityEditor.Experimental.UIElements.GraphView
 
 		protected virtual void OnEnable()
 		{
-			this.capabilities = (Capabilities.Normal | Capabilities.Selectable | Capabilities.Movable);
+			this.capabilities = (Capabilities.Selectable | Capabilities.Movable);
 		}
 
 		public virtual void OnRemoveFromGraph()

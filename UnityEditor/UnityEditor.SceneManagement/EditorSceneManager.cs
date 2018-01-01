@@ -291,7 +291,7 @@ namespace UnityEditor.SceneManagement
 
 		internal static bool CreateSceneAsset(string scenePath, bool createDefaultGameObjects)
 		{
-			return Paths.IsValidAssetPathWithErrorLogging(scenePath, ".unity") && EditorSceneManager.Internal_CreateSceneAsset(scenePath, createDefaultGameObjects);
+			return Paths.CheckValidAssetPathAndThatDirectoryExists(scenePath, ".unity") && EditorSceneManager.Internal_CreateSceneAsset(scenePath, createDefaultGameObjects);
 		}
 
 		[GeneratedByOldBindingsGenerator]
@@ -395,7 +395,7 @@ namespace UnityEditor.SceneManagement
 
 		public static bool SaveScene(Scene scene, [DefaultValue("\"\"")] string dstScenePath, [DefaultValue("false")] bool saveAsCopy)
 		{
-			return (string.IsNullOrEmpty(dstScenePath) || Paths.IsValidAssetPathWithErrorLogging(dstScenePath, ".unity")) && EditorSceneManager.Internal_SaveScene(scene, dstScenePath, saveAsCopy);
+			return (string.IsNullOrEmpty(dstScenePath) || Paths.CheckValidAssetPathAndThatDirectoryExists(dstScenePath, ".unity")) && EditorSceneManager.Internal_SaveScene(scene, dstScenePath, saveAsCopy);
 		}
 
 		private static bool Internal_SaveScene(Scene scene, string dstScenePath, bool saveAsCopy)

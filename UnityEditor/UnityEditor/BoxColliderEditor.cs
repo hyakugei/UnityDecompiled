@@ -13,9 +13,9 @@ namespace UnityEditor
 
 		private readonly BoxBoundsHandle m_BoundsHandle = new BoxBoundsHandle();
 
-		protected GUIContent centerContent = EditorGUIUtility.TextContent("Center|The position of the Collider in the object’s local space.");
+		protected GUIContent centerContent = EditorGUIUtility.TrTextContent("Center", "The position of the Collider in the object’s local space.", null);
 
-		protected GUIContent sizeContent = EditorGUIUtility.TextContent("Size|The size of the Collider in the X, Y, Z directions.");
+		protected GUIContent sizeContent = EditorGUIUtility.TrTextContent("Size", "The size of the Collider in the X, Y, Z directions.", null);
 
 		protected override PrimitiveBoundsHandle boundsHandle
 		{

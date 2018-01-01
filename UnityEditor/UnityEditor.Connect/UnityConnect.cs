@@ -226,7 +226,6 @@ namespace UnityEditor.Connect
 
 		private UnityConnect()
 		{
-			PackageUtils.instance.RetrievePackageInfo();
 		}
 
 		static UnityConnect()

@@ -14,17 +14,17 @@ namespace UnityEditor
 	{
 		private static class SpriteUtilityStrings
 		{
-			public static readonly GUIContent saveAnimDialogMessage = EditorGUIUtility.TextContent("Create a new animation for the game object '{0}':");
+			public static readonly GUIContent saveAnimDialogMessage = EditorGUIUtility.TrTextContent("Create a new animation for the game object '{0}':", null, null);
 
-			public static readonly GUIContent saveAnimDialogTitle = EditorGUIUtility.TextContent("Create New Animation");
+			public static readonly GUIContent saveAnimDialogTitle = EditorGUIUtility.TrTextContent("Create New Animation", null, null);
 
-			public static readonly GUIContent saveAnimDialogName = EditorGUIUtility.TextContent("New Animation");
+			public static readonly GUIContent saveAnimDialogName = EditorGUIUtility.TrTextContent("New Animation", null, null);
 
-			public static readonly GUIContent unableToFindSpriteRendererWarning = EditorGUIUtility.TextContent("There should be a SpriteRenderer in dragged object");
+			public static readonly GUIContent unableToFindSpriteRendererWarning = EditorGUIUtility.TrTextContent("There should be a SpriteRenderer in dragged object", null, null);
 
-			public static readonly GUIContent unableToAddSpriteRendererWarning = EditorGUIUtility.TextContent("Unable to add SpriteRenderer into Gameobject.");
+			public static readonly GUIContent unableToAddSpriteRendererWarning = EditorGUIUtility.TrTextContent("Unable to add SpriteRenderer into Gameobject.", null, null);
 
-			public static readonly GUIContent failedToCreateAnimationError = EditorGUIUtility.TextContent("Failed to create animation for dragged object");
+			public static readonly GUIContent failedToCreateAnimationError = EditorGUIUtility.TrTextContent("Failed to create animation for dragged object", null, null);
 		}
 
 		private enum DragType
@@ -77,107 +77,110 @@ namespace UnityEditor
 		{
 			if (evt.type == EventType.DragUpdated || evt.type == EventType.DragPerform || evt.type == EventType.DragExited)
 			{
-				if (objectReferences.Length == 1 && objectReferences[0] as UnityEngine.Texture2D != null)
+				if (!objectReferences.Any((UnityEngine.Object obj) => obj == null))
 				{
-					GameObject gameObject = HandleUtility.PickGameObject(evt.mousePosition, true);
-					if (gameObject != null)
+					if (objectReferences.Length == 1 && objectReferences[0] as UnityEngine.Texture2D != null)
 					{
-						Renderer component = gameObject.GetComponent<Renderer>();
-						if (component != null && !(component is SpriteRenderer))
+						GameObject gameObject = HandleUtility.PickGameObject(evt.mousePosition, true);
+						if (gameObject != null)
 						{
-							SpriteUtility.CleanUp(true);
-							return;
-						}
-					}
-				}
-				EventType type = evt.type;
-				if (type != EventType.DragUpdated)
-				{
-					if (type != EventType.DragPerform)
-					{
-						if (type == EventType.DragExited)
-						{
-							if (SpriteUtility.s_SceneDragObjects != null)
+							Renderer component = gameObject.GetComponent<Renderer>();
+							if (component != null && !(component is SpriteRenderer))
 							{
 								SpriteUtility.CleanUp(true);
+								return;
+							}
+						}
+					}
+					EventType type = evt.type;
+					if (type != EventType.DragUpdated)
+					{
+						if (type != EventType.DragPerform)
+						{
+							if (type == EventType.DragExited)
+							{
+								if (SpriteUtility.s_SceneDragObjects != null)
+								{
+									SpriteUtility.CleanUp(true);
+									evt.Use();
+								}
+							}
+						}
+						else
+						{
+							List<Sprite> spriteFromPathsOrObjects = SpriteUtility.GetSpriteFromPathsOrObjects(objectReferences, paths, evt.type);
+							if (spriteFromPathsOrObjects.Count > 0 && SpriteUtility.s_SceneDragObjects != null)
+							{
+								int currentGroup = Undo.GetCurrentGroup();
+								if (SpriteUtility.s_SceneDragObjects.Count == 0)
+								{
+									SpriteUtility.CreateSceneDragObjects(spriteFromPathsOrObjects);
+									SpriteUtility.PositionSceneDragObjects(SpriteUtility.s_SceneDragObjects, sceneView, evt.mousePosition);
+								}
+								using (List<UnityEngine.Object>.Enumerator enumerator = SpriteUtility.s_SceneDragObjects.GetEnumerator())
+								{
+									while (enumerator.MoveNext())
+									{
+										GameObject gameObject2 = (GameObject)enumerator.Current;
+										gameObject2.hideFlags = HideFlags.None;
+										Undo.RegisterCreatedObjectUndo(gameObject2, "Create Sprite");
+										EditorUtility.SetDirty(gameObject2);
+									}
+								}
+								bool flag = true;
+								if (SpriteUtility.s_DragType == SpriteUtility.DragType.SpriteAnimation && spriteFromPathsOrObjects.Count > 1)
+								{
+									UsabilityAnalytics.Event("Sprite Drag and Drop", "Drop multiple sprites to scene", "null", 1);
+									flag = SpriteUtility.AddAnimationToGO((GameObject)SpriteUtility.s_SceneDragObjects[0], spriteFromPathsOrObjects.ToArray(), saveFileDialog);
+								}
+								else
+								{
+									UsabilityAnalytics.Event("Sprite Drag and Drop", "Drop single sprite to scene", "null", 1);
+								}
+								if (flag)
+								{
+									Selection.objects = SpriteUtility.s_SceneDragObjects.ToArray();
+								}
+								else
+								{
+									Undo.RevertAllDownToGroup(currentGroup);
+								}
+								SpriteUtility.CleanUp(!flag);
 								evt.Use();
 							}
 						}
 					}
 					else
 					{
-						List<Sprite> spriteFromPathsOrObjects = SpriteUtility.GetSpriteFromPathsOrObjects(objectReferences, paths, evt.type);
-						if (spriteFromPathsOrObjects.Count > 0 && SpriteUtility.s_SceneDragObjects != null)
+						SpriteUtility.DragType dragType = (!evt.alt) ? SpriteUtility.DragType.SpriteAnimation : SpriteUtility.DragType.CreateMultiple;
+						if (SpriteUtility.s_DragType != dragType || SpriteUtility.s_SceneDragObjects == null)
 						{
-							int currentGroup = Undo.GetCurrentGroup();
-							if (SpriteUtility.s_SceneDragObjects.Count == 0)
+							if (!SpriteUtility.ExistingAssets(objectReferences) && SpriteUtility.PathsAreValidTextures(paths))
 							{
-								SpriteUtility.CreateSceneDragObjects(spriteFromPathsOrObjects);
-								SpriteUtility.PositionSceneDragObjects(SpriteUtility.s_SceneDragObjects, sceneView, evt.mousePosition);
+								DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
+								SpriteUtility.s_SceneDragObjects = new List<UnityEngine.Object>();
+								SpriteUtility.s_DragType = dragType;
 							}
-							using (List<UnityEngine.Object>.Enumerator enumerator = SpriteUtility.s_SceneDragObjects.GetEnumerator())
+							else
 							{
-								while (enumerator.MoveNext())
+								List<Sprite> spriteFromPathsOrObjects2 = SpriteUtility.GetSpriteFromPathsOrObjects(objectReferences, paths, evt.type);
+								if (spriteFromPathsOrObjects2.Count == 0)
 								{
-									GameObject gameObject2 = (GameObject)enumerator.Current;
-									gameObject2.hideFlags = HideFlags.None;
-									Undo.RegisterCreatedObjectUndo(gameObject2, "Create Sprite");
-									EditorUtility.SetDirty(gameObject2);
+									return;
 								}
+								if (SpriteUtility.s_DragType != SpriteUtility.DragType.NotInitialized)
+								{
+									SpriteUtility.CleanUp(true);
+								}
+								SpriteUtility.s_DragType = dragType;
+								SpriteUtility.CreateSceneDragObjects(spriteFromPathsOrObjects2);
+								SpriteUtility.IgnoreForRaycasts(SpriteUtility.s_SceneDragObjects);
 							}
-							bool flag = true;
-							if (SpriteUtility.s_DragType == SpriteUtility.DragType.SpriteAnimation && spriteFromPathsOrObjects.Count > 1)
-							{
-								UsabilityAnalytics.Event("Sprite Drag and Drop", "Drop multiple sprites to scene", "null", 1);
-								flag = SpriteUtility.AddAnimationToGO((GameObject)SpriteUtility.s_SceneDragObjects[0], spriteFromPathsOrObjects.ToArray(), saveFileDialog);
-							}
-							else
-							{
-								UsabilityAnalytics.Event("Sprite Drag and Drop", "Drop single sprite to scene", "null", 1);
-							}
-							if (flag)
-							{
-								Selection.objects = SpriteUtility.s_SceneDragObjects.ToArray();
-							}
-							else
-							{
-								Undo.RevertAllDownToGroup(currentGroup);
-							}
-							SpriteUtility.CleanUp(!flag);
-							evt.Use();
 						}
+						SpriteUtility.PositionSceneDragObjects(SpriteUtility.s_SceneDragObjects, sceneView, evt.mousePosition);
+						DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
+						evt.Use();
 					}
-				}
-				else
-				{
-					SpriteUtility.DragType dragType = (!evt.alt) ? SpriteUtility.DragType.SpriteAnimation : SpriteUtility.DragType.CreateMultiple;
-					if (SpriteUtility.s_DragType != dragType || SpriteUtility.s_SceneDragObjects == null)
-					{
-						if (!SpriteUtility.ExistingAssets(objectReferences) && SpriteUtility.PathsAreValidTextures(paths))
-						{
-							DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
-							SpriteUtility.s_SceneDragObjects = new List<UnityEngine.Object>();
-							SpriteUtility.s_DragType = dragType;
-						}
-						else
-						{
-							List<Sprite> spriteFromPathsOrObjects2 = SpriteUtility.GetSpriteFromPathsOrObjects(objectReferences, paths, evt.type);
-							if (spriteFromPathsOrObjects2.Count == 0)
-							{
-								return;
-							}
-							if (SpriteUtility.s_DragType != SpriteUtility.DragType.NotInitialized)
-							{
-								SpriteUtility.CleanUp(true);
-							}
-							SpriteUtility.s_DragType = dragType;
-							SpriteUtility.CreateSceneDragObjects(spriteFromPathsOrObjects2);
-							SpriteUtility.IgnoreForRaycasts(SpriteUtility.s_SceneDragObjects);
-						}
-					}
-					SpriteUtility.PositionSceneDragObjects(SpriteUtility.s_SceneDragObjects, sceneView, evt.mousePosition);
-					DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
-					evt.Use();
 				}
 			}
 		}
@@ -594,12 +597,10 @@ namespace UnityEditor
 				SavedRenderTargetState savedRenderTargetState = new SavedRenderTargetState();
 				RenderTexture temporary = RenderTexture.GetTemporary(width, height, 0, RenderTextureFormat.Default, RenderTextureReadWrite.Default);
 				RenderTexture.active = temporary;
-				GL.sRGBWrite = (QualitySettings.activeColorSpace == ColorSpace.Linear);
 				GL.Clear(true, true, new Color(0f, 0f, 0f, 0.1f));
 				SpriteUtility.previewSpriteDefaultMaterial.mainTexture = sprite.texture;
 				SpriteUtility.previewSpriteDefaultMaterial.SetPass(0);
 				SpriteUtility.RenderSpriteImmediate(sprite, color, transform);
-				GL.sRGBWrite = false;
 				UnityEngine.Texture2D texture2D = new UnityEngine.Texture2D(width, height, TextureFormat.ARGB32, false);
 				texture2D.hideFlags = HideFlags.HideAndDontSave;
 				texture2D.ReadPixels(new Rect(0f, 0f, (float)width, (float)height), 0, 0);
@@ -638,7 +639,6 @@ namespace UnityEditor
 			}
 			GL.End();
 			GL.PopMatrix();
-			GL.sRGBWrite = false;
 		}
 
 		public static UnityEngine.Texture2D CreateTemporaryDuplicate(UnityEngine.Texture2D original, int width, int height)
@@ -652,14 +652,11 @@ namespace UnityEditor
 			{
 				RenderTexture active = RenderTexture.active;
 				Rect rawViewportRect = ShaderUtil.rawViewportRect;
-				bool flag = !TextureUtil.GetLinearSampled(original);
-				RenderTexture temporary = RenderTexture.GetTemporary(width, height, 0, RenderTextureFormat.Default, (!flag) ? RenderTextureReadWrite.Linear : RenderTextureReadWrite.sRGB);
-				GL.sRGBWrite = (flag && QualitySettings.activeColorSpace == ColorSpace.Linear);
-				Graphics.Blit(original, temporary);
-				GL.sRGBWrite = false;
+				RenderTexture temporary = RenderTexture.GetTemporary(width, height, 0, RenderTextureFormat.Default, RenderTextureReadWrite.sRGB);
+				Graphics.Blit(original, temporary, EditorGUIUtility.GUITextureBlit2SRGBMaterial);
 				RenderTexture.active = temporary;
-				bool flag2 = width >= SystemInfo.maxTextureSize || height >= SystemInfo.maxTextureSize;
-				UnityEngine.Texture2D texture2D = new UnityEngine.Texture2D(width, height, TextureFormat.RGBA32, original.mipmapCount > 1 || flag2);
+				bool flag = width >= SystemInfo.maxTextureSize || height >= SystemInfo.maxTextureSize;
+				UnityEngine.Texture2D texture2D = new UnityEngine.Texture2D(width, height, TextureFormat.RGBA32, original.mipmapCount > 1 || flag);
 				texture2D.ReadPixels(new Rect(0f, 0f, (float)width, (float)height), 0, 0);
 				texture2D.Apply();
 				RenderTexture.ReleaseTemporary(temporary);

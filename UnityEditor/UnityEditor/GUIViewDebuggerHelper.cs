@@ -2,28 +2,22 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using UnityEngine;
+using UnityEngine.Bindings;
 using UnityEngine.Scripting;
 
 namespace UnityEditor
 {
-	internal class GUIViewDebuggerHelper
+	[UsedByNativeCode]
+	internal static class GUIViewDebuggerHelper
 	{
 		internal static Action onViewInstructionsChanged;
 
-		internal static void GetViews(List<GUIView> views)
-		{
-			GUIViewDebuggerHelper.GetViewsInternal(views);
-		}
-
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void GetViewsInternal(object views);
+		internal static extern void GetViews(List<GUIView> views);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern void DebugWindow(GUIView view);
+		internal static extern void DebugWindow([Unmarshalled] GUIView view);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern void StopDebugging();
 
@@ -32,61 +26,24 @@ namespace UnityEditor
 			return new GUIContent(text, image, tooltip);
 		}
 
-		internal static void GetDrawInstructions(List<IMGUIDrawInstruction> drawInstructions)
-		{
-			GUIViewDebuggerHelper.GetDrawInstructionsInternal(drawInstructions);
-		}
-
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void GetDrawInstructionsInternal(object drawInstructions);
+		internal static extern void GetDrawInstructions(List<IMGUIDrawInstruction> drawInstructions);
 
-		internal static void GetClipInstructions(List<IMGUIClipInstruction> clipInstructions)
-		{
-			GUIViewDebuggerHelper.GetClipInstructionsInternal(clipInstructions);
-		}
-
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void GetClipInstructionsInternal(object clipInstructions);
+		internal static extern void GetClipInstructions(List<IMGUIClipInstruction> clipInstructions);
 
-		internal static void GetNamedControlInstructions(List<IMGUINamedControlInstruction> namedControlInstructions)
-		{
-			GUIViewDebuggerHelper.GetNamedControlInstructionsInternal(namedControlInstructions);
-		}
-
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void GetNamedControlInstructionsInternal(object namedControlInstructions);
+		internal static extern void GetNamedControlInstructions(List<IMGUINamedControlInstruction> namedControlInstructions);
 
-		internal static void GetPropertyInstructions(List<IMGUIPropertyInstruction> namedControlInstructions)
-		{
-			GUIViewDebuggerHelper.GetPropertyInstructionsInternal(namedControlInstructions);
-		}
-
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void GetPropertyInstructionsInternal(object propertyInstructions);
+		internal static extern void GetPropertyInstructions(List<IMGUIPropertyInstruction> namedControlInstructions);
 
-		internal static void GetLayoutInstructions(List<IMGUILayoutInstruction> layoutInstructions)
-		{
-			GUIViewDebuggerHelper.GetLayoutInstructionsInternal(layoutInstructions);
-		}
-
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void GetLayoutInstructionsInternal(object layoutInstructions);
+		internal static extern void GetLayoutInstructions(List<IMGUILayoutInstruction> layoutInstructions);
 
-		internal static void GetUnifiedInstructions(List<IMGUIInstruction> layoutInstructions)
-		{
-			GUIViewDebuggerHelper.GetUnifiedInstructionsInternal(layoutInstructions);
-		}
-
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void GetUnifiedInstructionsInternal(object instructions);
+		internal static extern void GetUnifiedInstructions(List<IMGUIInstruction> layoutInstructions);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern void ClearInstructions();
 

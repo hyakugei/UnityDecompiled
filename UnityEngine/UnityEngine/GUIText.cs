@@ -4,7 +4,7 @@ using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
-	[Obsolete("This component is part of the legacy UI system and will be removed in a future release.")]
+	[Obsolete("This component is part of the legacy UI system and will be removed in a future release."), NativeClass("TextRenderingPrivate::GUIText")]
 	public sealed class GUIText : GUIElement
 	{
 		public extern string text

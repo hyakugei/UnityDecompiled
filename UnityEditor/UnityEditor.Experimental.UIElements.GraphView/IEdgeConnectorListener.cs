@@ -3,8 +3,10 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.UIElements.GraphView
 {
-	internal interface IEdgeConnectorListener
+	public interface IEdgeConnectorListener
 	{
-		void OnDropOutsideAnchor(EdgePresenter edge, Vector2 position);
+		void OnDropOutsidePort(Edge edge, Vector2 position);
+
+		void OnDrop(GraphView graphView, Edge edge);
 	}
 }

@@ -27,7 +27,8 @@ namespace UnityEditor.Experimental.UIElements.Debugger
 		{
 			VisualTreeItem visualTreeItem = new VisualTreeItem(elt, tree.depth + 1);
 			tree.AddChild(visualTreeItem);
-			foreach (VisualElement current in ((!this.includeShadowHierarchy) ? elt.Children() : elt.shadow.Children()))
+			IEnumerable<VisualElement> enumerable = (!this.includeShadowHierarchy) ? ((elt.contentContainer != null) ? elt.Children() : Enumerable.Empty<VisualElement>()) : elt.shadow.Children();
+			foreach (VisualElement current in enumerable)
 			{
 				this.Recurse(visualTreeItem, current);
 			}

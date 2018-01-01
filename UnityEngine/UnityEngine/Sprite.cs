@@ -132,6 +132,10 @@ namespace UnityEngine
 			get;
 		}
 
+		private Sprite()
+		{
+		}
+
 		public static Sprite Create(Texture2D texture, Rect rect, Vector2 pivot, [DefaultValue("100.0f")] float pixelsPerUnit, [DefaultValue("0")] uint extrude, [DefaultValue("SpriteMeshType.Tight")] SpriteMeshType meshType, [DefaultValue("Vector4.zero")] Vector4 border)
 		{
 			return Sprite.INTERNAL_CALL_Create(texture, ref rect, ref pivot, pixelsPerUnit, extrude, meshType, ref border);
@@ -254,10 +258,18 @@ namespace UnityEngine
 			}
 		}
 
+		internal static Sprite Create(Rect rect, Vector2 pivot, float pixelsToUnits, Texture2D texture = null)
+		{
+			return Sprite.Create_Injected(ref rect, ref pivot, pixelsToUnits, texture);
+		}
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern void OverridePhysicsShapeCount(Sprite sprite, int physicsShapeCount);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern void OverridePhysicsShape(Sprite sprite, Vector2[] physicsShape, int idx);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern Sprite Create_Injected(ref Rect rect, ref Vector2 pivot, float pixelsToUnits, Texture2D texture = null);
 	}
 }

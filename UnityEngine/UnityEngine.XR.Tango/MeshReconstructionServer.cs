@@ -5,13 +5,13 @@ using UnityEngine.Scripting;
 namespace UnityEngine.XR.Tango
 {
 	[UsedByNativeCode]
-	public sealed class MeshReconstructionServer : IDisposable
+	internal class MeshReconstructionServer
 	{
-		public delegate void SegmentChangedDelegate(GridIndex gridIndex, SegmentChange changeType, double updateTime);
+		internal delegate void SegmentChangedDelegate(GridIndex gridIndex, SegmentChange changeType, double updateTime);
 
-		public delegate void SegmentReadyDelegate(SegmentGenerationResult generatedSegmentData);
+		internal delegate void SegmentReadyDelegate(SegmentGenerationResult generatedSegmentData);
 
-		public enum Status
+		internal enum Status
 		{
 			UnsupportedPlatform,
 			Ok,
@@ -24,7 +24,7 @@ namespace UnityEngine.XR.Tango
 
 		private MeshReconstructionServer.Status m_Status = MeshReconstructionServer.Status.UnsupportedPlatform;
 
-		public MeshReconstructionServer.Status status
+		internal MeshReconstructionServer.Status status
 		{
 			get
 			{
@@ -32,7 +32,7 @@ namespace UnityEngine.XR.Tango
 			}
 		}
 
-		public int generationRequests
+		internal int generationRequests
 		{
 			get
 			{
@@ -40,7 +40,7 @@ namespace UnityEngine.XR.Tango
 			}
 		}
 
-		public bool enabled
+		internal bool enabled
 		{
 			get
 			{
@@ -52,7 +52,7 @@ namespace UnityEngine.XR.Tango
 			}
 		}
 
-		public MeshReconstructionServer(MeshReconstructionConfig config)
+		internal MeshReconstructionServer(MeshReconstructionConfig config)
 		{
 			int status = 0;
 			this.m_ServerPtr = MeshReconstructionServer.Internal_Create(this, config, out status);
@@ -74,7 +74,7 @@ namespace UnityEngine.XR.Tango
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern int Internal_GetNumGenerationRequests(IntPtr server);
 
-		public void Dispose()
+		internal void Dispose()
 		{
 			if (this.m_ServerPtr != IntPtr.Zero)
 			{
@@ -90,10 +90,10 @@ namespace UnityEngine.XR.Tango
 		}
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void Destroy(IntPtr server);
+		internal static extern void Destroy(IntPtr server);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void DestroyThreaded(IntPtr server);
+		internal static extern void DestroyThreaded(IntPtr server);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern void Internal_GetChangedSegments(IntPtr serverPtr, MeshReconstructionServer.SegmentChangedDelegate onSegmentChanged);
@@ -113,17 +113,17 @@ namespace UnityEngine.XR.Tango
 			}
 		}
 
-		public void ClearMeshes()
+		internal void ClearMeshes()
 		{
 			MeshReconstructionServer.Internal_ClearMeshes(this.m_ServerPtr);
 		}
 
-		public IntPtr GetNativeReconstructionContext()
+		internal IntPtr GetNativeReconstructionContext()
 		{
 			return MeshReconstructionServer.Internal_GetNativeReconstructionContextPtr(this.m_ServerPtr);
 		}
 
-		public void GetChangedSegments(MeshReconstructionServer.SegmentChangedDelegate onSegmentChanged)
+		internal void GetChangedSegments(MeshReconstructionServer.SegmentChangedDelegate onSegmentChanged)
 		{
 			if (onSegmentChanged == null)
 			{
@@ -132,7 +132,7 @@ namespace UnityEngine.XR.Tango
 			MeshReconstructionServer.Internal_GetChangedSegments(this.m_ServerPtr, onSegmentChanged);
 		}
 
-		public void GenerateSegmentAsync(SegmentGenerationRequest request, MeshReconstructionServer.SegmentReadyDelegate onSegmentReady)
+		internal void GenerateSegmentAsync(SegmentGenerationRequest request, MeshReconstructionServer.SegmentReadyDelegate onSegmentReady)
 		{
 			if (onSegmentReady == null)
 			{

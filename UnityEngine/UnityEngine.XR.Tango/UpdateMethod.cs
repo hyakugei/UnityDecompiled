@@ -2,7 +2,7 @@ using System;
 
 namespace UnityEngine.XR.Tango
 {
-	public enum UpdateMethod
+	internal enum UpdateMethod
 	{
 		Traversal,
 		Projective

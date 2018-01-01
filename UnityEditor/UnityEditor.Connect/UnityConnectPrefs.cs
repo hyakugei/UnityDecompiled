@@ -71,7 +71,7 @@ namespace UnityEditor.Connect
 		public static int GetServiceEnv(string serviceName)
 		{
 			int result;
-			if (Unsupported.IsDeveloperBuild() || UnityConnect.preferencesEnabled)
+			if (Unsupported.IsDeveloperMode() || UnityConnect.preferencesEnabled)
 			{
 				result = EditorPrefs.GetInt(UnityConnectPrefs.ServicePrefKey("CloudPanelServer", serviceName));
 			}
@@ -181,7 +181,7 @@ namespace UnityEditor.Connect
 
 		public static void StorePanelPrefs()
 		{
-			if (Unsupported.IsDeveloperBuild() || UnityConnect.preferencesEnabled)
+			if (Unsupported.IsDeveloperMode() || UnityConnect.preferencesEnabled)
 			{
 				foreach (KeyValuePair<string, UnityConnectPrefs.CloudPanelPref> current in UnityConnectPrefs.m_CloudPanelPref)
 				{

@@ -1,5 +1,5 @@
 using System;
-using UnityEditor.BuildReporting;
+using UnityEditor.Build.Reporting;
 
 namespace UnityEditor.Modules
 {

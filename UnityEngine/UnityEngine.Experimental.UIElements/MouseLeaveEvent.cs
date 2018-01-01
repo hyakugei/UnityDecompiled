@@ -12,7 +12,7 @@ namespace UnityEngine.Experimental.UIElements
 		protected override void Init()
 		{
 			base.Init();
-			this.flags = EventBase.EventFlags.Capturable;
+			base.flags = EventBase.EventFlags.Capturable;
 		}
 	}
 }

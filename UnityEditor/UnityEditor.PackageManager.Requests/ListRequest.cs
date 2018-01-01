@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace UnityEditor.PackageManager.Requests
 {
@@ -9,14 +11,16 @@ namespace UnityEditor.PackageManager.Requests
 		{
 		}
 
-		internal ListRequest(long operationId, NativeClient.StatusCode initialStatus) : base(operationId, initialStatus)
+		internal ListRequest(long operationId, NativeStatusCode initialStatus) : base(operationId, initialStatus)
 		{
 		}
 
 		protected override PackageCollection GetResult()
 		{
 			OperationStatus listOperationData = NativeClient.GetListOperationData(base.Id);
-			return new PackageCollection(listOperationData.packageList);
+			IEnumerable<UnityEditor.PackageManager.PackageInfo> packages = from p in listOperationData.packageList
+			select p;
+			return new PackageCollection(packages, listOperationData.error);
 		}
 	}
 }

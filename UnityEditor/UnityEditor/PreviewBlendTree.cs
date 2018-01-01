@@ -40,6 +40,7 @@ namespace UnityEditor
 			{
 				this.m_AvatarPreview = new AvatarPreview(animator, this.m_BlendTree);
 				this.m_AvatarPreview.OnAvatarChangeFunc = new AvatarPreview.OnAvatarChange(this.OnPreviewAvatarChanged);
+				this.m_AvatarPreview.ResetPreviewFocus();
 				this.m_PrevIKOnFeet = this.m_AvatarPreview.IKOnFeet;
 			}
 			this.CreateStateMachine();

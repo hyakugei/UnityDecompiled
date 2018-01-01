@@ -3,27 +3,33 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using UnityEditor.Connect;
 using UnityEditor.SceneManagement;
-using UnityEngine.Scripting;
+using UnityEngine;
 
 namespace UnityEditor.Web
 {
 	[InitializeOnLoad]
-	internal sealed class EditorProjectAccess
+	internal class EditorProjectAccess : UnityEngine.Object
 	{
 		private const string kCloudServiceKey = "CloudServices";
 
 		private const string kCloudEnabled = "CloudEnabled";
+
+		public EditorProjectAccess()
+		{
+			EditorProjectAccess.Internal_Create(this);
+		}
 
 		static EditorProjectAccess()
 		{
 			JSProxyMgr.GetInstance().AddGlobalObject("unity/project", new EditorProjectAccess());
 		}
 
-		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void Internal_Create([Writable] EditorProjectAccess self);
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern string GetProjectEditorVersion();
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern string GetRESTServiceURI();
 
@@ -139,7 +145,7 @@ namespace UnityEditor.Web
 
 		public void GoToHistory()
 		{
-			CollabHistoryWindow.ShowHistoryWindow().Focus();
+			CollabHistoryWindow.ShowHistoryWindow();
 		}
 
 		public static void ShowToolbarDropdown()

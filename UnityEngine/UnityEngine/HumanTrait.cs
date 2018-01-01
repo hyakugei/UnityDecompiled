@@ -1,72 +1,91 @@
 using System;
 using System.Runtime.CompilerServices;
-using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
-	public sealed class HumanTrait
+	public class HumanTrait
 	{
 		public static extern int MuscleCount
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
 
 		public static extern string[] MuscleName
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
 
 		public static extern int BoneCount
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
 
 		public static extern string[] BoneName
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
 
 		public static extern int RequiredBoneCount
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern int MuscleFromBone(int i, int dofIndex);
+		internal static extern int GetBoneIndexFromMono(int humanId);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern int BoneFromMuscle(int i);
+		internal static extern int GetBoneIndexToMono(int boneIndex);
 
-		[GeneratedByOldBindingsGenerator]
+		public static int MuscleFromBone(int i, int dofIndex)
+		{
+			return HumanTrait.Internal_MuscleFromBone(HumanTrait.GetBoneIndexFromMono(i), dofIndex);
+		}
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern bool RequiredBone(int i);
+		private static extern int Internal_MuscleFromBone(int i, int dofIndex);
 
-		[GeneratedByOldBindingsGenerator]
+		public static int BoneFromMuscle(int i)
+		{
+			return HumanTrait.GetBoneIndexToMono(HumanTrait.Internal_BoneFromMuscle(i));
+		}
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern bool HasCollider(Avatar avatar, int i);
+		private static extern int Internal_BoneFromMuscle(int i);
 
-		[GeneratedByOldBindingsGenerator]
+		public static bool RequiredBone(int i)
+		{
+			return HumanTrait.Internal_RequiredBone(HumanTrait.GetBoneIndexFromMono(i));
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern bool Internal_RequiredBone(int i);
+
+		internal static bool HasCollider(Avatar avatar, int i)
+		{
+			return HumanTrait.Internal_HasCollider(avatar, HumanTrait.GetBoneIndexFromMono(i));
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern bool Internal_HasCollider(Avatar avatar, int i);
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern float GetMuscleDefaultMin(int i);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern float GetMuscleDefaultMax(int i);
 
-		[GeneratedByOldBindingsGenerator]
+		public static int GetParentBone(int i)
+		{
+			int num = HumanTrait.Internal_GetParent(HumanTrait.GetBoneIndexFromMono(i));
+			return (num == -1) ? -1 : HumanTrait.GetBoneIndexToMono(num);
+		}
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern int GetParentBone(int i);
+		private static extern int Internal_GetParent(int i);
 	}
 }

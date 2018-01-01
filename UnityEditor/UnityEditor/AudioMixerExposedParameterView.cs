@@ -73,11 +73,11 @@ namespace UnityEditor
 		public void OnContextClick(int itemIndex)
 		{
 			GenericMenu genericMenu = new GenericMenu();
-			genericMenu.AddItem(new GUIContent("Unexpose"), false, delegate(object data)
+			genericMenu.AddItem(EditorGUIUtility.TrTextContent("Unexpose", null, null), false, delegate(object data)
 			{
 				this.Delete((int)data);
 			}, itemIndex);
-			genericMenu.AddItem(new GUIContent("Rename"), false, delegate(object data)
+			genericMenu.AddItem(EditorGUIUtility.TrTextContent("Rename", null, null), false, delegate(object data)
 			{
 				this.m_ReorderableListWithRenameAndScrollView.BeginRename((int)data, 0f);
 			}, itemIndex);

@@ -5,7 +5,7 @@ using UnityEngine.Scripting;
 namespace UnityEngine
 {
 	[RequireComponent(typeof(Transform))]
-	public sealed class AudioListener : Behaviour
+	public sealed class AudioListener : AudioBehaviour
 	{
 		internal AudioListenerExtension spatializerExtension = null;
 

@@ -209,7 +209,7 @@ namespace UnityEditor.Experimental.UIElements
 		[MenuItem("Assets/Create/UIElements View")]
 		public static void CreateTemplateMenuItem()
 		{
-			ProjectWindowUtil.CreateAssetWithContent("New UXML.uxml", "<UXML xmlns:ui=\"UnityEngine.Experimental.UIElements\">\n  <ui:Label text=\"New UXML\" />\n</UXML>");
+			ProjectWindowUtil.CreateAssetWithContent("New UXML.uxml", "<UXML xmlns:ui=\"UnityEngine.Experimental.UIElements\">\n  <ui:Label text=\"New UXML\" />\n</UXML>", EditorGUIUtility.FindTexture("UxmlScript Icon"), null);
 		}
 
 		public override void OnImportAsset(AssetImportContext args)
@@ -473,7 +473,7 @@ namespace UnityEditor.Experimental.UIElements
 					foreach (Property current2 in styleSheet.StyleRules[0].Declarations)
 					{
 						ssb.BeginProperty(current2.Name);
-						StyleSheetImporter.VisitValue(errors, ssb, current2.Term);
+						StyleSheetImporterImpl.VisitValue(errors, ssb, current2.Term);
 						ssb.EndProperty();
 					}
 					continue;

@@ -283,7 +283,7 @@ namespace UnityEditor
 		protected override void ContextClickedItem(int id)
 		{
 			GenericMenu genericMenu = new GenericMenu();
-			genericMenu.AddItem(new GUIContent("Find matching objects in scene"), false, delegate
+			genericMenu.AddItem(EditorGUIUtility.TrTextContent("Find matching objects in scene", null, null), false, delegate
 			{
 				this.DoubleClickedItem(id);
 			});

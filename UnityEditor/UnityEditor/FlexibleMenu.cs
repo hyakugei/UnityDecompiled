@@ -27,22 +27,22 @@ namespace UnityEditor
 			{
 				FlexibleMenu.ItemContextMenu.s_Caller = caller;
 				GenericMenu genericMenu = new GenericMenu();
-				GenericMenu arg_3C_0 = genericMenu;
-				GUIContent arg_3C_1 = new GUIContent("Edit...");
-				bool arg_3C_2 = false;
+				GenericMenu arg_3E_0 = genericMenu;
+				GUIContent arg_3E_1 = EditorGUIUtility.TrTextContent("Edit...", null, null);
+				bool arg_3E_2 = false;
 				if (FlexibleMenu.ItemContextMenu.<>f__mg$cache0 == null)
 				{
 					FlexibleMenu.ItemContextMenu.<>f__mg$cache0 = new GenericMenu.MenuFunction2(FlexibleMenu.ItemContextMenu.Edit);
 				}
-				arg_3C_0.AddItem(arg_3C_1, arg_3C_2, FlexibleMenu.ItemContextMenu.<>f__mg$cache0, itemIndex);
-				GenericMenu arg_70_0 = genericMenu;
-				GUIContent arg_70_1 = new GUIContent("Delete");
-				bool arg_70_2 = false;
+				arg_3E_0.AddItem(arg_3E_1, arg_3E_2, FlexibleMenu.ItemContextMenu.<>f__mg$cache0, itemIndex);
+				GenericMenu arg_74_0 = genericMenu;
+				GUIContent arg_74_1 = EditorGUIUtility.TrTextContent("Delete", null, null);
+				bool arg_74_2 = false;
 				if (FlexibleMenu.ItemContextMenu.<>f__mg$cache1 == null)
 				{
 					FlexibleMenu.ItemContextMenu.<>f__mg$cache1 = new GenericMenu.MenuFunction2(FlexibleMenu.ItemContextMenu.Delete);
 				}
-				arg_70_0.AddItem(arg_70_1, arg_70_2, FlexibleMenu.ItemContextMenu.<>f__mg$cache1, itemIndex);
+				arg_74_0.AddItem(arg_74_1, arg_74_2, FlexibleMenu.ItemContextMenu.<>f__mg$cache1, itemIndex);
 				genericMenu.ShowAsContext();
 				GUIUtility.ExitGUI();
 			}

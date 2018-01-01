@@ -69,6 +69,22 @@ namespace UnityEngine.Experimental.UIElements.StyleSheets
 				StylePropertyID.Flex
 			},
 			{
+				"flex-wrap",
+				StylePropertyID.FlexWrap
+			},
+			{
+				"flex-basis",
+				StylePropertyID.FlexBasis
+			},
+			{
+				"flex-grow",
+				StylePropertyID.FlexGrow
+			},
+			{
+				"flex-shrink",
+				StylePropertyID.FlexShrink
+			},
+			{
 				"overflow",
 				StylePropertyID.Overflow
 			},
@@ -205,10 +221,6 @@ namespace UnityEngine.Experimental.UIElements.StyleSheets
 				StylePropertyID.JustifyContent
 			},
 			{
-				"flex-wrap",
-				StylePropertyID.FlexWrap
-			},
-			{
 				"border-left-width",
 				StylePropertyID.BorderLeftWidth
 			},
@@ -263,6 +275,10 @@ namespace UnityEngine.Experimental.UIElements.StyleSheets
 			{
 				"opacity",
 				StylePropertyID.Opacity
+			},
+			{
+				"cursor",
+				StylePropertyID.Cursor
 			}
 		};
 

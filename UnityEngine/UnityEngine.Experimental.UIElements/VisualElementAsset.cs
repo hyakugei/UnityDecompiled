@@ -197,9 +197,10 @@ namespace UnityEngine.Experimental.UIElements
 							visualElement.AddStyleSheetPath(this.stylesheets[j]);
 						}
 					}
-					if (!string.IsNullOrEmpty(this.text))
+					BaseTextElement baseTextElement = visualElement as BaseTextElement;
+					if (baseTextElement != null && !string.IsNullOrEmpty(this.text))
 					{
-						visualElement.text = this.text;
+						baseTextElement.text = this.text;
 					}
 					visualElement.pickingMode = this.pickingMode;
 					result = visualElement;
@@ -275,15 +276,15 @@ namespace UnityEngine.Experimental.UIElements
 		public Color GetPropertyColor(string propertyName, Color defaultValue)
 		{
 			string propertyString = this.GetPropertyString(propertyName);
-			Color32 c;
+			Color color;
 			Color result;
-			if (propertyString == null || !ColorUtility.DoTryParseHtmlColor(propertyString, out c))
+			if (propertyString == null || !ColorUtility.TryParseHtmlString(propertyString, out color))
 			{
 				result = defaultValue;
 			}
 			else
 			{
-				result = c;
+				result = color;
 			}
 			return result;
 		}

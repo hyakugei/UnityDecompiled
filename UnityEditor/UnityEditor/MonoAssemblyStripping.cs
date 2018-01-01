@@ -59,15 +59,15 @@ namespace UnityEditor
 			}
 		}
 
-		public static string GenerateLinkXmlToPreserveDerivedTypes(string stagingArea, string librariesFolder, RuntimeClassRegistry usedClasses)
+		public static string GenerateLinkXmlToPreserveDerivedTypes(string librariesFolder, RuntimeClassRegistry usedClasses)
 		{
-			string fullPath = Path.GetFullPath(Path.Combine(stagingArea, "preserved_derived_types.xml"));
-			using (TextWriter textWriter = new StreamWriter(fullPath))
+			string tempFileName = Path.GetTempFileName();
+			using (TextWriter textWriter = new StreamWriter(tempFileName))
 			{
 				textWriter.WriteLine("<linker>");
 				foreach (AssemblyDefinition current in MonoAssemblyStripping.CollectAllAssemblies(librariesFolder, usedClasses))
 				{
-					if (!AssemblyHelper.IsUnityEngineModule(current.Name.Name))
+					if (!AssemblyHelper.IsUnityEngineModule(current))
 					{
 						HashSet<TypeDefinition> hashSet = new HashSet<TypeDefinition>();
 						MonoAssemblyStripping.CollectBlackListTypes(hashSet, current.MainModule.Types, usedClasses.GetAllManagedBaseClassesAsString());
@@ -84,7 +84,7 @@ namespace UnityEditor
 				}
 				textWriter.WriteLine("</linker>");
 			}
-			return fullPath;
+			return tempFileName;
 		}
 
 		public static IEnumerable<AssemblyDefinition> CollectAllAssemblies(string librariesFolder, RuntimeClassRegistry usedClasses)
@@ -141,18 +141,11 @@ namespace UnityEditor
 			}
 			catch (AssemblyResolutionException ex)
 			{
-				if (AssemblyHelper.IsUnityEngineModule(assemblyName.Name))
+				if (!ex.AssemblyReference.IsWindowsRuntime)
 				{
-					result = null;
+					throw;
 				}
-				else
-				{
-					if (!ex.AssemblyReference.IsWindowsRuntime)
-					{
-						throw;
-					}
-					result = null;
-				}
+				result = null;
 			}
 			return result;
 		}

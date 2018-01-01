@@ -220,8 +220,8 @@ namespace UnityEditorInternal
 								{
 									foreach (AnimationWindowKeyframe current3 in current2.keys)
 									{
-										AnimationKeyTime animationKeyTime = AnimationKeyTime.Time(currentTimeRect.xMin - current3.curve.timeOffset, frameRate);
-										AnimationKeyTime animationKeyTime2 = AnimationKeyTime.Time(currentTimeRect.xMax - current3.curve.timeOffset, frameRate);
+										AnimationKeyTime animationKeyTime = AnimationKeyTime.Time(currentTimeRect.xMin, frameRate);
+										AnimationKeyTime animationKeyTime2 = AnimationKeyTime.Time(currentTimeRect.xMax, frameRate);
 										AnimationKeyTime animationKeyTime3 = AnimationKeyTime.Time(current3.time, frameRate);
 										if ((!current2.tallMode && animationKeyTime3.frame >= animationKeyTime.frame && animationKeyTime3.frame <= animationKeyTime2.frame) || (current2.tallMode && animationKeyTime3.frame >= animationKeyTime.frame && animationKeyTime3.frame < animationKeyTime2.frame))
 										{
@@ -572,7 +572,11 @@ namespace UnityEditorInternal
 			AnimationWindowHierarchyNode animationWindowHierarchyNode = (AnimationWindowHierarchyNode)this.state.hierarchyData.FindItem(dopeline.hierarchyNodeID);
 			bool flag = animationWindowHierarchyNode != null && animationWindowHierarchyNode.depth > 0;
 			Color color2 = (!flag) ? Color.gray.AlphaMultiplied(0.16f) : Color.gray.AlphaMultiplied(0.05f);
-			if (!dopeline.isMasterDopeline)
+			if (dopeline.isMasterDopeline)
+			{
+				this.DrawMasterDopelineBackground(dopeline.position);
+			}
+			else
 			{
 				DopeSheetEditor.DrawBox(dopeline.position, color2);
 			}
@@ -581,10 +585,9 @@ namespace UnityEditorInternal
 			for (int i = 0; i < count; i++)
 			{
 				AnimationWindowKeyframe animationWindowKeyframe = dopeline.keys[i];
-				int num2 = animationWindowKeyframe.m_TimeHash ^ animationWindowKeyframe.curve.timeOffset.GetHashCode();
-				if (!(num == num2))
+				if (!(num == animationWindowKeyframe.m_TimeHash))
 				{
-					num = new int?(num2);
+					num = new int?(animationWindowKeyframe.m_TimeHash);
 					Rect rect = this.GetKeyframeRect(dopeline, animationWindowKeyframe);
 					color2 = ((!dopeline.isMasterDopeline) ? Color.gray.RGBMultiplied(1.2f) : Color.gray.RGBMultiplied(0.85f));
 					Texture2D texture2D = null;
@@ -622,14 +625,14 @@ namespace UnityEditorInternal
 			}
 			if (this.DoDragAndDrop(dopeline, dopeline.position, false))
 			{
-				float num3 = Mathf.Max(this.state.PixelToTime(Event.current.mousePosition.x, AnimationWindowState.SnapMode.SnapToClipFrame), 0f);
+				float num2 = Mathf.Max(this.state.PixelToTime(Event.current.mousePosition.x, AnimationWindowState.SnapMode.SnapToClipFrame), 0f);
 				Color color3 = Color.gray.RGBMultiplied(1.2f);
 				Texture2D texture2D2 = null;
 				UnityEngine.Object[] sortedDragAndDropObjectReferences = this.GetSortedDragAndDropObjectReferences();
 				for (int j = 0; j < sortedDragAndDropObjectReferences.Length; j++)
 				{
 					UnityEngine.Object @object = sortedDragAndDropObjectReferences[j];
-					Rect rect2 = this.GetDragAndDropRect(dopeline, num3);
+					Rect rect2 = this.GetDragAndDropRect(dopeline, num2);
 					if (dopeline.isPptrDopeline && dopeline.tallMode)
 					{
 						texture2D2 = AssetPreview.GetAssetPreview(@object.GetInstanceID(), this.assetPreviewManagerID);
@@ -640,7 +643,7 @@ namespace UnityEditorInternal
 						color3 = Color.white.AlphaMultiplied(0.5f);
 					}
 					this.m_PointRenderer.AddDragDropKey(new DopeSheetEditor.DrawElement(rect2, color3, texture2D2));
-					num3 += 1f / this.state.frameRate;
+					num2 += 1f / this.state.frameRate;
 				}
 			}
 			GUI.color = color;
@@ -893,29 +896,21 @@ namespace UnityEditorInternal
 				{
 					if (DragAndDrop.objectReferences[0].GetType() == typeof(Sprite) || DragAndDrop.objectReferences[0].GetType() == typeof(Texture2D))
 					{
-						AnimationWindowSelectionItem[] array = this.state.selection.ToArray();
-						for (int i = 0; i < array.Length; i++)
+						if (this.state.selection.clipIsEditable && this.state.selection.canAddCurves)
 						{
-							AnimationWindowSelectionItem animationWindowSelectionItem = array[i];
-							if (animationWindowSelectionItem.clipIsEditable)
+							if (!this.DopelineForValueTypeExists(typeof(Sprite)))
 							{
-								if (animationWindowSelectionItem.canAddCurves)
+								if (current.type == EventType.DragPerform)
 								{
-									if (!this.DopelineForValueTypeExists(typeof(Sprite)))
+									EditorCurveBinding? spriteBinding = this.CreateNewPptrDopeline(this.state.selection, typeof(Sprite));
+									if (spriteBinding.HasValue)
 									{
-										if (current.type == EventType.DragPerform)
-										{
-											EditorCurveBinding? spriteBinding = this.CreateNewPptrDopeline(animationWindowSelectionItem, typeof(Sprite));
-											if (spriteBinding.HasValue)
-											{
-												this.DoSpriteDropAfterGeneratingNewDopeline(animationWindowSelectionItem.animationClip, spriteBinding);
-											}
-										}
-										DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
-										current.Use();
-										return;
+										this.DoSpriteDropAfterGeneratingNewDopeline(this.state.activeAnimationClip, spriteBinding);
 									}
 								}
+								DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
+								current.Use();
+								return;
 							}
 						}
 					}
@@ -1167,7 +1162,7 @@ namespace UnityEditorInternal
 
 		private Rect GetKeyframeRect(DopeLine dopeline, AnimationWindowKeyframe keyframe)
 		{
-			float time = (keyframe == null) ? 0f : (keyframe.time + keyframe.curve.timeOffset);
+			float time = (keyframe == null) ? 0f : keyframe.time;
 			float width = 10f;
 			if (dopeline.isPptrDopeline && dopeline.tallMode && (keyframe == null || keyframe.value != null))
 			{
@@ -1209,7 +1204,7 @@ namespace UnityEditorInternal
 			{
 				foreach (AnimationWindowKeyframe current in this.state.selectedKeys)
 				{
-					Vector2 v = new Vector2(current.time + current.curve.timeOffset, 0f);
+					Vector2 v = new Vector2(current.time, 0f);
 					if (flag)
 					{
 						bounds.SetMinMax(v, v);
@@ -1232,8 +1227,8 @@ namespace UnityEditorInternal
 						int count = current2.m_Keyframes.Count;
 						if (count > 1)
 						{
-							Vector2 v2 = new Vector2(current2.m_Keyframes[0].time + current2.timeOffset, 0f);
-							Vector2 v3 = new Vector2(current2.m_Keyframes[count - 1].time + current2.timeOffset, 0f);
+							Vector2 v2 = new Vector2(current2.m_Keyframes[0].time, 0f);
+							Vector2 v3 = new Vector2(current2.m_Keyframes[count - 1].time, 0f);
 							if (flag)
 							{
 								bounds.SetMinMax(v2, v3);
@@ -1427,15 +1422,15 @@ namespace UnityEditorInternal
 		private bool AnyKeyIsSelectedAtTime(DopeLine dopeLine, int keyIndex)
 		{
 			AnimationWindowKeyframe animationWindowKeyframe = dopeLine.keys[keyIndex];
-			int num = animationWindowKeyframe.m_TimeHash ^ animationWindowKeyframe.curve.timeOffset.GetHashCode();
+			int timeHash = animationWindowKeyframe.m_TimeHash;
 			int count = dopeLine.keys.Count;
 			int i = keyIndex;
 			bool result;
 			while (i < count)
 			{
 				animationWindowKeyframe = dopeLine.keys[i];
-				int num2 = animationWindowKeyframe.m_TimeHash ^ animationWindowKeyframe.curve.timeOffset.GetHashCode();
-				if (num2 != num)
+				int timeHash2 = animationWindowKeyframe.m_TimeHash;
+				if (timeHash2 != timeHash)
 				{
 					result = false;
 				}

@@ -4,7 +4,7 @@ using UnityEngine.Experimental.UIElements;
 
 namespace UnityEditor.Experimental.UIElements.GraphView
 {
-	internal abstract class DataWatchContainer : VisualElement
+	public abstract class DataWatchContainer : VisualElement
 	{
 		private IUIElementDataWatchRequest[] handles;
 
@@ -31,15 +31,18 @@ namespace UnityEditor.Experimental.UIElements.GraphView
 		protected void AddWatch()
 		{
 			UnityEngine.Object[] toWatch = this.toWatch;
-			this.handles = new IUIElementDataWatchRequest[toWatch.Length];
-			for (int i = 0; i < toWatch.Length; i++)
+			if (toWatch != null)
 			{
-				if (base.panel != null && toWatch[i] != null)
+				this.handles = new IUIElementDataWatchRequest[toWatch.Length];
+				for (int i = 0; i < toWatch.Length; i++)
 				{
-					this.handles[i] = base.dataWatch.RegisterWatch(toWatch[i], new Action<UnityEngine.Object>(this.OnDataChanged));
-					if (this.forceNotififcationOnAdd)
+					if (base.panel != null && toWatch[i] != null)
 					{
-						this.OnDataChanged();
+						this.handles[i] = base.dataWatch.RegisterWatch(toWatch[i], new Action<UnityEngine.Object>(this.OnDataChanged));
+						if (this.forceNotififcationOnAdd)
+						{
+							this.OnDataChanged();
+						}
 					}
 				}
 			}

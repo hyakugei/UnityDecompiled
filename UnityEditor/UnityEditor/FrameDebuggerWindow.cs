@@ -13,6 +13,8 @@ namespace UnityEditor
 	{
 		private struct EventDataStrings
 		{
+			public string drawCallCount;
+
 			public string shader;
 
 			public string pass;
@@ -46,11 +48,11 @@ namespace UnityEditor
 
 			public GUIStyle rowTextRight = new GUIStyle("OL Label");
 
-			public GUIContent recordButton = new GUIContent(EditorGUIUtility.TextContent("Record|Record profiling information"));
+			public GUIContent recordButton = new GUIContent(EditorGUIUtility.TrTextContent("Record", "Record profiling information", null));
 
-			public GUIContent prevFrame = new GUIContent(EditorGUIUtility.IconContent("Profiler.PrevFrame", "|Go back one frame"));
+			public GUIContent prevFrame = new GUIContent(EditorGUIUtility.TrIconContent("Profiler.PrevFrame", "Go back one frame"));
 
-			public GUIContent nextFrame = new GUIContent(EditorGUIUtility.IconContent("Profiler.NextFrame", "|Go one frame forwards"));
+			public GUIContent nextFrame = new GUIContent(EditorGUIUtility.TrIconContent("Profiler.NextFrame", "Go one frame forwards"));
 
 			public GUIContent[] headerContent;
 
@@ -66,38 +68,38 @@ namespace UnityEditor
 
 			public static readonly GUIContent[] mrtLabels = new GUIContent[]
 			{
-				EditorGUIUtility.TextContent("RT 0|Show render target #0"),
-				EditorGUIUtility.TextContent("RT 1|Show render target #1"),
-				EditorGUIUtility.TextContent("RT 2|Show render target #2"),
-				EditorGUIUtility.TextContent("RT 3|Show render target #3"),
-				EditorGUIUtility.TextContent("RT 4|Show render target #4"),
-				EditorGUIUtility.TextContent("RT 5|Show render target #5"),
-				EditorGUIUtility.TextContent("RT 6|Show render target #6"),
-				EditorGUIUtility.TextContent("RT 7|Show render target #7")
+				EditorGUIUtility.TrTextContent("RT 0", "Show render target #0", null),
+				EditorGUIUtility.TrTextContent("RT 1", "Show render target #1", null),
+				EditorGUIUtility.TrTextContent("RT 2", "Show render target #2", null),
+				EditorGUIUtility.TrTextContent("RT 3", "Show render target #3", null),
+				EditorGUIUtility.TrTextContent("RT 4", "Show render target #4", null),
+				EditorGUIUtility.TrTextContent("RT 5", "Show render target #5", null),
+				EditorGUIUtility.TrTextContent("RT 6", "Show render target #6", null),
+				EditorGUIUtility.TrTextContent("RT 7", "Show render target #7", null)
 			};
 
-			public static readonly GUIContent depthLabel = EditorGUIUtility.TextContent("Depth|Show depth buffer");
+			public static readonly GUIContent depthLabel = EditorGUIUtility.TrTextContent("Depth", "Show depth buffer", null);
 
 			public static readonly GUIContent[] channelLabels = new GUIContent[]
 			{
-				EditorGUIUtility.TextContent("All|Show all (RGB) color channels"),
-				EditorGUIUtility.TextContent("R|Show red channel only"),
-				EditorGUIUtility.TextContent("G|Show green channel only"),
-				EditorGUIUtility.TextContent("B|Show blue channel only"),
-				EditorGUIUtility.TextContent("A|Show alpha channel only")
+				EditorGUIUtility.TrTextContent("All", "Show all (RGB) color channels", null),
+				EditorGUIUtility.TrTextContent("R", "Show red channel only", null),
+				EditorGUIUtility.TrTextContent("G", "Show green channel only", null),
+				EditorGUIUtility.TrTextContent("B", "Show blue channel only", null),
+				EditorGUIUtility.TrTextContent("A", "Show alpha channel only", null)
 			};
 
-			public static readonly GUIContent channelHeader = EditorGUIUtility.TextContent("Channels|Which render target color channels to show");
+			public static readonly GUIContent channelHeader = EditorGUIUtility.TrTextContent("Channels", "Which render target color channels to show", null);
 
-			public static readonly GUIContent levelsHeader = EditorGUIUtility.TextContent("Levels|Render target display black/white intensity levels");
+			public static readonly GUIContent levelsHeader = EditorGUIUtility.TrTextContent("Levels", "Render target display black/white intensity levels", null);
 
-			public static readonly GUIContent causeOfNewDrawCallLabel = EditorGUIUtility.TextContent("Why this draw call can't be batched with the previous one");
+			public static readonly GUIContent causeOfNewDrawCallLabel = EditorGUIUtility.TrTextContent("Why this draw call can't be batched with the previous one", null, null);
 
-			public static readonly GUIContent selectShaderTooltip = EditorGUIUtility.TextContent("|Click to select shader");
+			public static readonly GUIContent selectShaderTooltip = EditorGUIUtility.TrTextContent("", "Click to select shader", null);
 
-			public static readonly GUIContent copyToClipboardTooltip = EditorGUIUtility.TextContent("|Click to copy shader and keywords text to clipboard.");
+			public static readonly GUIContent copyToClipboardTooltip = EditorGUIUtility.TrTextContent("", "Click to copy shader and keywords text to clipboard.", null);
 
-			public static readonly GUIContent arrayValuePopupButton = new GUIContent("...");
+			public static readonly GUIContent arrayValuePopupButton = EditorGUIUtility.TrTextContent("...", null, null);
 
 			public Styles()
 			{
@@ -164,7 +166,7 @@ namespace UnityEditor
 						allText += string.Format("[{0}]\t{1}\n", j, this.GetValueString(this.m_StartIndex + j, true));
 					}
 					GenericMenu genericMenu = new GenericMenu();
-					genericMenu.AddItem(new GUIContent("Copy value"), false, delegate
+					genericMenu.AddItem(EditorGUIUtility.TrTextContent("Copy value", null, null), false, delegate
 					{
 						EditorGUIUtility.systemCopyBuffer = allText;
 					});
@@ -196,7 +198,10 @@ namespace UnityEditor
 			"Draw Procedural",
 			"Compute Shader",
 			"Plugin Event",
-			"Draw Mesh (instanced)"
+			"Draw Mesh (instanced)",
+			"Begin Renderpass",
+			"Next Subpass",
+			"End Renderpass"
 		};
 
 		private const float kScrollbarWidth = 16f;
@@ -313,7 +318,7 @@ namespace UnityEditor
 			FrameDebuggerWindow frameDebuggerWindow = EditorWindow.GetWindow(typeof(FrameDebuggerWindow)) as FrameDebuggerWindow;
 			if (frameDebuggerWindow != null)
 			{
-				frameDebuggerWindow.titleContent = EditorGUIUtility.TextContent("Frame Debug");
+				frameDebuggerWindow.titleContent = EditorGUIUtility.TrTextContent("Frame Debug", null, null);
 			}
 			return frameDebuggerWindow;
 		}
@@ -445,6 +450,7 @@ namespace UnityEditor
 
 		private void BuildCurEventDataStrings()
 		{
+			this.m_CurEventDataStrings.drawCallCount = string.Format("{0}", this.m_CurEventData.drawCallCount);
 			this.m_CurEventDataStrings.shader = string.Format("{0}, SubShader #{1}", this.m_CurEventData.shaderName, this.m_CurEventData.subShaderIndex.ToString());
 			string str = (!string.IsNullOrEmpty(this.m_CurEventData.passName)) ? this.m_CurEventData.passName : ("#" + this.m_CurEventData.shaderPassIndex.ToString());
 			string str2 = (!string.IsNullOrEmpty(this.m_CurEventData.passLightMode)) ? string.Format(" ({0})", this.m_CurEventData.passLightMode) : "";
@@ -785,6 +791,10 @@ namespace UnityEditor
 
 		private void DrawEventDrawCallInfo()
 		{
+			if (this.m_CurEventData.drawCallCount > 1)
+			{
+				EditorGUILayout.LabelField("Draw Calls", this.m_CurEventDataStrings.drawCallCount, new GUILayoutOption[0]);
+			}
 			EditorGUILayout.LabelField("Shader", this.m_CurEventDataStrings.shader, new GUILayoutOption[0]);
 			if (GUI.Button(GUILayoutUtility.GetLastRect(), FrameDebuggerWindow.Styles.selectShaderTooltip, GUI.skin.label))
 			{
@@ -924,7 +934,7 @@ namespace UnityEditor
 			{
 				current.Use();
 				GenericMenu genericMenu = new GenericMenu();
-				genericMenu.AddItem(new GUIContent("Copy value"), false, delegate
+				genericMenu.AddItem(EditorGUIUtility.TrTextContent("Copy value", null, null), false, delegate
 				{
 					string systemCopyBuffer = string.Empty;
 					if (value is Vector4)

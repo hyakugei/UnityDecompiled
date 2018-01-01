@@ -2,7 +2,7 @@ using System;
 
 namespace UnityEngine.Bindings
 {
-	[AttributeUsage(AttributeTargets.Method | AttributeTargets.Property)]
+	[AttributeUsage(AttributeTargets.Method | AttributeTargets.Property), VisibleToOtherModules]
 	internal class NativeThrowsAttribute : Attribute, IBindingsThrowsProviderAttribute, IBindingsAttribute
 	{
 		public bool ThrowsException

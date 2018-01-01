@@ -25,21 +25,21 @@ namespace UnityEditor
 
 			static Styles()
 			{
-				AvatarMaskInspector.Styles.MaskDefinition = EditorGUIUtility.TextContent("Definition|Choose between Create From This Model, Copy From Other Avatar. The first one create a Mask for this file and the second one use a Mask from another file to import animation.");
+				AvatarMaskInspector.Styles.MaskDefinition = EditorGUIUtility.TrTextContent("Definition", "Choose between Create From This Model, Copy From Other Avatar. The first one create a Mask for this file and the second one use a Mask from another file to import animation.", null);
 				AvatarMaskInspector.Styles.MaskDefinitionOpt = new GUIContent[]
 				{
-					EditorGUIUtility.TextContent("Create From This Model|Create a Mask based on the model from this file. For Humanoid rig all the human transform are always imported and converted to muscle curve, thus they cannot be unchecked."),
-					EditorGUIUtility.TextContent("Copy From Other Mask|Copy a Mask from another file to import animation clip."),
-					EditorGUIUtility.TextContent("None | Import Everything")
+					EditorGUIUtility.TrTextContent("Create From This Model", "Create a Mask based on the model from this file. For Humanoid rig all the human transform are always imported and converted to muscle curve, thus they cannot be unchecked.", null),
+					EditorGUIUtility.TrTextContent("Copy From Other Mask", "Copy a Mask from another file to import animation clip.", null),
+					EditorGUIUtility.TrTextContent("None ", " Import Everything", null)
 				};
-				AvatarMaskInspector.Styles.BodyMask = EditorGUIUtility.TextContent("Humanoid|Define which body part are active. Also define which animation curves will be imported for an Animation Clip.");
-				AvatarMaskInspector.Styles.TransformMask = EditorGUIUtility.TextContent("Transform|Define which transform are active. Also define which animation curves will be imported for an Animation Clip.");
+				AvatarMaskInspector.Styles.BodyMask = EditorGUIUtility.TrTextContent("Humanoid", "Define which body part are active. Also define which animation curves will be imported for an Animation Clip.", null);
+				AvatarMaskInspector.Styles.TransformMask = EditorGUIUtility.TrTextContent("Transform", "Define which transform are active. Also define which animation curves will be imported for an Animation Clip.", null);
 				AvatarMaskInspector.Styles.foldoutStyle = new GUIStyle(EditorStyles.foldout);
 				AvatarMaskInspector.Styles.labelStyle = new GUIStyle(EditorStyles.label);
-				GUIStyle arg_91_0 = AvatarMaskInspector.Styles.foldoutStyle;
+				GUIStyle arg_B5_0 = AvatarMaskInspector.Styles.foldoutStyle;
 				bool richText = true;
 				AvatarMaskInspector.Styles.labelStyle.richText = richText;
-				arg_91_0.richText = richText;
+				arg_B5_0.richText = richText;
 			}
 		}
 
@@ -507,8 +507,8 @@ namespace UnityEditor
 			if (Event.current != null && Event.current.type == EventType.MouseUp && Event.current.button == 1 && rect2.Contains(Event.current.mousePosition))
 			{
 				GenericMenu genericMenu = new GenericMenu();
-				genericMenu.AddItem(new GUIContent("Select all"), false, new GenericMenu.MenuFunction(this.SelectAll));
-				genericMenu.AddItem(new GUIContent("Deselect all"), false, new GenericMenu.MenuFunction(this.DeselectAll));
+				genericMenu.AddItem(EditorGUIUtility.TrTextContent("Select all", null, null), false, new GenericMenu.MenuFunction(this.SelectAll));
+				genericMenu.AddItem(EditorGUIUtility.TrTextContent("Deselect all", null, null), false, new GenericMenu.MenuFunction(this.DeselectAll));
 				genericMenu.ShowAsContext();
 				Event.current.Use();
 			}

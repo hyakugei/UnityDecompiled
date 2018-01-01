@@ -6,7 +6,7 @@ namespace UnityEngine.XR.Tango
 {
 	[UsedByNativeCode]
 	[StructLayout(LayoutKind.Explicit, Size = 8)]
-	public struct CoordinateFramePair
+	internal struct CoordinateFramePair
 	{
 		[FieldOffset(0)]
 		public CoordinateFrame baseFrame;

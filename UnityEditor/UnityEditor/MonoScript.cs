@@ -1,41 +1,39 @@
 using System;
 using System.Runtime.CompilerServices;
 using UnityEngine;
-using UnityEngine.Scripting;
+using UnityEngine.Bindings;
 
 namespace UnityEditor
 {
-	public sealed class MonoScript : TextAsset
+	[NativeType("Editor/Mono/MonoScript.bindings.h"), NativeClass(null)]
+	public class MonoScript : TextAsset
 	{
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern MonoScript();
+		public MonoScript()
+		{
+			MonoScript.Init_Internal(this);
+		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern Type GetClass();
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern MonoScript FromMonoBehaviour(MonoBehaviour behaviour);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern MonoScript FromScriptableObject(ScriptableObject scriptableObject);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern bool GetScriptTypeWasJustCreatedFromComponentMenu();
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern void SetScriptTypeWasJustCreatedFromComponentMenu();
 
-		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void Init_Internal([Writable] MonoScript script);
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern void Init(string scriptContents, string className, string nameSpace, string assemblyName, bool isEditorScript);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern string GetNamespace();
 	}

@@ -1,7 +1,13 @@
 using System;
+using System.Linq;
+using UnityEngine.Bindings;
 
 namespace UnityEngine.StyleSheets
 {
+	[VisibleToOtherModules(new string[]
+	{
+		"UnityEngine.UIElementsModule"
+	})]
 	[Serializable]
 	internal class StyleComplexSelector
 	{
@@ -11,7 +17,10 @@ namespace UnityEngine.StyleSheets
 		[SerializeField]
 		private StyleSelector[] m_Selectors;
 
-		[SerializeField]
+		[VisibleToOtherModules(new string[]
+		{
+			"UnityEngine.UIElementsModule"
+		}), SerializeField]
 		internal int ruleIndex;
 
 		public int specificity
@@ -46,10 +55,20 @@ namespace UnityEngine.StyleSheets
 			{
 				return this.m_Selectors;
 			}
+			[VisibleToOtherModules(new string[]
+			{
+				"UnityEngine.UIElementsModule"
+			})]
 			internal set
 			{
 				this.m_Selectors = value;
 			}
+		}
+
+		public override string ToString()
+		{
+			return string.Format("[{0}]", string.Join(", ", (from x in this.m_Selectors
+			select x.ToString()).ToArray<string>()));
 		}
 	}
 }

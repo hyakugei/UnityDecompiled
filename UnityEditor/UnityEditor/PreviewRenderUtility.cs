@@ -161,7 +161,7 @@ namespace UnityEditor
 		{
 			this.InitPreview(r);
 			Color color = new Color(0.321568638f, 0.321568638f, 0.321568638f, 1f);
-			Texture2D texture2D = new Texture2D(1, 1, TextureFormat.RGBA32, true, true);
+			Texture2D texture2D = new Texture2D(1, 1, TextureFormat.RGBA32, true);
 			texture2D.SetPixel(0, 0, color);
 			texture2D.Apply();
 			Graphics.DrawTexture(new Rect(0f, 0f, (float)this.m_RenderTexture.width, (float)this.m_RenderTexture.height), texture2D);
@@ -170,6 +170,11 @@ namespace UnityEditor
 
 		private void InitPreview(Rect r)
 		{
+			this.camera.backgroundColor = new Color(0.192156866f, 0.192156866f, 0.192156866f, 1f);
+			if (QualitySettings.activeColorSpace == ColorSpace.Linear)
+			{
+				this.camera.backgroundColor = this.camera.backgroundColor.linear;
+			}
 			this.m_TargetRect = r;
 			float scaleFactor = this.GetScaleFactor(r.width, r.height);
 			int num = (int)(r.width * scaleFactor);
@@ -182,7 +187,7 @@ namespace UnityEditor
 					this.m_RenderTexture = null;
 				}
 				RenderTextureFormat format = (!this.camera.allowHDR) ? RenderTextureFormat.ARGB32 : RenderTextureFormat.ARGBHalf;
-				this.m_RenderTexture = new RenderTexture(num, num2, 16, format, RenderTextureReadWrite.Default);
+				this.m_RenderTexture = new RenderTexture(num, num2, 16, format, RenderTextureReadWrite.Linear);
 				this.m_RenderTexture.hideFlags = HideFlags.HideAndDontSave;
 				this.camera.targetTexture = this.m_RenderTexture;
 				Light[] lights = this.lights;
@@ -256,20 +261,16 @@ namespace UnityEditor
 		public void EndAndDrawPreview(Rect r)
 		{
 			Texture image = this.EndPreview();
-			GL.sRGBWrite = (QualitySettings.activeColorSpace == ColorSpace.Linear);
 			GUI.DrawTexture(r, image, ScaleMode.StretchToFill, false);
-			GL.sRGBWrite = false;
 		}
 
 		public Texture2D EndStaticPreview()
 		{
 			Unsupported.RestoreOverrideRenderSettings();
-			RenderTexture temporary = RenderTexture.GetTemporary((int)this.m_TargetRect.width, (int)this.m_TargetRect.height, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default);
-			GL.sRGBWrite = (QualitySettings.activeColorSpace == ColorSpace.Linear);
-			Graphics.Blit(this.m_RenderTexture, temporary);
-			GL.sRGBWrite = false;
+			RenderTexture temporary = RenderTexture.GetTemporary((int)this.m_TargetRect.width, (int)this.m_TargetRect.height, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Linear);
+			Graphics.Blit(this.m_RenderTexture, temporary, EditorGUIUtility.GUITextureBlit2SRGBMaterial);
 			RenderTexture.active = temporary;
-			Texture2D texture2D = new Texture2D((int)this.m_TargetRect.width, (int)this.m_TargetRect.height, TextureFormat.RGB24, false, true);
+			Texture2D texture2D = new Texture2D((int)this.m_TargetRect.width, (int)this.m_TargetRect.height, TextureFormat.RGB24, false, false);
 			texture2D.ReadPixels(new Rect(0f, 0f, this.m_TargetRect.width, this.m_TargetRect.height), 0, 0);
 			texture2D.Apply();
 			RenderTexture.ReleaseTemporary(temporary);

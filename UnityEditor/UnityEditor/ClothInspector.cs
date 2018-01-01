@@ -92,19 +92,19 @@ namespace UnityEditor
 
 			static Styles()
 			{
-				ClothInspector.Styles.editConstraintsLabel = EditorGUIUtility.TextContent("Edit Constraints");
-				ClothInspector.Styles.editSelfInterCollisionLabel = EditorGUIUtility.TextContent("Edit Collision Particles");
-				ClothInspector.Styles.selfInterCollisionParticleColor = EditorGUIUtility.TextContent("Visualization Color");
-				ClothInspector.Styles.selfInterCollisionBrushColor = EditorGUIUtility.TextContent("Brush Color");
-				ClothInspector.Styles.clothSelfCollisionAndInterCollision = EditorGUIUtility.TextContent("Cloth Self-Collision And Inter-Collision");
-				ClothInspector.Styles.paintCollisionParticles = EditorGUIUtility.TextContent("Paint Collision Particles");
-				ClothInspector.Styles.selectCollisionParticles = EditorGUIUtility.TextContent("Select Collision Particles");
-				ClothInspector.Styles.brushRadiusString = EditorGUIUtility.TextContent("Brush Radius");
-				ClothInspector.Styles.selfAndInterCollisionMode = EditorGUIUtility.TextContent("Paint or Select Particles");
-				ClothInspector.Styles.backFaceManipulationMode = EditorGUIUtility.TextContent("Back Face Manipulation");
-				ClothInspector.Styles.manipulateBackFaceString = EditorGUIUtility.TextContent("Manipulate Backfaces");
-				ClothInspector.Styles.selfCollisionString = EditorGUIUtility.TextContent("Self Collision");
-				ClothInspector.Styles.setSelfAndInterCollisionString = EditorGUIUtility.TextContent("Self-Collision and Inter-Collision");
+				ClothInspector.Styles.editConstraintsLabel = EditorGUIUtility.TrTextContent("Edit Constraints", null, null);
+				ClothInspector.Styles.editSelfInterCollisionLabel = EditorGUIUtility.TrTextContent("Edit Collision Particles", null, null);
+				ClothInspector.Styles.selfInterCollisionParticleColor = EditorGUIUtility.TrTextContent("Visualization Color", null, null);
+				ClothInspector.Styles.selfInterCollisionBrushColor = EditorGUIUtility.TrTextContent("Brush Color", null, null);
+				ClothInspector.Styles.clothSelfCollisionAndInterCollision = EditorGUIUtility.TrTextContent("Cloth Self-Collision And Inter-Collision", null, null);
+				ClothInspector.Styles.paintCollisionParticles = EditorGUIUtility.TrTextContent("Paint Collision Particles", null, null);
+				ClothInspector.Styles.selectCollisionParticles = EditorGUIUtility.TrTextContent("Select Collision Particles", null, null);
+				ClothInspector.Styles.brushRadiusString = EditorGUIUtility.TrTextContent("Brush Radius", null, null);
+				ClothInspector.Styles.selfAndInterCollisionMode = EditorGUIUtility.TrTextContent("Paint or Select Particles", null, null);
+				ClothInspector.Styles.backFaceManipulationMode = EditorGUIUtility.TrTextContent("Back Face Manipulation", null, null);
+				ClothInspector.Styles.manipulateBackFaceString = EditorGUIUtility.TrTextContent("Manipulate Backfaces", null, null);
+				ClothInspector.Styles.selfCollisionString = EditorGUIUtility.TrTextContent("Self Collision", null, null);
+				ClothInspector.Styles.setSelfAndInterCollisionString = EditorGUIUtility.TrTextContent("Self-Collision and Inter-Collision", null, null);
 				ClothInspector.Styles.clothEditorWindowWidth = 300;
 				ClothInspector.Styles.toolContents = new GUIContent[]
 				{
@@ -113,47 +113,47 @@ namespace UnityEditor
 				};
 				ClothInspector.Styles.toolIcons = new GUIContent[]
 				{
-					EditorGUIUtility.TextContent("Select"),
-					EditorGUIUtility.TextContent("Paint")
+					EditorGUIUtility.TrTextContent("Select", null, null),
+					EditorGUIUtility.TrTextContent("Paint", null, null)
 				};
 				ClothInspector.Styles.drawModeStrings = new GUIContent[]
 				{
-					EditorGUIUtility.TextContent("Fixed"),
-					EditorGUIUtility.TextContent("Max Distance"),
-					EditorGUIUtility.TextContent("Surface Penetration")
+					EditorGUIUtility.TrTextContent("Fixed", null, null),
+					EditorGUIUtility.TrTextContent("Max Distance", null, null),
+					EditorGUIUtility.TrTextContent("Surface Penetration", null, null)
 				};
 				ClothInspector.Styles.toolModeStrings = new GUIContent[]
 				{
-					EditorGUIUtility.TextContent("Select"),
-					EditorGUIUtility.TextContent("Paint"),
-					EditorGUIUtility.TextContent("Erase")
+					EditorGUIUtility.TrTextContent("Select", null, null),
+					EditorGUIUtility.TrTextContent("Paint", null, null),
+					EditorGUIUtility.TrTextContent("Erase", null, null)
 				};
 				ClothInspector.Styles.collToolModeIcons = new GUIContent[]
 				{
-					EditorGUIUtility.TextContent("Select"),
-					EditorGUIUtility.TextContent("Paint"),
-					EditorGUIUtility.TextContent("Erase")
+					EditorGUIUtility.TrTextContent("Select", null, null),
+					EditorGUIUtility.TrTextContent("Paint", null, null),
+					EditorGUIUtility.TrTextContent("Erase", null, null)
 				};
 				ClothInspector.Styles.collVisModeStrings = new GUIContent[]
 				{
-					EditorGUIUtility.TextContent("Self Collision"),
-					EditorGUIUtility.TextContent("Inter Collision")
+					EditorGUIUtility.TrTextContent("Self Collision", null, null),
+					EditorGUIUtility.TrTextContent("Inter Collision", null, null)
 				};
-				ClothInspector.Styles.paintIcon = EditorGUIUtility.IconContent("ClothInspector.PaintValue", "Change this vertex coefficient value by painting in the scene view.");
+				ClothInspector.Styles.paintIcon = EditorGUIUtility.TrIconContent("ClothInspector.PaintValue", "Change this vertex coefficient value by painting in the scene view.");
 				ClothInspector.Styles.sceneViewEditModes = new EditMode.SceneViewEditMode[]
 				{
 					EditMode.SceneViewEditMode.ClothConstraints,
 					EditMode.SceneViewEditMode.ClothSelfAndInterCollisionParticles
 				};
-				ClothInspector.Styles.selfCollisionDistanceGUIContent = EditorGUIUtility.TextContent("Self Collision Distance");
-				ClothInspector.Styles.selfCollisionStiffnessGUIContent = EditorGUIUtility.TextContent("Self Collision Stiffness");
-				ClothInspector.Styles.toolContents[0].tooltip = EditorGUIUtility.TextContent("Edit cloth constraints").text;
-				ClothInspector.Styles.toolContents[1].tooltip = EditorGUIUtility.TextContent("Edit cloth self or inter collision").text;
-				ClothInspector.Styles.toolIcons[0].tooltip = EditorGUIUtility.TextContent("Select cloth particles for use in self or inter collision").text;
-				ClothInspector.Styles.toolIcons[1].tooltip = EditorGUIUtility.TextContent("Paint cloth particles for use in self or inter collision").text;
-				ClothInspector.Styles.collToolModeIcons[0].tooltip = EditorGUIUtility.TextContent("Select cloth particles.").text;
-				ClothInspector.Styles.collToolModeIcons[1].tooltip = EditorGUIUtility.TextContent("Paint cloth particles.").text;
-				ClothInspector.Styles.collToolModeIcons[2].tooltip = EditorGUIUtility.TextContent("Erase cloth particles.").text;
+				ClothInspector.Styles.selfCollisionDistanceGUIContent = EditorGUIUtility.TrTextContent("Self Collision Distance", null, null);
+				ClothInspector.Styles.selfCollisionStiffnessGUIContent = EditorGUIUtility.TrTextContent("Self Collision Stiffness", null, null);
+				ClothInspector.Styles.toolContents[0].tooltip = EditorGUIUtility.TrTextContent("Edit cloth constraints", null, null).text;
+				ClothInspector.Styles.toolContents[1].tooltip = EditorGUIUtility.TrTextContent("Edit cloth self or inter collision", null, null).text;
+				ClothInspector.Styles.toolIcons[0].tooltip = EditorGUIUtility.TrTextContent("Select cloth particles for use in self or inter collision", null, null).text;
+				ClothInspector.Styles.toolIcons[1].tooltip = EditorGUIUtility.TrTextContent("Paint cloth particles for use in self or inter collision", null, null).text;
+				ClothInspector.Styles.collToolModeIcons[0].tooltip = EditorGUIUtility.TrTextContent("Select cloth particles.", null, null).text;
+				ClothInspector.Styles.collToolModeIcons[1].tooltip = EditorGUIUtility.TrTextContent("Paint cloth particles.", null, null).text;
+				ClothInspector.Styles.collToolModeIcons[2].tooltip = EditorGUIUtility.TrTextContent("Erase cloth particles.", null, null).text;
 			}
 		}
 
@@ -278,10 +278,7 @@ namespace UnityEditor
 			bool result;
 			if (this.cloth.vertices.Length != this.m_NumVerts)
 			{
-				this.InitBrushCollider();
-				this.InitSelfAndInterCollisionSelection();
-				this.InitClothParticlesInWorldSpace();
-				this.m_NumVerts = this.cloth.vertices.Length;
+				this.InitInspector();
 				result = true;
 			}
 			else
@@ -322,7 +319,7 @@ namespace UnityEditor
 			{
 				if (this.state.SetSelfAndInterCollision || this.state.CollToolMode == ClothInspector.CollToolMode.Paint || this.state.CollToolMode == ClothInspector.CollToolMode.Erase)
 				{
-					if (this.cloth.selfCollisionDistance > 0f)
+					if (this.cloth.selfCollisionDistance >= 0f)
 					{
 						this.state.SelfCollisionDistance = this.cloth.selfCollisionDistance;
 						this.m_SelfCollisionDistance.floatValue = this.cloth.selfCollisionDistance;
@@ -332,7 +329,7 @@ namespace UnityEditor
 						this.cloth.selfCollisionDistance = this.state.SelfCollisionDistance;
 						this.m_SelfCollisionDistance.floatValue = this.state.SelfCollisionDistance;
 					}
-					if (this.cloth.selfCollisionStiffness > 0f)
+					if (this.cloth.selfCollisionStiffness >= 0f)
 					{
 						this.state.SelfCollisionStiffness = this.cloth.selfCollisionStiffness;
 						this.m_SelfCollisionStiffness.floatValue = this.cloth.selfCollisionStiffness;
@@ -362,7 +359,7 @@ namespace UnityEditor
 					EditorGUI.PropertyField(rect3, this.m_SelfCollisionStiffness, ClothInspector.Styles.selfCollisionStiffnessGUIContent);
 					GUILayout.Space(10f);
 				}
-				if (Physics.interCollisionDistance > 0f)
+				if (Physics.interCollisionDistance >= 0f)
 				{
 					this.state.InterCollisionDistance = Physics.interCollisionDistance;
 				}
@@ -370,7 +367,7 @@ namespace UnityEditor
 				{
 					Physics.interCollisionDistance = this.state.InterCollisionDistance;
 				}
-				if (Physics.interCollisionStiffness > 0f)
+				if (Physics.interCollisionStiffness >= 0f)
 				{
 					this.state.InterCollisionStiffness = Physics.interCollisionStiffness;
 				}
@@ -502,12 +499,15 @@ namespace UnityEditor
 
 		private void InitClothParticlesInWorldSpace()
 		{
-			int num = this.cloth.vertices.Length;
+			Vector3[] vertices = this.cloth.vertices;
+			int num = vertices.Length;
 			this.m_ClothParticlesInWorldSpace = new Vector3[num];
 			Transform actualRootBone = this.m_SkinnedMeshRenderer.actualRootBone;
+			Quaternion rotation = actualRootBone.rotation;
+			Vector3 position = actualRootBone.position;
 			for (int i = 0; i < num; i++)
 			{
-				this.m_ClothParticlesInWorldSpace[i] = actualRootBone.rotation * this.cloth.vertices[i] + actualRootBone.position;
+				this.m_ClothParticlesInWorldSpace[i] = rotation * vertices[i] + position;
 			}
 		}
 
@@ -546,11 +546,22 @@ namespace UnityEditor
 					}
 					if (vector.magnitude < this.state.BrushRadius && flag && (this.state.CollToolMode == ClothInspector.CollToolMode.Paint || this.state.CollToolMode == ClothInspector.CollToolMode.Erase))
 					{
-						Handles.color = ClothInspector.s_SelectedParticleColor;
+						if (this.m_BrushFace > -1)
+						{
+							Handles.color = ClothInspector.s_SelectedParticleColor;
+						}
 					}
 					Handles.SphereHandleCap(controlID, this.m_ClothParticlesInWorldSpace[i], actualRootBone.rotation, size, EventType.Repaint);
 				}
 			}
+		}
+
+		private void InitInspector()
+		{
+			this.InitBrushCollider();
+			this.InitSelfAndInterCollisionSelection();
+			this.InitClothParticlesInWorldSpace();
+			this.m_NumVerts = this.cloth.vertices.Length;
 		}
 
 		private void OnEnable()
@@ -560,11 +571,8 @@ namespace UnityEditor
 				ClothInspector.s_ColorTexture = this.GenerateColorTexture(100);
 			}
 			this.m_SkinnedMeshRenderer = this.cloth.GetComponent<SkinnedMeshRenderer>();
+			this.InitInspector();
 			this.GenerateSelectionMesh();
-			this.InitBrushCollider();
-			this.InitSelfAndInterCollisionSelection();
-			this.InitClothParticlesInWorldSpace();
-			this.m_NumVerts = this.cloth.vertices.Length;
 			this.m_SelfCollisionDistance = base.serializedObject.FindProperty("m_SelfCollisionDistance");
 			this.m_SelfCollisionStiffness = base.serializedObject.FindProperty("m_SelfCollisionStiffness");
 			SceneView.onPreSceneGUIDelegate = (SceneView.OnSceneFunc)Delegate.Combine(SceneView.onPreSceneGUIDelegate, new SceneView.OnSceneFunc(this.OnPreSceneGUICallback));
@@ -1093,7 +1101,10 @@ namespace UnityEditor
 					}
 					if (vector.magnitude < this.state.BrushRadius && flag && this.state.ToolMode == ClothInspector.ToolMode.Paint)
 					{
-						Handles.color = ClothInspector.s_SelectedParticleColor;
+						if (this.m_BrushFace > -1)
+						{
+							Handles.color = ClothInspector.s_SelectedParticleColor;
+						}
 					}
 					Handles.SphereHandleCap(controlID, this.m_ClothParticlesInWorldSpace[j], actualRootBone.rotation, this.state.ConstraintSize, EventType.Repaint);
 				}
@@ -1452,7 +1463,7 @@ namespace UnityEditor
 					ClothSkinningCoefficient[] coefficients = this.cloth.coefficients;
 					if (this.m_ParticleSelection.Length != coefficients.Length)
 					{
-						this.OnEnable();
+						this.InitInspector();
 					}
 				}
 				Handles.BeginGUI();
@@ -1559,7 +1570,7 @@ namespace UnityEditor
 					EditorStyles.selectionRect.Draw(EditorGUIExt.FromToRect(this.m_SelectStartPoint, this.m_SelectMousePoint), GUIContent.none, false, false, false, false);
 				}
 				Handles.EndGUI();
-				SceneViewOverlay.Window(new GUIContent("Cloth Constraints"), new SceneViewOverlay.WindowFunction(this.ConstraintEditing), 0, SceneViewOverlay.WindowDisplayOption.OneWindowPerTarget);
+				SceneViewOverlay.Window(EditorGUIUtility.TrTextContent("Cloth Constraints", null, null), new SceneViewOverlay.WindowFunction(this.ConstraintEditing), 0, SceneViewOverlay.WindowDisplayOption.OneWindowPerTarget);
 			}
 		}
 
@@ -1692,7 +1703,7 @@ namespace UnityEditor
 				genericMenu.AddItem(this.GetDrawModeString(ClothInspector.DrawMode.MaxDistance), this.drawMode == ClothInspector.DrawMode.MaxDistance, new GenericMenu.MenuFunction(this.VisualizationMenuSetMaxDistanceMode));
 				genericMenu.AddItem(this.GetDrawModeString(ClothInspector.DrawMode.CollisionSphereDistance), this.drawMode == ClothInspector.DrawMode.CollisionSphereDistance, new GenericMenu.MenuFunction(this.VisualizationMenuSetCollisionSphereMode));
 				genericMenu.AddSeparator("");
-				genericMenu.AddItem(new GUIContent("Manipulate Backfaces"), this.state.ManipulateBackfaces, new GenericMenu.MenuFunction(this.VisualizationMenuToggleManipulateBackfaces));
+				genericMenu.AddItem(EditorGUIUtility.TrTextContent("Manipulate Backfaces", null, null), this.state.ManipulateBackfaces, new GenericMenu.MenuFunction(this.VisualizationMenuToggleManipulateBackfaces));
 				genericMenu.DropDown(last);
 			}
 			GUILayout.BeginHorizontal(new GUILayoutOption[0]);

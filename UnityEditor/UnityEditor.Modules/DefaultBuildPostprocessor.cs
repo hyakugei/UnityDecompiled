@@ -14,6 +14,12 @@ namespace UnityEditor.Modules
 		{
 		}
 
+		public virtual void PostProcess(BuildPostProcessArgs args, out BuildProperties outProperties)
+		{
+			this.PostProcess(args);
+			outProperties = ScriptableObject.CreateInstance<DefaultBuildProperties>();
+		}
+
 		public virtual bool SupportsInstallInBuildFolder()
 		{
 			return false;
@@ -22,14 +28,6 @@ namespace UnityEditor.Modules
 		public virtual bool SupportsLz4Compression()
 		{
 			return false;
-		}
-
-		public virtual void PostProcessScriptsOnly(BuildPostProcessArgs args)
-		{
-			if (!this.SupportsScriptsOnlyBuild())
-			{
-				throw new NotSupportedException();
-			}
 		}
 
 		public virtual bool SupportsScriptsOnlyBuild()

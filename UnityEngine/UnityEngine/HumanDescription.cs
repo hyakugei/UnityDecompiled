@@ -1,11 +1,14 @@
 using System;
+using UnityEngine.Bindings;
 
 namespace UnityEngine
 {
 	public struct HumanDescription
 	{
+		[NativeName("m_Human")]
 		public HumanBone[] human;
 
+		[NativeName("m_Skeleton")]
 		public SkeletonBone[] skeleton;
 
 		internal float m_ArmTwist;
@@ -22,7 +25,15 @@ namespace UnityEngine
 
 		internal float m_FeetSpacing;
 
+		internal string m_RootMotionBoneName;
+
+		internal Quaternion m_RootMotionBoneRotation;
+
 		internal bool m_HasTranslationDoF;
+
+		internal bool m_HasExtraRoot;
+
+		internal bool m_SkeletonHasParents;
 
 		public float upperArmTwist
 		{

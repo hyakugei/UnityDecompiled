@@ -49,11 +49,11 @@ namespace UnityEditor
 		protected override void AddDefaultItemsToMenu(GenericMenu menu, EditorWindow window)
 		{
 			base.AddDefaultItemsToMenu(menu, window);
-			menu.AddItem(EditorGUIUtility.TextContent("Maximize"), !(base.parent is SplitView), new GenericMenu.MenuFunction2(this.Unmaximize), window);
-			menu.AddDisabledItem(EditorGUIUtility.TextContent("Close Tab"));
+			menu.AddItem(EditorGUIUtility.TrTextContent("Maximize", null, null), !(base.parent is SplitView), new GenericMenu.MenuFunction2(this.Unmaximize), window);
+			menu.AddDisabledItem(EditorGUIUtility.TrTextContent("Close Tab", null, null));
 			menu.AddSeparator("");
 			Type[] paneTypes = base.GetPaneTypes();
-			GUIContent gUIContent = EditorGUIUtility.TextContent("Add Tab");
+			GUIContent gUIContent = EditorGUIUtility.TrTextContent("Add Tab", null, null);
 			Type[] array = paneTypes;
 			for (int i = 0; i < array.Length; i++)
 			{

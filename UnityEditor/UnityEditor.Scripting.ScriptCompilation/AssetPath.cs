@@ -33,11 +33,6 @@ namespace UnityEditor.Scripting.ScriptCompilation
 			return Path.GetExtension(path.NormalizePath());
 		}
 
-		public static string GetFileNameWithoutExtension(string path)
-		{
-			return Path.GetFileNameWithoutExtension(path.NormalizePath());
-		}
-
 		public static string GetDirectoryName(string path)
 		{
 			return AssetPath.ReplaceSeparators(Path.GetDirectoryName(path.NormalizePath()));
@@ -46,6 +41,20 @@ namespace UnityEditor.Scripting.ScriptCompilation
 		public static string ReplaceSeparators(string path)
 		{
 			return path.Replace('\\', AssetPath.Separator);
+		}
+
+		public static string GetAssemblyNameWithoutExtension(string assemblyName)
+		{
+			string result;
+			if (AssetPath.GetExtension(assemblyName) == ".dll")
+			{
+				result = Path.GetFileNameWithoutExtension(assemblyName.NormalizePath());
+			}
+			else
+			{
+				result = Path.GetFileName(assemblyName.NormalizePath());
+			}
+			return result;
 		}
 	}
 }

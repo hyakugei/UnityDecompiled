@@ -5,7 +5,7 @@ using UnityEngine.Experimental.UIElements.StyleSheets;
 
 namespace UnityEditor.Experimental.UIElements.GraphView
 {
-	internal class GridBackground : VisualElement
+	public class GridBackground : VisualElement
 	{
 		private const string k_SpacingProperty = "spacing";
 
@@ -96,7 +96,7 @@ namespace UnityEditor.Experimental.UIElements.GraphView
 			return _in;
 		}
 
-		public override void OnStyleResolved(ICustomStyle elementStyle)
+		protected override void OnStyleResolved(ICustomStyle elementStyle)
 		{
 			base.OnStyleResolved(elementStyle);
 			elementStyle.ApplyCustomProperty("spacing", ref this.m_Spacing);

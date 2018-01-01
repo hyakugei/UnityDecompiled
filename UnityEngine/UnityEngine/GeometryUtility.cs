@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace UnityEngine
 {
@@ -93,7 +94,7 @@ namespace UnityEngine
 			return result;
 		}
 
-		private static void Internal_ExtractPlanes(Plane[] planes, Matrix4x4 worldToProjectionMatrix)
+		private static void Internal_ExtractPlanes([Out] Plane[] planes, Matrix4x4 worldToProjectionMatrix)
 		{
 			GeometryUtility.Internal_ExtractPlanes_Injected(planes, ref worldToProjectionMatrix);
 		}
@@ -111,7 +112,7 @@ namespace UnityEngine
 		}
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void Internal_ExtractPlanes_Injected(Plane[] planes, ref Matrix4x4 worldToProjectionMatrix);
+		private static extern void Internal_ExtractPlanes_Injected([Out] Plane[] planes, ref Matrix4x4 worldToProjectionMatrix);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern bool TestPlanesAABB_Injected(Plane[] planes, ref Bounds bounds);

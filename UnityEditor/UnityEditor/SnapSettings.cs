@@ -13,23 +13,23 @@ namespace UnityEditor
 
 			public GUIStyle buttonRight = "ButtonRight";
 
-			public GUIContent snapAllAxes = EditorGUIUtility.TextContent("Snap All Axes|Snaps selected objects to the grid");
+			public GUIContent snapAllAxes = EditorGUIUtility.TrTextContent("Snap All Axes", "Snaps selected objects to the grid", null);
 
-			public GUIContent snapX = EditorGUIUtility.TextContent("X|Snaps selected objects to the grid on the x axis");
+			public GUIContent snapX = EditorGUIUtility.TrTextContent("X", "Snaps selected objects to the grid on the x axis", null);
 
-			public GUIContent snapY = EditorGUIUtility.TextContent("Y|Snaps selected objects to the grid on the y axis");
+			public GUIContent snapY = EditorGUIUtility.TrTextContent("Y", "Snaps selected objects to the grid on the y axis", null);
 
-			public GUIContent snapZ = EditorGUIUtility.TextContent("Z|Snaps selected objects to the grid on the z axis");
+			public GUIContent snapZ = EditorGUIUtility.TrTextContent("Z", "Snaps selected objects to the grid on the z axis", null);
 
-			public GUIContent moveX = EditorGUIUtility.TextContent("Move X|Grid spacing X");
+			public GUIContent moveX = EditorGUIUtility.TrTextContent("Move X", "Grid spacing X", null);
 
-			public GUIContent moveY = EditorGUIUtility.TextContent("Move Y|Grid spacing Y");
+			public GUIContent moveY = EditorGUIUtility.TrTextContent("Move Y", "Grid spacing Y", null);
 
-			public GUIContent moveZ = EditorGUIUtility.TextContent("Move Z|Grid spacing Z");
+			public GUIContent moveZ = EditorGUIUtility.TrTextContent("Move Z", "Grid spacing Z", null);
 
-			public GUIContent scale = EditorGUIUtility.TextContent("Scale|Grid spacing for scaling");
+			public GUIContent scale = EditorGUIUtility.TrTextContent("Scale", "Grid spacing for scaling", null);
 
-			public GUIContent rotation = EditorGUIUtility.TextContent("Rotation|Grid spacing for rotation in degrees");
+			public GUIContent rotation = EditorGUIUtility.TrTextContent("Rotation", "Grid spacing for rotation in degrees", null);
 		}
 
 		private static float s_MoveSnapX;

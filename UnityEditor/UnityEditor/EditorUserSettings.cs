@@ -37,6 +37,16 @@ namespace UnityEditor
 			set;
 		}
 
+		public static extern bool allowAsyncStatusUpdate
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
 		internal static extern bool DebugCmd
 		{
 			[GeneratedByOldBindingsGenerator]
@@ -75,6 +85,10 @@ namespace UnityEditor
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
+		}
+
+		private EditorUserSettings()
+		{
 		}
 
 		[GeneratedByOldBindingsGenerator]

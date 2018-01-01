@@ -44,7 +44,7 @@ namespace UnityEditor
 			static Styles()
 			{
 				GUIViewDebuggerWindow.Styles.defaultWindowPopupText = "<Please Select>";
-				GUIViewDebuggerWindow.Styles.inspectedWindowLabel = new GUIContent("Inspected View: ");
+				GUIViewDebuggerWindow.Styles.inspectedWindowLabel = EditorGUIUtility.TrTextContent("Inspected View: ", null, null);
 				GUIViewDebuggerWindow.Styles.listItem = new GUIStyle("PR Label");
 				GUIViewDebuggerWindow.Styles.listItemBackground = new GUIStyle("CN EntryBackOdd");
 				GUIViewDebuggerWindow.Styles.listBackgroundStyle = new GUIStyle("CN Box");
@@ -265,7 +265,7 @@ namespace UnityEditor
 
 		private void OnEnable()
 		{
-			base.titleContent = new GUIContent("GUI Inspector");
+			base.titleContent = EditorGUIUtility.TrTextContent("GUI Inspector", null, null);
 			GUIViewDebuggerHelper.onViewInstructionsChanged = (Action)Delegate.Combine(GUIViewDebuggerHelper.onViewInstructionsChanged, new Action(this.OnInspectedViewChanged));
 			GUIView inspected = this.m_Inspected;
 			this.inspected = null;
@@ -343,7 +343,7 @@ namespace UnityEditor
 				List<GUIView> list = new List<GUIView>();
 				GUIViewDebuggerHelper.GetViews(list);
 				List<GUIContent> list2 = new List<GUIContent>(list.Count + 1);
-				list2.Add(new GUIContent("None"));
+				list2.Add(EditorGUIUtility.TrTextContent("None", null, null));
 				int selected = 0;
 				List<GUIView> list3 = new List<GUIView>(list.Count + 1);
 				for (int i = 0; i < list.Count; i++)

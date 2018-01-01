@@ -2,7 +2,7 @@ using System;
 
 namespace UnityEngine.Bindings
 {
-	[AttributeUsage(AttributeTargets.Property)]
+	[AttributeUsage(AttributeTargets.Property), VisibleToOtherModules]
 	internal class NativePropertyAttribute : NativeMethodAttribute
 	{
 		public TargetType TargetType

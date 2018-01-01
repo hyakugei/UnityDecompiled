@@ -44,7 +44,7 @@ namespace UnityEngine.Experimental.UIElements
 			}
 		}
 
-		public void Blur()
+		public virtual void Blur()
 		{
 			if (this.focusController != null && this.focusController.focusedElement == this)
 			{
@@ -57,11 +57,7 @@ namespace UnityEngine.Experimental.UIElements
 			base.ExecuteDefaultAction(evt);
 			if (evt.GetEventTypeId() == EventBase<MouseDownEvent>.TypeId())
 			{
-				MouseDownEvent mouseDownEvent = evt as MouseDownEvent;
-				if (mouseDownEvent.button == 0)
-				{
-					this.Focus();
-				}
+				this.Focus();
 			}
 			if (this.focusController != null)
 			{

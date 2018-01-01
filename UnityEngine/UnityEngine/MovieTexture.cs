@@ -4,6 +4,7 @@ using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
+	[ExcludeFromObjectFactory, ExcludeFromPreset]
 	public sealed class MovieTexture : Texture
 	{
 		public extern AudioClip audioClip
@@ -42,6 +43,10 @@ namespace UnityEngine
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
+		}
+
+		private MovieTexture()
+		{
 		}
 
 		public void Play()

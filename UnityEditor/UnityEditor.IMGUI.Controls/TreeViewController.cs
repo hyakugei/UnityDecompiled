@@ -48,6 +48,12 @@ namespace UnityEditor.IMGUI.Controls
 			set;
 		}
 
+		public Action<int> itemSingleClickedCallback
+		{
+			get;
+			set;
+		}
+
 		public Action<int> itemDoubleClickedCallback
 		{
 			get;
@@ -394,6 +400,10 @@ namespace UnityEditor.IMGUI.Controls
 									this.m_AllowRenameOnMouseUp = (this.state.selectedIDs.Count == 1 && this.state.selectedIDs[0] == item.id);
 								}
 								this.SelectionClick(item, false);
+								if (this.itemSingleClickedCallback != null)
+								{
+									this.itemSingleClickedCallback(item.id);
+								}
 							}
 							GUIUtility.hotControl = itemControlID;
 						}
@@ -424,6 +434,10 @@ namespace UnityEditor.IMGUI.Controls
 						else if (flag2)
 						{
 							this.SelectionClick(item, false);
+							if (this.itemSingleClickedCallback != null)
+							{
+								this.itemSingleClickedCallback(item.id);
+							}
 						}
 					}
 				}

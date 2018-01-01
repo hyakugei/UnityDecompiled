@@ -8,6 +8,8 @@ namespace UnityEngine.Experimental.Rendering
 
 		private int m_LayerMask;
 
+		private uint m_RenderingLayerMask;
+
 		public RenderQueueRange renderQueueRange
 		{
 			get
@@ -32,6 +34,18 @@ namespace UnityEngine.Experimental.Rendering
 			}
 		}
 
+		public uint renderingLayerMask
+		{
+			get
+			{
+				return this.m_RenderingLayerMask;
+			}
+			set
+			{
+				this.m_RenderingLayerMask = value;
+			}
+		}
+
 		public FilterRenderersSettings(bool initializeValues = false)
 		{
 			this = default(FilterRenderersSettings);
@@ -39,6 +53,7 @@ namespace UnityEngine.Experimental.Rendering
 			{
 				this.m_RenderQueueRange = RenderQueueRange.all;
 				this.m_LayerMask = -1;
+				this.m_RenderingLayerMask = 4294967295u;
 			}
 		}
 	}

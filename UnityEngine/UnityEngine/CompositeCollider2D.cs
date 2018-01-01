@@ -1,6 +1,6 @@
 using System;
 using System.Runtime.CompilerServices;
-using UnityEngine.Scripting;
+using System.Runtime.InteropServices;
 
 namespace UnityEngine
 {
@@ -89,11 +89,10 @@ namespace UnityEngine
 			{
 				throw new ArgumentNullException("points");
 			}
-			return this.Internal_GetPath(index, points);
+			return this.GetPath_Internal(index, points);
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern int Internal_GetPath(int index, Vector2[] points);
+		private extern int GetPath_Internal(int index, [Out] Vector2[] points);
 	}
 }

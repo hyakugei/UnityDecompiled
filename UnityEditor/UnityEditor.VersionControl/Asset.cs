@@ -6,6 +6,7 @@ using UnityEngine.Scripting;
 
 namespace UnityEditor.VersionControl
 {
+	[UsedByNativeCode]
 	public sealed class Asset
 	{
 		[Flags]
@@ -30,7 +31,7 @@ namespace UnityEditor.VersionControl
 			MetaFile = 32768
 		}
 
-		private GUID m_guid;
+		private IntPtr m_Ptr;
 
 		[ThreadAndSerializationSafe]
 		public extern Asset.States state
@@ -237,6 +238,10 @@ namespace UnityEditor.VersionControl
 			else if (Asset.IsState(state, Asset.States.OutOfSync))
 			{
 				result = "Out Of Sync";
+			}
+			else if (Asset.IsState(state, Asset.States.Updating))
+			{
+				result = "Updating Status";
 			}
 			else
 			{

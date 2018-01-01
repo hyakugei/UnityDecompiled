@@ -47,6 +47,18 @@ namespace UnityEngine.Experimental.UIElements
 			set;
 		}
 
+		internal virtual ICursorManager cursorManager
+		{
+			get;
+			set;
+		}
+
+		internal virtual ContextualMenuManager contextualMenuManager
+		{
+			get;
+			set;
+		}
+
 		public abstract VisualElement visualTree
 		{
 			get;

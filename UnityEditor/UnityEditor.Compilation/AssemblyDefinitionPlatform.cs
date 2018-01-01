@@ -1,9 +1,7 @@
 using System;
-using System.Runtime.InteropServices;
 
 namespace UnityEditor.Compilation
 {
-	[StructLayout(LayoutKind.Sequential, Size = 1)]
 	public struct AssemblyDefinitionPlatform
 	{
 		public string Name

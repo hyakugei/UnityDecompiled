@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditorInternal;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.Tilemaps;
 
 namespace UnityEditor
@@ -252,6 +253,7 @@ namespace UnityEditor
 				if (!value && this.m_Unlocked && this.tilemap != null)
 				{
 					this.tilemap.ClearAllEditorPreviewTiles();
+					this.SavePaletteIfNecessary();
 				}
 				this.m_Unlocked = value;
 			}
@@ -294,6 +296,14 @@ namespace UnityEditor
 			get
 			{
 				return !(this.paletteInstance == null) && !(this.tilemap == null) && GridPaintPaletteClipboard.TilemapIsEmpty(this.tilemap) && !this.isReceivingDragAndDrop && !this.m_PaletteUsed;
+			}
+		}
+
+		public bool isModified
+		{
+			get
+			{
+				return this.m_PaletteNeedsSave;
 			}
 		}
 
@@ -362,7 +372,10 @@ namespace UnityEditor
 
 		private void DestroyPreviewInstance()
 		{
-			this.m_Owner.DestroyPreviewInstance();
+			if (this.m_Owner != null)
+			{
+				this.m_Owner.DestroyPreviewInstance();
+			}
 		}
 
 		private void ResetPreviewInstance()
@@ -420,6 +433,7 @@ namespace UnityEditor
 		protected override void OnEnable()
 		{
 			base.OnEnable();
+			EditorApplication.editorApplicationQuit = (UnityAction)Delegate.Combine(EditorApplication.editorApplicationQuit, new UnityAction(this.EditorApplicationQuit));
 			Undo.undoRedoPerformed = (Undo.UndoRedoCallback)Delegate.Combine(Undo.undoRedoPerformed, new Undo.UndoRedoCallback(this.UndoRedoPerformed));
 			this.m_KeyboardPanningID = GUIUtility.GetPermanentControlID();
 			this.m_MousePanningID = GUIUtility.GetPermanentControlID();
@@ -427,25 +441,31 @@ namespace UnityEditor
 
 		protected override void OnDisable()
 		{
-			this.m_CameraPosition = this.previewUtility.camera.transform.position;
-			this.m_CameraOrthographicSize = this.previewUtility.camera.orthographicSize;
+			if (this.m_Owner)
+			{
+				this.m_CameraPosition = this.previewUtility.camera.transform.position;
+				this.m_CameraOrthographicSize = this.previewUtility.camera.orthographicSize;
+			}
 			this.m_CameraPositionSaved = true;
 			this.SavePaletteIfNecessary();
 			this.DestroyPreviewInstance();
 			Undo.undoRedoPerformed = (Undo.UndoRedoCallback)Delegate.Remove(Undo.undoRedoPerformed, new Undo.UndoRedoCallback(this.UndoRedoPerformed));
+			EditorApplication.editorApplicationQuit = (UnityAction)Delegate.Remove(EditorApplication.editorApplicationQuit, new UnityAction(this.EditorApplicationQuit));
 			base.OnDisable();
 		}
 
 		private void OnDestroy()
 		{
-			this.previewUtility.Cleanup();
+			if (this.m_Owner)
+			{
+				this.previewUtility.Cleanup();
+			}
 		}
 
 		public override void OnGUI()
 		{
 			if (this.guiRect.width != 0f && this.guiRect.height != 0f)
 			{
-				bool flag = Event.current.type == EventType.MouseUp;
 				base.UpdateMouseGridPosition();
 				this.HandleDragAndDrop();
 				if (!(this.palette == null))
@@ -486,10 +506,6 @@ namespace UnityEditor
 						{
 							this.DoBrush();
 						}
-						if (flag)
-						{
-							this.SavePaletteIfNecessary();
-						}
 						this.m_PreviousMousePosition = new Vector2?(Event.current.mousePosition);
 					}
 				}
@@ -507,11 +523,19 @@ namespace UnityEditor
 			}
 		}
 
+		private void EditorApplicationQuit()
+		{
+			this.SavePaletteIfNecessary();
+		}
+
 		private void UndoRedoPerformed()
 		{
-			this.m_PaletteNeedsSave = true;
-			this.SavePaletteIfNecessary();
-			this.RefreshAllTiles();
+			if (this.unlocked)
+			{
+				this.m_PaletteNeedsSave = true;
+				this.RefreshAllTiles();
+				this.Repaint();
+			}
 		}
 
 		private void HandlePanAndZoom()
@@ -932,6 +956,7 @@ namespace UnityEditor
 			if (this.grid)
 			{
 				this.gridBrush.MoveEnd(this.grid, this.brushTarget, position);
+				this.OnPaletteChanged();
 			}
 		}
 
@@ -1062,11 +1087,11 @@ namespace UnityEditor
 						BoundsInt position2 = new BoundsInt(new Vector3Int(marqueeRect.x, marqueeRect.y, 0), new Vector3Int(marqueeRect.width, marqueeRect.height, 1));
 						if (GridPaintingState.activeBrushEditor != null)
 						{
-							GridPaintingState.activeBrushEditor.OnPaintSceneGUI(gridLayout, this.brushTarget, position2, PaintableGrid.EditModeToBrushTool(EditMode.editMode), this.m_MarqueeStart.HasValue || base.paintingOrErasing);
+							GridPaintingState.activeBrushEditor.OnPaintSceneGUI(gridLayout, this.brushTarget, position2, PaintableGrid.EditModeToBrushTool(EditMode.editMode), this.m_MarqueeStart.HasValue || base.executing);
 						}
 						else
 						{
-							GridBrushEditorBase.OnPaintSceneGUIInternal(gridLayout, Selection.activeGameObject, position2, PaintableGrid.EditModeToBrushTool(EditMode.editMode), this.m_MarqueeStart.HasValue || base.paintingOrErasing);
+							GridBrushEditorBase.OnPaintSceneGUIInternal(gridLayout, Selection.activeGameObject, position2, PaintableGrid.EditModeToBrushTool(EditMode.editMode), this.m_MarqueeStart.HasValue || base.executing);
 						}
 					}
 				}
@@ -1085,10 +1110,10 @@ namespace UnityEditor
 		{
 			this.m_PaletteUsed = true;
 			this.m_PaletteNeedsSave = true;
-			this.RegisterUndo();
+			Undo.FlushUndoRecordObjects();
 		}
 
-		private void SavePaletteIfNecessary()
+		public void SavePaletteIfNecessary()
 		{
 			if (this.m_PaletteNeedsSave)
 			{

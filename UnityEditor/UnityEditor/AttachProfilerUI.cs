@@ -9,6 +9,8 @@ namespace UnityEditor
 {
 	internal class AttachProfilerUI
 	{
+		public delegate void ProfilerTargetSelectionChangedDelegate();
+
 		private static string kEnterIPText = "<Enter IP>";
 
 		private static GUIContent ms_NotificationMessage;
@@ -17,12 +19,22 @@ namespace UnityEditor
 
 		private const int PLAYER_DIRECT_URL_CONNECT_GUID = 65262;
 
+		public AttachProfilerUI.ProfilerTargetSelectionChangedDelegate OnProfilerTargetChanged
+		{
+			private get;
+			set;
+		}
+
 		protected void SelectProfilerClick(object userData, string[] options, int selected)
 		{
 			List<ProfilerChoise> list = (List<ProfilerChoise>)userData;
 			if (selected < list.Count<ProfilerChoise>())
 			{
 				list[selected].ConnectTo();
+				if (this.OnProfilerTargetChanged != null)
+				{
+					this.OnProfilerTargetChanged();
+				}
 			}
 		}
 
@@ -39,7 +51,7 @@ namespace UnityEditor
 		public static void DirectIPConnect(string ip)
 		{
 			ConsoleWindow.ShowConsoleWindow(true);
-			AttachProfilerUI.ms_NotificationMessage = new GUIContent("Connecting to player...(this can take a while)");
+			AttachProfilerUI.ms_NotificationMessage = EditorGUIUtility.TrTextContent("Connecting to player...(this can take a while)", null, null);
 			ProfilerDriver.DirectIPConnect(ip);
 			AttachProfilerUI.ms_NotificationMessage = null;
 		}
@@ -47,7 +59,7 @@ namespace UnityEditor
 		public static void DirectURLConnect(string url)
 		{
 			ConsoleWindow.ShowConsoleWindow(true);
-			AttachProfilerUI.ms_NotificationMessage = new GUIContent("Connecting to player...(this can take a while)");
+			AttachProfilerUI.ms_NotificationMessage = EditorGUIUtility.TrTextContent("Connecting to player...(this can take a while)", null, null);
 			ProfilerDriver.DirectURLConnect(url);
 			AttachProfilerUI.ms_NotificationMessage = null;
 		}

@@ -84,6 +84,11 @@ namespace UnityEngine.Playables
 			return playable.GetHandle().GetTime();
 		}
 
+		public static double GetPreviousTime<U>(this U playable) where U : struct, IPlayable
+		{
+			return playable.GetHandle().GetPreviousTime();
+		}
+
 		public static void SetDone<U>(this U playable, bool value) where U : struct, IPlayable
 		{
 			playable.GetHandle().SetDone(value);
@@ -166,15 +171,20 @@ namespace UnityEngine.Playables
 
 		public static void ConnectInput<U, V>(this U playable, int inputIndex, V sourcePlayable, int sourceOutputIndex) where U : struct, IPlayable where V : struct, IPlayable
 		{
+			playable.ConnectInput(inputIndex, sourcePlayable, sourceOutputIndex, 0f);
+		}
+
+		public static void ConnectInput<U, V>(this U playable, int inputIndex, V sourcePlayable, int sourceOutputIndex, float weight) where U : struct, IPlayable where V : struct, IPlayable
+		{
 			playable.GetGraph<U>().Connect<V, U>(sourcePlayable, sourceOutputIndex, playable, inputIndex);
+			playable.SetInputWeight(inputIndex, weight);
 		}
 
 		public static int AddInput<U, V>(this U playable, V sourcePlayable, int sourceOutputIndex, float weight = 0f) where U : struct, IPlayable where V : struct, IPlayable
 		{
 			int inputCount = playable.GetInputCount<U>();
 			playable.SetInputCount(inputCount + 1);
-			playable.SetInputWeight(inputCount, weight);
-			playable.ConnectInput(inputCount, sourcePlayable, sourceOutputIndex);
+			playable.ConnectInput(inputCount, sourcePlayable, sourceOutputIndex, weight);
 			return inputCount;
 		}
 
@@ -191,6 +201,16 @@ namespace UnityEngine.Playables
 		public static bool IsDelayed<U>(this U playable) where U : struct, IPlayable
 		{
 			return playable.GetHandle().IsDelayed();
+		}
+
+		public static void SetLeadTime<U>(this U playable, float value) where U : struct, IPlayable
+		{
+			playable.GetHandle().SetLeadTime(value);
+		}
+
+		public static float GetLeadTime<U>(this U playable) where U : struct, IPlayable
+		{
+			return playable.GetHandle().GetLeadTime();
 		}
 	}
 }

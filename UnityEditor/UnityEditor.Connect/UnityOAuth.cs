@@ -1,5 +1,4 @@
 using System;
-using System.Runtime.InteropServices;
 using System.Threading;
 using UnityEditorInternal;
 
@@ -7,7 +6,6 @@ namespace UnityEditor.Connect
 {
 	public static class UnityOAuth
 	{
-		[StructLayout(LayoutKind.Sequential, Size = 1)]
 		public struct AuthCodeResponse
 		{
 			public string AuthCode

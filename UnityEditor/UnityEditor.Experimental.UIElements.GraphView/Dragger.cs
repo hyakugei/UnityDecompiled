@@ -5,19 +5,13 @@ using UnityEngine.Experimental.UIElements.StyleEnums;
 
 namespace UnityEditor.Experimental.UIElements.GraphView
 {
-	internal class Dragger : MouseManipulator
+	public class Dragger : MouseManipulator
 	{
 		private Vector2 m_Start;
 
 		protected bool m_Active;
 
 		public Vector2 panSpeed
-		{
-			get;
-			set;
-		}
-
-		public GraphElementPresenter presenter
 		{
 			get;
 			set;
@@ -83,72 +77,61 @@ namespace UnityEditor.Experimental.UIElements.GraphView
 
 		protected void OnMouseDown(MouseDownEvent e)
 		{
-			GraphElement graphElement = e.target as GraphElement;
-			if (graphElement != null)
+			if (this.m_Active)
 			{
-				GraphElementPresenter presenter = graphElement.presenter;
-				if (presenter != null && (presenter.capabilities & Capabilities.Movable) != Capabilities.Movable)
-				{
-					return;
-				}
+				e.StopImmediatePropagation();
 			}
-			if (base.CanStartManipulation(e))
+			else
 			{
-				GraphElement graphElement2 = base.target as GraphElement;
-				if (graphElement2 != null)
+				GraphElement graphElement = e.target as GraphElement;
+				if (graphElement == null || graphElement.IsMovable())
 				{
-					this.presenter = graphElement2.presenter;
+					if (base.CanStartManipulation(e))
+					{
+						this.m_Start = e.localMousePosition;
+						this.m_Active = true;
+						base.target.TakeMouseCapture();
+						e.StopPropagation();
+					}
 				}
-				this.m_Start = e.localMousePosition;
-				this.m_Active = true;
-				base.target.TakeCapture();
-				e.StopPropagation();
 			}
 		}
 
 		protected void OnMouseMove(MouseMoveEvent e)
 		{
 			GraphElement graphElement = e.target as GraphElement;
-			if (graphElement != null)
+			if (graphElement == null || graphElement.IsMovable())
 			{
-				GraphElementPresenter presenter = graphElement.presenter;
-				if (presenter != null && (presenter.capabilities & Capabilities.Movable) != Capabilities.Movable)
+				if (this.m_Active)
 				{
-					return;
+					if (base.target.style.positionType == PositionType.Manual)
+					{
+						Vector2 vector = e.localMousePosition - this.m_Start;
+						base.target.layout = this.CalculatePosition(base.target.layout.x + vector.x, base.target.layout.y + vector.y, base.target.layout.width, base.target.layout.height);
+					}
+					e.StopPropagation();
 				}
-			}
-			if (this.m_Active)
-			{
-				if (base.target.style.positionType == PositionType.Manual)
-				{
-					Vector2 vector = e.localMousePosition - this.m_Start;
-					base.target.layout = this.CalculatePosition(base.target.layout.x + vector.x, base.target.layout.y + vector.y, base.target.layout.width, base.target.layout.height);
-				}
-				e.StopPropagation();
 			}
 		}
 
 		protected void OnMouseUp(MouseUpEvent e)
 		{
 			GraphElement graphElement = e.target as GraphElement;
-			if (graphElement != null)
+			if (graphElement == null || graphElement.IsMovable())
 			{
-				GraphElementPresenter presenter = graphElement.presenter;
-				if (presenter != null && (presenter.capabilities & Capabilities.Movable) != Capabilities.Movable)
+				if (this.m_Active)
 				{
-					return;
-				}
-			}
-			if (this.m_Active)
-			{
-				if (base.CanStopManipulation(e))
-				{
-					this.presenter.position = base.target.layout;
-					this.presenter.CommitChanges();
-					this.presenter = null;
-					this.m_Active = false;
-					base.target.ReleaseCapture();
-					e.StopPropagation();
+					if (base.CanStopManipulation(e))
+					{
+						GraphElement graphElement2 = base.target as GraphElement;
+						if (graphElement2 != null)
+						{
+							graphElement2.UpdatePresenterPosition();
+						}
+						this.m_Active = false;
+						base.target.ReleaseMouseCapture();
+						e.StopPropagation();
+					}
 				}
 			}
 		}

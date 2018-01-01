@@ -1,4 +1,6 @@
 using System;
+using System.Collections;
+using System.Diagnostics;
 using UnityEngine.EventSystems;
 
 namespace UnityEngine.UI
@@ -36,7 +38,7 @@ namespace UnityEngine.UI
 			{
 				if (SetPropertyUtility.SetStruct<AspectRatioFitter.AspectMode>(ref this.m_AspectMode, value))
 				{
-					this.SetDirty();
+					this.SetDirty(false);
 				}
 			}
 		}
@@ -51,7 +53,7 @@ namespace UnityEngine.UI
 			{
 				if (SetPropertyUtility.SetStruct<float>(ref this.m_AspectRatio, value))
 				{
-					this.SetDirty();
+					this.SetDirty(false);
 				}
 			}
 		}
@@ -75,12 +77,12 @@ namespace UnityEngine.UI
 		protected override void OnEnable()
 		{
 			base.OnEnable();
-			this.SetDirty();
+			this.SetDirty(true);
 		}
 
 		protected override void OnDisable()
 		{
-			this.m_Tracker.Clear(true);
+			this.m_Tracker.Clear();
 			LayoutRebuilder.MarkLayoutForRebuild(this.rectTransform);
 			base.OnDisable();
 		}
@@ -94,7 +96,7 @@ namespace UnityEngine.UI
 		{
 			if (this.IsActive())
 			{
-				this.m_Tracker.Clear(false);
+				this.m_Tracker.Clear();
 				switch (this.m_AspectMode)
 				{
 				case AspectRatioFitter.AspectMode.None:
@@ -163,15 +165,30 @@ namespace UnityEngine.UI
 		{
 		}
 
-		protected void SetDirty()
+		[DebuggerHidden]
+		private IEnumerator DelayUpdate()
 		{
-			this.UpdateRect();
+			AspectRatioFitter.<DelayUpdate>c__Iterator0 <DelayUpdate>c__Iterator = new AspectRatioFitter.<DelayUpdate>c__Iterator0();
+			<DelayUpdate>c__Iterator.$this = this;
+			return <DelayUpdate>c__Iterator;
+		}
+
+		protected void SetDirty(bool delayUpdate = false)
+		{
+			if (delayUpdate)
+			{
+				base.StartCoroutine(this.DelayUpdate());
+			}
+			else
+			{
+				this.UpdateRect();
+			}
 		}
 
 		protected override void OnValidate()
 		{
 			this.m_AspectRatio = Mathf.Clamp(this.m_AspectRatio, 0.001f, 1000f);
-			this.SetDirty();
+			this.SetDirty(false);
 		}
 	}
 }

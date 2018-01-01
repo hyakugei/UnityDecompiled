@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.CompilerServices;
+using UnityEditorInternal.Profiling;
 using UnityEngine;
 using UnityEngine.Scripting;
 
@@ -165,7 +166,13 @@ namespace UnityEditorInternal
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern Texture2D UISystemProfilerRender(int renderDataIndex, int renderDataCount, bool renderOverdraw);
+		public static extern Texture2D UISystemProfilerRender(int frameIndex, int renderDataIndex, int renderDataCount, bool renderOverdraw);
+
+		[Obsolete("Deprecated API, it will always return the first frameIndex")]
+		private static Texture2D UISystemProfilerRender(int renderDataIndex, int renderDataCount, bool renderOverdraw)
+		{
+			return ProfilerProperty.UISystemProfilerRender(0, renderDataIndex, renderDataCount, renderOverdraw);
+		}
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]

@@ -1,10 +1,11 @@
 using System;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.UIElements.GraphView
 {
 	[Serializable]
-	internal class MiniMapPresenter : GraphElementPresenter
+	public class MiniMapPresenter : GraphElementPresenter
 	{
 		public float maxHeight;
 
@@ -25,6 +26,15 @@ namespace UnityEditor.Experimental.UIElements.GraphView
 			}
 		}
 
+		public override bool isFloating
+		{
+			[CompilerGenerated]
+			get
+			{
+				return true;
+			}
+		}
+
 		protected MiniMapPresenter()
 		{
 			this.maxWidth = 200f;
@@ -34,7 +44,7 @@ namespace UnityEditor.Experimental.UIElements.GraphView
 		protected new void OnEnable()
 		{
 			base.OnEnable();
-			base.capabilities = (Capabilities.Floating | Capabilities.Movable);
+			base.capabilities = Capabilities.Movable;
 		}
 	}
 }

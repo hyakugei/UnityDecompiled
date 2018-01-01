@@ -8,53 +8,53 @@ namespace UnityEditor
 	{
 		private class Texts
 		{
-			public GUIContent duration = EditorGUIUtility.TextContent("Duration|The length of time the Particle System is emitting particles. If the system is looping, this indicates the length of one cycle.");
+			public GUIContent duration = EditorGUIUtility.TrTextContent("Duration", "The length of time the Particle System is emitting particles. If the system is looping, this indicates the length of one cycle.", null);
 
-			public GUIContent looping = EditorGUIUtility.TextContent("Looping|If true, the emission cycle will repeat after the duration.");
+			public GUIContent looping = EditorGUIUtility.TrTextContent("Looping", "If true, the emission cycle will repeat after the duration.", null);
 
-			public GUIContent prewarm = EditorGUIUtility.TextContent("Prewarm|When played a prewarmed system will be in a state as if it had emitted one loop cycle. Can only be used if the system is looping.");
+			public GUIContent prewarm = EditorGUIUtility.TrTextContent("Prewarm", "When played a prewarmed system will be in a state as if it had emitted one loop cycle. Can only be used if the system is looping.", null);
 
-			public GUIContent startDelay = EditorGUIUtility.TextContent("Start Delay|Delay in seconds that this Particle System will wait before emitting particles. Cannot be used together with a prewarmed looping system.");
+			public GUIContent startDelay = EditorGUIUtility.TrTextContent("Start Delay", "Delay in seconds that this Particle System will wait before emitting particles. Cannot be used together with a prewarmed looping system.", null);
 
-			public GUIContent maxParticles = EditorGUIUtility.TextContent("Max Particles|The number of particles in the system will be limited by this number. Emission will be temporarily halted if this is reached.");
+			public GUIContent maxParticles = EditorGUIUtility.TrTextContent("Max Particles", "The number of particles in the system will be limited by this number. Emission will be temporarily halted if this is reached.", null);
 
-			public GUIContent lifetime = EditorGUIUtility.TextContent("Start Lifetime|Start lifetime in seconds, particle will die when its lifetime reaches 0.");
+			public GUIContent lifetime = EditorGUIUtility.TrTextContent("Start Lifetime", "Start lifetime in seconds, particle will die when its lifetime reaches 0.", null);
 
-			public GUIContent speed = EditorGUIUtility.TextContent("Start Speed|The start speed of particles, applied in the starting direction.");
+			public GUIContent speed = EditorGUIUtility.TrTextContent("Start Speed", "The start speed of particles, applied in the starting direction.", null);
 
-			public GUIContent color = EditorGUIUtility.TextContent("Start Color|The start color of particles.");
+			public GUIContent color = EditorGUIUtility.TrTextContent("Start Color", "The start color of particles.", null);
 
-			public GUIContent size3D = EditorGUIUtility.TextContent("3D Start Size|If enabled, you can control the size separately for each axis.");
+			public GUIContent size3D = EditorGUIUtility.TrTextContent("3D Start Size", "If enabled, you can control the size separately for each axis.", null);
 
-			public GUIContent size = EditorGUIUtility.TextContent("Start Size|The start size of particles.");
+			public GUIContent size = EditorGUIUtility.TrTextContent("Start Size", "The start size of particles.", null);
 
-			public GUIContent rotation3D = EditorGUIUtility.TextContent("3D Start Rotation|If enabled, you can control the rotation separately for each axis.");
+			public GUIContent rotation3D = EditorGUIUtility.TrTextContent("3D Start Rotation", "If enabled, you can control the rotation separately for each axis.", null);
 
-			public GUIContent rotation = EditorGUIUtility.TextContent("Start Rotation|The start rotation of particles in degrees.");
+			public GUIContent rotation = EditorGUIUtility.TrTextContent("Start Rotation", "The start rotation of particles in degrees.", null);
 
-			public GUIContent randomizeRotationDirection = EditorGUIUtility.TextContent("Randomize Rotation|Cause some particles to spin in the opposite direction. (Set between 0 and 1, where a higher value causes more to flip)");
+			public GUIContent randomizeRotationDirection = EditorGUIUtility.TrTextContent("Flip Rotation", "Cause some particles to spin in the opposite direction. (Set between 0 and 1, where a higher value causes more to flip)", null);
 
-			public GUIContent autoplay = EditorGUIUtility.TextContent("Play On Awake*|If enabled, the system will start playing automatically. Note that this setting is shared between all Particle Systems in the current particle effect.");
+			public GUIContent autoplay = EditorGUIUtility.TrTextContent("Play On Awake*", "If enabled, the system will start playing automatically. Note that this setting is shared between all Particle Systems in the current particle effect.", null);
 
-			public GUIContent gravity = EditorGUIUtility.TextContent("Gravity Modifier|Scales the gravity defined in Physics Manager");
+			public GUIContent gravity = EditorGUIUtility.TrTextContent("Gravity Modifier", "Scales the gravity defined in Physics Manager", null);
 
-			public GUIContent scalingMode = EditorGUIUtility.TextContent("Scaling Mode|Use the combined scale from our entire hierarchy, just this local particle node, or only apply scale to the shape module.");
+			public GUIContent scalingMode = EditorGUIUtility.TrTextContent("Scaling Mode", "Use the combined scale from our entire hierarchy, just this local particle node, or only apply scale to the shape module.", null);
 
-			public GUIContent simulationSpace = EditorGUIUtility.TextContent("Simulation Space|Makes particle positions simulate in world, local or custom space. In local space they stay relative to their own Transform, and in custom space they are relative to the custom Transform.");
+			public GUIContent simulationSpace = EditorGUIUtility.TrTextContent("Simulation Space", "Makes particle positions simulate in world, local or custom space. In local space they stay relative to their own Transform, and in custom space they are relative to the custom Transform.", null);
 
-			public GUIContent customSimulationSpace = EditorGUIUtility.TextContent("Custom Simulation Space|Makes particle positions simulate relative to a custom Transform component.");
+			public GUIContent customSimulationSpace = EditorGUIUtility.TrTextContent("Custom Simulation Space", "Makes particle positions simulate relative to a custom Transform component.", null);
 
-			public GUIContent simulationSpeed = EditorGUIUtility.TextContent("Simulation Speed|Scale the playback speed of the Particle System.");
+			public GUIContent simulationSpeed = EditorGUIUtility.TrTextContent("Simulation Speed", "Scale the playback speed of the Particle System.", null);
 
-			public GUIContent deltaTime = EditorGUIUtility.TextContent("Delta Time|Use either the Delta Time or the Unscaled Delta Time. Useful for playing effects whilst paused.");
+			public GUIContent deltaTime = EditorGUIUtility.TrTextContent("Delta Time", "Use either the Delta Time or the Unscaled Delta Time. Useful for playing effects whilst paused.", null);
 
-			public GUIContent autoRandomSeed = EditorGUIUtility.TextContent("Auto Random Seed|Simulate differently each time the effect is played.");
+			public GUIContent autoRandomSeed = EditorGUIUtility.TrTextContent("Auto Random Seed", "Simulate differently each time the effect is played.", null);
 
-			public GUIContent randomSeed = EditorGUIUtility.TextContent("Random Seed|Randomize the look of the Particle System. Using the same seed will make the Particle System play identically each time. After changing this value, restart the Particle System to see the changes, or check the Resimulate box.");
+			public GUIContent randomSeed = EditorGUIUtility.TrTextContent("Random Seed", "Randomize the look of the Particle System. Using the same seed will make the Particle System play identically each time. After changing this value, restart the Particle System to see the changes, or check the Resimulate box.", null);
 
-			public GUIContent emitterVelocity = EditorGUIUtility.TextContent("Emitter Velocity|When the Particle System is moving, should we use its Transform, or Rigidbody Component, to calculate its velocity?");
+			public GUIContent emitterVelocity = EditorGUIUtility.TrTextContent("Emitter Velocity", "When the Particle System is moving, should we use its Transform, or Rigidbody Component, to calculate its velocity?", null);
 
-			public GUIContent stopAction = EditorGUIUtility.TextContent("Stop Action|When the Particle System is stopped and all particles have died, should the GameObject automatically disable/destroy itself?");
+			public GUIContent stopAction = EditorGUIUtility.TrTextContent("Stop Action", "When the Particle System is stopped and all particles have died, should the GameObject automatically disable/destroy itself?", null);
 
 			public GUIContent x = EditorGUIUtility.TextContent("X");
 
@@ -64,23 +64,24 @@ namespace UnityEditor
 
 			public GUIContent[] simulationSpaces = new GUIContent[]
 			{
-				EditorGUIUtility.TextContent("Local"),
-				EditorGUIUtility.TextContent("World"),
-				EditorGUIUtility.TextContent("Custom")
+				EditorGUIUtility.TrTextContent("Local", null, null),
+				EditorGUIUtility.TrTextContent("World", null, null),
+				EditorGUIUtility.TrTextContent("Custom", null, null)
 			};
 
 			public GUIContent[] scalingModes = new GUIContent[]
 			{
-				EditorGUIUtility.TextContent("Hierarchy"),
-				EditorGUIUtility.TextContent("Local"),
-				EditorGUIUtility.TextContent("Shape")
+				EditorGUIUtility.TrTextContent("Hierarchy", null, null),
+				EditorGUIUtility.TrTextContent("Local", null, null),
+				EditorGUIUtility.TrTextContent("Shape", null, null)
 			};
 
 			public GUIContent[] stopActions = new GUIContent[]
 			{
-				EditorGUIUtility.TextContent("None"),
-				EditorGUIUtility.TextContent("Disable"),
-				EditorGUIUtility.TextContent("Destroy")
+				EditorGUIUtility.TrTextContent("None", null, null),
+				EditorGUIUtility.TrTextContent("Disable", null, null),
+				EditorGUIUtility.TrTextContent("Destroy", null, null),
+				EditorGUIUtility.TrTextContent("Callback", null, null)
 			};
 		}
 
@@ -145,6 +146,14 @@ namespace UnityEditor
 		public InitialModuleUI(ParticleSystemUI owner, SerializedObject o, string displayName) : base(owner, o, "InitialModule", displayName, ModuleUI.VisibilityState.VisibleAndFoldedOut)
 		{
 			this.Init();
+		}
+
+		public override bool DrawHeader(Rect rect, GUIContent label)
+		{
+			label = EditorGUI.BeginProperty(rect, label, this.m_ModuleRootProperty);
+			bool result = GUI.Toggle(rect, base.foldout, label, ParticleSystemStyles.Get().emitterHeaderStyle);
+			EditorGUI.EndProperty();
+			return result;
 		}
 
 		public override float GetXAxisScalar()

@@ -5,29 +5,19 @@ namespace UnityEngine
 {
 	public static class ScalableBufferManager
 	{
-		public static float widthScaleFactor
+		public static extern float widthScaleFactor
 		{
-			get
-			{
-				return ScalableBufferManager.GetWidthScaleFactor();
-			}
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
 		}
 
-		public static float heightScaleFactor
+		public static extern float heightScaleFactor
 		{
-			get
-			{
-				return ScalableBufferManager.GetHeightScaleFactor();
-			}
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
 		}
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void ResizeBuffers(float widthScale, float heightScale);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern float GetWidthScaleFactor();
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern float GetHeightScaleFactor();
 	}
 }

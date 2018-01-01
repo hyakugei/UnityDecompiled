@@ -32,7 +32,7 @@ namespace UnityEditor.Modules
 			8192
 		};
 
-		private static readonly GUIContent maxSize = EditorGUIUtility.TextContent("Max Size|Textures larger than this will be scaled down.");
+		private static readonly GUIContent maxSize = EditorGUIUtility.TrTextContent("Max Size", "Textures larger than this will be scaled down.", null);
 
 		private static readonly string[] kResizeAlgorithmStrings = new string[]
 		{
@@ -46,16 +46,16 @@ namespace UnityEditor.Modules
 			1
 		};
 
-		private static readonly GUIContent resizeAlgorithm = EditorGUIUtility.TextContent("Resize Algorithm|Select algorithm to apply for textures when scaled down.");
+		private static readonly GUIContent resizeAlgorithm = EditorGUIUtility.TrTextContent("Resize Algorithm", "Select algorithm to apply for textures when scaled down.", null);
 
-		private static readonly GUIContent kTextureCompression = EditorGUIUtility.TextContent("Compression|How will this texture be compressed?");
+		private static readonly GUIContent kTextureCompression = EditorGUIUtility.TrTextContent("Compression", "How will this texture be compressed?", null);
 
 		private static readonly GUIContent[] kTextureCompressionOptions = new GUIContent[]
 		{
-			EditorGUIUtility.TextContent("None|Texture is not compressed."),
-			EditorGUIUtility.TextContent("Low Quality|Texture compressed with low quality but high performance, high compression format."),
-			EditorGUIUtility.TextContent("Normal Quality|Texture is compressed with a standard format."),
-			EditorGUIUtility.TextContent("High Quality|Texture compressed with a high quality format.")
+			EditorGUIUtility.TrTextContent("None", "Texture is not compressed.", null),
+			EditorGUIUtility.TrTextContent("Low Quality", "Texture compressed with low quality but high performance, high compression format.", null),
+			EditorGUIUtility.TrTextContent("Normal Quality", "Texture is compressed with a standard format.", null),
+			EditorGUIUtility.TrTextContent("High Quality", "Texture compressed with a high quality format.", null)
 		};
 
 		private static readonly int[] kTextureCompressionValues = new int[]
@@ -122,7 +122,7 @@ namespace UnityEditor.Modules
 				}
 				else if (!platformSettings.overridden)
 				{
-					num2 = (int)TextureImporter.FormatFromTextureParameters(settings, platformSettings.platformTextureSettings, textureImporter.DoesSourceTextureHaveAlpha(), textureImporter.IsSourceTextureHDR(), platformSettings.m_Target);
+					num2 = (int)TextureImporter.FormatFromTextureParameters(settings, platformSettings.platformTextureSettings, textureImporterInspector.assetTarget && textureImporter.DoesSourceTextureHaveAlpha(), textureImporterInspector.assetTarget && textureImporter.IsSourceTextureHDR(), platformSettings.m_Target);
 					array3 = new int[]
 					{
 						num2
@@ -160,10 +160,15 @@ namespace UnityEditor.Modules
 					array3 = TextureImportPlatformSettings.kTextureFormatsValueWebGL;
 					array4 = TextureImporterInspector.s_TextureFormatStringsWebGL;
 				}
-				else if (platformSettings.m_Target == BuildTarget.WiiU)
+				else if (platformSettings.m_Target == BuildTarget.PSP2)
 				{
-					array3 = TextureImportPlatformSettings.kTextureFormatsValueWiiU;
-					array4 = TextureImporterInspector.s_TextureFormatStringsWiiU;
+					array3 = TextureImportPlatformSettings.kTextureFormatsValuePSP2;
+					array4 = TextureImporterInspector.s_TextureFormatStringsPSP2;
+				}
+				else if (platformSettings.m_Target == BuildTarget.Switch)
+				{
+					array3 = TextureImportPlatformSettings.kTextureFormatsValueSwitch;
+					array4 = TextureImporterInspector.s_TextureFormatStringsSwitch;
 				}
 				else
 				{

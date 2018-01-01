@@ -1,11 +1,9 @@
 using System;
-using System.Runtime.InteropServices;
 using UnityEngine;
 
 namespace UnityEditor
 {
-	[StructLayout(LayoutKind.Sequential)]
-	public sealed class AnimationClipCurveData
+	public class AnimationClipCurveData
 	{
 		public string path;
 

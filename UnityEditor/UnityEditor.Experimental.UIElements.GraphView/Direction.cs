@@ -2,7 +2,7 @@ using System;
 
 namespace UnityEditor.Experimental.UIElements.GraphView
 {
-	internal enum Direction
+	public enum Direction
 	{
 		Input,
 		Output

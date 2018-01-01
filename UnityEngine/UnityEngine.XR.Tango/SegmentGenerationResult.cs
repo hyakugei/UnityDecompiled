@@ -2,7 +2,7 @@ using System;
 
 namespace UnityEngine.XR.Tango
 {
-	public struct SegmentGenerationResult
+	internal struct SegmentGenerationResult
 	{
 		public GridIndex gridIndex;
 

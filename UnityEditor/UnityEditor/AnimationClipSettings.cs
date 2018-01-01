@@ -1,11 +1,14 @@
 using System;
+using System.Runtime.InteropServices;
 using UnityEngine;
+using UnityEngine.Bindings;
 using UnityEngine.Scripting;
 
 namespace UnityEditor
 {
-	[RequiredByNativeCode]
-	public sealed class AnimationClipSettings
+	[NativeType(CodegenOptions.Custom, "MonoAnimationClipSettings"), RequiredByNativeCode]
+	[StructLayout(LayoutKind.Sequential)]
+	public class AnimationClipSettings
 	{
 		public AnimationClip additiveReferencePoseClip;
 

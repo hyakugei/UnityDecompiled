@@ -33,15 +33,15 @@ namespace UnityEditor
 				PackageExport.Styles.bottomBarBg = "ProjectBrowserBottomBarBg";
 				PackageExport.Styles.topBarBg = new GUIStyle("ProjectBrowserHeaderBgTop");
 				PackageExport.Styles.loadingTextStyle = new GUIStyle(EditorStyles.label);
-				PackageExport.Styles.allText = EditorGUIUtility.TextContent("All");
-				PackageExport.Styles.noneText = EditorGUIUtility.TextContent("None");
-				PackageExport.Styles.includeDependenciesText = EditorGUIUtility.TextContent("Include dependencies");
-				PackageExport.Styles.header = new GUIContent("Items to Export");
+				PackageExport.Styles.allText = EditorGUIUtility.TrTextContent("All", null, null);
+				PackageExport.Styles.noneText = EditorGUIUtility.TrTextContent("None", null, null);
+				PackageExport.Styles.includeDependenciesText = EditorGUIUtility.TrTextContent("Include dependencies", null, null);
+				PackageExport.Styles.header = EditorGUIUtility.TrTextContent("Items to Export", null, null);
 				PackageExport.Styles.topBarBg.fixedHeight = 0f;
-				RectOffset arg_AA_0 = PackageExport.Styles.topBarBg.border;
+				RectOffset arg_B2_0 = PackageExport.Styles.topBarBg.border;
 				int num = 2;
 				PackageExport.Styles.topBarBg.border.bottom = num;
-				arg_AA_0.top = num;
+				arg_B2_0.top = num;
 				PackageExport.Styles.title.fontStyle = FontStyle.Bold;
 				PackageExport.Styles.title.alignment = TextAnchor.MiddleLeft;
 				PackageExport.Styles.loadingTextStyle.alignment = TextAnchor.MiddleCenter;
@@ -202,7 +202,7 @@ namespace UnityEditor
 				this.RefreshAssetList();
 			}
 			GUILayout.FlexibleSpace();
-			if (GUILayout.Button(EditorGUIUtility.TextContent("Export..."), new GUILayoutOption[0]))
+			if (GUILayout.Button(EditorGUIUtility.TrTextContent("Export...", null, null), new GUILayoutOption[0]))
 			{
 				this.Export();
 				GUIUtility.ExitGUI();

@@ -11,15 +11,15 @@ namespace UnityEditor
 
 		private class Styles
 		{
-			public GUIContent speedScale = EditorGUIUtility.IconContent("SpeedScale", "|Changes animation preview speed");
+			public GUIContent speedScale = EditorGUIUtility.TrIconContent("SpeedScale", "Changes animation preview speed");
 
-			public GUIContent pivot = EditorGUIUtility.IconContent("AvatarPivot", "|Displays avatar's pivot and mass center");
+			public GUIContent pivot = EditorGUIUtility.TrIconContent("AvatarPivot", "Displays avatar's pivot and mass center");
 
-			public GUIContent ik = new GUIContent("IK", "Toggles feet IK preview");
+			public GUIContent ik = EditorGUIUtility.TrTextContent("IK", "Toggles feet IK preview", null);
 
-			public GUIContent is2D = new GUIContent("2D", "Toggles 2D preview mode");
+			public GUIContent is2D = EditorGUIUtility.TrTextContent("2D", "Toggles 2D preview mode", null);
 
-			public GUIContent avatarIcon = EditorGUIUtility.IconContent("Avatar Icon", "|Changes the model to use for previewing.");
+			public GUIContent avatarIcon = EditorGUIUtility.TrIconContent("Avatar Icon", "Changes the model to use for previewing.");
 
 			public GUIStyle preButton = "preButton";
 
@@ -221,7 +221,20 @@ namespace UnityEditor
 		{
 			get
 			{
-				return (!this.Animator || !this.Animator.isHuman) ? GameObjectInspector.GetRenderableCenterRecurse(this.m_PreviewInstance, 1, 8) : this.Animator.GetBodyPositionInternal();
+				Vector3 result;
+				if (this.Animator && this.Animator.isHuman)
+				{
+					result = this.Animator.bodyPositionInternal;
+				}
+				else if (this.m_PreviewInstance != null)
+				{
+					result = GameObjectInspector.GetRenderableCenterRecurse(this.m_PreviewInstance, 1, 8);
+				}
+				else
+				{
+					result = Vector3.zero;
+				}
+				return result;
 			}
 		}
 
@@ -558,7 +571,7 @@ namespace UnityEditor
 			this.is2D = EditorPrefs.GetBool("Avatarpreview2D", EditorSettings.defaultBehaviorMode == EditorBehaviorMode.Mode2D);
 			this.timeControl.playbackSpeed = EditorPrefs.GetFloat("AvatarpreviewSpeed", 1f);
 			this.SetPreviewCharacterEnabled(false, false);
-			this.m_PivotPositionOffset = this.bodyPosition - this.rootPosition;
+			this.m_PivotPositionOffset = Vector3.zero;
 		}
 
 		private void Init()
@@ -779,7 +792,7 @@ namespace UnityEditor
 			Quaternion directionRot = Quaternion.LookRotation(forward);
 			Vector3 directionPos = vector;
 			Quaternion pivotRot = quaternion;
-			this.PositionPreviewObjects(pivotRot, pivotPos, quaternion2, rootPosition, directionRot, quaternion, vector, directionPos, this.m_AvatarScale);
+			this.PositionPreviewObjects(pivotRot, pivotPos, quaternion2, this.bodyPosition, directionRot, quaternion, vector, directionPos, this.m_AvatarScale);
 			bool flag = !this.is2D && Mathf.Abs(this.m_NextFloorHeight - this.m_PrevFloorHeight) > this.m_ZoomFactor * 0.01f;
 			float num2;
 			float num3;
@@ -1071,9 +1084,9 @@ namespace UnityEditor
 			if (EditorGUI.DropdownButton(position, GUIContent.none, FocusType.Passive, GUIStyle.none))
 			{
 				GenericMenu genericMenu = new GenericMenu();
-				genericMenu.AddItem(new GUIContent("Auto"), false, new GenericMenu.MenuFunction2(this.SetPreviewAvatarOption), AvatarPreview.PreviewPopupOptions.Auto);
-				genericMenu.AddItem(new GUIContent("Unity Model"), false, new GenericMenu.MenuFunction2(this.SetPreviewAvatarOption), AvatarPreview.PreviewPopupOptions.DefaultModel);
-				genericMenu.AddItem(new GUIContent("Other..."), false, new GenericMenu.MenuFunction2(this.SetPreviewAvatarOption), AvatarPreview.PreviewPopupOptions.Other);
+				genericMenu.AddItem(EditorGUIUtility.TrTextContent("Auto", null, null), false, new GenericMenu.MenuFunction2(this.SetPreviewAvatarOption), AvatarPreview.PreviewPopupOptions.Auto);
+				genericMenu.AddItem(EditorGUIUtility.TrTextContent("Unity Model", null, null), false, new GenericMenu.MenuFunction2(this.SetPreviewAvatarOption), AvatarPreview.PreviewPopupOptions.DefaultModel);
+				genericMenu.AddItem(EditorGUIUtility.TrTextContent("Other...", null, null), false, new GenericMenu.MenuFunction2(this.SetPreviewAvatarOption), AvatarPreview.PreviewPopupOptions.Other);
 				genericMenu.ShowAsContext();
 			}
 			Rect rect2 = rect;

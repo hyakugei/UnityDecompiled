@@ -4,6 +4,7 @@ namespace UnityEditor
 {
 	public enum DrawCameraMode
 	{
+		UserDefined = -2147483648,
 		Normal = -1,
 		Textured,
 		Wireframe,
@@ -48,6 +49,7 @@ namespace UnityEditor
 		BakedTexelValidity,
 		BakedIndices,
 		BakedCharting,
-		SpriteMask
+		SpriteMask,
+		BakedUVOverlap
 	}
 }

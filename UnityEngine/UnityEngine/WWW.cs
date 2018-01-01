@@ -73,14 +73,14 @@ namespace UnityEngine
 				}
 				else if (this._uwr.isNetworkError)
 				{
-					result = null;
+					result = new byte[0];
 				}
 				else
 				{
 					DownloadHandler downloadHandler = this._uwr.downloadHandler;
 					if (downloadHandler == null)
 					{
-						result = null;
+						result = new byte[0];
 					}
 					else
 					{
@@ -177,16 +177,23 @@ namespace UnityEngine
 			get
 			{
 				Dictionary<string, string> result;
-				if (!this.isDone || this._uwr.isNetworkError)
+				if (!this.isDone)
 				{
-					result = null;
+					result = new Dictionary<string, string>();
 				}
 				else
 				{
 					if (this._responseHeaders == null)
 					{
 						this._responseHeaders = this._uwr.GetResponseHeaders();
-						this._responseHeaders["STATUS"] = string.Format("HTTP/1.1 {0} {1}", this._uwr.responseCode, this.GetStatusCodeName(this._uwr.responseCode));
+						if (this._responseHeaders != null)
+						{
+							this._responseHeaders["STATUS"] = string.Format("HTTP/1.1 {0} {1}", this._uwr.responseCode, this.GetStatusCodeName(this._uwr.responseCode));
+						}
+						else
+						{
+							this._responseHeaders = new Dictionary<string, string>();
+						}
 					}
 					result = this._responseHeaders;
 				}
@@ -292,12 +299,14 @@ namespace UnityEngine
 		public WWW(string url, WWWForm form)
 		{
 			this._uwr = UnityWebRequest.Post(url, form);
+			this._uwr.chunkedTransfer = false;
 			this._uwr.SendWebRequest();
 		}
 
 		public WWW(string url, byte[] postData)
 		{
 			this._uwr = new UnityWebRequest(url, "POST");
+			this._uwr.chunkedTransfer = false;
 			UploadHandler uploadHandler = new UploadHandlerRaw(postData);
 			uploadHandler.contentType = "application/x-www-form-urlencoded";
 			this._uwr.uploadHandler = uploadHandler;
@@ -310,6 +319,7 @@ namespace UnityEngine
 		{
 			string method = (postData != null) ? "POST" : "GET";
 			this._uwr = new UnityWebRequest(url, method);
+			this._uwr.chunkedTransfer = false;
 			UploadHandler uploadHandler = new UploadHandlerRaw(postData);
 			uploadHandler.contentType = "application/x-www-form-urlencoded";
 			this._uwr.uploadHandler = uploadHandler;
@@ -338,6 +348,7 @@ namespace UnityEngine
 		{
 			string method = (postData != null) ? "POST" : "GET";
 			this._uwr = new UnityWebRequest(url, method);
+			this._uwr.chunkedTransfer = false;
 			UploadHandler uploadHandler = new UploadHandlerRaw(postData);
 			uploadHandler.contentType = "application/x-www-form-urlencoded";
 			this._uwr.uploadHandler = uploadHandler;
@@ -351,7 +362,7 @@ namespace UnityEngine
 
 		internal WWW(string url, string name, Hash128 hash, uint crc)
 		{
-			this._uwr = UnityWebRequest.GetAssetBundle(url, new CachedAssetBundle(name, hash), crc);
+			this._uwr = UnityWebRequestAssetBundle.GetAssetBundle(url, new CachedAssetBundle(name, hash), crc);
 			this._uwr.SendWebRequest();
 		}
 

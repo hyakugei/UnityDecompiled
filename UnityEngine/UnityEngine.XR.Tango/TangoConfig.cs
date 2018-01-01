@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace UnityEngine.XR.Tango
 {
-	public class TangoConfig
+	internal class TangoConfig
 	{
 		internal Dictionary<string, bool> m_boolParams = new Dictionary<string, bool>();
 
@@ -15,19 +15,19 @@ namespace UnityEngine.XR.Tango
 
 		internal Dictionary<string, string> m_stringParams = new Dictionary<string, string>();
 
-		public bool enableMotionTracking
+		internal bool enableMotionTracking
 		{
 			set
 			{
 				this.AddConfigParameter("config_enable_motion_tracking", value);
+				this.AddConfigParameter("config_enable_auto_recovery", value);
 			}
 		}
 
-		public bool enableDepth
+		internal bool enableDepth
 		{
 			set
 			{
-				this.AddConfigParameter("config_enable_auto_recovery", value);
 				this.AddConfigParameter("config_enable_depth", value);
 				if (value)
 				{
@@ -40,7 +40,7 @@ namespace UnityEngine.XR.Tango
 			}
 		}
 
-		public bool enableColorCamera
+		internal bool enableColorCamera
 		{
 			set
 			{
@@ -48,7 +48,7 @@ namespace UnityEngine.XR.Tango
 			}
 		}
 
-		public AreaLearningMode areaLearningMode
+		internal AreaLearningMode areaLearningMode
 		{
 			set
 			{
@@ -82,32 +82,32 @@ namespace UnityEngine.XR.Tango
 			}
 		}
 
-		public void AddConfigParameter(string name, bool value)
+		internal void AddConfigParameter(string name, bool value)
 		{
 			this.m_boolParams[name] = value;
 		}
 
-		public void AddConfigParameter(string name, double value)
+		internal void AddConfigParameter(string name, double value)
 		{
 			this.m_doubleParams[name] = value;
 		}
 
-		public void AddConfigParameter(string name, int value)
+		internal void AddConfigParameter(string name, int value)
 		{
 			this.m_intParams[name] = value;
 		}
 
-		public void AddConfigParameter(string name, long value)
+		internal void AddConfigParameter(string name, long value)
 		{
 			this.m_longParams[name] = value;
 		}
 
-		public void AddConfigParameter(string name, string value)
+		internal void AddConfigParameter(string name, string value)
 		{
 			this.m_stringParams[name] = value;
 		}
 
-		public void RemoveConfigParameter(string name)
+		internal void RemoveConfigParameter(string name)
 		{
 			this.m_stringParams.Remove(name);
 			this.m_longParams.Remove(name);

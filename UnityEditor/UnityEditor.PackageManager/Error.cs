@@ -1,6 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 using UnityEngine;
+using UnityEngine.Bindings;
 using UnityEngine.Scripting;
 
 namespace UnityEditor.PackageManager
@@ -10,10 +11,10 @@ namespace UnityEditor.PackageManager
 	[StructLayout(LayoutKind.Sequential)]
 	public class Error
 	{
-		[SerializeField]
+		[NativeName("errorCode"), SerializeField]
 		private ErrorCode m_ErrorCode;
 
-		[SerializeField]
+		[NativeName("message"), SerializeField]
 		private string m_Message;
 
 		public ErrorCode errorCode

@@ -48,6 +48,36 @@ namespace UnityEngine.Experimental.UIElements
 			set;
 		}
 
+		StyleValue<float> flexBasis
+		{
+			get;
+			set;
+		}
+
+		StyleValue<float> flexGrow
+		{
+			get;
+			set;
+		}
+
+		StyleValue<float> flexShrink
+		{
+			get;
+			set;
+		}
+
+		StyleValue<FlexDirection> flexDirection
+		{
+			get;
+			set;
+		}
+
+		StyleValue<Wrap> flexWrap
+		{
+			get;
+			set;
+		}
+
 		StyleValue<Overflow> overflow
 		{
 			get;
@@ -204,12 +234,6 @@ namespace UnityEngine.Experimental.UIElements
 			set;
 		}
 
-		StyleValue<FlexDirection> flexDirection
-		{
-			get;
-			set;
-		}
-
 		StyleValue<Color> backgroundColor
 		{
 			get;
@@ -247,12 +271,6 @@ namespace UnityEngine.Experimental.UIElements
 		}
 
 		StyleValue<Justify> justifyContent
-		{
-			get;
-			set;
-		}
-
-		StyleValue<Wrap> flexWrap
 		{
 			get;
 			set;
@@ -337,6 +355,12 @@ namespace UnityEngine.Experimental.UIElements
 		}
 
 		StyleValue<float> opacity
+		{
+			get;
+			set;
+		}
+
+		StyleValue<CursorStyle> cursor
 		{
 			get;
 			set;

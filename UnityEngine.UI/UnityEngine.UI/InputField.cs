@@ -191,6 +191,8 @@ namespace UnityEngine.UI
 
 		private Event m_ProcessingEvent = new Event();
 
+		private const int k_MaxTextLength = 16382;
+
 		private BaseInput input
 		{
 			get
@@ -582,6 +584,14 @@ namespace UnityEngine.UI
 			}
 		}
 
+		public TouchScreenKeyboard touchScreenKeyboard
+		{
+			get
+			{
+				return this.m_Keyboard;
+			}
+		}
+
 		public TouchScreenKeyboardType keyboardType
 		{
 			get
@@ -590,13 +600,6 @@ namespace UnityEngine.UI
 			}
 			set
 			{
-				if (EditorUserBuildSettings.activeBuildTarget != BuildTarget.WiiU)
-				{
-					if (value == TouchScreenKeyboardType.NintendoNetworkAccount)
-					{
-						UnityEngine.Debug.LogWarning("Invalid InputField.keyboardType value set. TouchScreenKeyboardType.NintendoNetworkAccount only applies to the Wii U. InputField.keyboardType will default to TouchScreenKeyboardType.Default .");
-					}
-				}
 				if (SetPropertyUtility.SetStruct<TouchScreenKeyboardType>(ref this.m_KeyboardType, value))
 				{
 					this.SetToCustom();
@@ -1048,7 +1051,7 @@ namespace UnityEngine.UI
 			if (!this.InPlaceEditing() && this.isFocused)
 			{
 				this.AssignPositioningIfNeeded();
-				if (this.m_Keyboard == null || this.m_Keyboard.done)
+				if (this.m_Keyboard == null || this.m_Keyboard.status != TouchScreenKeyboard.Status.Visible)
 				{
 					if (this.m_Keyboard != null)
 					{
@@ -1056,7 +1059,7 @@ namespace UnityEngine.UI
 						{
 							this.text = this.m_Keyboard.text;
 						}
-						if (this.m_Keyboard.wasCanceled)
+						if (this.m_Keyboard.status == TouchScreenKeyboard.Status.Canceled)
 						{
 							this.m_WasCanceled = true;
 						}
@@ -1122,13 +1125,17 @@ namespace UnityEngine.UI
 							this.SendOnValueChangedAndUpdateLabel();
 						}
 					}
-					else if (this.m_Keyboard.canGetSelection)
+					else if (this.m_HideMobileInput && this.m_Keyboard.canSetSelection)
+					{
+						this.m_Keyboard.selection = new RangeInt(this.caretPositionInternal, this.caretSelectPositionInternal - this.caretPositionInternal);
+					}
+					else if (this.m_Keyboard.canGetSelection && !this.m_HideMobileInput)
 					{
 						this.UpdateCaretFromKeyboard();
 					}
-					if (this.m_Keyboard.done)
+					if (this.m_Keyboard.status != TouchScreenKeyboard.Status.Visible)
 					{
-						if (this.m_Keyboard.wasCanceled)
+						if (this.m_Keyboard.status == TouchScreenKeyboard.Status.Canceled)
 						{
 							this.m_WasCanceled = true;
 						}
@@ -1257,7 +1264,7 @@ namespace UnityEngine.UI
 
 		private bool MayDrag(PointerEventData eventData)
 		{
-			return this.IsActive() && this.IsInteractable() && eventData.button == PointerEventData.InputButton.Left && this.m_TextComponent != null && this.m_Keyboard == null;
+			return this.IsActive() && this.IsInteractable() && eventData.button == PointerEventData.InputButton.Left && this.m_TextComponent != null && (this.m_Keyboard == null || this.m_HideMobileInput);
 		}
 
 		public virtual void OnBeginDrag(PointerEventData eventData)
@@ -1920,7 +1927,7 @@ namespace UnityEngine.UI
 
 		protected virtual void Append(char input)
 		{
-			if (!this.m_ReadOnly)
+			if (!this.m_ReadOnly && this.text.Length < 16382)
 			{
 				if (this.InPlaceEditing())
 				{
@@ -2510,7 +2517,7 @@ namespace UnityEngine.UI
 					{
 						TouchScreenKeyboard.hideInput = this.shouldHideMobileInput;
 					}
-					this.m_Keyboard = ((this.inputType != InputField.InputType.Password) ? TouchScreenKeyboard.Open(this.m_Text, this.keyboardType, this.inputType == InputField.InputType.AutoCorrect, this.multiLine) : TouchScreenKeyboard.Open(this.m_Text, this.keyboardType, false, this.multiLine, true));
+					this.m_Keyboard = ((this.inputType != InputField.InputType.Password) ? TouchScreenKeyboard.Open(this.m_Text, this.keyboardType, this.inputType == InputField.InputType.AutoCorrect, this.multiLine, false, false, "", this.characterLimit) : TouchScreenKeyboard.Open(this.m_Text, this.keyboardType, false, this.multiLine, true, false, "", this.characterLimit));
 					this.MoveTextEnd(false);
 				}
 				else

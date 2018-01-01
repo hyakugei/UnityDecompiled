@@ -16,7 +16,7 @@ namespace UnityEditor.UI
 		protected override void OnEnable()
 		{
 			base.OnEnable();
-			this.m_UVRectContent = new GUIContent("UV Rect");
+			this.m_UVRectContent = EditorGUIUtility.TrTextContent("UV Rect", null, null);
 			this.m_Texture = base.serializedObject.FindProperty("m_Texture");
 			this.m_UVRect = base.serializedObject.FindProperty("m_UVRect");
 			this.SetShowNativeSize(true);

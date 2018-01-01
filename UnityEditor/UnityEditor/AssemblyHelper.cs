@@ -11,6 +11,7 @@ using UnityEditor.Modules;
 using UnityEditor.Scripting.ScriptCompilation;
 using UnityEditorInternal;
 using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 
 namespace UnityEditor
 {
@@ -238,9 +239,14 @@ namespace UnityEditor
 			}, foldersToSearch, target);
 		}
 
-		public static bool IsUnityEngineModule(string assemblyName)
+		public static bool IsUnityEngineModule(AssemblyDefinition assembly)
 		{
-			return assemblyName.EndsWith("Module") && assemblyName.StartsWith("UnityEngine.");
+			return assembly.CustomAttributes.Any((CustomAttribute a) => a.AttributeType.FullName == typeof(UnityEngineModuleAssembly).FullName);
+		}
+
+		public static bool IsUnityEngineModule(Assembly assembly)
+		{
+			return assembly.GetCustomAttributes(typeof(UnityEngineModuleAssembly), false).Length > 0;
 		}
 
 		private static bool IsTypeAUserExtendedScript(AssemblyDefinition assembly, TypeReference type)
@@ -305,10 +311,11 @@ namespace UnityEditor
 			return result;
 		}
 
-		public static void ExtractAllClassesThatAreUserExtendedScripts(string path, out string[] classNamesArray, out string[] classNameSpacesArray)
+		public static void ExtractAllClassesThatAreUserExtendedScripts(string path, out string[] classNamesArray, out string[] classNameSpacesArray, out string[] originalClassNameSpacesArray)
 		{
 			List<string> list = new List<string>();
 			List<string> list2 = new List<string>();
+			List<string> list3 = new List<string>();
 			ReaderParameters readerParameters = new ReaderParameters();
 			DefaultAssemblyResolver defaultAssemblyResolver = new DefaultAssemblyResolver();
 			defaultAssemblyResolver.AddSearchDirectory(Path.GetDirectoryName(path));
@@ -339,6 +346,13 @@ namespace UnityEditor
 						{
 							list.Add(current3.Name);
 							list2.Add(current3.Namespace);
+							string item = string.Empty;
+							CustomAttribute customAttribute = current3.CustomAttributes.SingleOrDefault((CustomAttribute a) => a.AttributeType.FullName == typeof(MovedFromAttribute).FullName);
+							if (customAttribute != null)
+							{
+								item = (string)customAttribute.ConstructorArguments[0].Value;
+							}
+							list3.Add(item);
 						}
 					}
 					catch (Exception)
@@ -357,6 +371,7 @@ namespace UnityEditor
 			}
 			classNamesArray = list.ToArray();
 			classNameSpacesArray = list2.ToArray();
+			originalClassNameSpacesArray = list3.ToArray();
 		}
 
 		public static AssemblyTypeInfoGenerator.ClassInfo[] ExtractAssemblyTypeInfo(BuildTarget targetPlatform, bool isEditor, string assemblyPathName, string[] searchDirs)

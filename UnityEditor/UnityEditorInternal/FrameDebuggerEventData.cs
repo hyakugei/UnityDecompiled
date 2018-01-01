@@ -13,6 +13,8 @@ namespace UnityEditorInternal
 
 		public int instanceCount;
 
+		public int drawCallCount;
+
 		public string shaderName;
 
 		public string passName;

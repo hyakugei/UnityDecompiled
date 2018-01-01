@@ -2,7 +2,7 @@ using System;
 
 namespace UnityEngine.Bindings
 {
-	[AttributeUsage(AttributeTargets.Method | AttributeTargets.Property | AttributeTargets.Field)]
+	[AttributeUsage(AttributeTargets.Method | AttributeTargets.Property | AttributeTargets.Field), VisibleToOtherModules]
 	internal class NativeNameAttribute : Attribute, IBindingsNameProviderAttribute, IBindingsAttribute
 	{
 		public string Name

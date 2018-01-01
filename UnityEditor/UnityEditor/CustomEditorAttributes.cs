@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -22,11 +21,13 @@ namespace UnityEditor
 			public bool m_IsFallback;
 		}
 
-		private static readonly List<CustomEditorAttributes.MonoEditorType> kSCustomEditors = new List<CustomEditorAttributes.MonoEditorType>();
+		private static readonly Dictionary<Type, List<CustomEditorAttributes.MonoEditorType>> kSCustomEditors = new Dictionary<Type, List<CustomEditorAttributes.MonoEditorType>>();
 
-		private static readonly List<CustomEditorAttributes.MonoEditorType> kSCustomMultiEditors = new List<CustomEditorAttributes.MonoEditorType>();
+		private static readonly Dictionary<Type, List<CustomEditorAttributes.MonoEditorType>> kSCustomMultiEditors = new Dictionary<Type, List<CustomEditorAttributes.MonoEditorType>>();
 
 		private static bool s_Initialized;
+
+		private static List<CustomEditorAttributes.MonoEditorType> s_SearchCache = new List<CustomEditorAttributes.MonoEditorType>();
 
 		internal static Type FindCustomEditorType(UnityEngine.Object o, bool multiEdit)
 		{
@@ -51,34 +52,68 @@ namespace UnityEditor
 			}
 			else
 			{
-				List<CustomEditorAttributes.MonoEditorType> source = (!multiEdit) ? CustomEditorAttributes.kSCustomEditors : CustomEditorAttributes.kSCustomMultiEditors;
+				Dictionary<Type, List<CustomEditorAttributes.MonoEditorType>> dictionary = (!multiEdit) ? CustomEditorAttributes.kSCustomEditors : CustomEditorAttributes.kSCustomMultiEditors;
 				for (int j = 0; j < 2; j++)
 				{
-					for (Type type2 = type; type2 != null; type2 = type2.BaseType)
+					Type type2 = type;
+					while (type2 != null)
 					{
-						Type inspected1 = type2;
-						int pass1 = j;
-						IEnumerable<CustomEditorAttributes.MonoEditorType> enumerable = from x in source
-						where CustomEditorAttributes.IsAppropriateEditor(x, inspected1, type != inspected1, pass1 == 1)
-						select x;
+						List<CustomEditorAttributes.MonoEditorType> list;
+						if (dictionary.TryGetValue(type2, out list))
+						{
+							goto IL_AB;
+						}
+						if (type2.IsGenericType)
+						{
+							type2 = type2.GetGenericTypeDefinition();
+							if (dictionary.TryGetValue(type2, out list))
+							{
+								goto IL_AB;
+							}
+						}
+						IL_20E:
+						type2 = type2.BaseType;
+						continue;
+						IL_AB:
+						CustomEditorAttributes.s_SearchCache.Clear();
+						foreach (CustomEditorAttributes.MonoEditorType current in list)
+						{
+							if (CustomEditorAttributes.IsAppropriateEditor(current, type2, type != type2, j == 1))
+							{
+								CustomEditorAttributes.s_SearchCache.Add(current);
+							}
+						}
+						Type type3 = null;
 						if (GraphicsSettings.renderPipelineAsset != null)
 						{
-							Type type3 = GraphicsSettings.renderPipelineAsset.GetType();
-							foreach (CustomEditorAttributes.MonoEditorType current in enumerable)
+							Type type4 = GraphicsSettings.renderPipelineAsset.GetType();
+							foreach (CustomEditorAttributes.MonoEditorType current2 in CustomEditorAttributes.s_SearchCache)
 							{
-								if (current.m_RenderPipelineType == type3)
+								if (current2.m_RenderPipelineType == type4)
 								{
-									result = current.m_InspectorType;
-									return result;
+									type3 = current2.m_InspectorType;
+									break;
 								}
 							}
 						}
-						CustomEditorAttributes.MonoEditorType monoEditorType = enumerable.FirstOrDefault((CustomEditorAttributes.MonoEditorType x) => x.m_RenderPipelineType == null);
-						if (monoEditorType != null)
+						if (type3 == null)
 						{
-							result = monoEditorType.m_InspectorType;
+							foreach (CustomEditorAttributes.MonoEditorType current3 in CustomEditorAttributes.s_SearchCache)
+							{
+								if (current3.m_RenderPipelineType == null)
+								{
+									type3 = current3.m_InspectorType;
+									break;
+								}
+							}
+						}
+						CustomEditorAttributes.s_SearchCache.Clear();
+						if (type3 != null)
+						{
+							result = type3;
 							return result;
 						}
+						goto IL_20E;
 					}
 				}
 				result = null;
@@ -127,16 +162,28 @@ namespace UnityEditor
 						{
 							monoEditorType.m_RenderPipelineType = customEditorForRenderPipelineAttribute.renderPipelineType;
 						}
-						CustomEditorAttributes.kSCustomEditors.Add(monoEditorType);
+						List<CustomEditorAttributes.MonoEditorType> list;
+						if (!CustomEditorAttributes.kSCustomEditors.TryGetValue(customEditor.m_InspectedType, out list))
+						{
+							list = new List<CustomEditorAttributes.MonoEditorType>();
+							CustomEditorAttributes.kSCustomEditors[customEditor.m_InspectedType] = list;
+						}
+						list.Add(monoEditorType);
 						if (type.GetCustomAttributes(typeof(CanEditMultipleObjects), false).Length > 0)
 						{
-							CustomEditorAttributes.kSCustomMultiEditors.Add(monoEditorType);
+							List<CustomEditorAttributes.MonoEditorType> list2;
+							if (!CustomEditorAttributes.kSCustomMultiEditors.TryGetValue(customEditor.m_InspectedType, out list2))
+							{
+								list2 = new List<CustomEditorAttributes.MonoEditorType>();
+								CustomEditorAttributes.kSCustomMultiEditors[customEditor.m_InspectedType] = list2;
+							}
+							list2.Add(monoEditorType);
 						}
 					}
-					IL_16B:
+					IL_1CF:
 					j++;
 					continue;
-					goto IL_16B;
+					goto IL_1CF;
 				}
 			}
 		}

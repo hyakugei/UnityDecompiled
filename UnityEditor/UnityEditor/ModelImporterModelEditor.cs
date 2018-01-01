@@ -8,69 +8,69 @@ namespace UnityEditor
 	{
 		private class Styles
 		{
-			public GUIContent Meshes = EditorGUIUtility.TextContent("Meshes|These options control how geometry is imported.");
+			public GUIContent Meshes = EditorGUIUtility.TrTextContent("Meshes", "These options control how geometry is imported.", null);
 
-			public GUIContent ScaleFactor = EditorGUIUtility.TextContent("Scale Factor|How much to scale the models compared to what is in the source file.");
+			public GUIContent ScaleFactor = EditorGUIUtility.TrTextContent("Scale Factor", "How much to scale the models compared to what is in the source file.", null);
 
-			public GUIContent UseFileUnits = EditorGUIUtility.TextContent("Use File Units|Detect file units and import as 1FileUnit=1UnityUnit, otherwise it will import as 1cm=1UnityUnit. See ModelImporter.useFileUnits for more details.");
+			public GUIContent UseFileUnits = EditorGUIUtility.TrTextContent("Use File Units", "Detect file units and import as 1FileUnit=1UnityUnit, otherwise it will import as 1cm=1UnityUnit. See ModelImporter.useFileUnits for more details.", null);
 
-			public GUIContent UseFileScale = EditorGUIUtility.TextContent("Use File Scale|Use File Scale when importing.");
+			public GUIContent UseFileScale = EditorGUIUtility.TrTextContent("Use File Scale", "Use File Scale when importing.", null);
 
-			public GUIContent FileScaleFactor = EditorGUIUtility.TextContent("File Scale|Scale defined by source file, or 1 if Use File Scale is disabled. Click Apply to update.");
+			public GUIContent FileScaleFactor = EditorGUIUtility.TrTextContent("File Scale", "Scale defined by source file, or 1 if Use File Scale is disabled. Click Apply to update.", null);
 
-			public GUIContent ImportBlendShapes = EditorGUIUtility.TextContent("Import BlendShapes|Should Unity import BlendShapes.");
+			public GUIContent ImportBlendShapes = EditorGUIUtility.TrTextContent("Import BlendShapes", "Should Unity import BlendShapes.", null);
 
-			public GUIContent GenerateColliders = EditorGUIUtility.TextContent("Generate Colliders|Should Unity generate mesh colliders for all meshes.");
+			public GUIContent GenerateColliders = EditorGUIUtility.TrTextContent("Generate Colliders", "Should Unity generate mesh colliders for all meshes.", null);
 
-			public GUIContent SwapUVChannels = EditorGUIUtility.TextContent("Swap UVs|Swaps the 2 UV channels in meshes. Use if your diffuse texture uses UVs from the lightmap.");
+			public GUIContent SwapUVChannels = EditorGUIUtility.TrTextContent("Swap UVs", "Swaps the 2 UV channels in meshes. Use if your diffuse texture uses UVs from the lightmap.", null);
 
-			public GUIContent GenerateSecondaryUV = EditorGUIUtility.TextContent("Generate Lightmap UVs|Generate lightmap UVs into UV2.");
+			public GUIContent GenerateSecondaryUV = EditorGUIUtility.TrTextContent("Generate Lightmap UVs", "Generate lightmap UVs into UV2.", null);
 
-			public GUIContent GenerateSecondaryUVAdvanced = EditorGUIUtility.TextContent("Advanced");
+			public GUIContent GenerateSecondaryUVAdvanced = EditorGUIUtility.TrTextContent("Advanced", null, null);
 
-			public GUIContent secondaryUVAngleDistortion = EditorGUIUtility.TextContent("Angle Error|Measured in percents. Angle error measures deviation of UV angles from geometry angles. Area error measures deviation of UV triangles area from geometry triangles if they were uniformly scaled.");
+			public GUIContent secondaryUVAngleDistortion = EditorGUIUtility.TrTextContent("Angle Error", "Measured in percents. Angle error measures deviation of UV angles from geometry angles. Area error measures deviation of UV triangles area from geometry triangles if they were uniformly scaled.", null);
 
-			public GUIContent secondaryUVAreaDistortion = EditorGUIUtility.TextContent("Area Error");
+			public GUIContent secondaryUVAreaDistortion = EditorGUIUtility.TrTextContent("Area Error", null, null);
 
-			public GUIContent secondaryUVHardAngle = EditorGUIUtility.TextContent("Hard Angle|Angle between neighbor triangles that will generate seam.");
+			public GUIContent secondaryUVHardAngle = EditorGUIUtility.TrTextContent("Hard Angle", "Angle between neighbor triangles that will generate seam.", null);
 
-			public GUIContent secondaryUVPackMargin = EditorGUIUtility.TextContent("Pack Margin|Measured in pixels, assuming mesh will cover an entire 1024x1024 lightmap.");
+			public GUIContent secondaryUVPackMargin = EditorGUIUtility.TrTextContent("Pack Margin", "Measured in pixels, assuming mesh will cover an entire 1024x1024 lightmap.", null);
 
-			public GUIContent secondaryUVDefaults = EditorGUIUtility.TextContent("Set Defaults");
+			public GUIContent secondaryUVDefaults = EditorGUIUtility.TrTextContent("Set Defaults", null, null);
 
-			public GUIContent TangentSpace = EditorGUIUtility.TextContent("Normals & Tangents");
+			public GUIContent TangentSpace = EditorGUIUtility.TrTextContent("Normals & Tangents", null, null);
 
-			public GUIContent TangentSpaceNormalLabel = EditorGUIUtility.TextContent("Normals");
+			public GUIContent TangentSpaceNormalLabel = EditorGUIUtility.TrTextContent("Normals", null, null);
 
-			public GUIContent TangentSpaceTangentLabel = EditorGUIUtility.TextContent("Tangents");
+			public GUIContent TangentSpaceTangentLabel = EditorGUIUtility.TrTextContent("Tangents", null, null);
 
-			public GUIContent TangentSpaceOptionImport = EditorGUIUtility.TextContent("Import");
+			public GUIContent TangentSpaceOptionImport = EditorGUIUtility.TrTextContent("Import", null, null);
 
-			public GUIContent TangentSpaceOptionCalculateLegacy = EditorGUIUtility.TextContent("Calculate Legacy");
+			public GUIContent TangentSpaceOptionCalculateLegacy = EditorGUIUtility.TrTextContent("Calculate Legacy", null, null);
 
-			public GUIContent TangentSpaceOptionCalculateLegacySplit = EditorGUIUtility.TextContent("Calculate Legacy - Split Tangents");
+			public GUIContent TangentSpaceOptionCalculateLegacySplit = EditorGUIUtility.TrTextContent("Calculate Legacy - Split Tangents", null, null);
 
-			public GUIContent TangentSpaceOptionCalculate = EditorGUIUtility.TextContent("Calculate Tangent Space");
+			public GUIContent TangentSpaceOptionCalculate = EditorGUIUtility.TrTextContent("Calculate Tangent Space", null, null);
 
-			public GUIContent TangentSpaceOptionNone = EditorGUIUtility.TextContent("None");
+			public GUIContent TangentSpaceOptionNone = EditorGUIUtility.TrTextContent("None", null, null);
 
-			public GUIContent TangentSpaceOptionNoneNoNormals = EditorGUIUtility.TextContent("None - (Normals required)");
+			public GUIContent TangentSpaceOptionNoneNoNormals = EditorGUIUtility.TrTextContent("None - (Normals required)", null, null);
 
-			public GUIContent NormalOptionImport = EditorGUIUtility.TextContent("Import");
+			public GUIContent NormalOptionImport = EditorGUIUtility.TrTextContent("Import", null, null);
 
-			public GUIContent NormalOptionCalculate = EditorGUIUtility.TextContent("Calculate");
+			public GUIContent NormalOptionCalculate = EditorGUIUtility.TrTextContent("Calculate", null, null);
 
-			public GUIContent NormalOptionNone = EditorGUIUtility.TextContent("None");
+			public GUIContent NormalOptionNone = EditorGUIUtility.TrTextContent("None", null, null);
 
-			public GUIContent RecalculateNormalsLabel = EditorGUIUtility.TextContent("Normals Mode");
+			public GUIContent RecalculateNormalsLabel = EditorGUIUtility.TrTextContent("Normals Mode", null, null);
 
 			public GUIContent[] RecalculateNormalsOpt = new GUIContent[]
 			{
-				EditorGUIUtility.TextContent("Unweighted Legacy"),
-				EditorGUIUtility.TextContent("Unweighted"),
-				EditorGUIUtility.TextContent("Area Weighted"),
-				EditorGUIUtility.TextContent("Angle Weighted"),
-				EditorGUIUtility.TextContent("Area and Angle Weighted")
+				EditorGUIUtility.TrTextContent("Unweighted Legacy", null, null),
+				EditorGUIUtility.TrTextContent("Unweighted", null, null),
+				EditorGUIUtility.TrTextContent("Area Weighted", null, null),
+				EditorGUIUtility.TrTextContent("Angle Weighted", null, null),
+				EditorGUIUtility.TrTextContent("Area and Angle Weighted", null, null)
 			};
 
 			public GUIContent[] TangentSpaceModeOptLabelsAll;
@@ -87,42 +87,42 @@ namespace UnityEditor
 
 			public ModelImporterTangents[] TangentSpaceModeOptEnumsNone;
 
-			public GUIContent SmoothingAngle = EditorGUIUtility.TextContent("Smoothing Angle|Normal Smoothing Angle");
+			public GUIContent SmoothingAngle = EditorGUIUtility.TrTextContent("Smoothing Angle", "Normal Smoothing Angle", null);
 
-			public GUIContent MeshCompressionLabel = new GUIContent("Mesh Compression", "Higher compression ratio means lower mesh precision. If enabled, the mesh bounds and a lower bit depth per component are used to compress the mesh data.");
+			public GUIContent MeshCompressionLabel = EditorGUIUtility.TrTextContent("Mesh Compression", "Higher compression ratio means lower mesh precision. If enabled, the mesh bounds and a lower bit depth per component are used to compress the mesh data.", null);
 
 			public GUIContent[] MeshCompressionOpt = new GUIContent[]
 			{
-				new GUIContent("Off"),
-				new GUIContent("Low"),
-				new GUIContent("Medium"),
-				new GUIContent("High")
+				EditorGUIUtility.TrTextContent("Off", null, null),
+				EditorGUIUtility.TrTextContent("Low", null, null),
+				EditorGUIUtility.TrTextContent("Medium", null, null),
+				EditorGUIUtility.TrTextContent("High", null, null)
 			};
 
-			public GUIContent IndexFormatLabel = new GUIContent("Index Format", "Format of mesh index buffer. Auto mode picks 16 or 32 bit depending on mesh vertex count.");
+			public GUIContent IndexFormatLabel = EditorGUIUtility.TrTextContent("Index Format", "Format of mesh index buffer. Auto mode picks 16 or 32 bit depending on mesh vertex count.", null);
 
 			public GUIContent[] IndexFormatOpt = new GUIContent[]
 			{
-				new GUIContent("Auto"),
-				new GUIContent("16 bit"),
-				new GUIContent("32 bit")
+				EditorGUIUtility.TrTextContent("Auto", null, null),
+				EditorGUIUtility.TrTextContent("16 bit", null, null),
+				EditorGUIUtility.TrTextContent("32 bit", null, null)
 			};
 
-			public GUIContent OptimizeMeshForGPU = EditorGUIUtility.TextContent("Optimize Mesh|The vertices and indices will be reordered for better GPU performance.");
+			public GUIContent OptimizeMeshForGPU = EditorGUIUtility.TrTextContent("Optimize Mesh", "The vertices and indices will be reordered for better GPU performance.", null);
 
-			public GUIContent KeepQuads = EditorGUIUtility.TextContent("Keep Quads|If model contains quad faces, they are kept for DX11 tessellation.");
+			public GUIContent KeepQuads = EditorGUIUtility.TrTextContent("Keep Quads", "If model contains quad faces, they are kept for DX11 tessellation.", null);
 
-			public GUIContent WeldVertices = EditorGUIUtility.TextContent("Weld Vertices|Combine vertices that share the same position in space.");
+			public GUIContent WeldVertices = EditorGUIUtility.TrTextContent("Weld Vertices", "Combine vertices that share the same position in space.", null);
 
-			public GUIContent ImportVisibility = EditorGUIUtility.TextContent("Import Visibility|Use visibility properties to enable or disable MeshRenderer components.");
+			public GUIContent ImportVisibility = EditorGUIUtility.TrTextContent("Import Visibility", "Use visibility properties to enable or disable MeshRenderer components.", null);
 
-			public GUIContent ImportCameras = EditorGUIUtility.TextContent("Import Cameras");
+			public GUIContent ImportCameras = EditorGUIUtility.TrTextContent("Import Cameras", null, null);
 
-			public GUIContent ImportLights = EditorGUIUtility.TextContent("Import Lights");
+			public GUIContent ImportLights = EditorGUIUtility.TrTextContent("Import Lights", null, null);
 
-			public GUIContent PreserveHierarchy = EditorGUIUtility.TextContent("Preserve Hierarchy|Always create an explicit prefab root, even if the model only has a single root.");
+			public GUIContent PreserveHierarchy = EditorGUIUtility.TrTextContent("Preserve Hierarchy", "Always create an explicit prefab root, even if the model only has a single root.", null);
 
-			public GUIContent IsReadable = EditorGUIUtility.TextContent("Read/Write Enabled|Allow vertices and indices to be accessed from script.");
+			public GUIContent IsReadable = EditorGUIUtility.TrTextContent("Read/Write Enabled", "Allow vertices and indices to be accessed from script.", null);
 
 			public Styles()
 			{

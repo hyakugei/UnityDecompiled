@@ -78,19 +78,16 @@ namespace UnityEngine.Rendering
 			if (tex == null)
 			{
 				this.m_Type = BuiltinRenderTextureType.None;
-				this.m_InstanceID = 0;
-				this.m_BufferPointer = IntPtr.Zero;
 			}
 			else if (tex is RenderTexture)
 			{
-				this.m_Type = BuiltinRenderTextureType.BufferPtr;
-				this.m_BufferPointer = ((RenderTexture)tex).colorBuffer.m_BufferPtr;
+				this.m_Type = BuiltinRenderTextureType.RenderTexture;
 			}
 			else
 			{
 				this.m_Type = BuiltinRenderTextureType.BindableTexture;
-				this.m_BufferPointer = IntPtr.Zero;
 			}
+			this.m_BufferPointer = IntPtr.Zero;
 			this.m_NameID = -1;
 			this.m_InstanceID = ((!tex) ? 0 : tex.GetInstanceID());
 			this.m_MipLevel = 0;
@@ -103,19 +100,16 @@ namespace UnityEngine.Rendering
 			if (tex == null)
 			{
 				this.m_Type = BuiltinRenderTextureType.None;
-				this.m_InstanceID = 0;
-				this.m_BufferPointer = IntPtr.Zero;
 			}
 			else if (tex is RenderTexture)
 			{
-				this.m_Type = BuiltinRenderTextureType.BufferPtr;
-				this.m_BufferPointer = ((RenderTexture)tex).colorBuffer.m_BufferPtr;
+				this.m_Type = BuiltinRenderTextureType.RenderTexture;
 			}
 			else
 			{
 				this.m_Type = BuiltinRenderTextureType.BindableTexture;
-				this.m_BufferPointer = IntPtr.Zero;
 			}
+			this.m_BufferPointer = IntPtr.Zero;
 			this.m_NameID = -1;
 			this.m_InstanceID = ((!tex) ? 0 : tex.GetInstanceID());
 			this.m_MipLevel = mipLevel;

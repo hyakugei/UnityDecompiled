@@ -1,7 +1,6 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
+using System.Reflection;
 using UnityEngine;
 using UnityEngine.Scripting;
 
@@ -9,39 +8,10 @@ namespace UnityEditor.Experimental.AssetImporters
 {
 	public abstract class ScriptedImporter : AssetImporter
 	{
-		private struct ImportRequest
-		{
-			public readonly string m_AssetSourcePath;
-
-			public readonly BuildTarget m_SelectedBuildTarget;
-		}
-
-		private struct ImportResult
-		{
-			public UnityEngine.Object[] m_Assets;
-
-			public string[] m_AssetNames;
-
-			public Texture2D[] m_Thumbnails;
-		}
-
 		[RequiredByNativeCode]
-		private ScriptedImporter.ImportResult GenerateAssetData(ScriptedImporter.ImportRequest request)
+		private void GenerateAssetData(AssetImportContext ctx)
 		{
-			AssetImportContext assetImportContext = new AssetImportContext
-			{
-				assetPath = request.m_AssetSourcePath,
-				selectedBuildTarget = request.m_SelectedBuildTarget
-			};
-			this.OnImportAsset(assetImportContext);
-			ScriptedImporter.ImportResult result = default(ScriptedImporter.ImportResult);
-			result.m_Assets = (from x in assetImportContext.importedObjects
-			select x.obj).ToArray<UnityEngine.Object>();
-			result.m_AssetNames = (from x in assetImportContext.importedObjects
-			select x.localIdentifier).ToArray<string>();
-			result.m_Thumbnails = (from x in assetImportContext.importedObjects
-			select x.thumbnail).ToArray<Texture2D>();
-			return result;
+			this.OnImportAsset(ctx);
 		}
 
 		public abstract void OnImportAsset(AssetImportContext ctx);
@@ -49,57 +19,32 @@ namespace UnityEditor.Experimental.AssetImporters
 		[RequiredByNativeCode]
 		internal static void RegisterScriptedImporters()
 		{
-			ArrayList arrayList = AttributeHelper.FindEditorClassesWithAttribute(typeof(ScriptedImporterAttribute));
-			IEnumerator enumerator = arrayList.GetEnumerator();
-			try
+			IEnumerable<Type> allTypesWithAttribute = EditorAssemblies.GetAllTypesWithAttribute<ScriptedImporterAttribute>();
+			foreach (Type current in allTypesWithAttribute)
 			{
-				while (enumerator.MoveNext())
+				Type type = current;
+				ScriptedImporterAttribute scriptedImporterAttribute = Attribute.GetCustomAttribute(type, typeof(ScriptedImporterAttribute)) as ScriptedImporterAttribute;
+				SortedDictionary<string, bool> handledExtensionsByImporter = ScriptedImporter.GetHandledExtensionsByImporter(scriptedImporterAttribute);
+				foreach (Type current2 in allTypesWithAttribute)
 				{
-					object current = enumerator.Current;
-					Type type = current as Type;
-					ScriptedImporterAttribute scriptedImporterAttribute = Attribute.GetCustomAttribute(type, typeof(ScriptedImporterAttribute)) as ScriptedImporterAttribute;
-					SortedDictionary<string, bool> handledExtensionsByImporter = ScriptedImporter.GetHandledExtensionsByImporter(scriptedImporterAttribute);
-					IEnumerator enumerator2 = arrayList.GetEnumerator();
-					try
+					if (current2 != current)
 					{
-						while (enumerator2.MoveNext())
+						ScriptedImporterAttribute attribute = Attribute.GetCustomAttribute(current2, typeof(ScriptedImporterAttribute)) as ScriptedImporterAttribute;
+						SortedDictionary<string, bool> handledExtensionsByImporter2 = ScriptedImporter.GetHandledExtensionsByImporter(attribute);
+						foreach (KeyValuePair<string, bool> current3 in handledExtensionsByImporter2)
 						{
-							object current2 = enumerator2.Current;
-							if (current2 != current)
+							if (handledExtensionsByImporter.ContainsKey(current3.Key))
 							{
-								ScriptedImporterAttribute attribute = Attribute.GetCustomAttribute(current2 as Type, typeof(ScriptedImporterAttribute)) as ScriptedImporterAttribute;
-								SortedDictionary<string, bool> handledExtensionsByImporter2 = ScriptedImporter.GetHandledExtensionsByImporter(attribute);
-								foreach (KeyValuePair<string, bool> current3 in handledExtensionsByImporter2)
-								{
-									if (handledExtensionsByImporter.ContainsKey(current3.Key))
-									{
-										Debug.LogError(string.Format("Scripted importers {0} and {1} are targeting the {2} extension, rejecting both.", type.FullName, (current2 as Type).FullName, current3.Key));
-										handledExtensionsByImporter.Remove(current3.Key);
-									}
-								}
+								Debug.LogError(string.Format("Scripted importers {0} and {1} are targeting the {2} extension, rejecting both.", type.FullName, current2.FullName, current3.Key));
+								handledExtensionsByImporter.Remove(current3.Key);
 							}
 						}
 					}
-					finally
-					{
-						IDisposable disposable;
-						if ((disposable = (enumerator2 as IDisposable)) != null)
-						{
-							disposable.Dispose();
-						}
-					}
-					foreach (KeyValuePair<string, bool> current4 in handledExtensionsByImporter)
-					{
-						AssetImporter.RegisterImporter(type, scriptedImporterAttribute.version, scriptedImporterAttribute.importQueuePriority, current4.Key);
-					}
 				}
-			}
-			finally
-			{
-				IDisposable disposable2;
-				if ((disposable2 = (enumerator as IDisposable)) != null)
+				MethodInfo method = type.GetMethod("GetHashOfImportedAssetDependencyHintsForTesting", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+				foreach (KeyValuePair<string, bool> current4 in handledExtensionsByImporter)
 				{
-					disposable2.Dispose();
+					AssetImporter.RegisterImporter(type, scriptedImporterAttribute.version, scriptedImporterAttribute.importQueuePriority, current4.Key, method != null);
 				}
 			}
 		}

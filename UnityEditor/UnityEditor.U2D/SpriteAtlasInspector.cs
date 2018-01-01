@@ -52,43 +52,43 @@ namespace UnityEditor.U2D
 
 			public readonly GUIStyle previewLabel = new GUIStyle("preLabel");
 
-			public readonly GUIContent textureSettingLabel = EditorGUIUtility.TextContent("Texture");
+			public readonly GUIContent textureSettingLabel = EditorGUIUtility.TrTextContent("Texture", null, null);
 
-			public readonly GUIContent variantSettingLabel = EditorGUIUtility.TextContent("Variant");
+			public readonly GUIContent variantSettingLabel = EditorGUIUtility.TrTextContent("Variant", null, null);
 
-			public readonly GUIContent packingParametersLabel = EditorGUIUtility.TextContent("Packing");
+			public readonly GUIContent packingParametersLabel = EditorGUIUtility.TrTextContent("Packing", null, null);
 
-			public readonly GUIContent atlasTypeLabel = EditorGUIUtility.TextContent("Type");
+			public readonly GUIContent atlasTypeLabel = EditorGUIUtility.TrTextContent("Type", null, null);
 
-			public readonly GUIContent defaultPlatformLabel = EditorGUIUtility.TextContent("Default");
+			public readonly GUIContent defaultPlatformLabel = EditorGUIUtility.TrTextContent("Default", null, null);
 
-			public readonly GUIContent masterAtlasLabel = EditorGUIUtility.TextContent("Master Atlas|Assigning another Sprite Atlas asset will make this atlas a variant of it.");
+			public readonly GUIContent masterAtlasLabel = EditorGUIUtility.TrTextContent("Master Atlas", "Assigning another Sprite Atlas asset will make this atlas a variant of it.", null);
 
-			public readonly GUIContent bindAsDefaultLabel = EditorGUIUtility.TextContent("Include in Build|Packed textures will be included in the build by default.");
+			public readonly GUIContent bindAsDefaultLabel = EditorGUIUtility.TrTextContent("Include in Build", "Packed textures will be included in the build by default.", null);
 
-			public readonly GUIContent enableRotationLabel = EditorGUIUtility.TextContent("Allow Rotation|Try rotating the sprite to fit better during packing.");
+			public readonly GUIContent enableRotationLabel = EditorGUIUtility.TrTextContent("Allow Rotation", "Try rotating the sprite to fit better during packing.", null);
 
-			public readonly GUIContent enableTightPackingLabel = EditorGUIUtility.TextContent("Tight Packing|Use the mesh outline to fit instead of the whole texture rect during packing.");
+			public readonly GUIContent enableTightPackingLabel = EditorGUIUtility.TrTextContent("Tight Packing", "Use the mesh outline to fit instead of the whole texture rect during packing.", null);
 
-			public readonly GUIContent paddingLabel = EditorGUIUtility.TextContent("Padding|The amount of extra padding between packed sprites.");
+			public readonly GUIContent paddingLabel = EditorGUIUtility.TrTextContent("Padding", "The amount of extra padding between packed sprites.", null);
 
-			public readonly GUIContent generateMipMapLabel = EditorGUIUtility.TextContent("Generate Mip Maps");
+			public readonly GUIContent generateMipMapLabel = EditorGUIUtility.TrTextContent("Generate Mip Maps", null, null);
 
-			public readonly GUIContent sRGBLabel = EditorGUIUtility.TextContent("sRGB|Texture content is stored in gamma space.");
+			public readonly GUIContent sRGBLabel = EditorGUIUtility.TrTextContent("sRGB", "Texture content is stored in gamma space.", null);
 
-			public readonly GUIContent readWrite = EditorGUIUtility.TextContent("Read/Write Enabled|Enable to be able to access the raw pixel data from code.");
+			public readonly GUIContent readWrite = EditorGUIUtility.TrTextContent("Read/Write Enabled", "Enable to be able to access the raw pixel data from code.", null);
 
-			public readonly GUIContent variantMultiplierLabel = EditorGUIUtility.TextContent("Scale|Down scale ratio.");
+			public readonly GUIContent variantMultiplierLabel = EditorGUIUtility.TrTextContent("Scale", "Down scale ratio.", null);
 
-			public readonly GUIContent copyMasterButton = EditorGUIUtility.TextContent("Copy Master's Settings|Copy all master's settings into this variant.");
+			public readonly GUIContent copyMasterButton = EditorGUIUtility.TrTextContent("Copy Master's Settings", "Copy all master's settings into this variant.", null);
 
-			public readonly GUIContent packButton = EditorGUIUtility.TextContent("Pack Preview|Pack this atlas.");
+			public readonly GUIContent packButton = EditorGUIUtility.TrTextContent("Pack Preview", "Pack this atlas.", null);
 
-			public readonly GUIContent disabledPackLabel = EditorGUIUtility.TextContent("Sprite Atlas packing is disabled. Enable it in Edit > Project Settings > Editor.");
+			public readonly GUIContent disabledPackLabel = EditorGUIUtility.TrTextContent("Sprite Atlas packing is disabled. Enable it in Edit > Project Settings > Editor.", null, null);
 
-			public readonly GUIContent packableListLabel = EditorGUIUtility.TextContent("Objects for Packing|Only accept Folder, Sprite Sheet(Texture) and Sprite.");
+			public readonly GUIContent packableListLabel = EditorGUIUtility.TrTextContent("Objects for Packing", "Only accept Folder, Sprite Sheet(Texture) and Sprite.", null);
 
-			public readonly GUIContent notPowerOfTwoWarning = EditorGUIUtility.TextContent("This scale will produce a Sprite Atlas variant with a packed texture that is NPOT (non - power of two). This may cause visual artifacts in certain compression/texture formats.");
+			public readonly GUIContent notPowerOfTwoWarning = EditorGUIUtility.TrTextContent("This scale will produce a Sprite Atlas variant with a packed texture that is NPOT (non - power of two). This may cause visual artifacts in certain compression/texture formats.", null, null);
 
 			public readonly GUIContent smallZoom = EditorGUIUtility.IconContent("PreTextureMipMapLow");
 
@@ -110,8 +110,8 @@ namespace UnityEditor.U2D
 
 			public readonly GUIContent[] atlasTypeOptions = new GUIContent[]
 			{
-				EditorGUIUtility.TextContent("Master"),
-				EditorGUIUtility.TextContent("Variant")
+				EditorGUIUtility.TrTextContent("Master", null, null),
+				EditorGUIUtility.TrTextContent("Variant", null, null)
 			};
 
 			public readonly int[] paddingValues = new int[]
@@ -286,7 +286,6 @@ namespace UnityEditor.U2D
 			this.m_EnableTightPacking = base.serializedObject.FindProperty("m_EditorData.packingParameters.enableTightPacking");
 			this.m_EnableRotation = base.serializedObject.FindProperty("m_EditorData.packingParameters.enableRotation");
 			this.m_Padding = base.serializedObject.FindProperty("m_EditorData.packingParameters.padding");
-			this.m_Hash = base.serializedObject.FindProperty("m_EditorData.hashString").stringValue;
 			this.m_MasterAtlas = base.serializedObject.FindProperty("m_MasterAtlas");
 			this.m_BindAsDefault = base.serializedObject.FindProperty("m_EditorData.bindAsDefault");
 			this.m_VariantMultiplier = base.serializedObject.FindProperty("m_EditorData.variantMultiplier");

@@ -1,9 +1,7 @@
 using System;
-using System.Runtime.InteropServices;
 
 namespace UnityEngine.XR.WSA.Input
 {
-	[StructLayout(LayoutKind.Sequential, Size = 1)]
 	public struct InteractionSourceReleasedEventArgs
 	{
 		public InteractionSourceState state

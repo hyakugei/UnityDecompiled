@@ -3,7 +3,8 @@ using UnityEngine;
 
 namespace UnityEditorInternal
 {
-	internal class ProjectSettingsBase : UnityEngine.Object
+	[ExcludeFromObjectFactory, NativeClass(null)]
+	internal abstract class ProjectSettingsBase : UnityEngine.Object
 	{
 	}
 }

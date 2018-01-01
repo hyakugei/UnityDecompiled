@@ -35,7 +35,9 @@ namespace UnityEngine
 		PVRTC_RGB4,
 		PVRTC_RGBA4,
 		ETC_RGB4,
+		[EditorBrowsable(EditorBrowsableState.Never), Obsolete("Enum member TextureFormat.ATC_RGB4 has been deprecated. Use ETC_RGB4 instead (UnityUpgradable) -> ETC_RGB4", true)]
 		ATC_RGB4,
+		[EditorBrowsable(EditorBrowsableState.Never), Obsolete("Enum member TextureFormat.ATC_RGBA8 has been deprecated. Use ETC2_RGBA8 instead (UnityUpgradable) -> ETC2_RGBA8", true)]
 		ATC_RGBA8,
 		EAC_R = 41,
 		EAC_R_SIGNED,

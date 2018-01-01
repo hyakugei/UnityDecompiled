@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.CompilerServices;
+using UnityEngine.Bindings;
 using UnityEngine.Scripting;
 
 namespace UnityEngine.Playables
@@ -22,34 +23,7 @@ namespace UnityEngine.Playables
 			}
 		}
 
-		internal UnityEngine.Object GetUserData()
-		{
-			return PlayableOutputHandle.GetInternalUserData(ref this);
-		}
-
-		internal void SetUserData(UnityEngine.Object value)
-		{
-			PlayableOutputHandle.SetInternalUserData(ref this, value);
-		}
-
-		internal static UnityEngine.Object GetInternalUserData(ref PlayableOutputHandle handle)
-		{
-			return PlayableOutputHandle.INTERNAL_CALL_GetInternalUserData(ref handle);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern UnityEngine.Object INTERNAL_CALL_GetInternalUserData(ref PlayableOutputHandle handle);
-
-		internal static void SetInternalUserData(ref PlayableOutputHandle handle, [Writable] UnityEngine.Object target)
-		{
-			PlayableOutputHandle.INTERNAL_CALL_SetInternalUserData(ref handle, target);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_SetInternalUserData(ref PlayableOutputHandle handle, [Writable] UnityEngine.Object target);
-
+		[VisibleToOtherModules]
 		internal bool IsPlayableOutputOfType<T>()
 		{
 			return this.GetPlayableOutputType() == typeof(T);
@@ -80,6 +54,7 @@ namespace UnityEngine.Playables
 			return lhs.m_Handle == rhs.m_Handle && lhs.m_Version == rhs.m_Version;
 		}
 
+		[VisibleToOtherModules]
 		internal bool IsValid()
 		{
 			return PlayableOutputHandle.IsValid_Injected(ref this);
@@ -98,6 +73,16 @@ namespace UnityEngine.Playables
 		internal void SetReferenceObject(UnityEngine.Object target)
 		{
 			PlayableOutputHandle.SetReferenceObject_Injected(ref this, target);
+		}
+
+		internal UnityEngine.Object GetUserData()
+		{
+			return PlayableOutputHandle.GetUserData_Injected(ref this);
+		}
+
+		internal void SetUserData([Writable] UnityEngine.Object target)
+		{
+			PlayableOutputHandle.SetUserData_Injected(ref this, target);
 		}
 
 		internal PlayableHandle GetSourcePlayable()
@@ -143,6 +128,12 @@ namespace UnityEngine.Playables
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern void SetReferenceObject_Injected(ref PlayableOutputHandle _unity_self, UnityEngine.Object target);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern UnityEngine.Object GetUserData_Injected(ref PlayableOutputHandle _unity_self);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void SetUserData_Injected(ref PlayableOutputHandle _unity_self, [Writable] UnityEngine.Object target);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern void GetSourcePlayable_Injected(ref PlayableOutputHandle _unity_self, out PlayableHandle ret);

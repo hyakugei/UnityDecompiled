@@ -4,7 +4,7 @@ using UnityEngine.Experimental.UIElements;
 
 namespace UnityEditor.Experimental.UIElements.GraphView
 {
-	internal interface IDropTarget
+	public interface IDropTarget
 	{
 		bool CanAcceptDrop(List<ISelectable> selection);
 

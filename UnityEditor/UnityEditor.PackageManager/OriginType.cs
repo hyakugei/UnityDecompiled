@@ -2,11 +2,13 @@ using System;
 
 namespace UnityEditor.PackageManager
 {
-	public enum OriginType : uint
+	public enum OriginType
 	{
+		Unknown,
+		Builtin,
 		Registry,
-		Url,
-		Path,
-		Unknown
+		Embedded,
+		Local,
+		Git
 	}
 }

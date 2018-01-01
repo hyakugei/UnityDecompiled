@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using UnityEditor;
+using UnityEditor.Audio;
 using UnityEditor.Scripting;
 using UnityEditor.Scripting.ScriptCompilation;
 using UnityEngine;
@@ -135,6 +136,13 @@ namespace UnityEditorInternal
 		}
 
 		public static extern bool ignoreInspectorChanges
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+		}
+
+		internal static extern bool canRenameSelectedAssets
 		{
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
@@ -460,7 +468,7 @@ namespace UnityEditorInternal
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern void CalculateAmbientProbeFromSkybox();
 
-		[GeneratedByOldBindingsGenerator]
+		[Obsolete("SetupShaderMenu is obsolete. You can get list of available shaders with ShaderUtil.GetAllShaderInfos", false), GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void SetupShaderMenu(Material material);
 
@@ -896,10 +904,6 @@ namespace UnityEditorInternal
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern bool WiiUSaveStartupScreenToFile(Texture2D image, string path, int outputWidth, int outputHeight);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern bool CanConnectToCacheServer();
 
 		[GeneratedByOldBindingsGenerator]
@@ -1006,8 +1010,8 @@ namespace UnityEditorInternal
 		{
 			string[] array = new string[]
 			{
-				"g",
-				"m",
+				"G",
+				"M",
 				"k",
 				""
 			};
@@ -1057,7 +1061,7 @@ namespace UnityEditorInternal
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern string[] GetCompilationDefines(EditorScriptCompilationOptions options, BuildTargetGroup targetGroup, BuildTarget target);
+		internal static extern string[] GetCompilationDefines(EditorScriptCompilationOptions options, BuildTargetGroup targetGroup, BuildTarget target, ApiCompatibilityLevel apiCompatibilityLevel);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -1091,13 +1095,24 @@ namespace UnityEditorInternal
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern string[] GetEditorModuleDllNames();
 
-		public static Texture2D GetIconForFile(string fileName)
+		[GeneratedByOldBindingsGenerator, ThreadAndSerializationSafe]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern bool CurrentThreadIsMainThread();
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern bool CanRenameAsset(int instanceID);
+
+		public static Texture2D FindIconForFile(string fileName)
 		{
 			int num = fileName.LastIndexOf('.');
 			string text = (num != -1) ? fileName.Substring(num + 1).ToLower() : "";
 			Texture2D result;
 			switch (text)
 			{
+			case "asset":
+				result = ((AssetDatabase.GetCachedIcon(fileName) as Texture2D) ?? EditorGUIUtility.FindTexture("GameManager Icon"));
+				return result;
 			case "boo":
 				result = EditorGUIUtility.FindTexture("boo Script Icon");
 				return result;
@@ -1120,41 +1135,46 @@ namespace UnityEditorInternal
 				result = EditorGUIUtility.FindTexture("AssemblyDefinitionAsset Icon");
 				return result;
 			case "mat":
-				result = EditorGUIUtility.FindTexture("Material Icon");
+				result = EditorGUIUtility.FindTexture(typeof(Material));
 				return result;
 			case "physicmaterial":
-				result = EditorGUIUtility.FindTexture("PhysicMaterial Icon");
+				result = EditorGUIUtility.FindTexture(typeof(PhysicMaterial));
 				return result;
 			case "prefab":
 				result = EditorGUIUtility.FindTexture("PrefabNormal Icon");
 				return result;
 			case "shader":
-				result = EditorGUIUtility.FindTexture("Shader Icon");
+				result = EditorGUIUtility.FindTexture(typeof(Shader));
 				return result;
 			case "txt":
-				result = EditorGUIUtility.FindTexture("TextAsset Icon");
+				result = EditorGUIUtility.FindTexture(typeof(TextAsset));
 				return result;
 			case "unity":
-				result = EditorGUIUtility.FindTexture("SceneAsset Icon");
+				result = EditorGUIUtility.FindTexture(typeof(SceneAsset));
 				return result;
-			case "asset":
 			case "prefs":
-				result = EditorGUIUtility.FindTexture("GameManager Icon");
+				result = EditorGUIUtility.FindTexture(typeof(EditorSettings));
 				return result;
 			case "anim":
-				result = EditorGUIUtility.FindTexture("Animation Icon");
+				result = EditorGUIUtility.FindTexture(typeof(Animation));
 				return result;
 			case "meta":
 				result = EditorGUIUtility.FindTexture("MetaFile Icon");
 				return result;
 			case "mixer":
-				result = EditorGUIUtility.FindTexture("AudioMixerController Icon");
+				result = EditorGUIUtility.FindTexture(typeof(AudioMixerController));
+				return result;
+			case "uxml":
+				result = EditorGUIUtility.FindTexture("UxmlScript Icon");
+				return result;
+			case "uss":
+				result = EditorGUIUtility.FindTexture("UssScript Icon");
 				return result;
 			case "ttf":
 			case "otf":
 			case "fon":
 			case "fnt":
-				result = EditorGUIUtility.FindTexture("Font Icon");
+				result = EditorGUIUtility.FindTexture(typeof(Font));
 				return result;
 			case "aac":
 			case "aif":
@@ -1170,7 +1190,7 @@ namespace UnityEditorInternal
 			case "wav":
 			case "wave":
 			case "ogg":
-				result = EditorGUIUtility.FindTexture("AudioClip Icon");
+				result = EditorGUIUtility.FindTexture(typeof(AudioClip));
 				return result;
 			case "ai":
 			case "apng":
@@ -1212,7 +1232,7 @@ namespace UnityEditorInternal
 			case "psd":
 			case "exr":
 			case "hdr":
-				result = EditorGUIUtility.FindTexture("Texture Icon");
+				result = EditorGUIUtility.FindTexture(typeof(Texture));
 				return result;
 			case "3df":
 			case "3dm":
@@ -1233,8 +1253,16 @@ namespace UnityEditorInternal
 			case "wrl":
 			case "wrz":
 			case "fbx":
-				result = EditorGUIUtility.FindTexture("Mesh Icon");
+				result = EditorGUIUtility.FindTexture(typeof(Mesh));
 				return result;
+			case "dv":
+			case "mp4":
+			case "mpg":
+			case "mpeg":
+			case "m4v":
+			case "ogv":
+			case "vp8":
+			case "webm":
 			case "asf":
 			case "asx":
 			case "avi":
@@ -1247,15 +1275,11 @@ namespace UnityEditorInternal
 			case "m2ts":
 			case "m2v":
 			case "m4e":
-			case "m4v":
 			case "mjp":
 			case "mov":
 			case "movie":
 			case "mp21":
-			case "mp4":
 			case "mpe":
-			case "mpeg":
-			case "mpg":
 			case "mpv2":
 			case "ogm":
 			case "qt":
@@ -1263,7 +1287,7 @@ namespace UnityEditorInternal
 			case "rmvb":
 			case "wmw":
 			case "xvid":
-				result = EditorGUIUtility.FindTexture("MovieTexture Icon");
+				result = ((AssetDatabase.GetCachedIcon(fileName) as Texture2D) ?? EditorGUIUtility.FindTexture(typeof(MovieTexture)));
 				return result;
 			case "colors":
 			case "gradients":
@@ -1273,11 +1297,16 @@ namespace UnityEditorInternal
 			case "particlecurvessigned":
 			case "particledoublecurves":
 			case "particledoublecurvessigned":
-				result = EditorGUIUtility.FindTexture("ScriptableObject Icon");
+				result = EditorGUIUtility.FindTexture(typeof(ScriptableObject));
 				return result;
 			}
-			result = EditorGUIUtility.FindTexture("DefaultAsset Icon");
+			result = null;
 			return result;
+		}
+
+		public static Texture2D GetIconForFile(string fileName)
+		{
+			return InternalEditorUtility.FindIconForFile(fileName) ?? EditorGUIUtility.FindTexture(typeof(DefaultAsset));
 		}
 
 		public static string[] GetEditorSettingsList(string prefix, int count)
@@ -1626,7 +1655,7 @@ namespace UnityEditorInternal
 		internal static IEnumerable<string> GetAllScriptGUIDs()
 		{
 			return from asset in AssetDatabase.GetAllAssetPaths()
-			where InternalEditorUtility.IsScriptOrAssembly(asset) && (!AssetDatabase.IsPackagedAssetPath(asset) && !AssetDatabase.IsInternalizedPackagedAssetPath(asset))
+			where InternalEditorUtility.IsScriptOrAssembly(asset) && !AssetDatabase.IsPackagedAssetPath(asset)
 			select AssetDatabase.AssetPathToGUID(asset);
 		}
 
@@ -1636,7 +1665,7 @@ namespace UnityEditorInternal
 			BuildTarget activeBuildTarget = EditorUserBuildSettings.activeBuildTarget;
 			PrecompiledAssembly[] unityAssemblies = InternalEditorUtility.GetUnityAssemblies(false, activeBuildTargetGroup, activeBuildTarget);
 			PrecompiledAssembly[] precompiledAssemblies = InternalEditorUtility.GetPrecompiledAssemblies(false, activeBuildTargetGroup, activeBuildTarget);
-			return EditorCompilationInterface.Instance.GetAllMonoIslands(unityAssemblies, precompiledAssemblies, EditorScriptCompilationOptions.BuildingEmpty);
+			return EditorCompilationInterface.Instance.GetAllMonoIslands(unityAssemblies, precompiledAssemblies, EditorScriptCompilationOptions.BuildingIncludingTestAssemblies);
 		}
 
 		internal static MonoIsland[] GetMonoIslands()
@@ -1655,6 +1684,11 @@ namespace UnityEditorInternal
 		{
 			string directoryName = Path.GetDirectoryName(InternalEditorUtility.GetEditorAssemblyPath());
 			return Path.Combine(directoryName, "UnityEngine.dll");
+		}
+
+		internal static string[] GetCompilationDefines(EditorScriptCompilationOptions options, BuildTargetGroup targetGroup, BuildTarget target)
+		{
+			return InternalEditorUtility.GetCompilationDefines(options, targetGroup, target, PlayerSettings.GetApiCompatibilityLevel(targetGroup));
 		}
 	}
 }

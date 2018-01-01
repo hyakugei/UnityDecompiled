@@ -4,17 +4,14 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using UnityEngine;
-using UnityEngine.Scripting;
 
 namespace UnityEditor
 {
-	public sealed class FileUtil
+	public class FileUtil
 	{
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern bool DeleteFileOrDirectory(string path);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern bool PathExists(string path);
 
@@ -31,7 +28,6 @@ namespace UnityEditor
 			}
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern bool CopyFileOrDirectoryInternal(string source, string dest);
 
@@ -48,7 +44,6 @@ namespace UnityEditor
 			}
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern bool CopyFileOrDirectoryFollowSymlinksInternal(string source, string dest);
 
@@ -65,7 +60,6 @@ namespace UnityEditor
 			}
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern bool MoveFileOrDirectoryInternal(string source, string dest);
 
@@ -89,39 +83,30 @@ namespace UnityEditor
 			}
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern string GetUniqueTempPathInProject();
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern string GetActualPathName(string path);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern string GetProjectRelativePath(string path);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern string GetLastPathNameComponent(string path);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern string DeleteLastPathNameComponent(string path);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern string GetPathExtension(string path);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern string GetPathWithoutExtension(string path);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern string ResolveSymlinks(string path);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern bool IsSymlink(string path);
 
@@ -252,17 +237,19 @@ namespace UnityEditor
 
 		internal static void CopyDirectoryFiltered(string source, string target, bool overwrite, Func<string, bool> includeCallback, bool recursive)
 		{
-			if (!Directory.Exists(target))
-			{
-				Directory.CreateDirectory(target);
-				overwrite = false;
-			}
+			bool flag = !Directory.Exists(target);
 			string[] files = Directory.GetFiles(source);
 			for (int i = 0; i < files.Length; i++)
 			{
 				string text = files[i];
 				if (includeCallback(text))
 				{
+					if (flag)
+					{
+						Directory.CreateDirectory(target);
+						overwrite = false;
+						flag = false;
+					}
 					string fileName = Path.GetFileName(text);
 					string to = Path.Combine(target, fileName);
 					FileUtil.UnityFileCopy(text, to, overwrite);

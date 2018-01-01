@@ -8,19 +8,17 @@ using UnityEngineInternal;
 
 namespace UnityEngine
 {
-	[RequiredByNativeCode]
+	[NativeClass("Unity::Component"), RequiredByNativeCode]
 	public class Component : Object
 	{
 		public extern Transform transform
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
 
 		public extern GameObject gameObject
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
@@ -196,7 +194,6 @@ namespace UnityEngine
 			return this.gameObject.GetComponent(type);
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern void GetComponentFastPath(Type type, IntPtr oneFurtherThanResultValue);
 
@@ -208,7 +205,6 @@ namespace UnityEngine
 			return castHelper.t;
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern Component GetComponent(string type);
 
@@ -224,28 +220,26 @@ namespace UnityEngine
 			return this.GetComponentInChildren(t, false);
 		}
 
-		[ExcludeFromDocs]
-		public T GetComponentInChildren<T>()
-		{
-			bool includeInactive = false;
-			return this.GetComponentInChildren<T>(includeInactive);
-		}
-
 		public T GetComponentInChildren<T>([DefaultValue("false")] bool includeInactive)
 		{
 			return (T)((object)this.GetComponentInChildren(typeof(T), includeInactive));
 		}
 
 		[ExcludeFromDocs]
-		public Component[] GetComponentsInChildren(Type t)
+		public T GetComponentInChildren<T>()
 		{
-			bool includeInactive = false;
-			return this.GetComponentsInChildren(t, includeInactive);
+			return (T)((object)this.GetComponentInChildren(typeof(T), false));
 		}
 
-		public Component[] GetComponentsInChildren(Type t, [DefaultValue("false")] bool includeInactive)
+		public Component[] GetComponentsInChildren(Type t, bool includeInactive)
 		{
 			return this.gameObject.GetComponentsInChildren(t, includeInactive);
+		}
+
+		[ExcludeFromDocs]
+		public Component[] GetComponentsInChildren(Type t)
+		{
+			return this.gameObject.GetComponentsInChildren(t, false);
 		}
 
 		public T[] GetComponentsInChildren<T>(bool includeInactive)
@@ -279,16 +273,15 @@ namespace UnityEngine
 			return (T)((object)this.GetComponentInParent(typeof(T)));
 		}
 
-		[ExcludeFromDocs]
-		public Component[] GetComponentsInParent(Type t)
-		{
-			bool includeInactive = false;
-			return this.GetComponentsInParent(t, includeInactive);
-		}
-
 		public Component[] GetComponentsInParent(Type t, [DefaultValue("false")] bool includeInactive)
 		{
 			return this.gameObject.GetComponentsInParent(t, includeInactive);
+		}
+
+		[ExcludeFromDocs]
+		public Component[] GetComponentsInParent(Type t)
+		{
+			return this.GetComponentsInParent(t, false);
 		}
 
 		public T[] GetComponentsInParent<T>(bool includeInactive)
@@ -311,7 +304,6 @@ namespace UnityEngine
 			return this.gameObject.GetComponents(type);
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern void GetComponentsForListInternal(Type searchType, object resultList);
 
@@ -335,23 +327,19 @@ namespace UnityEngine
 			return this.gameObject.CompareTag(tag);
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern void SendMessageUpwards(string methodName, [DefaultValue("null")] object value, [DefaultValue("SendMessageOptions.RequireReceiver")] SendMessageOptions options);
 
 		[ExcludeFromDocs]
 		public void SendMessageUpwards(string methodName, object value)
 		{
-			SendMessageOptions options = SendMessageOptions.RequireReceiver;
-			this.SendMessageUpwards(methodName, value, options);
+			this.SendMessageUpwards(methodName, value, SendMessageOptions.RequireReceiver);
 		}
 
 		[ExcludeFromDocs]
 		public void SendMessageUpwards(string methodName)
 		{
-			SendMessageOptions options = SendMessageOptions.RequireReceiver;
-			object value = null;
-			this.SendMessageUpwards(methodName, value, options);
+			this.SendMessageUpwards(methodName, null, SendMessageOptions.RequireReceiver);
 		}
 
 		public void SendMessageUpwards(string methodName, SendMessageOptions options)
@@ -359,47 +347,37 @@ namespace UnityEngine
 			this.SendMessageUpwards(methodName, null, options);
 		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern void SendMessage(string methodName, [DefaultValue("null")] object value, [DefaultValue("SendMessageOptions.RequireReceiver")] SendMessageOptions options);
-
-		[ExcludeFromDocs]
 		public void SendMessage(string methodName, object value)
 		{
-			SendMessageOptions options = SendMessageOptions.RequireReceiver;
-			this.SendMessage(methodName, value, options);
+			this.SendMessage(methodName, value, SendMessageOptions.RequireReceiver);
 		}
 
-		[ExcludeFromDocs]
 		public void SendMessage(string methodName)
 		{
-			SendMessageOptions options = SendMessageOptions.RequireReceiver;
-			object value = null;
-			this.SendMessage(methodName, value, options);
+			this.SendMessage(methodName, null, SendMessageOptions.RequireReceiver);
 		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public extern void SendMessage(string methodName, object value, SendMessageOptions options);
 
 		public void SendMessage(string methodName, SendMessageOptions options)
 		{
 			this.SendMessage(methodName, null, options);
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern void BroadcastMessage(string methodName, [DefaultValue("null")] object parameter, [DefaultValue("SendMessageOptions.RequireReceiver")] SendMessageOptions options);
 
 		[ExcludeFromDocs]
 		public void BroadcastMessage(string methodName, object parameter)
 		{
-			SendMessageOptions options = SendMessageOptions.RequireReceiver;
-			this.BroadcastMessage(methodName, parameter, options);
+			this.BroadcastMessage(methodName, parameter, SendMessageOptions.RequireReceiver);
 		}
 
 		[ExcludeFromDocs]
 		public void BroadcastMessage(string methodName)
 		{
-			SendMessageOptions options = SendMessageOptions.RequireReceiver;
-			object parameter = null;
-			this.BroadcastMessage(methodName, parameter, options);
+			this.BroadcastMessage(methodName, null, SendMessageOptions.RequireReceiver);
 		}
 
 		public void BroadcastMessage(string methodName, SendMessageOptions options)

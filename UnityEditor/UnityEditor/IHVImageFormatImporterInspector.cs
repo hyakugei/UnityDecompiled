@@ -9,13 +9,13 @@ namespace UnityEditor
 	{
 		internal class Styles
 		{
-			public static readonly GUIContent readWrite = EditorGUIUtility.TextContent("Read/Write Enabled|Enable to be able to access the raw pixel data from code.");
+			public static readonly GUIContent readWrite = EditorGUIUtility.TrTextContent("Read/Write Enabled", "Enable to be able to access the raw pixel data from code.", null);
 
-			public static readonly GUIContent sRGBTexture = EditorGUIUtility.TextContent("sRGB (Color Texture)|Texture content is stored in gamma space. Non-HDR color textures should enable this flag (except if used for IMGUI).");
+			public static readonly GUIContent sRGBTexture = EditorGUIUtility.TrTextContent("sRGB (Color Texture)", "Texture content is stored in gamma space. Non-HDR color textures should enable this flag (except if used for IMGUI).", null);
 
-			public static readonly GUIContent wrapMode = EditorGUIUtility.TextContent("Wrap Mode");
+			public static readonly GUIContent wrapMode = EditorGUIUtility.TrTextContent("Wrap Mode", null, null);
 
-			public static readonly GUIContent filterMode = EditorGUIUtility.TextContent("Filter Mode");
+			public static readonly GUIContent filterMode = EditorGUIUtility.TrTextContent("Filter Mode", null, null);
 
 			public static readonly int[] filterModeValues = new int[]
 			{
@@ -28,7 +28,7 @@ namespace UnityEditor
 			{
 				EditorGUIUtility.TextContent("Point (no filter)"),
 				EditorGUIUtility.TextContent("Bilinear"),
-				EditorGUIUtility.TextContent("Trilinear")
+				EditorGUIUtility.TrTextContent("Trilinear", null, null)
 			};
 		}
 

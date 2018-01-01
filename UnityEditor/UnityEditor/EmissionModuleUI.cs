@@ -10,21 +10,21 @@ namespace UnityEditor
 	{
 		private class Texts
 		{
-			public GUIContent rateOverTime = EditorGUIUtility.TextContent("Rate over Time|The number of particles emitted per second.");
+			public GUIContent rateOverTime = EditorGUIUtility.TrTextContent("Rate over Time", "The number of particles emitted per second.", null);
 
-			public GUIContent rateOverDistance = EditorGUIUtility.TextContent("Rate over Distance|The number of particles emitted per distance unit.");
+			public GUIContent rateOverDistance = EditorGUIUtility.TrTextContent("Rate over Distance", "The number of particles emitted per distance unit.", null);
 
-			public GUIContent burst = EditorGUIUtility.TextContent("Bursts|Emission of extra particles at specific times during the duration of the system.");
+			public GUIContent burst = EditorGUIUtility.TrTextContent("Bursts", "Emission of extra particles at specific times during the duration of the system.", null);
 
-			public GUIContent burstTime = EditorGUIUtility.TextContent("Time|When the burst will trigger.");
+			public GUIContent burstTime = EditorGUIUtility.TrTextContent("Time", "When the burst will trigger.", null);
 
-			public GUIContent burstCount = EditorGUIUtility.TextContent("Count|The number of particles to emit.");
+			public GUIContent burstCount = EditorGUIUtility.TrTextContent("Count", "The number of particles to emit.", null);
 
-			public GUIContent burstCycleCount = EditorGUIUtility.TextContent("Cycles|How many times to emit the burst. Use the dropdown to repeat infinitely.");
+			public GUIContent burstCycleCount = EditorGUIUtility.TrTextContent("Cycles", "How many times to emit the burst. Use the dropdown to repeat infinitely.", null);
 
-			public GUIContent burstCycleCountInfinite = EditorGUIUtility.TextContent("Infinite");
+			public GUIContent burstCycleCountInfinite = EditorGUIUtility.TrTextContent("Infinite", null, null);
 
-			public GUIContent burstRepeatInterval = EditorGUIUtility.TextContent("Interval|Repeat the burst every N seconds.");
+			public GUIContent burstRepeatInterval = EditorGUIUtility.TrTextContent("Interval", "Repeat the burst every N seconds.", null);
 		}
 
 		private class ModeCallbackData
@@ -81,6 +81,7 @@ namespace UnityEditor
 				this.m_BurstList = new ReorderableList(base.serializedObject, this.m_Bursts, false, true, true, true);
 				this.m_BurstList.elementHeight = 16f;
 				this.m_BurstList.onAddCallback = new ReorderableList.AddCallbackDelegate(this.OnBurstListAddCallback);
+				this.m_BurstList.onCanAddCallback = new ReorderableList.CanAddCallbackDelegate(this.OnBurstListCanAddCallback);
 				this.m_BurstList.onRemoveCallback = new ReorderableList.RemoveCallbackDelegate(this.OnBurstListRemoveCallback);
 				this.m_BurstList.drawHeaderCallback = new ReorderableList.HeaderCallbackDelegate(this.DrawBurstListHeaderCallback);
 				this.m_BurstList.drawElementCallback = new ReorderableList.ElementCallbackDelegate(this.DrawBurstListElementCallback);
@@ -119,7 +120,16 @@ namespace UnityEditor
 			serializedProperty.intValue = 0;
 			serializedProperty2.floatValue = 30f;
 			serializedProperty3.intValue = 1;
+			SerializedProperty serializedProperty4 = arrayElementAtIndex.FindPropertyRelative("countCurve.minCurve");
+			SerializedProperty serializedProperty5 = arrayElementAtIndex.FindPropertyRelative("countCurve.maxCurve");
+			serializedProperty4.animationCurveValue = AnimationCurve.Linear(0f, 1f, 1f, 1f);
+			serializedProperty5.animationCurveValue = AnimationCurve.Linear(0f, 1f, 1f, 1f);
 			this.m_BurstCountCurves.Add(new SerializedMinMaxCurve(this, EmissionModuleUI.s_Texts.burstCount, arrayElementAtIndex.propertyPath + ".countCurve", false, true));
+		}
+
+		private bool OnBurstListCanAddCallback(ReorderableList list)
+		{
+			return !this.m_ParticleSystemUI.multiEdit;
 		}
 
 		private void OnBurstListRemoveCallback(ReorderableList list)
@@ -192,20 +202,20 @@ namespace UnityEditor
 			{
 				GUIContent[] array = new GUIContent[]
 				{
-					new GUIContent("Infinite"),
-					new GUIContent("Count")
+					EditorGUIUtility.TrTextContent("Infinite", null, null),
+					EditorGUIUtility.TrTextContent("Count", null, null)
 				};
 				GenericMenu genericMenu = new GenericMenu();
 				for (int i = 0; i < array.Length; i++)
 				{
-					GenericMenu arg_7D_0 = genericMenu;
-					GUIContent arg_7D_1 = array[i];
-					bool arg_7D_2 = modeProp.intValue == i;
+					GenericMenu arg_81_0 = genericMenu;
+					GUIContent arg_81_1 = array[i];
+					bool arg_81_2 = modeProp.intValue == i;
 					if (EmissionModuleUI.<>f__mg$cache0 == null)
 					{
 						EmissionModuleUI.<>f__mg$cache0 = new GenericMenu.MenuFunction2(EmissionModuleUI.SelectModeCallback);
 					}
-					arg_7D_0.AddItem(arg_7D_1, arg_7D_2, EmissionModuleUI.<>f__mg$cache0, new EmissionModuleUI.ModeCallbackData(i, modeProp));
+					arg_81_0.AddItem(arg_81_1, arg_81_2, EmissionModuleUI.<>f__mg$cache0, new EmissionModuleUI.ModeCallbackData(i, modeProp));
 				}
 				genericMenu.ShowAsContext();
 				Event.current.Use();

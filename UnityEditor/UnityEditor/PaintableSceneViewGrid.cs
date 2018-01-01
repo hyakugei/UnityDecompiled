@@ -359,11 +359,11 @@ namespace UnityEditor
 				GridLayout gridLayout = (!(this.tilemap != null)) ? this.grid : this.tilemap;
 				if (GridPaintingState.activeBrushEditor != null)
 				{
-					GridPaintingState.activeBrushEditor.OnPaintSceneGUI(gridLayout, this.brushTarget, new BoundsInt(new Vector3Int(marqueeRect.x, marqueeRect.y, 0), new Vector3Int(marqueeRect.width, marqueeRect.height, 1)), PaintableGrid.EditModeToBrushTool(EditMode.editMode), this.m_MarqueeStart.HasValue || base.paintingOrErasing);
+					GridPaintingState.activeBrushEditor.OnPaintSceneGUI(gridLayout, this.brushTarget, new BoundsInt(new Vector3Int(marqueeRect.x, marqueeRect.y, 0), new Vector3Int(marqueeRect.width, marqueeRect.height, 1)), PaintableGrid.EditModeToBrushTool(EditMode.editMode), this.m_MarqueeStart.HasValue || base.executing);
 				}
 				else
 				{
-					GridBrushEditorBase.OnPaintSceneGUIInternal(gridLayout, this.brushTarget, new BoundsInt(new Vector3Int(marqueeRect.x, marqueeRect.y, 0), new Vector3Int(marqueeRect.width, marqueeRect.height, 1)), PaintableGrid.EditModeToBrushTool(EditMode.editMode), this.m_MarqueeStart.HasValue || base.paintingOrErasing);
+					GridBrushEditorBase.OnPaintSceneGUIInternal(gridLayout, this.brushTarget, new BoundsInt(new Vector3Int(marqueeRect.x, marqueeRect.y, 0), new Vector3Int(marqueeRect.width, marqueeRect.height, 1)), PaintableGrid.EditModeToBrushTool(EditMode.editMode), this.m_MarqueeStart.HasValue || base.executing);
 				}
 			}
 		}

@@ -15,7 +15,7 @@ namespace UnityEditorInternal
 			}
 			else
 			{
-				result = curve.Evaluate(state.currentTime - curve.timeOffset);
+				result = curve.Evaluate(state.currentTime);
 			}
 			return result;
 		}

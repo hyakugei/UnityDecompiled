@@ -39,20 +39,20 @@ namespace UnityEditor.UI
 			EditorGUILayout.PropertyField(this.m_Spacing, true, new GUILayoutOption[0]);
 			EditorGUILayout.PropertyField(this.m_ChildAlignment, true, new GUILayoutOption[0]);
 			Rect rect = EditorGUILayout.GetControlRect(new GUILayoutOption[0]);
-			rect = EditorGUI.PrefixLabel(rect, -1, new GUIContent("Child Controls Size"));
+			rect = EditorGUI.PrefixLabel(rect, -1, EditorGUIUtility.TrTextContent("Child Controls Size", null, null));
 			rect.width = Mathf.Max(50f, (rect.width - 4f) / 3f);
 			EditorGUIUtility.labelWidth = 50f;
-			this.ToggleLeft(rect, this.m_ChildControlWidth, new GUIContent("Width"));
+			this.ToggleLeft(rect, this.m_ChildControlWidth, EditorGUIUtility.TrTextContent("Width", null, null));
 			rect.x += rect.width + 2f;
-			this.ToggleLeft(rect, this.m_ChildControlHeight, new GUIContent("Height"));
+			this.ToggleLeft(rect, this.m_ChildControlHeight, EditorGUIUtility.TrTextContent("Height", null, null));
 			EditorGUIUtility.labelWidth = 0f;
 			rect = EditorGUILayout.GetControlRect(new GUILayoutOption[0]);
-			rect = EditorGUI.PrefixLabel(rect, -1, new GUIContent("Child Force Expand"));
+			rect = EditorGUI.PrefixLabel(rect, -1, EditorGUIUtility.TrTextContent("Child Force Expand", null, null));
 			rect.width = Mathf.Max(50f, (rect.width - 4f) / 3f);
 			EditorGUIUtility.labelWidth = 50f;
-			this.ToggleLeft(rect, this.m_ChildForceExpandWidth, new GUIContent("Width"));
+			this.ToggleLeft(rect, this.m_ChildForceExpandWidth, EditorGUIUtility.TrTextContent("Width", null, null));
 			rect.x += rect.width + 2f;
-			this.ToggleLeft(rect, this.m_ChildForceExpandHeight, new GUIContent("Height"));
+			this.ToggleLeft(rect, this.m_ChildForceExpandHeight, EditorGUIUtility.TrTextContent("Height", null, null));
 			EditorGUIUtility.labelWidth = 0f;
 			base.serializedObject.ApplyModifiedProperties();
 		}

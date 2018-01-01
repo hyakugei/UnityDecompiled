@@ -9,7 +9,7 @@ using UnityEngine.Scripting;
 
 namespace UnityEditor
 {
-	[RequiredByNativeCode]
+	[ExcludeFromObjectFactory, RequiredByNativeCode]
 	[StructLayout(LayoutKind.Sequential)]
 	public class Editor : ScriptableObject, IPreviewable, IToolModeOwner
 	{
@@ -17,6 +17,8 @@ namespace UnityEditor
 
 		private class Styles
 		{
+			public GUIContent open = EditorGUIUtility.TrTextContent("Open", null, null);
+
 			public GUIStyle inspectorBig = new GUIStyle(EditorStyles.inspectorBig);
 
 			public GUIStyle inspectorBigInner = new GUIStyle("IN BigTitle inner");
@@ -553,7 +555,7 @@ namespace UnityEditor
 			GUILayoutUtility.GetRect(10f, 10f, 16f, 16f, EditorStyles.layerMaskField);
 			GUILayout.FlexibleSpace();
 			bool flag = true;
-			if (!(this is AssetImporterEditor))
+			if (!(this is AssetImporterEditor) && !(this.targets[0] is AssetImportInProgressProxy))
 			{
 				string assetPath = AssetDatabase.GetAssetPath(this.targets[0]);
 				if (!AssetDatabase.IsMainAsset(this.targets[0]))
@@ -568,11 +570,11 @@ namespace UnityEditor
 			}
 			if (flag && !this.ShouldHideOpenButton())
 			{
-				if (GUILayout.Button("Open", EditorStyles.miniButton, new GUILayoutOption[0]))
+				if (GUILayout.Button(Editor.s_Styles.open, EditorStyles.miniButton, new GUILayoutOption[0]))
 				{
 					if (this is AssetImporterEditor)
 					{
-						AssetDatabase.OpenAsset((this as AssetImporterEditor).assetEditor.targets);
+						AssetDatabase.OpenAsset((this as AssetImporterEditor).assetTargets);
 					}
 					else
 					{
@@ -784,9 +786,10 @@ namespace UnityEditor
 			}
 			else
 			{
+				StatusQueryOptions statusOptions = (!EditorUserSettings.allowAsyncStatusUpdate) ? StatusQueryOptions.UseCachedIfPossible : StatusQueryOptions.UseCachedAsync;
 				if (AssetDatabase.IsNativeAsset(assetObject))
 				{
-					if (!AssetDatabase.IsOpenForEdit(assetObject, out message, StatusQueryOptions.UseCachedIfPossible))
+					if (!AssetDatabase.IsOpenForEdit(assetObject, out message, statusOptions))
 					{
 						result = false;
 						return result;
@@ -794,7 +797,7 @@ namespace UnityEditor
 				}
 				else if (AssetDatabase.IsForeignAsset(assetObject))
 				{
-					if (!AssetDatabase.IsMetaFileOpenForEdit(assetObject, out message, StatusQueryOptions.UseCachedIfPossible))
+					if (!AssetDatabase.IsMetaFileOpenForEdit(assetObject, out message, statusOptions))
 					{
 						result = false;
 						return result;

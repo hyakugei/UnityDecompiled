@@ -61,23 +61,16 @@ namespace UnityEditor
 		public static Type GetDefaultBrushType()
 		{
 			Type result = typeof(GridBrush);
-			Assembly[] loadedAssemblies = EditorAssemblies.loadedAssemblies;
 			int num = 0;
-			for (int i = loadedAssemblies.Length - 1; i >= 0; i--)
+			foreach (Type current in EditorAssemblies.GetAllTypesWithAttribute<CustomGridBrushAttribute>())
 			{
-				Type[] typesFromAssembly = AssemblyHelper.GetTypesFromAssembly(loadedAssemblies[i]);
-				Type[] array = typesFromAssembly;
-				for (int j = 0; j < array.Length; j++)
+				CustomGridBrushAttribute[] array = current.GetCustomAttributes(typeof(CustomGridBrushAttribute), false) as CustomGridBrushAttribute[];
+				if (array != null && array.Length > 0)
 				{
-					Type type = array[j];
-					CustomGridBrushAttribute[] array2 = type.GetCustomAttributes(typeof(CustomGridBrushAttribute), false) as CustomGridBrushAttribute[];
-					if (array2 != null && array2.Length > 0)
+					if (array[0].defaultBrush)
 					{
-						if (array2[0].defaultBrush)
-						{
-							result = type;
-							num++;
-						}
+						result = current;
+						num++;
 					}
 				}
 			}
@@ -117,19 +110,26 @@ namespace UnityEditor
 			for (int i = 0; i < array.Length; i++)
 			{
 				Assembly assembly = array[i];
-				IEnumerable<Type> enumerable = from t in assembly.GetTypes()
-				where t != typeof(GridBrushBase) && t != typeof(GridBrush) && typeof(GridBrushBase).IsAssignableFrom(t)
-				select t;
-				foreach (Type current in enumerable)
+				try
 				{
-					if (this.IsDefaultInstanceVisibleGridBrushType(current))
+					IEnumerable<Type> enumerable = from t in assembly.GetTypes()
+					where t != typeof(GridBrushBase) && t != typeof(GridBrush) && typeof(GridBrushBase).IsAssignableFrom(t)
+					select t;
+					foreach (Type current in enumerable)
 					{
-						GridBrushBase gridBrushBase = this.LoadOrCreateLibraryGridBrushAsset(current);
-						if (gridBrushBase != null)
+						if (this.IsDefaultInstanceVisibleGridBrushType(current))
 						{
-							this.m_Brushes.Add(gridBrushBase);
+							GridBrushBase gridBrushBase = this.LoadOrCreateLibraryGridBrushAsset(current);
+							if (gridBrushBase != null)
+							{
+								this.m_Brushes.Add(gridBrushBase);
+							}
 						}
 					}
+				}
+				catch (Exception ex)
+				{
+					Debug.Log(string.Format("TilePalette failed to get types from {0}. Error: {1}", assembly.FullName, ex.Message));
 				}
 			}
 			string[] array2 = AssetDatabase.FindAssets("t:GridBrushBase");

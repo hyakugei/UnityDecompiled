@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using UnityEditor.BuildReporting;
 
 namespace UnityEditor.DeploymentTargets
 {
@@ -16,7 +15,7 @@ namespace UnityEditor.DeploymentTargets
 			return new DefaultDeploymentTargetInfo();
 		}
 
-		public virtual void LaunchBuildOnTarget(BuildReport buildReport, DeploymentTargetId targetId, ProgressHandler progressHandler = null)
+		public virtual void LaunchBuildOnTarget(BuildProperties buildProperties, DeploymentTargetId targetId, ProgressHandler progressHandler = null)
 		{
 			throw new NotSupportedException();
 		}

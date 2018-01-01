@@ -26,8 +26,8 @@ namespace UnityEditor
 
 		internal static void Show(Rect position, SerializedProperty property, SerializedProperty property2, SerializedProperty scalar, Rect curveRanges, ParticleSystemCurveEditor curveEditor)
 		{
-			GUIContent content = new GUIContent("Copy");
-			GUIContent content2 = new GUIContent("Paste");
+			GUIContent content = EditorGUIUtility.TrTextContent("Copy", null, null);
+			GUIContent content2 = EditorGUIUtility.TrTextContent("Paste", null, null);
 			GenericMenu genericMenu = new GenericMenu();
 			bool flag = property != null && property2 != null;
 			bool flag2 = (flag && ParticleSystemClipboard.HasDoubleAnimationCurve()) || (!flag && ParticleSystemClipboard.HasSingleAnimationCurve());

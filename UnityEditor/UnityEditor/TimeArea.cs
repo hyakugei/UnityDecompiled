@@ -47,7 +47,7 @@ namespace UnityEditor
 
 		internal const float kTickRulerFatThreshold = 0.5f;
 
-		private static TimeArea.Styles2 styles;
+		private static TimeArea.Styles2 timeAreaStyles;
 
 		private static float s_OriginalTime;
 
@@ -119,9 +119,9 @@ namespace UnityEditor
 
 		private static void InitStyles()
 		{
-			if (TimeArea.styles == null)
+			if (TimeArea.timeAreaStyles == null)
 			{
-				TimeArea.styles = new TimeArea.Styles2();
+				TimeArea.timeAreaStyles = new TimeArea.Styles2();
 			}
 		}
 
@@ -133,7 +133,6 @@ namespace UnityEditor
 
 		public void DrawMajorTicks(Rect position, float frameRate)
 		{
-			Color color = Handles.color;
 			GUI.BeginGroup(position);
 			if (Event.current.type != EventType.Repaint)
 			{
@@ -142,11 +141,19 @@ namespace UnityEditor
 			else
 			{
 				TimeArea.InitStyles();
+				HandleUtility.ApplyWireMaterial();
 				this.SetTickMarkerRanges();
 				this.hTicks.SetTickStrengths(3f, 80f, true);
-				Color textColor = TimeArea.styles.timelineTick.normal.textColor;
+				Color textColor = TimeArea.timeAreaStyles.timelineTick.normal.textColor;
 				textColor.a = 0.1f;
-				Handles.color = textColor;
+				if (Application.platform == RuntimePlatform.WindowsEditor)
+				{
+					GL.Begin(7);
+				}
+				else
+				{
+					GL.Begin(1);
+				}
 				Rect shownArea = base.shownArea;
 				for (int i = 0; i < this.hTicks.tickLevels; i++)
 				{
@@ -160,13 +167,13 @@ namespace UnityEditor
 							{
 								int num2 = Mathf.RoundToInt(ticksAtLevel[j] * frameRate);
 								float x = this.FrameToPixel((float)num2, frameRate, position, shownArea);
-								Handles.DrawLine(new Vector3(x, 0f, 0f), new Vector3(x, position.height, 0f));
+								TimeArea.DrawVerticalLineFast(x, 0f, position.height, textColor);
 							}
 						}
 					}
 				}
+				GL.End();
 				GUI.EndGroup();
-				Handles.color = color;
 			}
 		}
 
@@ -189,7 +196,7 @@ namespace UnityEditor
 			Color backgroundColor = GUI.backgroundColor;
 			this.SetTickMarkerRanges();
 			this.hTicks.SetTickStrengths(3f, 80f, true);
-			Color textColor = TimeArea.styles.timelineTick.normal.textColor;
+			Color textColor = TimeArea.timeAreaStyles.timelineTick.normal.textColor;
 			textColor.a = 0.75f * alpha;
 			if (Event.current.type == EventType.Repaint)
 			{
@@ -230,7 +237,7 @@ namespace UnityEditor
 						int num4 = Mathf.RoundToInt(ticksAtLevel2[k] * frameRate);
 						float num5 = Mathf.Floor(this.FrameToPixel((float)num4, frameRate, position));
 						string text = this.FormatTime(ticksAtLevel2[k], frameRate, timeFormat);
-						GUI.Label(new Rect(num5 + 3f, -3f, 40f, 20f), text, TimeArea.styles.timelineTick);
+						GUI.Label(new Rect(num5 + 3f, -3f, 40f, 20f), text, TimeArea.timeAreaStyles.timelineTick);
 					}
 				}
 			}
@@ -245,7 +252,7 @@ namespace UnityEditor
 			{
 				TimeArea.InitStyles();
 				float num = thickness * 0.5f;
-				Color color = TimeArea.styles.playhead.normal.textColor.AlphaMultiplied(alpha);
+				Color color = TimeArea.timeAreaStyles.playhead.normal.textColor.AlphaMultiplied(alpha);
 				if (thickness > 1f)
 				{
 					Rect rect = Rect.MinMaxRect(x - num, yMin, x + num, yMax);
@@ -478,14 +485,14 @@ namespace UnityEditor
 				int num = Mathf.RoundToInt(time * frameRate);
 				if (timeFormat == TimeArea.TimeFormat.TimeFrame)
 				{
-					int length = ((int)frameRate).ToString().Length;
+					int totalWidth = (frameRate == 0f) ? 1 : ((int)frameRate - 1).ToString().Length;
 					string str = string.Empty;
 					if (num < 0)
 					{
 						str = "-";
 						num = -num;
 					}
-					result = str + (num / (int)frameRate).ToString() + ":" + ((float)num % frameRate).ToString().PadLeft(length, '0');
+					result = str + (num / (int)frameRate).ToString() + ":" + ((float)num % frameRate).ToString().PadLeft(totalWidth, '0');
 				}
 				else
 				{
@@ -513,6 +520,32 @@ namespace UnityEditor
 				result = Mathf.Round(time * frameRate) / frameRate;
 			}
 			return result;
+		}
+
+		public void DrawTimeOnSlider(float time, Color c, float maxTime, float leftSidePadding = 0f, float rightSidePadding = 0f)
+		{
+			if (base.hSlider)
+			{
+				if (base.styles.horizontalScrollbar == null)
+				{
+					base.styles.InitGUIStyles(false, true);
+				}
+				float num = base.TimeToPixel(0f, base.rect);
+				float num2 = base.TimeToPixel(maxTime, base.rect);
+				float num3 = base.TimeToPixel(base.shownAreaInsideMargins.xMin, base.rect) + base.styles.horizontalScrollbarLeftButton.fixedWidth + leftSidePadding;
+				float num4 = base.TimeToPixel(base.shownAreaInsideMargins.xMax, base.rect) - (base.styles.horizontalScrollbarRightButton.fixedWidth + rightSidePadding);
+				float num5 = (base.TimeToPixel(time, base.rect) - num) * (num4 - num3) / (num2 - num) + num3;
+				if (num5 <= base.rect.xMax - (base.styles.horizontalScrollbarLeftButton.fixedWidth + leftSidePadding + 3f))
+				{
+					float num6 = base.styles.sliderWidth - base.styles.visualSliderWidth;
+					float num7 = (!base.vSlider || !base.hSlider) ? 0f : num6;
+					Rect rect = new Rect(base.drawRect.x + 1f, base.drawRect.yMax - num6, base.drawRect.width - num7, base.styles.sliderWidth);
+					Vector2 vector = new Vector2(num5, rect.yMin);
+					Vector2 vector2 = new Vector2(num5, rect.yMax);
+					Rect rect2 = Rect.MinMaxRect(vector.x - 0.5f, vector.y, vector2.x + 0.5f, vector2.y);
+					EditorGUI.DrawRect(rect2, c);
+				}
+			}
 		}
 	}
 }

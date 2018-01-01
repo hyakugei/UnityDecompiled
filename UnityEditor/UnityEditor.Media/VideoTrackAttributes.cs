@@ -11,5 +11,7 @@ namespace UnityEditor.Media
 		public uint height;
 
 		public bool includeAlpha;
+
+		public VideoBitrateMode bitRateMode;
 	}
 }

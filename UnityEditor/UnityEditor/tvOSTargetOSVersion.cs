@@ -2,6 +2,7 @@ using System;
 
 namespace UnityEditor
 {
+	[Obsolete("targetOSVersion is obsolete. Use targetOSVersionString instead.", false)]
 	public enum tvOSTargetOSVersion
 	{
 		Unknown,

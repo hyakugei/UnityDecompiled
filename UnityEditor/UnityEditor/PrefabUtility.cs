@@ -73,7 +73,7 @@ namespace UnityEditor
 		public static UnityEngine.Object CreateEmptyPrefab(string path)
 		{
 			UnityEngine.Object result;
-			if (!Paths.IsValidAssetPathWithErrorLogging(path, ".prefab"))
+			if (!Paths.CheckValidAssetPathAndThatDirectoryExists(path, ".prefab"))
 			{
 				result = null;
 			}
@@ -98,7 +98,7 @@ namespace UnityEditor
 		public static GameObject CreatePrefab(string path, GameObject go, [DefaultValue("ReplacePrefabOptions.Default")] ReplacePrefabOptions options)
 		{
 			GameObject result;
-			if (!Paths.IsValidAssetPathWithErrorLogging(path, ".prefab"))
+			if (!Paths.CheckValidAssetPathAndThatDirectoryExists(path, ".prefab"))
 			{
 				result = null;
 			}
@@ -250,7 +250,6 @@ namespace UnityEditor
 		{
 			Transform transform = null;
 			List<Component> list = new List<Component>();
-			hierarchy.Add(gameObject);
 			gameObject.GetComponents<Component>(list);
 			foreach (Component current in list)
 			{
@@ -258,12 +257,9 @@ namespace UnityEditor
 				{
 					transform = (current as Transform);
 				}
-				else
-				{
-					hierarchy.Add(current);
-				}
+				hierarchy.Add(current);
 			}
-			if (transform != null)
+			if (!(transform == null))
 			{
 				int childCount = transform.childCount;
 				for (int i = 0; i < childCount; i++)
@@ -317,6 +313,10 @@ namespace UnityEditor
 					}
 					if (flag3)
 					{
+						if (@object is Transform)
+						{
+							@object = ((Transform)@object).gameObject;
+						}
 						Undo.RegisterCreatedObjectUndo(@object, actionName);
 						hashSet.Add(@object.GetType());
 						list.RemoveAt(i);

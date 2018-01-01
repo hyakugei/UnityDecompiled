@@ -132,7 +132,7 @@ namespace UnityEditor.Experimental.UIElements.Debugger
 				}
 			}
 			this.m_Labels = new GUIContent[this.m_Panels.Count + 1];
-			this.m_Labels[0] = new GUIContent("Select a panel");
+			this.m_Labels[0] = EditorGUIUtility.TrTextContent("Select a panel", null, null);
 			for (int i = 0; i < this.m_Panels.Count; i++)
 			{
 				this.m_Labels[i + 1] = new GUIContent(PickingData.GetName(this.m_Panels[i]));

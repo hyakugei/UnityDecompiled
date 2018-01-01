@@ -5,7 +5,7 @@ using UnityEngine.Experimental.UIElements.StyleEnums;
 
 namespace UnityEditor.Experimental.UIElements.GraphView
 {
-	internal class Resizer : VisualElement
+	public class Resizer : VisualElement
 	{
 		private Vector2 m_Start;
 
@@ -59,13 +59,16 @@ namespace UnityEditor.Experimental.UIElements.GraphView
 
 		private void OnMouseDown(MouseDownEvent e)
 		{
-			GraphElement graphElement = base.parent as GraphElement;
-			if (graphElement != null)
+			if (this.m_Active)
 			{
-				GraphElementPresenter presenter = graphElement.presenter;
-				if (!(presenter == null))
+				e.StopImmediatePropagation();
+			}
+			else if (!MouseCaptureController.IsMouseCaptureTaken())
+			{
+				GraphElement graphElement = base.parent as GraphElement;
+				if (graphElement != null)
 				{
-					if ((presenter.capabilities & Capabilities.Resizable) == Capabilities.Resizable)
+					if (graphElement.IsResizable())
 					{
 						if (e.button == (int)this.activateButton)
 						{
@@ -76,7 +79,7 @@ namespace UnityEditor.Experimental.UIElements.GraphView
 								Debug.LogWarning("Attempting to resize an object with a non manual position");
 							}
 							this.m_Active = true;
-							this.TakeCapture();
+							this.TakeMouseCapture();
 							e.StopPropagation();
 						}
 					}
@@ -89,19 +92,15 @@ namespace UnityEditor.Experimental.UIElements.GraphView
 			GraphElement graphElement = base.parent as GraphElement;
 			if (graphElement != null)
 			{
-				GraphElementPresenter presenter = graphElement.presenter;
-				if (!(presenter == null))
+				if (graphElement.IsResizable())
 				{
-					if ((presenter.capabilities & Capabilities.Resizable) == Capabilities.Resizable)
+					if (this.m_Active)
 					{
-						if (this.m_Active)
+						if (e.button == (int)this.activateButton && this.m_Active)
 						{
-							if (e.button == (int)this.activateButton && this.m_Active)
-							{
-								this.m_Active = false;
-								this.ReleaseCapture();
-								e.StopPropagation();
-							}
+							this.m_Active = false;
+							this.ReleaseMouseCapture();
+							e.StopPropagation();
 						}
 					}
 				}
@@ -113,27 +112,29 @@ namespace UnityEditor.Experimental.UIElements.GraphView
 			GraphElement graphElement = base.parent as GraphElement;
 			if (graphElement != null)
 			{
-				GraphElementPresenter presenter = graphElement.presenter;
-				if (!(presenter == null))
+				if (graphElement.IsResizable())
 				{
-					if ((presenter.capabilities & Capabilities.Resizable) == Capabilities.Resizable)
+					if (this.m_Active && base.parent.style.positionType == PositionType.Manual)
 					{
-						if (this.m_Active && base.parent.style.positionType == PositionType.Manual)
+						Vector2 vector = this.ChangeCoordinatesTo(base.parent, e.localMousePosition) - this.m_Start;
+						Vector2 vector2 = new Vector2(this.m_StartPos.width + vector.x, this.m_StartPos.height + vector.y);
+						if (vector2.x < this.m_MinimumSize.x)
 						{
-							Vector2 vector = this.ChangeCoordinatesTo(base.parent, e.localMousePosition) - this.m_Start;
-							Vector2 vector2 = new Vector2(this.m_StartPos.width + vector.x, this.m_StartPos.height + vector.y);
-							if (vector2.x < this.m_MinimumSize.x)
-							{
-								vector2.x = this.m_MinimumSize.x;
-							}
-							if (vector2.y < this.m_MinimumSize.y)
-							{
-								vector2.y = this.m_MinimumSize.y;
-							}
-							presenter.position = new Rect(presenter.position.x, presenter.position.y, vector2.x, vector2.y);
-							this.m_LabelText.text = string.Format("{0:0}", base.parent.layout.width) + "x" + string.Format("{0:0}", base.parent.layout.height);
-							e.StopPropagation();
+							vector2.x = this.m_MinimumSize.x;
 						}
+						if (vector2.y < this.m_MinimumSize.y)
+						{
+							vector2.y = this.m_MinimumSize.y;
+						}
+						graphElement.SetPosition(new Rect(graphElement.layout.x, graphElement.layout.y, vector2.x, vector2.y));
+						graphElement.UpdatePresenterPosition();
+						GraphView firstAncestorOfType = graphElement.GetFirstAncestorOfType<GraphView>();
+						if (firstAncestorOfType != null && firstAncestorOfType.elementResized != null)
+						{
+							firstAncestorOfType.elementResized(graphElement);
+						}
+						this.m_LabelText.text = string.Format("{0:0}", base.parent.layout.width) + "x" + string.Format("{0:0}", base.parent.layout.height);
+						e.StopPropagation();
 					}
 				}
 			}

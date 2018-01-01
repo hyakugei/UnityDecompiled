@@ -21,6 +21,7 @@ namespace UnityEngine.Rendering
 		PlayStationVita,
 		PlayStation4,
 		XboxOne,
+		[Obsolete("PlayStationMobile is no longer supported in Unity 5.3+")]
 		PlayStationMobile,
 		Metal,
 		OpenGLCore,

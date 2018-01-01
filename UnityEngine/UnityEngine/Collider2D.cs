@@ -1,12 +1,12 @@
 using System;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using UnityEngine.Bindings;
 using UnityEngine.Internal;
-using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
-	[RequireComponent(typeof(Transform)), RequireComponent(typeof(Transform))]
+	[RequireComponent(typeof(Transform))]
 	public class Collider2D : Behaviour
 	{
 		public extern float density
@@ -138,6 +138,7 @@ namespace UnityEngine
 			return this.IsTouching_AnyColliderWithFilter_Injected(ref contactFilter);
 		}
 
+		[ExcludeFromDocs]
 		public bool IsTouchingLayers()
 		{
 			return this.IsTouchingLayers(-1);
@@ -161,119 +162,6 @@ namespace UnityEngine
 			return Physics2D.OverlapCollider(this, contactFilter, results);
 		}
 
-		[ExcludeFromDocs]
-		public int Raycast(Vector2 direction, ContactFilter2D contactFilter, RaycastHit2D[] results)
-		{
-			float distance = float.PositiveInfinity;
-			return this.Raycast(direction, contactFilter, results, distance);
-		}
-
-		public int Raycast(Vector2 direction, ContactFilter2D contactFilter, RaycastHit2D[] results, [DefaultValue("Mathf.Infinity")] float distance)
-		{
-			return this.Internal_Raycast(direction, distance, contactFilter, results);
-		}
-
-		[ExcludeFromDocs]
-		public int Raycast(Vector2 direction, RaycastHit2D[] results, float distance, int layerMask, float minDepth)
-		{
-			float maxDepth = float.PositiveInfinity;
-			return this.Raycast(direction, results, distance, layerMask, minDepth, maxDepth);
-		}
-
-		[ExcludeFromDocs]
-		public int Raycast(Vector2 direction, RaycastHit2D[] results, float distance, int layerMask)
-		{
-			float maxDepth = float.PositiveInfinity;
-			float minDepth = float.NegativeInfinity;
-			return this.Raycast(direction, results, distance, layerMask, minDepth, maxDepth);
-		}
-
-		[ExcludeFromDocs]
-		public int Raycast(Vector2 direction, RaycastHit2D[] results, float distance)
-		{
-			float maxDepth = float.PositiveInfinity;
-			float minDepth = float.NegativeInfinity;
-			int layerMask = -1;
-			return this.Raycast(direction, results, distance, layerMask, minDepth, maxDepth);
-		}
-
-		[ExcludeFromDocs]
-		public int Raycast(Vector2 direction, RaycastHit2D[] results)
-		{
-			float maxDepth = float.PositiveInfinity;
-			float minDepth = float.NegativeInfinity;
-			int layerMask = -1;
-			float distance = float.PositiveInfinity;
-			return this.Raycast(direction, results, distance, layerMask, minDepth, maxDepth);
-		}
-
-		public int Raycast(Vector2 direction, RaycastHit2D[] results, [DefaultValue("Mathf.Infinity")] float distance, [DefaultValue("Physics2D.AllLayers")] int layerMask, [DefaultValue("-Mathf.Infinity")] float minDepth, [DefaultValue("Mathf.Infinity")] float maxDepth)
-		{
-			ContactFilter2D contactFilter = ContactFilter2D.CreateLegacyFilter(layerMask, minDepth, maxDepth);
-			return this.Internal_Raycast(direction, distance, contactFilter, results);
-		}
-
-		private int Internal_Raycast(Vector2 direction, float distance, ContactFilter2D contactFilter, RaycastHit2D[] results)
-		{
-			return Collider2D.INTERNAL_CALL_Internal_Raycast(this, ref direction, distance, ref contactFilter, results);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern int INTERNAL_CALL_Internal_Raycast(Collider2D self, ref Vector2 direction, float distance, ref ContactFilter2D contactFilter, RaycastHit2D[] results);
-
-		[ExcludeFromDocs]
-		public int Cast(Vector2 direction, ContactFilter2D contactFilter, RaycastHit2D[] results, float distance)
-		{
-			bool ignoreSiblingColliders = true;
-			return this.Cast(direction, contactFilter, results, distance, ignoreSiblingColliders);
-		}
-
-		[ExcludeFromDocs]
-		public int Cast(Vector2 direction, ContactFilter2D contactFilter, RaycastHit2D[] results)
-		{
-			bool ignoreSiblingColliders = true;
-			float distance = float.PositiveInfinity;
-			return this.Cast(direction, contactFilter, results, distance, ignoreSiblingColliders);
-		}
-
-		public int Cast(Vector2 direction, ContactFilter2D contactFilter, RaycastHit2D[] results, [DefaultValue("Mathf.Infinity")] float distance, [DefaultValue("true")] bool ignoreSiblingColliders)
-		{
-			return this.Internal_Cast(direction, contactFilter, distance, ignoreSiblingColliders, results);
-		}
-
-		[ExcludeFromDocs]
-		public int Cast(Vector2 direction, RaycastHit2D[] results, float distance)
-		{
-			bool ignoreSiblingColliders = true;
-			return this.Cast(direction, results, distance, ignoreSiblingColliders);
-		}
-
-		[ExcludeFromDocs]
-		public int Cast(Vector2 direction, RaycastHit2D[] results)
-		{
-			bool ignoreSiblingColliders = true;
-			float distance = float.PositiveInfinity;
-			return this.Cast(direction, results, distance, ignoreSiblingColliders);
-		}
-
-		public int Cast(Vector2 direction, RaycastHit2D[] results, [DefaultValue("Mathf.Infinity")] float distance, [DefaultValue("true")] bool ignoreSiblingColliders)
-		{
-			ContactFilter2D contactFilter = default(ContactFilter2D);
-			contactFilter.useTriggers = Physics2D.queriesHitTriggers;
-			contactFilter.SetLayerMask(Physics2D.GetLayerCollisionMask(base.gameObject.layer));
-			return this.Internal_Cast(direction, contactFilter, distance, ignoreSiblingColliders, results);
-		}
-
-		private int Internal_Cast(Vector2 direction, ContactFilter2D contactFilter, float distance, bool ignoreSiblingColliders, RaycastHit2D[] results)
-		{
-			return Collider2D.INTERNAL_CALL_Internal_Cast(this, ref direction, ref contactFilter, distance, ignoreSiblingColliders, results);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern int INTERNAL_CALL_Internal_Cast(Collider2D self, ref Vector2 direction, ref ContactFilter2D contactFilter, float distance, bool ignoreSiblingColliders, RaycastHit2D[] results);
-
 		public int GetContacts(ContactPoint2D[] contacts)
 		{
 			return Physics2D.GetContacts(this, default(ContactFilter2D).NoFilter(), contacts);
@@ -294,6 +182,104 @@ namespace UnityEngine
 			return Physics2D.GetContacts(this, contactFilter, colliders);
 		}
 
+		[ExcludeFromDocs]
+		public int Cast(Vector2 direction, RaycastHit2D[] results)
+		{
+			ContactFilter2D contactFilter = default(ContactFilter2D);
+			contactFilter.useTriggers = Physics2D.queriesHitTriggers;
+			contactFilter.SetLayerMask(Physics2D.GetLayerCollisionMask(base.gameObject.layer));
+			return this.Cast_Internal(direction, float.PositiveInfinity, contactFilter, true, results);
+		}
+
+		[ExcludeFromDocs]
+		public int Cast(Vector2 direction, RaycastHit2D[] results, float distance)
+		{
+			ContactFilter2D contactFilter = default(ContactFilter2D);
+			contactFilter.useTriggers = Physics2D.queriesHitTriggers;
+			contactFilter.SetLayerMask(Physics2D.GetLayerCollisionMask(base.gameObject.layer));
+			return this.Cast_Internal(direction, distance, contactFilter, true, results);
+		}
+
+		public int Cast(Vector2 direction, RaycastHit2D[] results, [DefaultValue("Mathf.Infinity")] float distance, [DefaultValue("true")] bool ignoreSiblingColliders)
+		{
+			ContactFilter2D contactFilter = default(ContactFilter2D);
+			contactFilter.useTriggers = Physics2D.queriesHitTriggers;
+			contactFilter.SetLayerMask(Physics2D.GetLayerCollisionMask(base.gameObject.layer));
+			return this.Cast_Internal(direction, distance, contactFilter, ignoreSiblingColliders, results);
+		}
+
+		[ExcludeFromDocs]
+		public int Cast(Vector2 direction, ContactFilter2D contactFilter, RaycastHit2D[] results)
+		{
+			return this.Cast_Internal(direction, float.PositiveInfinity, contactFilter, true, results);
+		}
+
+		[ExcludeFromDocs]
+		public int Cast(Vector2 direction, ContactFilter2D contactFilter, RaycastHit2D[] results, float distance)
+		{
+			return this.Cast_Internal(direction, distance, contactFilter, true, results);
+		}
+
+		public int Cast(Vector2 direction, ContactFilter2D contactFilter, RaycastHit2D[] results, [DefaultValue("Mathf.Infinity")] float distance, [DefaultValue("true")] bool ignoreSiblingColliders)
+		{
+			return this.Cast_Internal(direction, distance, contactFilter, ignoreSiblingColliders, results);
+		}
+
+		private int Cast_Internal(Vector2 direction, float distance, ContactFilter2D contactFilter, bool ignoreSiblingColliders, [Out] RaycastHit2D[] results)
+		{
+			return this.Cast_Internal_Injected(ref direction, distance, ref contactFilter, ignoreSiblingColliders, results);
+		}
+
+		[ExcludeFromDocs]
+		public int Raycast(Vector2 direction, RaycastHit2D[] results)
+		{
+			ContactFilter2D contactFilter = ContactFilter2D.CreateLegacyFilter(-1, float.NegativeInfinity, float.PositiveInfinity);
+			return this.Raycast_Internal(direction, float.PositiveInfinity, contactFilter, results);
+		}
+
+		[ExcludeFromDocs]
+		public int Raycast(Vector2 direction, RaycastHit2D[] results, float distance)
+		{
+			ContactFilter2D contactFilter = ContactFilter2D.CreateLegacyFilter(-1, float.NegativeInfinity, float.PositiveInfinity);
+			return this.Raycast_Internal(direction, distance, contactFilter, results);
+		}
+
+		[ExcludeFromDocs]
+		public int Raycast(Vector2 direction, RaycastHit2D[] results, float distance, int layerMask)
+		{
+			ContactFilter2D contactFilter = ContactFilter2D.CreateLegacyFilter(layerMask, float.NegativeInfinity, float.PositiveInfinity);
+			return this.Raycast_Internal(direction, distance, contactFilter, results);
+		}
+
+		[ExcludeFromDocs]
+		public int Raycast(Vector2 direction, RaycastHit2D[] results, float distance, int layerMask, float minDepth)
+		{
+			ContactFilter2D contactFilter = ContactFilter2D.CreateLegacyFilter(layerMask, minDepth, float.PositiveInfinity);
+			return this.Raycast_Internal(direction, distance, contactFilter, results);
+		}
+
+		public int Raycast(Vector2 direction, RaycastHit2D[] results, [DefaultValue("Mathf.Infinity")] float distance, [DefaultValue("Physics2D.AllLayers")] int layerMask, [DefaultValue("-Mathf.Infinity")] float minDepth, [DefaultValue("Mathf.Infinity")] float maxDepth)
+		{
+			ContactFilter2D contactFilter = ContactFilter2D.CreateLegacyFilter(layerMask, minDepth, maxDepth);
+			return this.Raycast_Internal(direction, distance, contactFilter, results);
+		}
+
+		[ExcludeFromDocs]
+		public int Raycast(Vector2 direction, ContactFilter2D contactFilter, RaycastHit2D[] results)
+		{
+			return this.Raycast_Internal(direction, float.PositiveInfinity, contactFilter, results);
+		}
+
+		public int Raycast(Vector2 direction, ContactFilter2D contactFilter, RaycastHit2D[] results, [DefaultValue("Mathf.Infinity")] float distance)
+		{
+			return this.Raycast_Internal(direction, distance, contactFilter, results);
+		}
+
+		private int Raycast_Internal(Vector2 direction, float distance, ContactFilter2D contactFilter, [Out] RaycastHit2D[] results)
+		{
+			return this.Raycast_Internal_Injected(ref direction, distance, ref contactFilter, results);
+		}
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern void get_offset_Injected(out Vector2 ret);
 
@@ -311,5 +297,11 @@ namespace UnityEngine
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern bool OverlapPoint_Injected(ref Vector2 point);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern int Cast_Internal_Injected(ref Vector2 direction, float distance, ref ContactFilter2D contactFilter, bool ignoreSiblingColliders, [Out] RaycastHit2D[] results);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern int Raycast_Internal_Injected(ref Vector2 direction, float distance, ref ContactFilter2D contactFilter, [Out] RaycastHit2D[] results);
 	}
 }

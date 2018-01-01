@@ -46,7 +46,6 @@ namespace UnityEditor
 			this.camera.fieldOfView = 15f;
 			this.camera.farClipPlane = 10f;
 			this.camera.nearClipPlane = 2f;
-			this.camera.backgroundColor = new Color(0.192156866f, 0.192156866f, 0.192156866f, 1f);
 			this.camera.renderingPath = RenderingPath.Forward;
 			this.camera.useOcclusionCulling = false;
 			this.camera.scene = this.m_Scene;

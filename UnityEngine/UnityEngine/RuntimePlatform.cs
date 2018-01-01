@@ -46,10 +46,12 @@ namespace UnityEngine
 		TizenPlayer,
 		PSP2,
 		PS4,
+		[Obsolete("PSM export is no longer supported in Unity >= 5.3")]
 		PSM,
 		XboxOne,
 		[Obsolete("SamsungTVPlayer export is no longer supported in Unity 2017.3+.")]
 		SamsungTVPlayer,
+		[Obsolete("Wii U is no longer supported in Unity 2018.1+.")]
 		WiiU = 30,
 		tvOS,
 		Switch

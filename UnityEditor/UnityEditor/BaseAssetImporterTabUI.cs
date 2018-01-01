@@ -36,6 +36,22 @@ namespace UnityEditor
 			}
 		}
 
+		public UnityEngine.Object assetTarget
+		{
+			get
+			{
+				return this.m_PanelContainer.assetTarget;
+			}
+		}
+
+		public UnityEngine.Object[] assetTargets
+		{
+			get
+			{
+				return this.m_PanelContainer.assetTargets;
+			}
+		}
+
 		public int referenceTargetIndex
 		{
 			get

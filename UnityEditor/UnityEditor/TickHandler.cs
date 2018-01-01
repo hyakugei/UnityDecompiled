@@ -41,11 +41,12 @@ namespace UnityEditor
 			this.m_TickModulos = tickModulos;
 		}
 
-		public void SetTickModulosForFrameRate(float frameRate)
+		public List<float> GetTickModulosForFrameRate(float frameRate)
 		{
-			if (frameRate != Mathf.Round(frameRate))
+			List<float> result;
+			if (frameRate > 1.07374182E+09f || frameRate != Mathf.Round(frameRate))
 			{
-				this.SetTickModulos(new float[]
+				List<float> list = new List<float>
 				{
 					1f / frameRate,
 					5f / frameRate,
@@ -59,15 +60,16 @@ namespace UnityEditor
 					50000f / frameRate,
 					100000f / frameRate,
 					500000f / frameRate
-				});
+				};
+				result = list;
 			}
 			else
 			{
-				List<int> list = new List<int>();
+				List<int> list2 = new List<int>();
 				int num = 1;
 				while ((float)num < frameRate)
 				{
-					if ((float)num == frameRate)
+					if ((double)Math.Abs((float)num - frameRate) < 1E-05)
 					{
 						break;
 					}
@@ -75,59 +77,70 @@ namespace UnityEditor
 					if (num2 % 60 == 0)
 					{
 						num *= 2;
-						list.Add(num);
+						list2.Add(num);
 					}
 					else if (num2 % 30 == 0)
 					{
 						num *= 3;
-						list.Add(num);
+						list2.Add(num);
 					}
 					else if (num2 % 20 == 0)
 					{
 						num *= 2;
-						list.Add(num);
+						list2.Add(num);
 					}
 					else if (num2 % 10 == 0)
 					{
 						num *= 2;
-						list.Add(num);
+						list2.Add(num);
 					}
 					else if (num2 % 5 == 0)
 					{
 						num *= 5;
-						list.Add(num);
+						list2.Add(num);
 					}
 					else if (num2 % 2 == 0)
 					{
 						num *= 2;
-						list.Add(num);
+						list2.Add(num);
 					}
 					else if (num2 % 3 == 0)
 					{
 						num *= 3;
-						list.Add(num);
+						list2.Add(num);
 					}
 					else
 					{
 						num = Mathf.RoundToInt(frameRate);
 					}
 				}
-				float[] array = new float[9 + list.Count];
-				for (int i = 0; i < list.Count; i++)
+				List<float> list = new List<float>(13 + list2.Count);
+				for (int i = 0; i < list2.Count; i++)
 				{
-					array[i] = 1f / (float)list[list.Count - i - 1];
+					list.Add(1f / (float)list2[list2.Count - i - 1]);
 				}
-				array[array.Length - 1] = 3600f;
-				array[array.Length - 2] = 1800f;
-				array[array.Length - 3] = 600f;
-				array[array.Length - 4] = 300f;
-				array[array.Length - 5] = 60f;
-				array[array.Length - 6] = 30f;
-				array[array.Length - 7] = 10f;
-				array[array.Length - 8] = 5f;
-				array[array.Length - 9] = 1f;
-				this.SetTickModulos(array);
+				list.Add(1f);
+				list.Add(5f);
+				list.Add(10f);
+				list.Add(30f);
+				list.Add(60f);
+				list.Add(300f);
+				list.Add(600f);
+				list.Add(1800f);
+				list.Add(3600f);
+				list.Add(21600f);
+				list.Add(86400f);
+				list.Add(604800f);
+				list.Add(1209600f);
+				result = list;
 			}
+			return result;
+		}
+
+		public void SetTickModulosForFrameRate(float frameRate)
+		{
+			List<float> tickModulosForFrameRate = this.GetTickModulosForFrameRate(frameRate);
+			this.SetTickModulos(tickModulosForFrameRate.ToArray());
 		}
 
 		public void SetRanges(float minValue, float maxValue, float minPixel, float maxPixel)

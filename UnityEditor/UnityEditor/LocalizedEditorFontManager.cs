@@ -1,8 +1,8 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using UnityEditorInternal;
 using UnityEngine;
 
 namespace UnityEditor
@@ -35,7 +35,7 @@ namespace UnityEditor
 			{
 				get
 				{
-					return this.m_dictionary[this.trim_key(key)];
+					return this.m_dictionary[key];
 				}
 			}
 
@@ -49,15 +49,9 @@ namespace UnityEditor
 				this.m_dictionary.Add(key, value);
 			}
 
-			private string trim_key(string key)
-			{
-				int length = key.IndexOf(" (UnityEngine.Font)");
-				return key.Substring(0, length);
-			}
-
 			public bool ContainsKey(string key)
 			{
-				return this.m_dictionary.ContainsKey(this.trim_key(key));
+				return this.m_dictionary.ContainsKey(key);
 			}
 		}
 
@@ -87,7 +81,7 @@ namespace UnityEditor
 			string text = null;
 			if (text == null || !File.Exists(text))
 			{
-				text = LocalizationDatabase.GetLocalizationResourceFolder() + "/fontsettings.txt";
+				text = EditorApplication.applicationContentsPath + "/Resources/fontsettings.txt";
 			}
 			if (File.Exists(text))
 			{
@@ -151,54 +145,27 @@ namespace UnityEditor
 			}
 		}
 
-		private static void ModifyFont(Font font, LocalizedEditorFontManager.FontDictionary dict)
-		{
-			string text = font.ToString();
-			if (dict.ContainsKey(text))
-			{
-				font.fontNames = dict[text].fontNames;
-			}
-			else
-			{
-				Debug.LogError("no matching for:" + text);
-			}
-		}
-
-		private static void UpdateSkinFontInternal(GUISkin skin, LocalizedEditorFontManager.FontDictionary dict)
-		{
-			if (!(skin == null))
-			{
-				IEnumerator enumerator = skin.GetEnumerator();
-				while (enumerator.MoveNext())
-				{
-					GUIStyle gUIStyle = enumerator.Current as GUIStyle;
-					if (gUIStyle != null && gUIStyle.font != null)
-					{
-						LocalizedEditorFontManager.ModifyFont(gUIStyle.font, dict);
-					}
-				}
-			}
-		}
-
-		public static void UpdateSkinFont(SystemLanguage language)
+		public static void LocalizeEditorFonts()
 		{
 			LocalizedEditorFontManager.ReadFontSettings();
-			LocalizedEditorFontManager.FontDictionary fontDictionary = LocalizedEditorFontManager.GetFontDictionary(language);
+			LocalizedEditorFontManager.FontDictionary fontDictionary = LocalizedEditorFontManager.GetFontDictionary(LocalizationDatabase.currentEditorLanguage);
 			if (fontDictionary != null)
 			{
-				LocalizedEditorFontManager.UpdateSkinFontInternal(EditorGUIUtility.GetBuiltinSkin(EditorSkin.Inspector), fontDictionary);
-				LocalizedEditorFontManager.UpdateSkinFontInternal(EditorGUIUtility.GetBuiltinSkin(EditorSkin.Scene), fontDictionary);
+				LocalizedEditorFontManager.ReplaceFontForLocalization(fontDictionary, (Font)EditorGUIUtility.LoadRequired(EditorResourcesUtility.fontsPath + "Lucida Grande.ttf"));
+				LocalizedEditorFontManager.ReplaceFontForLocalization(fontDictionary, (Font)EditorGUIUtility.LoadRequired(EditorResourcesUtility.fontsPath + "Lucida Grande Bold.ttf"));
+				LocalizedEditorFontManager.ReplaceFontForLocalization(fontDictionary, (Font)EditorGUIUtility.LoadRequired(EditorResourcesUtility.fontsPath + "Lucida Grande Small.ttf"));
+				LocalizedEditorFontManager.ReplaceFontForLocalization(fontDictionary, (Font)EditorGUIUtility.LoadRequired(EditorResourcesUtility.fontsPath + "Lucida Grande Small Bold.ttf"));
+				LocalizedEditorFontManager.ReplaceFontForLocalization(fontDictionary, (Font)EditorGUIUtility.LoadRequired(EditorResourcesUtility.fontsPath + "Lucida Grande Big.ttf"));
 			}
 		}
 
-		public static void UpdateSkinFont()
+		private static void ReplaceFontForLocalization(LocalizedEditorFontManager.FontDictionary dict, Font font)
 		{
-			LocalizedEditorFontManager.UpdateSkinFont(LocalizationDatabase.GetCurrentEditorLanguage());
-		}
-
-		private static void OnBoot()
-		{
-			LocalizedEditorFontManager.UpdateSkinFont();
+			if (dict.ContainsKey(font.name))
+			{
+				font.fontNames = dict[font.name].fontNames;
+				font.hideFlags = HideFlags.HideAndDontSave;
+			}
 		}
 	}
 }

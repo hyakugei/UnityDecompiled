@@ -238,6 +238,9 @@ namespace UnityEngine.Animations
 			AnimatorControllerPlayable.GetAnimatorClipInfoInternal(ref this.m_Handle, layerIndex, false, clips);
 		}
 
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void GetAnimatorClipInfoInternal(ref PlayableHandle handle, int layerIndex, bool isCurrent, object clips);
+
 		public int GetCurrentAnimatorClipInfoCount(int layerIndex)
 		{
 			return AnimatorControllerPlayable.GetAnimatorClipInfoCountInternal(ref this.m_Handle, layerIndex, true);
@@ -463,6 +466,9 @@ namespace UnityEngine.Animations
 		private static extern bool IsInTransitionInternal(ref PlayableHandle handle, int layerIndex);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern AnimatorControllerParameter[] GetParametersArrayInternal(ref PlayableHandle handle);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern int GetParameterCountInternal(ref PlayableHandle handle);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -536,24 +542,6 @@ namespace UnityEngine.Animations
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern bool IsParameterControlledByCurveID(ref PlayableHandle handle, int id);
-
-		private static void GetAnimatorClipInfoInternal(ref PlayableHandle handle, int layerIndex, bool isCurrent, object clips)
-		{
-			AnimatorControllerPlayable.INTERNAL_CALL_GetAnimatorClipInfoInternal(ref handle, layerIndex, isCurrent, clips);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_GetAnimatorClipInfoInternal(ref PlayableHandle handle, int layerIndex, bool isCurrent, object clips);
-
-		private static AnimatorControllerParameter[] GetParametersArrayInternal(ref PlayableHandle handle)
-		{
-			return AnimatorControllerPlayable.INTERNAL_CALL_GetParametersArrayInternal(ref handle);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern AnimatorControllerParameter[] INTERNAL_CALL_GetParametersArrayInternal(ref PlayableHandle handle);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern bool CreateHandleInternal_Injected(ref PlayableGraph graph, RuntimeAnimatorController controller, ref PlayableHandle handle);

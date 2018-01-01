@@ -25,12 +25,12 @@ namespace UnityEditor
 
 			static Styles()
 			{
-				LightProbeGroupInspector.Styles.showWireframe = new GUIContent("Show Wireframe", "Show the tetrahedron wireframe visualizing the blending between probes.");
-				LightProbeGroupInspector.Styles.selectedProbePosition = new GUIContent("Selected Probe Position", "The local position of this probe relative to the parent group.");
-				LightProbeGroupInspector.Styles.addProbe = new GUIContent("Add Probe");
-				LightProbeGroupInspector.Styles.deleteSelected = new GUIContent("Delete Selected");
-				LightProbeGroupInspector.Styles.selectAll = new GUIContent("Select All");
-				LightProbeGroupInspector.Styles.duplicateSelected = new GUIContent("Duplicate Selected");
+				LightProbeGroupInspector.Styles.showWireframe = EditorGUIUtility.TrTextContent("Show Wireframe", "Show the tetrahedron wireframe visualizing the blending between probes.", null);
+				LightProbeGroupInspector.Styles.selectedProbePosition = EditorGUIUtility.TrTextContent("Selected Probe Position", "The local position of this probe relative to the parent group.", null);
+				LightProbeGroupInspector.Styles.addProbe = EditorGUIUtility.TrTextContent("Add Probe", null, null);
+				LightProbeGroupInspector.Styles.deleteSelected = EditorGUIUtility.TrTextContent("Delete Selected", null, null);
+				LightProbeGroupInspector.Styles.selectAll = EditorGUIUtility.TrTextContent("Select All", null, null);
+				LightProbeGroupInspector.Styles.duplicateSelected = EditorGUIUtility.TrTextContent("Duplicate Selected", null, null);
 				LightProbeGroupInspector.Styles.editModeButton = EditorGUIUtility.IconContent("EditCollider");
 			}
 		}

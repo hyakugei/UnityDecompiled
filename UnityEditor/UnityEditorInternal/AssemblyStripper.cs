@@ -106,17 +106,16 @@ namespace UnityEditorInternal
 			select Path.Combine(managedDir, s)).ToList<string>();
 		}
 
-		internal static void StripAssemblies(string stagingAreaData, IIl2CppPlatformProvider platformProvider, RuntimeClassRegistry rcr)
+		internal static void StripAssemblies(string managedAssemblyFolderPath, IIl2CppPlatformProvider platformProvider, RuntimeClassRegistry rcr)
 		{
-			string fullPath = Path.GetFullPath(Path.Combine(stagingAreaData, "Managed"));
-			List<string> userAssemblies = AssemblyStripper.GetUserAssemblies(rcr, fullPath);
-			userAssemblies.AddRange(Directory.GetFiles(fullPath, "I18N*.dll", SearchOption.TopDirectoryOnly));
+			List<string> userAssemblies = AssemblyStripper.GetUserAssemblies(rcr, managedAssemblyFolderPath);
+			userAssemblies.AddRange(Directory.GetFiles(managedAssemblyFolderPath, "I18N*.dll", SearchOption.TopDirectoryOnly));
 			string[] assembliesToStrip = userAssemblies.ToArray();
 			string[] searchDirs = new string[]
 			{
-				fullPath
+				managedAssemblyFolderPath
 			};
-			AssemblyStripper.RunAssemblyStripper(stagingAreaData, userAssemblies, fullPath, assembliesToStrip, searchDirs, AssemblyStripper.MonoLinker2Path, platformProvider, rcr);
+			AssemblyStripper.RunAssemblyStripper(userAssemblies, managedAssemblyFolderPath, assembliesToStrip, searchDirs, AssemblyStripper.MonoLinker2Path, platformProvider, rcr);
 		}
 
 		internal static void GenerateInternalCallSummaryFile(string icallSummaryPath, string managedAssemblyFolderPath, string strippedDLLPath)
@@ -157,7 +156,7 @@ namespace UnityEditorInternal
 			return result;
 		}
 
-		private static void RunAssemblyStripper(string stagingAreaData, IEnumerable assemblies, string managedAssemblyFolderPath, string[] assembliesToStrip, string[] searchDirs, string monoLinkerPath, IIl2CppPlatformProvider platformProvider, RuntimeClassRegistry rcr)
+		private static void RunAssemblyStripper(IEnumerable assemblies, string managedAssemblyFolderPath, string[] assembliesToStrip, string[] searchDirs, string monoLinkerPath, IIl2CppPlatformProvider platformProvider, RuntimeClassRegistry rcr)
 		{
 			BuildTargetGroup buildTargetGroup = BuildPipeline.GetBuildTargetGroup(platformProvider.target);
 			bool flag = PlayerSettings.GetScriptingBackend(buildTargetGroup) == ScriptingImplementation.Mono2x;
@@ -167,12 +166,12 @@ namespace UnityEditorInternal
 			{
 				enumerable = enumerable.Concat(new string[]
 				{
-					AssemblyStripper.WriteMethodsToPreserveBlackList(stagingAreaData, rcr, platformProvider.target),
-					AssemblyStripper.WriteUnityEngineBlackList(stagingAreaData),
-					MonoAssemblyStripping.GenerateLinkXmlToPreserveDerivedTypes(stagingAreaData, managedAssemblyFolderPath, rcr)
+					AssemblyStripper.WriteMethodsToPreserveBlackList(rcr, platformProvider.target),
+					AssemblyStripper.WriteUnityEngineBlackList(),
+					MonoAssemblyStripping.GenerateLinkXmlToPreserveDerivedTypes(managedAssemblyFolderPath, rcr)
 				});
 			}
-			if (PlayerSettings.GetApiCompatibilityLevel(buildTargetGroup) == ApiCompatibilityLevel.NET_4_6)
+			if (PlayerSettingsEditor.IsLatestApiCompatibility(PlayerSettings.GetApiCompatibilityLevel(buildTargetGroup)))
 			{
 				string path = Path.Combine(platformProvider.il2CppFolder, "LinkerDescriptors");
 				enumerable = enumerable.Concat(Directory.GetFiles(path, "*45.xml"));
@@ -274,20 +273,18 @@ namespace UnityEditorInternal
 			Directory.Delete(fullPath);
 		}
 
-		private static string WriteMethodsToPreserveBlackList(string stagingAreaData, RuntimeClassRegistry rcr, BuildTarget target)
+		private static string WriteMethodsToPreserveBlackList(RuntimeClassRegistry rcr, BuildTarget target)
 		{
-			string text = (!Path.IsPathRooted(stagingAreaData)) ? (Directory.GetCurrentDirectory() + "/") : "";
-			text = text + stagingAreaData + "/methods_pointedto_by_uievents.xml";
-			File.WriteAllText(text, AssemblyStripper.GetMethodPreserveBlacklistContents(rcr, target));
-			return text;
+			string tempFileName = Path.GetTempFileName();
+			File.WriteAllText(tempFileName, AssemblyStripper.GetMethodPreserveBlacklistContents(rcr, target));
+			return tempFileName;
 		}
 
-		private static string WriteUnityEngineBlackList(string stagingAreaData)
+		private static string WriteUnityEngineBlackList()
 		{
-			string text = (!Path.IsPathRooted(stagingAreaData)) ? (Directory.GetCurrentDirectory() + "/") : "";
-			text = text + stagingAreaData + "/UnityEngine.xml";
-			File.WriteAllText(text, "<linker><assembly fullname=\"UnityEngine\" preserve=\"nothing\"/></linker>");
-			return text;
+			string tempFileName = Path.GetTempFileName();
+			File.WriteAllText(tempFileName, "<linker><assembly fullname=\"UnityEngine\" preserve=\"nothing\"/></linker>");
+			return tempFileName;
 		}
 
 		private static string GetMethodPreserveBlacklistContents(RuntimeClassRegistry rcr, BuildTarget target)
@@ -299,14 +296,7 @@ namespace UnityEditorInternal
 			foreach (IGrouping<string, RuntimeClassRegistry.MethodDescription> current in enumerable)
 			{
 				string key = current.Key;
-				if (AssemblyHelper.IsUnityEngineModule(key) && !BuildPipeline.IsFeatureSupported("ENABLE_MODULAR_UNITYENGINE_ASSEMBLIES", target))
-				{
-					stringBuilder.AppendLine(string.Format("\t<assembly fullname=\"{0}\">", "UnityEngine"));
-				}
-				else
-				{
-					stringBuilder.AppendLine(string.Format("\t<assembly fullname=\"{0}\">", key));
-				}
+				stringBuilder.AppendLine(string.Format("\t<assembly fullname=\"{0}\">", key));
 				IEnumerable<IGrouping<string, RuntimeClassRegistry.MethodDescription>> enumerable2 = from m in current
 				group m by m.fullTypeName;
 				foreach (IGrouping<string, RuntimeClassRegistry.MethodDescription> current2 in enumerable2)
@@ -326,14 +316,15 @@ namespace UnityEditorInternal
 
 		public static void InvokeFromBuildPlayer(BuildTarget buildTarget, RuntimeClassRegistry usedClasses)
 		{
-			string text = Paths.Combine(new string[]
+			string path = Paths.Combine(new string[]
 			{
 				"Temp",
 				"StagingArea",
 				"Data"
 			});
-			BaseIl2CppPlatformProvider platformProvider = new BaseIl2CppPlatformProvider(buildTarget, Path.Combine(text, "Libraries"));
-			AssemblyStripper.StripAssemblies(text, platformProvider, usedClasses);
+			BaseIl2CppPlatformProvider platformProvider = new BaseIl2CppPlatformProvider(buildTarget, Path.Combine(path, "Libraries"));
+			string fullPath = Path.GetFullPath(Path.Combine(path, "Managed"));
+			AssemblyStripper.StripAssemblies(fullPath, platformProvider, usedClasses);
 		}
 	}
 }

@@ -13,6 +13,8 @@ namespace UnityEditor.Experimental.UIElements
 
 		private VisualTreeAsset m_LastTree;
 
+		private Texture2D m_FileTypeIcon;
+
 		internal override string targetTitle
 		{
 			get
@@ -26,6 +28,11 @@ namespace UnityEditor.Experimental.UIElements
 			}
 		}
 
+		protected void OnEnable()
+		{
+			this.m_FileTypeIcon = EditorGUIUtility.FindTexture("UxmlScript Icon");
+		}
+
 		public override bool HasPreviewGUI()
 		{
 			return true;
@@ -34,6 +41,11 @@ namespace UnityEditor.Experimental.UIElements
 		public override GUIContent GetPreviewTitle()
 		{
 			return GUIContent.Temp(this.targetTitle);
+		}
+
+		private void RenderIcon(Rect iconRect)
+		{
+			GUI.DrawTexture(iconRect, this.m_FileTypeIcon, ScaleMode.ScaleToFit);
 		}
 
 		public void Render(VisualTreeAsset vta, Rect r, GUIStyle background)
@@ -50,10 +62,11 @@ namespace UnityEditor.Experimental.UIElements
 				}
 				if (this.m_Panel == null)
 				{
+					UXMLEditorFactories.RegisterAll();
 					this.m_Panel = UIElementsUtility.FindOrCreatePanel(this.m_LastTree, ContextType.Editor, new DataWatchService());
 					if (this.m_Panel.visualTree.styleSheets == null)
 					{
-						GUIView.AddDefaultEditorStyleSheets(this.m_Panel.visualTree);
+						UIElementsEditorUtility.AddDefaultEditorStyleSheets(this.m_Panel.visualTree);
 						this.m_Panel.visualTree.LoadStyleSheetsFromPaths();
 					}
 					this.m_Panel.allowPixelCaching = false;
@@ -64,21 +77,31 @@ namespace UnityEditor.Experimental.UIElements
 					this.m_Panel.visualTree.Clear();
 					this.m_Panel.visualTree.Add(this.m_Tree);
 				}
-				this.m_Panel.visualTree.layout = r;
+				EditorGUI.DrawRect(r, (!EditorGUIUtility.isProSkin) ? HostView.kViewColor : EditorGUIUtility.kDarkViewBackground);
+				this.m_Panel.visualTree.layout = GUIClip.UnclipToWindow(r);
 				this.m_Panel.visualTree.Dirty(ChangeType.Layout);
 				this.m_Panel.visualTree.Dirty(ChangeType.Repaint);
-				Matrix4x4 matrix = GUIClip.GetMatrix();
-				Rect topRect = GUIClip.GetTopRect();
-				EditorGUI.DrawRect(r, (!EditorGUIUtility.isProSkin) ? HostView.kViewColor : EditorGUIUtility.kDarkViewBackground);
+				SavedGUIState savedGUIState = SavedGUIState.Create();
+				for (int i = GUIClip.Internal_GetCount(); i > 0; i--)
+				{
+					GUIClip.Pop();
+				}
 				this.m_Panel.Repaint(Event.current);
-				GUIClip.SetTransform(matrix, topRect);
+				savedGUIState.ApplyAndForget();
 			}
 		}
 
 		public override void OnPreviewGUI(Rect r, GUIStyle background)
 		{
 			base.OnPreviewGUI(r, background);
-			this.Render(base.target as VisualTreeAsset, r, background);
+			if (r.width > 64f || r.height > 64f)
+			{
+				this.Render(base.target as VisualTreeAsset, r, background);
+			}
+			else
+			{
+				this.RenderIcon(r);
+			}
 		}
 	}
 }

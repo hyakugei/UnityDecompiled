@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using UnityEngine;
 
 namespace UnityEditor.Modules
@@ -9,7 +10,7 @@ namespace UnityEditor.Modules
 
 		protected SerializedProperty m_MTRendering;
 
-		private static readonly GUIContent m_MTRenderingTooltip = EditorGUIUtility.TextContent("Multithreaded Rendering*");
+		private static readonly GUIContent m_MTRenderingTooltip = EditorGUIUtility.TrTextContent("Multithreaded Rendering*", null, null);
 
 		protected PlayerSettingsEditor playerSettingsEditor
 		{
@@ -106,13 +107,19 @@ namespace UnityEditor.Modules
 
 		public string FixTargetOSVersion(string version)
 		{
-			int num = version.IndexOf('.');
+			int[] array = (from i in Enumerable.Range(0, version.Length)
+			where version[i] == '.'
+			select i).ToArray<int>();
 			string result;
-			if (num < 0)
+			if (array.Length <= 0)
 			{
 				result = (version + ".0").Trim();
 			}
-			else if (num == version.Length - 1)
+			else if (array.Length > 1)
+			{
+				result = version.Substring(0, array[1]).Trim();
+			}
+			else if (array.Length == 1 && array[0] == version.Length - 1)
 			{
 				result = (version + "0").Trim();
 			}

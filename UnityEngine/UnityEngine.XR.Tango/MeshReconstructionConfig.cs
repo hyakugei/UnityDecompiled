@@ -4,7 +4,7 @@ using UnityEngine.Scripting;
 namespace UnityEngine.XR.Tango
 {
 	[UsedByNativeCode]
-	public struct MeshReconstructionConfig
+	internal struct MeshReconstructionConfig
 	{
 		public double resolution;
 

@@ -67,13 +67,13 @@ namespace UnityEditor
 			menuCallbackObject.onBeforeExecuteCallback = onBeforeExecuteCallback;
 			menuCallbackObject.onAfterExecuteCallback = onAfterExecuteCallback;
 			menuCallbackObject.userData = userData;
-			GUIContent arg_53_1 = new GUIContent(replacementMenuString);
-			bool arg_53_2 = false;
+			GUIContent arg_58_1 = new GUIContent(L10n.TrPath(replacementMenuString));
+			bool arg_58_2 = false;
 			if (MenuUtils.<>f__mg$cache0 == null)
 			{
 				MenuUtils.<>f__mg$cache0 = new GenericMenu.MenuFunction2(MenuUtils.MenuCallback);
 			}
-			menu.AddItem(arg_53_1, arg_53_2, MenuUtils.<>f__mg$cache0, menuCallbackObject);
+			menu.AddItem(arg_58_1, arg_58_2, MenuUtils.<>f__mg$cache0, menuCallbackObject);
 		}
 	}
 }

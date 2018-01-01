@@ -10,6 +10,13 @@ namespace UnityEditor
 	[CustomEditor(typeof(Physics2DSettings))]
 	internal class Physics2DSettingsInspector : ProjectSettingsBaseEditor
 	{
+		private static class Styles
+		{
+			public static readonly GUIContent kJobOptionsLabel = EditorGUIUtility.TextContent("Job Options (Experimental)|Allows the configuration of multi-threaded physics using the job system.");
+		}
+
+		private SerializedProperty m_JobOptions;
+
 		private Vector2 m_LayerCollisionMatrixScrollPos;
 
 		private bool m_ShowLayerCollisionMatrix = true;
@@ -44,6 +51,7 @@ namespace UnityEditor
 
 		public void OnEnable()
 		{
+			this.m_JobOptions = base.serializedObject.FindProperty("m_JobOptions");
 			this.m_AlwaysShowColliders = base.serializedObject.FindProperty("m_AlwaysShowColliders");
 			this.m_ShowColliderSleep = base.serializedObject.FindProperty("m_ShowColliderSleep");
 			this.m_ShowColliderContacts = base.serializedObject.FindProperty("m_ShowColliderContacts");
@@ -64,12 +72,16 @@ namespace UnityEditor
 
 		public override void OnInspectorGUI()
 		{
-			base.DrawDefaultInspector();
+			base.serializedObject.Update();
+			Editor.DrawPropertiesExcluding(base.serializedObject, new string[]
+			{
+				"m_JobOptions"
+			});
+			EditorGUILayout.PropertyField(this.m_JobOptions, Physics2DSettingsInspector.Styles.kJobOptionsLabel, true, new GUILayoutOption[0]);
 			Physics2DSettingsInspector.s_ShowGizmoSettings = EditorGUILayout.Foldout(Physics2DSettingsInspector.s_ShowGizmoSettings, "Gizmos", true);
 			this.m_GizmoSettingsFade.target = Physics2DSettingsInspector.s_ShowGizmoSettings;
 			if (this.m_GizmoSettingsFade.value)
 			{
-				base.serializedObject.Update();
 				if (EditorGUILayout.BeginFadeGroup(this.m_GizmoSettingsFade.faded))
 				{
 					EditorGUI.indentLevel++;
@@ -85,19 +97,19 @@ namespace UnityEditor
 					EditorGUI.indentLevel--;
 				}
 				EditorGUILayout.EndFadeGroup();
-				base.serializedObject.ApplyModifiedProperties();
 			}
-			string arg_18B_0 = "Layer Collision Matrix";
+			base.serializedObject.ApplyModifiedProperties();
+			string arg_1B5_0 = "Layer Collision Matrix";
 			if (Physics2DSettingsInspector.<>f__mg$cache0 == null)
 			{
 				Physics2DSettingsInspector.<>f__mg$cache0 = new LayerMatrixGUI.GetValueFunc(Physics2DSettingsInspector.GetValue);
 			}
-			LayerMatrixGUI.GetValueFunc arg_18B_3 = Physics2DSettingsInspector.<>f__mg$cache0;
+			LayerMatrixGUI.GetValueFunc arg_1B5_3 = Physics2DSettingsInspector.<>f__mg$cache0;
 			if (Physics2DSettingsInspector.<>f__mg$cache1 == null)
 			{
 				Physics2DSettingsInspector.<>f__mg$cache1 = new LayerMatrixGUI.SetValueFunc(Physics2DSettingsInspector.SetValue);
 			}
-			LayerMatrixGUI.DoGUI(arg_18B_0, ref this.m_ShowLayerCollisionMatrix, ref this.m_LayerCollisionMatrixScrollPos, arg_18B_3, Physics2DSettingsInspector.<>f__mg$cache1);
+			LayerMatrixGUI.DoGUI(arg_1B5_0, ref this.m_ShowLayerCollisionMatrix, ref this.m_LayerCollisionMatrixScrollPos, arg_1B5_3, Physics2DSettingsInspector.<>f__mg$cache1);
 		}
 
 		private static bool GetValue(int layerA, int layerB)

@@ -206,8 +206,10 @@ namespace UnityEditor
 				{
 					vector5 = GridSnapping.Snap(vector5);
 				}
-				Vector3 positionDelta = vector5 - TransformManipulator.mouseDownHandlePosition;
-				TransformManipulator.SetPositionDelta(positionDelta);
+				if (TransformManipulator.HandleHasMoved(vector5))
+				{
+					TransformManipulator.SetPositionDelta(vector5, TransformManipulator.mouseDownHandlePosition);
+				}
 			}
 			TransformManipulator.EndManipulationHandling();
 			GUI.color = color;

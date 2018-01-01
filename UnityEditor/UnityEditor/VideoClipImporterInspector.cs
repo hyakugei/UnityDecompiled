@@ -113,8 +113,8 @@ namespace UnityEditor
 
 			public GUIContent[] importerVersionOptions = new GUIContent[]
 			{
-				EditorGUIUtility.TextContent("VideoClip|Produce VideoClip asset (for use with VideoPlayer)"),
-				EditorGUIUtility.TextContent("MovieTexture (Deprecated)|Produce MovieTexture asset (deprecated in factor of VideoClip)")
+				EditorGUIUtility.TrTextContent("VideoClip", "Produce VideoClip asset (for use with VideoPlayer)", null),
+				EditorGUIUtility.TrTextContent("MovieTexture (Deprecated)", "Produce MovieTexture asset (deprecated in factor of VideoClip)", null)
 			};
 
 			public GUIContent transcodeWarning = EditorGUIUtility.TextContent("Not all platforms transcoded. Clip is not guaranteed to be compatible on platforms without transcoding.");
@@ -666,7 +666,7 @@ namespace UnityEditor
 				GUILayout.FlexibleSpace();
 				if (GUILayout.Button("Open", EditorStyles.miniButton, new GUILayoutOption[0]))
 				{
-					AssetDatabase.OpenAsset(this.assetEditor.targets);
+					AssetDatabase.OpenAsset(base.assetTargets);
 					GUIUtility.ExitGUI();
 				}
 			}
@@ -764,51 +764,52 @@ namespace UnityEditor
 
 		public override void OnPreviewGUI(Rect r, GUIStyle background)
 		{
-			if (Event.current.type == EventType.Repaint)
+			bool flag = Event.current.type == EventType.Repaint;
+			if (flag)
 			{
 				background.Draw(r, false, false, false, false);
-				VideoClipImporter videoClipImporter = (VideoClipImporter)base.target;
-				if (this.m_IsPlaying && !videoClipImporter.isPlayingPreview)
+			}
+			VideoClipImporter videoClipImporter = (VideoClipImporter)base.target;
+			if (this.m_IsPlaying && !videoClipImporter.isPlayingPreview)
+			{
+				videoClipImporter.PlayPreview();
+			}
+			else if (!this.m_IsPlaying && videoClipImporter.isPlayingPreview)
+			{
+				videoClipImporter.StopPreview();
+			}
+			Texture previewTexture = videoClipImporter.GetPreviewTexture();
+			if (previewTexture && previewTexture.width != 0 && previewTexture.height != 0)
+			{
+				float num = (float)previewTexture.width;
+				float num2 = (float)previewTexture.height;
+				if (videoClipImporter.defaultTargetSettings.enableTranscoding)
 				{
-					videoClipImporter.PlayPreview();
+					VideoResizeMode resizeMode = videoClipImporter.defaultTargetSettings.resizeMode;
+					num = (float)videoClipImporter.GetResizeWidth(resizeMode);
+					num2 = (float)videoClipImporter.GetResizeHeight(resizeMode);
 				}
-				else if (!this.m_IsPlaying && videoClipImporter.isPlayingPreview)
+				if (videoClipImporter.pixelAspectRatioDenominator > 0)
 				{
-					videoClipImporter.StopPreview();
+					num *= (float)videoClipImporter.pixelAspectRatioNumerator / (float)videoClipImporter.pixelAspectRatioDenominator;
 				}
-				Texture previewTexture = videoClipImporter.GetPreviewTexture();
-				if (previewTexture && previewTexture.width != 0 && previewTexture.height != 0)
+				float num3;
+				if (r.width / num * num2 > r.height)
 				{
-					float num = (float)previewTexture.width;
-					float num2 = (float)previewTexture.height;
-					if (videoClipImporter.defaultTargetSettings.enableTranscoding)
-					{
-						VideoResizeMode resizeMode = videoClipImporter.defaultTargetSettings.resizeMode;
-						num = (float)videoClipImporter.GetResizeWidth(resizeMode);
-						num2 = (float)videoClipImporter.GetResizeHeight(resizeMode);
-					}
-					if (videoClipImporter.pixelAspectRatioDenominator > 0)
-					{
-						num *= (float)videoClipImporter.pixelAspectRatioNumerator / (float)videoClipImporter.pixelAspectRatioDenominator;
-					}
-					float num3;
-					if (r.width / num * num2 > r.height)
-					{
-						num3 = r.height / num2;
-					}
-					else
-					{
-						num3 = r.width / num;
-					}
-					num3 = Mathf.Clamp01(num3);
-					Rect rect = new Rect(r.x, r.y, num * num3, num2 * num3);
-					PreviewGUI.BeginScrollView(r, this.m_Position, rect, "PreHorizontalScrollbar", "PreHorizontalScrollbarThumb");
-					EditorGUI.DrawTextureTransparent(rect, previewTexture, ScaleMode.StretchToFill);
-					this.m_Position = PreviewGUI.EndScrollView();
-					if (this.m_IsPlaying)
-					{
-						GUIView.current.Repaint();
-					}
+					num3 = r.height / num2;
+				}
+				else
+				{
+					num3 = r.width / num;
+				}
+				num3 = Mathf.Clamp01(num3);
+				Rect rect = new Rect(r.x, r.y, num * num3, num2 * num3);
+				PreviewGUI.BeginScrollView(r, this.m_Position, rect, "PreHorizontalScrollbar", "PreHorizontalScrollbarThumb");
+				EditorGUI.DrawTextureTransparent(rect, previewTexture, ScaleMode.StretchToFill);
+				this.m_Position = PreviewGUI.EndScrollView();
+				if (this.m_IsPlaying && flag)
+				{
+					GUIView.current.Repaint();
 				}
 			}
 		}

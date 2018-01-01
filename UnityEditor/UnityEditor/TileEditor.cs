@@ -9,17 +9,17 @@ namespace UnityEditor
 	{
 		private static class Styles
 		{
-			public static readonly GUIContent invalidMatrixLabel = EditorGUIUtility.TextContent("Invalid Matrix|No valid Position / Rotation / Scale components available for this matrix");
+			public static readonly GUIContent invalidMatrixLabel = EditorGUIUtility.TrTextContent("Invalid Matrix", "No valid Position / Rotation / Scale components available for this matrix", null);
 
-			public static readonly GUIContent resetMatrixLabel = EditorGUIUtility.TextContent("Reset Matrix");
+			public static readonly GUIContent resetMatrixLabel = EditorGUIUtility.TrTextContent("Reset Matrix", null, null);
 
-			public static readonly GUIContent previewLabel = EditorGUIUtility.TextContent("Preview|Preview of tile with attributes set");
+			public static readonly GUIContent previewLabel = EditorGUIUtility.TrTextContent("Preview", "Preview of tile with attributes set", null);
 
-			public static readonly GUIContent positionLabel = EditorGUIUtility.TextContent("Position");
+			public static readonly GUIContent positionLabel = EditorGUIUtility.TrTextContent("Position", null, null);
 
-			public static readonly GUIContent rotationLabel = EditorGUIUtility.TextContent("Rotation");
+			public static readonly GUIContent rotationLabel = EditorGUIUtility.TrTextContent("Rotation", null, null);
 
-			public static readonly GUIContent scaleLabel = EditorGUIUtility.TextContent("Scale");
+			public static readonly GUIContent scaleLabel = EditorGUIUtility.TrTextContent("Scale", null, null);
 		}
 
 		private const float k_PreviewWidth = 32f;

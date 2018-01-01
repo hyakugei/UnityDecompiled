@@ -2,6 +2,7 @@ using System;
 
 namespace UnityEngine
 {
+	[Flags]
 	public enum LightmapBakeType
 	{
 		Realtime = 4,

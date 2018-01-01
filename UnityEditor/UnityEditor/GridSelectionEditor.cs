@@ -10,7 +10,7 @@ namespace UnityEditor
 		{
 			public static readonly GUIStyle header = new GUIStyle("IN GameObjectHeader");
 
-			public static readonly GUIContent gridSelectionLabel = EditorGUIUtility.TextContent("Grid Selection");
+			public static readonly GUIContent gridSelectionLabel = EditorGUIUtility.TrTextContent("Grid Selection", null, null);
 		}
 
 		private const float iconSize = 32f;

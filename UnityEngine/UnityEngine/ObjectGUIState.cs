@@ -1,8 +1,13 @@
 using System;
 using System.Runtime.CompilerServices;
+using UnityEngine.Bindings;
 
 namespace UnityEngine
 {
+	[VisibleToOtherModules(new string[]
+	{
+		"UnityEngine.UIElementsModule"
+	})]
 	internal class ObjectGUIState : IDisposable
 	{
 		internal IntPtr m_Ptr;

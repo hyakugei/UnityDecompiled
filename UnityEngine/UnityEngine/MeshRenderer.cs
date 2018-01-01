@@ -12,5 +12,11 @@ namespace UnityEngine
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
+
+		public extern int subMeshStartIndex
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+		}
 	}
 }

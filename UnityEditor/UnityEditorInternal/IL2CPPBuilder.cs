@@ -22,20 +22,17 @@ namespace UnityEditorInternal
 
 		private readonly RuntimeClassRegistry m_RuntimeClassRegistry;
 
-		private readonly bool m_DebugBuild;
-
 		private readonly LinkXmlReader m_linkXmlReader = new LinkXmlReader();
 
 		private readonly bool m_BuildForMonoRuntime;
 
-		public IL2CPPBuilder(string tempFolder, string stagingAreaData, IIl2CppPlatformProvider platformProvider, Action<string> modifyOutputBeforeCompile, RuntimeClassRegistry runtimeClassRegistry, bool debugBuild, bool buildForMonoRuntime)
+		public IL2CPPBuilder(string tempFolder, string stagingAreaData, IIl2CppPlatformProvider platformProvider, Action<string> modifyOutputBeforeCompile, RuntimeClassRegistry runtimeClassRegistry, bool buildForMonoRuntime)
 		{
 			this.m_TempFolder = tempFolder;
 			this.m_StagingAreaData = stagingAreaData;
 			this.m_PlatformProvider = platformProvider;
 			this.m_ModifyOutputBeforeCompile = modifyOutputBeforeCompile;
 			this.m_RuntimeClassRegistry = runtimeClassRegistry;
-			this.m_DebugBuild = debugBuild;
 			this.m_BuildForMonoRuntime = buildForMonoRuntime;
 		}
 
@@ -50,7 +47,7 @@ namespace UnityEditorInternal
 				FileInfo fileInfo = new FileInfo(fileName);
 				fileInfo.IsReadOnly = false;
 			}
-			AssemblyStripper.StripAssemblies(this.m_StagingAreaData, this.m_PlatformProvider, this.m_RuntimeClassRegistry);
+			AssemblyStripper.StripAssemblies(fullPath, this.m_PlatformProvider, this.m_RuntimeClassRegistry);
 			FileUtil.CreateOrCleanDirectory(cppOutputDirectoryInStagingArea);
 			if (this.m_ModifyOutputBeforeCompile != null)
 			{
@@ -73,13 +70,18 @@ namespace UnityEditorInternal
 			if (il2CppNativeCodeBuilder != null)
 			{
 				Il2CppNativeCodeBuilderUtils.ClearAndPrepareCacheDirectory(il2CppNativeCodeBuilder);
-				List<string> list = Il2CppNativeCodeBuilderUtils.AddBuilderArguments(il2CppNativeCodeBuilder, this.OutputFileRelativePath(), this.m_PlatformProvider.includePaths, this.m_DebugBuild).ToList<string>();
+				BuildTargetGroup buildTargetGroup = BuildPipeline.GetBuildTargetGroup(this.m_PlatformProvider.target);
+				bool debugBuild = PlayerSettings.GetIl2CppCompilerConfiguration(buildTargetGroup) == Il2CppCompilerConfiguration.Debug;
+				List<string> list = Il2CppNativeCodeBuilderUtils.AddBuilderArguments(il2CppNativeCodeBuilder, this.OutputFileRelativePath(), this.m_PlatformProvider.includePaths, debugBuild).ToList<string>();
 				list.Add(string.Format("--map-file-parser=\"{0}\"", IL2CPPBuilder.GetMapFileParserPath()));
 				list.Add(string.Format("--generatedcppdir=\"{0}\"", Path.GetFullPath(this.GetCppOutputDirectoryInStagingArea())));
-				BuildTargetGroup buildTargetGroup = BuildPipeline.GetBuildTargetGroup(this.m_PlatformProvider.target);
 				if (PlayerSettings.GetApiCompatibilityLevel(buildTargetGroup) == ApiCompatibilityLevel.NET_4_6)
 				{
 					list.Add("--dotnetprofile=\"net45\"");
+				}
+				if (PlayerSettings.GetApiCompatibilityLevel(buildTargetGroup) == ApiCompatibilityLevel.NET_Standard_2_0)
+				{
+					list.Add("--dotnetprofile=\"unityaot\"");
 				}
 				Action<ProcessStartInfo> setupStartInfo = new Action<ProcessStartInfo>(il2CppNativeCodeBuilder.SetupStartInfo);
 				string fullPath = Path.GetFullPath(Path.Combine(this.m_StagingAreaData, "Managed"));
@@ -168,11 +170,16 @@ namespace UnityEditorInternal
 				{
 					list.Add("--dotnetprofile=\"net45\"");
 				}
+				if (PlayerSettings.GetApiCompatibilityLevel(buildTargetGroup) == ApiCompatibilityLevel.NET_Standard_2_0)
+				{
+					list.Add("--dotnetprofile=\"unityaot\"");
+				}
 				Il2CppNativeCodeBuilder il2CppNativeCodeBuilder = this.m_PlatformProvider.CreateIl2CppNativeCodeBuilder();
 				if (il2CppNativeCodeBuilder != null)
 				{
+					bool debugBuild = PlayerSettings.GetIl2CppCompilerConfiguration(buildTargetGroup) == Il2CppCompilerConfiguration.Debug;
 					Il2CppNativeCodeBuilderUtils.ClearAndPrepareCacheDirectory(il2CppNativeCodeBuilder);
-					list.AddRange(Il2CppNativeCodeBuilderUtils.AddBuilderArguments(il2CppNativeCodeBuilder, this.OutputFileRelativePath(), this.m_PlatformProvider.includePaths, this.m_DebugBuild));
+					list.AddRange(Il2CppNativeCodeBuilderUtils.AddBuilderArguments(il2CppNativeCodeBuilder, this.OutputFileRelativePath(), this.m_PlatformProvider.includePaths, debugBuild));
 				}
 				list.Add(string.Format("--map-file-parser=\"{0}\"", IL2CPPBuilder.GetMapFileParserPath()));
 				string text = PlayerSettings.GetAdditionalIl2CppArgs();
@@ -247,7 +254,7 @@ namespace UnityEditorInternal
 				{
 					string version = SystemInfo.operatingSystem.Substring(9);
 					Version v = new Version(version);
-					if (v >= new Version(10, 9) && v < new Version(10, 13))
+					if (v >= new Version(10, 9))
 					{
 						flag = true;
 					}

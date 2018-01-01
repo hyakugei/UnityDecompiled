@@ -289,7 +289,7 @@ namespace UnityEngine.UI
 
 		protected override void OnDisable()
 		{
-			this.m_Tracker.Clear(true);
+			this.m_Tracker.Clear();
 			base.OnDisable();
 		}
 
@@ -322,7 +322,7 @@ namespace UnityEngine.UI
 
 		private void UpdateCachedReferences()
 		{
-			if (this.m_FillRect)
+			if (this.m_FillRect && this.m_FillRect != (RectTransform)base.transform)
 			{
 				this.m_FillTransform = this.m_FillRect.transform;
 				this.m_FillImage = this.m_FillRect.GetComponent<Image>();
@@ -333,10 +333,11 @@ namespace UnityEngine.UI
 			}
 			else
 			{
+				this.m_FillRect = null;
 				this.m_FillContainerRect = null;
 				this.m_FillImage = null;
 			}
-			if (this.m_HandleRect)
+			if (this.m_HandleRect && this.m_HandleRect != (RectTransform)base.transform)
 			{
 				this.m_HandleTransform = this.m_HandleRect.transform;
 				if (this.m_HandleTransform.parent != null)
@@ -346,6 +347,7 @@ namespace UnityEngine.UI
 			}
 			else
 			{
+				this.m_HandleRect = null;
 				this.m_HandleContainerRect = null;
 			}
 		}
@@ -395,7 +397,7 @@ namespace UnityEngine.UI
 			{
 				this.UpdateCachedReferences();
 			}
-			this.m_Tracker.Clear(true);
+			this.m_Tracker.Clear();
 			if (this.m_FillContainerRect != null)
 			{
 				this.m_Tracker.Add(this, this.m_FillRect, DrivenTransformProperties.Anchors);
@@ -421,10 +423,10 @@ namespace UnityEngine.UI
 				this.m_Tracker.Add(this, this.m_HandleRect, DrivenTransformProperties.Anchors);
 				Vector2 zero2 = Vector2.zero;
 				Vector2 one2 = Vector2.one;
-				int arg_155_1 = (int)this.axis;
+				int arg_154_1 = (int)this.axis;
 				float value = (!this.reverseValue) ? this.normalizedValue : (1f - this.normalizedValue);
 				one2[(int)this.axis] = value;
-				zero2[arg_155_1] = value;
+				zero2[arg_154_1] = value;
 				this.m_HandleRect.anchorMin = zero2;
 				this.m_HandleRect.anchorMax = one2;
 			}

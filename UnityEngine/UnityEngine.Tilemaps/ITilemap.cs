@@ -91,6 +91,7 @@ namespace UnityEngine.Tilemaps
 			return this.m_Tilemap.GetComponent<T>();
 		}
 
+		[RequiredByNativeCode]
 		private static ITilemap CreateInstance()
 		{
 			ITilemap.s_Instance = new ITilemap();

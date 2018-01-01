@@ -925,12 +925,6 @@ namespace UnityEditor
 			EditorGUI.Slider(position, property, leftValue, rightValue);
 		}
 
-		internal static void SliderWithTexture(GUIContent label, SerializedProperty property, float leftValue, float rightValue, float power, GUIStyle sliderStyle, GUIStyle thumbStyle, Texture2D sliderBackground, params GUILayoutOption[] options)
-		{
-			Rect position = EditorGUILayout.s_LastRect = EditorGUILayout.GetSliderRect(false, options);
-			EditorGUI.SliderWithTexture(position, label, property, leftValue, rightValue, power, sliderStyle, thumbStyle, sliderBackground);
-		}
-
 		public static void Slider(SerializedProperty property, float leftValue, float rightValue, string label, params GUILayoutOption[] options)
 		{
 			EditorGUILayout.Slider(property, leftValue, rightValue, EditorGUIUtility.TempContent(label), options);
@@ -1033,6 +1027,11 @@ namespace UnityEditor
 			return EditorGUILayout.Popup(label, selectedIndex, displayedOptions, EditorStyles.popup, options);
 		}
 
+		public static int Popup(GUIContent label, int selectedIndex, string[] displayedOptions, params GUILayoutOption[] options)
+		{
+			return EditorGUILayout.Popup(label, selectedIndex, displayedOptions, EditorStyles.popup, options);
+		}
+
 		public static int Popup(string label, int selectedIndex, string[] displayedOptions, GUIStyle style, params GUILayoutOption[] options)
 		{
 			Rect position = EditorGUILayout.s_LastRect = EditorGUILayout.GetControlRect(true, 16f, style, options);
@@ -1045,6 +1044,12 @@ namespace UnityEditor
 		}
 
 		public static int Popup(GUIContent label, int selectedIndex, GUIContent[] displayedOptions, GUIStyle style, params GUILayoutOption[] options)
+		{
+			Rect position = EditorGUILayout.s_LastRect = EditorGUILayout.GetControlRect(true, 16f, style, options);
+			return EditorGUI.Popup(position, label, selectedIndex, displayedOptions, style);
+		}
+
+		internal static int Popup(GUIContent label, int selectedIndex, string[] displayedOptions, GUIStyle style, params GUILayoutOption[] options)
 		{
 			Rect position = EditorGUILayout.s_LastRect = EditorGUILayout.GetControlRect(true, 16f, style, options);
 			return EditorGUI.Popup(position, label, selectedIndex, displayedOptions, style);
@@ -1529,10 +1534,16 @@ namespace UnityEditor
 			return EditorGUI.ColorField(position, label, value);
 		}
 
+		[Obsolete("Use EditorGUILayout.ColorField(GUIContent label, Color value, bool showEyedropper, bool showAlpha, bool hdr, params GUILayoutOption[] options)")]
 		public static Color ColorField(GUIContent label, Color value, bool showEyedropper, bool showAlpha, bool hdr, ColorPickerHDRConfig hdrConfig, params GUILayoutOption[] options)
 		{
+			return EditorGUILayout.ColorField(label, value, showEyedropper, showAlpha, hdr, new GUILayoutOption[0]);
+		}
+
+		public static Color ColorField(GUIContent label, Color value, bool showEyedropper, bool showAlpha, bool hdr, params GUILayoutOption[] options)
+		{
 			Rect position = EditorGUILayout.s_LastRect = EditorGUILayout.GetControlRect(true, 16f, EditorStyles.colorField, options);
-			return EditorGUI.ColorField(position, label, value, showEyedropper, showAlpha, hdr, hdrConfig);
+			return EditorGUI.ColorField(position, label, value, showEyedropper, showAlpha, hdr);
 		}
 
 		public static AnimationCurve CurveField(AnimationCurve value, params GUILayoutOption[] options)
@@ -1635,6 +1646,12 @@ namespace UnityEditor
 			return EditorGUI.Foldout(position, foldout, content, toggleOnLabelClick, style);
 		}
 
+		internal static void LayerMaskField(uint layers, GUIContent label, EditorUtility.SelectMenuItemFunction callback, params GUILayoutOption[] options)
+		{
+			Rect position = EditorGUILayout.s_LastRect = EditorGUILayout.GetControlRect(true, 16f, options);
+			EditorGUI.LayerMaskField(position, layers, label, callback);
+		}
+
 		internal static void LayerMaskField(SerializedProperty property, GUIContent label, params GUILayoutOption[] options)
 		{
 			Rect position = EditorGUILayout.s_LastRect = EditorGUILayout.GetControlRect(true, 16f, options);
@@ -1649,6 +1666,11 @@ namespace UnityEditor
 		public static void HelpBox(string message, MessageType type, bool wide)
 		{
 			EditorGUILayout.LabelField((!wide) ? EditorGUIUtility.blankContent : GUIContent.none, EditorGUIUtility.TempContent(message, EditorGUIUtility.GetHelpIcon(type)), EditorStyles.helpBox, new GUILayoutOption[0]);
+		}
+
+		public static void HelpBox(GUIContent content, bool wide = true)
+		{
+			EditorGUILayout.LabelField((!wide) ? EditorGUIUtility.blankContent : GUIContent.none, content, EditorStyles.helpBox, new GUILayoutOption[0]);
 		}
 
 		internal static void PrefixLabelInternal(GUIContent label, GUIStyle followingStyle, GUIStyle labelStyle)
@@ -2136,6 +2158,17 @@ namespace UnityEditor
 			return EditorGUI.DropdownButton(EditorGUILayout.s_LastRect, content, focusType, style);
 		}
 
+		internal static int AdvancedPopup(int selectedIndex, string[] displayedOptions, params GUILayoutOption[] options)
+		{
+			return EditorGUILayout.AdvancedPopup(selectedIndex, displayedOptions, "MiniPullDown", options);
+		}
+
+		internal static int AdvancedPopup(int selectedIndex, string[] displayedOptions, GUIStyle style, params GUILayoutOption[] options)
+		{
+			Rect rect = EditorGUILayout.s_LastRect = EditorGUILayout.GetControlRect(false, 16f, style, options);
+			return EditorGUI.AdvancedPopup(rect, selectedIndex, displayedOptions, style);
+		}
+
 		[Obsolete("EnumMaskField has been deprecated. Use EnumFlagsField instead.")]
 		public static Enum EnumMaskField(Enum enumValue, params GUILayoutOption[] options)
 		{
@@ -2210,10 +2243,15 @@ namespace UnityEditor
 			return EditorGUI.EnumMaskPopup(position, label, selected, out changedFlags, out changedToValue, style);
 		}
 
-		internal static Color ColorBrightnessField(GUIContent label, Color value, float minBrightness, float maxBrightness, params GUILayoutOption[] options)
+		internal static float AngularDial(GUIContent label, float angle, Texture thumbTexture, GUIStyle background, GUIStyle thumb, params GUILayoutOption[] options)
 		{
-			Rect r = EditorGUILayout.s_LastRect = EditorGUILayout.GetControlRect(true, 16f, EditorStyles.numberField, options);
-			return EditorGUI.ColorBrightnessField(r, label, value, minBrightness, maxBrightness);
+			bool flag = label != null && label != GUIContent.none;
+			float num = (background != null && background.fixedHeight != 0f) ? background.fixedHeight : EditorGUIUtility.singleLineHeight;
+			float minWidth = ((!flag) ? 0f : EditorGUIUtility.labelWidth) + ((background == null) ? 0f : background.fixedWidth);
+			float kLabelFloatMaxW = EditorGUILayout.kLabelFloatMaxW;
+			Rect rect = GUILayoutUtility.GetRect(minWidth, kLabelFloatMaxW, num, num, background, options);
+			EditorGUILayout.s_LastRect = rect;
+			return EditorGUI.AngularDial(rect, label, angle, thumbTexture, background, thumb);
 		}
 
 		internal static Gradient GradientField(Gradient value, params GUILayoutOption[] options)
@@ -2252,12 +2290,12 @@ namespace UnityEditor
 			return EditorGUI.GradientField(label, position, value);
 		}
 
-		internal static Color HexColorTextField(GUIContent label, Color color, bool showAlpha, params GUILayoutOption[] options)
+		internal static Color32 HexColorTextField(GUIContent label, Color32 color, bool showAlpha, params GUILayoutOption[] options)
 		{
 			return EditorGUILayout.HexColorTextField(label, color, showAlpha, EditorStyles.textField, options);
 		}
 
-		internal static Color HexColorTextField(GUIContent label, Color color, bool showAlpha, GUIStyle style, params GUILayoutOption[] options)
+		internal static Color32 HexColorTextField(GUIContent label, Color32 color, bool showAlpha, GUIStyle style, params GUILayoutOption[] options)
 		{
 			Rect rect = EditorGUILayout.s_LastRect = EditorGUILayout.GetControlRect(true, 16f, EditorStyles.numberField, options);
 			return EditorGUI.HexColorTextField(rect, label, color, showAlpha, style);
@@ -2285,6 +2323,23 @@ namespace UnityEditor
 		{
 			Rect position = EditorGUILayout.s_LastRect = EditorGUILayout.GetControlRect(false, knobSize.y, options);
 			return EditorGUI.Knob(position, knobSize, value, minValue, maxValue, unit, backgroundColor, activeColor, showValue, GUIUtility.GetControlID("Knob".GetHashCode(), FocusType.Passive, position));
+		}
+
+		internal static void SliderWithTexture(GUIContent label, SerializedProperty property, float sliderMin, float sliderMax, float power, Texture2D sliderBackground, params GUILayoutOption[] options)
+		{
+			Rect position = EditorGUILayout.s_LastRect = EditorGUILayout.GetSliderRect(false, options);
+			EditorGUI.SliderWithTexture(position, label, property, sliderMin, sliderMax, power, sliderBackground);
+		}
+
+		internal static float SliderWithTexture(GUIContent label, float sliderValue, float sliderMin, float sliderMax, string formatString, Texture2D sliderBackground, params GUILayoutOption[] options)
+		{
+			return EditorGUILayout.SliderWithTexture(label, sliderValue, sliderMin, sliderMax, formatString, sliderMin, sliderMax, sliderBackground, new GUILayoutOption[0]);
+		}
+
+		internal static float SliderWithTexture(GUIContent label, float sliderValue, float sliderMin, float sliderMax, string formatString, float textFieldMin, float textFieldMax, Texture2D sliderBackground, params GUILayoutOption[] options)
+		{
+			Rect position = EditorGUILayout.s_LastRect = EditorGUILayout.GetSliderRect(false, options);
+			return EditorGUI.SliderWithTexture(position, label, sliderValue, sliderMin, sliderMax, formatString, textFieldMin, textFieldMax, 1f, sliderBackground);
 		}
 
 		internal static void TargetChoiceField(SerializedProperty property, GUIContent label, params GUILayoutOption[] options)

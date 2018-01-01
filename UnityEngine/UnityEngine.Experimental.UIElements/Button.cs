@@ -2,7 +2,7 @@ using System;
 
 namespace UnityEngine.Experimental.UIElements
 {
-	public class Button : VisualElement
+	public class Button : BaseTextElement
 	{
 		public Clickable clickable;
 

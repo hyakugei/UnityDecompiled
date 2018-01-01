@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using UnityEditor.Scripting;
 using UnityEditor.Scripting.ScriptCompilation;
+using UnityEditor.Utils;
 using UnityEditorInternal;
 using UnityEngine;
 
@@ -118,9 +119,12 @@ namespace UnityEditor.RestService
 
 		private static IEnumerable<string> GetAllSupportedFiles()
 		{
-			return from asset in AssetDatabase.GetAllAssetPaths()
-			where ProjectStateRestHandler.IsSupportedExtension(Path.GetExtension(asset))
-			select asset;
+			string projectPath = (!ProjectStateRestHandler.ProjectPath.EndsWith("/")) ? (ProjectStateRestHandler.ProjectPath + "/") : ProjectStateRestHandler.ProjectPath;
+			return AssetDatabase.GetAllAssetPaths().Where(delegate(string asset)
+			{
+				string text = Path.GetFullPath(asset).ConvertSeparatorsToUnity();
+				return text.StartsWith(projectPath) && ProjectStateRestHandler.IsSupportedExtension(Path.GetExtension(asset));
+			});
 		}
 
 		private static JSONValue JsonForIsland(ProjectStateRestHandler.Island island)

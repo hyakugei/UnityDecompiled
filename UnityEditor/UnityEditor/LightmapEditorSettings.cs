@@ -59,6 +59,8 @@ namespace UnityEditor
 			ATrous
 		}
 
+		private static int m_MaxAtlasHeight = 1024;
+
 		public static extern LightmapEditorSettings.Lightmapper lightmapper
 		{
 			[GeneratedByOldBindingsGenerator]
@@ -109,17 +111,7 @@ namespace UnityEditor
 			set;
 		}
 
-		public static extern int maxAtlasWidth
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		public static extern int maxAtlasHeight
+		public static extern int maxAtlasSize
 		{
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
@@ -482,6 +474,32 @@ namespace UnityEditor
 			}
 		}
 
+		[Obsolete("LightmapEditorSettings.maxAtlasWidth is now called maxAtlasSize (UnityUpgradable) -> maxAtlasSize", false)]
+		public static int maxAtlasWidth
+		{
+			get
+			{
+				return LightmapEditorSettings.maxAtlasSize;
+			}
+			set
+			{
+				LightmapEditorSettings.maxAtlasSize = value;
+			}
+		}
+
+		[Obsolete("LightmapEditorSettings.maxAtlasHeight has been deprecated. Only square atlases are supported, please use the maxAtlasSize instead. ")]
+		public static int maxAtlasHeight
+		{
+			get
+			{
+				return LightmapEditorSettings.m_MaxAtlasHeight;
+			}
+			set
+			{
+				LightmapEditorSettings.m_MaxAtlasHeight = value;
+			}
+		}
+
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern void Reset();
@@ -497,6 +515,10 @@ namespace UnityEditor
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern bool HasClampedResolution(Renderer renderer);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern bool HasUVOverlaps(Renderer renderer);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]

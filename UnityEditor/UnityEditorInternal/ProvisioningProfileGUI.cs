@@ -13,7 +13,7 @@ namespace UnityEditorInternal
 			GUILayout.BeginHorizontal(new GUILayoutOption[0]);
 			GUILayout.Label(titleWithToolTip, EditorStyles.label, new GUILayoutOption[0]);
 			Rect controlRect = EditorGUILayout.GetControlRect(false, 0f, new GUILayoutOption[0]);
-			GUIContent label = EditorGUIUtility.TextContent("Profile ID:");
+			GUIContent label = EditorGUIUtility.TrTextContent("Profile ID:", null, null);
 			EditorGUI.BeginProperty(controlRect, label, prop);
 			if (GUILayout.Button("Browse", EditorStyles.miniButton, new GUILayoutOption[0]))
 			{
@@ -22,15 +22,17 @@ namespace UnityEditorInternal
 				{
 					profile = provisioningProfile;
 					prop.stringValue = profile.UUID;
+					prop.serializedObject.ApplyModifiedProperties();
 					GUI.FocusControl("");
 				}
+				GUIUtility.ExitGUI();
 			}
-			GUILayout.EndHorizontal();
 			EditorGUI.EndProperty();
+			GUILayout.EndHorizontal();
 			EditorGUI.BeginChangeCheck();
 			EditorGUI.indentLevel++;
 			controlRect = EditorGUILayout.GetControlRect(true, 0f, new GUILayoutOption[0]);
-			label = EditorGUIUtility.TextContent("Profile ID:");
+			label = EditorGUIUtility.TrTextContent("Profile ID:", null, null);
 			EditorGUI.BeginProperty(controlRect, label, prop);
 			profile.UUID = EditorGUILayout.TextField(label, profile.UUID, new GUILayoutOption[0]);
 			if (EditorGUI.EndChangeCheck())
@@ -54,11 +56,12 @@ namespace UnityEditorInternal
 					callback(profile);
 					GUI.FocusControl("");
 				}
+				GUIUtility.ExitGUI();
 			}
 			GUILayout.EndHorizontal();
 			EditorGUI.BeginChangeCheck();
 			EditorGUI.indentLevel++;
-			GUIContent label = EditorGUIUtility.TextContent("Profile ID:");
+			GUIContent label = EditorGUIUtility.TrTextContent("Profile ID:", null, null);
 			profile.UUID = EditorGUILayout.TextField(label, profile.UUID, new GUILayoutOption[0]);
 			EditorGUI.indentLevel--;
 			if (EditorGUI.EndChangeCheck())
@@ -108,12 +111,23 @@ namespace UnityEditorInternal
 
 		internal static void ShowUIWithDefaults(string provisioningPrefKey, SerializedProperty enableAutomaticSigningProp, GUIContent automaticSigningGUI, SerializedProperty manualSigningIDProp, GUIContent manualSigningProfileGUI, SerializedProperty appleDevIDProp, GUIContent teamIDGUIContent)
 		{
+			string defaultStringValue = ProvisioningProfileGUI.GetDefaultStringValue(appleDevIDProp, iOSEditorPrefKeys.kDefaultiOSAutomaticSignTeamId);
+			Rect controlRect = EditorGUILayout.GetControlRect(true, 0f, new GUILayoutOption[0]);
+			EditorGUI.BeginProperty(controlRect, teamIDGUIContent, appleDevIDProp);
+			EditorGUI.BeginChangeCheck();
+			string stringValue = EditorGUILayout.TextField(teamIDGUIContent, defaultStringValue, new GUILayoutOption[0]);
+			if (EditorGUI.EndChangeCheck())
+			{
+				appleDevIDProp.stringValue = stringValue;
+			}
+			EditorGUI.EndProperty();
 			int defaultAutomaticSigningValue = ProvisioningProfileGUI.GetDefaultAutomaticSigningValue(enableAutomaticSigningProp, iOSEditorPrefKeys.kDefaultiOSAutomaticallySignBuild);
 			bool boolForAutomaticSigningValue = ProvisioningProfileGUI.GetBoolForAutomaticSigningValue(defaultAutomaticSigningValue);
-			Rect controlRect = EditorGUILayout.GetControlRect(true, 0f, new GUILayoutOption[0]);
-			EditorGUI.BeginProperty(controlRect, automaticSigningGUI, enableAutomaticSigningProp);
+			Rect controlRect2 = EditorGUILayout.GetControlRect(true, 0f, new GUILayoutOption[0]);
+			EditorGUI.BeginProperty(controlRect2, automaticSigningGUI, enableAutomaticSigningProp);
 			bool flag = EditorGUILayout.Toggle(automaticSigningGUI, boolForAutomaticSigningValue, new GUILayoutOption[0]);
-			if (flag != boolForAutomaticSigningValue)
+			bool flag2 = enableAutomaticSigningProp.intValue == 0;
+			if (flag != boolForAutomaticSigningValue || flag2)
 			{
 				enableAutomaticSigningProp.intValue = ProvisioningProfileGUI.GetIntValueForAutomaticSigningBool(flag);
 			}
@@ -121,19 +135,6 @@ namespace UnityEditorInternal
 			if (!flag)
 			{
 				ProvisioningProfileGUI.ShowProvisioningProfileUIWithDefaults(provisioningPrefKey, manualSigningIDProp, manualSigningProfileGUI);
-			}
-			else
-			{
-				string defaultStringValue = ProvisioningProfileGUI.GetDefaultStringValue(appleDevIDProp, iOSEditorPrefKeys.kDefaultiOSAutomaticSignTeamId);
-				Rect controlRect2 = EditorGUILayout.GetControlRect(true, 0f, new GUILayoutOption[0]);
-				EditorGUI.BeginProperty(controlRect2, teamIDGUIContent, appleDevIDProp);
-				EditorGUI.BeginChangeCheck();
-				string stringValue = EditorGUILayout.TextField(teamIDGUIContent, defaultStringValue, new GUILayoutOption[0]);
-				if (EditorGUI.EndChangeCheck())
-				{
-					appleDevIDProp.stringValue = stringValue;
-				}
-				EditorGUI.EndProperty();
 			}
 		}
 

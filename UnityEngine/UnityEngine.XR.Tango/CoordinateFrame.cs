@@ -2,7 +2,7 @@ using System;
 
 namespace UnityEngine.XR.Tango
 {
-	public enum CoordinateFrame
+	internal enum CoordinateFrame
 	{
 		GlobalWGS84,
 		AreaDescription,

@@ -5,8 +5,8 @@ using UnityEngine.Bindings;
 
 namespace UnityEditor
 {
-	[NativeType(Header = "Modules/TilemapEditor/Editor/TilemapEditorUserSettings.h")]
-	internal sealed class TilemapEditorUserSettings
+	[NativeType(Header = "Modules/TilemapEditor/Editor/TilemapEditorUserSettings.h"), ExcludeFromObjectFactory, ExcludeFromPreset]
+	internal sealed class TilemapEditorUserSettings : UnityEngine.Object
 	{
 		public enum FocusMode
 		{

@@ -6,7 +6,7 @@ using UnityEngine.Experimental.UIElements.StyleEnums;
 
 namespace UnityEditor.Experimental.UIElements.GraphView
 {
-	internal class RectangleSelector : MouseManipulator
+	public class RectangleSelector : MouseManipulator
 	{
 		private class RectangleSelect : VisualElement
 		{
@@ -96,6 +96,11 @@ namespace UnityEditor.Experimental.UIElements.GraphView
 			{
 				button = MouseButton.LeftMouse
 			});
+			base.activators.Add(new ManipulatorActivationFilter
+			{
+				button = MouseButton.LeftMouse,
+				modifiers = EventModifiers.Shift
+			});
 			this.m_Rectangle = new RectangleSelector.RectangleSelect();
 			this.m_Rectangle.style.positionType = PositionType.Absolute;
 			this.m_Rectangle.style.positionTop = 0f;
@@ -132,14 +137,18 @@ namespace UnityEditor.Experimental.UIElements.GraphView
 
 		private void OnMouseDown(MouseDownEvent e)
 		{
-			if (e.target == base.target)
+			if (this.m_Active)
+			{
+				e.StopImmediatePropagation();
+			}
+			else
 			{
 				GraphView graphView = base.target as GraphView;
 				if (graphView != null)
 				{
 					if (base.CanStartManipulation(e))
 					{
-						if (!e.ctrlKey)
+						if (!e.shiftKey)
 						{
 							graphView.ClearSelection();
 						}
@@ -147,7 +156,7 @@ namespace UnityEditor.Experimental.UIElements.GraphView
 						this.m_Rectangle.start = e.localMousePosition;
 						this.m_Rectangle.end = this.m_Rectangle.start;
 						this.m_Active = true;
-						base.target.TakeCapture();
+						base.target.TakeMouseCapture();
 						e.StopPropagation();
 					}
 				}
@@ -175,8 +184,7 @@ namespace UnityEditor.Experimental.UIElements.GraphView
 						List<ISelectable> newSelection = new List<ISelectable>();
 						graphView.graphElements.ForEach(delegate(GraphElement child)
 						{
-							Matrix4x4 inverse = child.transform.matrix.inverse;
-							Rect rectangle = new Rect(inverse.MultiplyPoint3x4(selectionRect.position), inverse.MultiplyPoint3x4(selectionRect.size));
+							Rect rectangle = graphView.contentViewContainer.ChangeCoordinatesTo(child, selectionRect);
 							if (child.IsSelectable() && child.Overlaps(rectangle))
 							{
 								newSelection.Add(child);
@@ -186,7 +194,7 @@ namespace UnityEditor.Experimental.UIElements.GraphView
 						{
 							if (selection.Contains(current))
 							{
-								if (e.ctrlKey)
+								if (e.shiftKey)
 								{
 									graphView.RemoveFromSelection(current);
 								}
@@ -197,7 +205,7 @@ namespace UnityEditor.Experimental.UIElements.GraphView
 							}
 						}
 						this.m_Active = false;
-						base.target.ReleaseCapture();
+						base.target.ReleaseMouseCapture();
 						e.StopPropagation();
 					}
 				}

@@ -7,11 +7,11 @@ namespace UnityEditor
 	{
 		private class Texts
 		{
-			public GUIContent velocityRange = EditorGUIUtility.TextContent("Speed Range|Maps the speed to a value along the curve, when using one of the curve modes.");
+			public GUIContent velocityRange = EditorGUIUtility.TrTextContent("Speed Range", "Maps the speed to a value along the curve, when using one of the curve modes.", null);
 
-			public GUIContent rotation = EditorGUIUtility.TextContent("Angular Velocity|Controls the angular velocity of each particle based on its speed.");
+			public GUIContent rotation = EditorGUIUtility.TrTextContent("Angular Velocity", "Controls the angular velocity of each particle based on its speed.", null);
 
-			public GUIContent separateAxes = EditorGUIUtility.TextContent("Separate Axes|If enabled, you can control the angular velocity limit separately for each axis.");
+			public GUIContent separateAxes = EditorGUIUtility.TrTextContent("Separate Axes", "If enabled, you can control the angular velocity limit separately for each axis.", null);
 
 			public GUIContent x = EditorGUIUtility.TextContent("X");
 

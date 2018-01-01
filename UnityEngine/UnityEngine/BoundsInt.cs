@@ -158,7 +158,7 @@ namespace UnityEngine
 			{
 				this.xMax = value.x;
 				this.yMax = value.y;
-				this.zMin = value.z;
+				this.zMax = value.z;
 			}
 		}
 
@@ -287,7 +287,7 @@ namespace UnityEngine
 		public void SetMinMax(Vector3Int minPosition, Vector3Int maxPosition)
 		{
 			this.min = minPosition;
-			this.max = maxPosition - minPosition;
+			this.max = maxPosition;
 		}
 
 		public void ClampToBounds(BoundsInt bounds)

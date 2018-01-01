@@ -30,10 +30,8 @@ namespace UnityEditorInternal
 		public static GameObjectSelectionItem Create(GameObject gameObject)
 		{
 			GameObjectSelectionItem selectionItem = ScriptableObject.CreateInstance(typeof(GameObjectSelectionItem)) as GameObjectSelectionItem;
-			selectionItem.hideFlags = HideFlags.HideAndDontSave;
 			selectionItem.gameObject = gameObject;
 			selectionItem.animationClip = null;
-			selectionItem.timeOffset = 0f;
 			selectionItem.id = 0;
 			if (selectionItem.rootGameObject != null)
 			{

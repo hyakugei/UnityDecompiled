@@ -32,6 +32,7 @@ namespace UnityEditor
 		[Obsolete("Specify IL2CPP optimization level in Player Settings.")]
 		ForceOptimizeScriptCompilation = 0,
 		ComputeCRC = 1048576,
-		StrictMode = 2097152
+		StrictMode = 2097152,
+		IncludeTestAssemblies = 4194304
 	}
 }

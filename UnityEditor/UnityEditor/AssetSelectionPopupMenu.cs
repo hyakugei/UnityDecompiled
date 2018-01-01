@@ -34,7 +34,7 @@ namespace UnityEditor
 			}
 			else
 			{
-				genericMenu.AddDisabledItem(new GUIContent("No Audio Mixers found in this project"));
+				genericMenu.AddDisabledItem(EditorGUIUtility.TrTextContent("No Audio Mixers found in this project", null, null));
 			}
 			genericMenu.DropDown(buttonRect);
 		}

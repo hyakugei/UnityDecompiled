@@ -85,8 +85,13 @@ namespace UnityEngine.Playables
 
 		public static PlayableGraph Create()
 		{
+			return PlayableGraph.Create(null);
+		}
+
+		public static PlayableGraph Create(string name)
+		{
 			PlayableGraph result;
-			PlayableGraph.Create_Injected(out result);
+			PlayableGraph.Create_Injected(name, out result);
 			return result;
 		}
 
@@ -120,7 +125,7 @@ namespace UnityEngine.Playables
 			PlayableGraph.Stop_Injected(ref this);
 		}
 
-		public void Evaluate([DefaultValue(0)] float deltaTime)
+		public void Evaluate([DefaultValue("0")] float deltaTime)
 		{
 			PlayableGraph.Evaluate_Injected(ref this, deltaTime);
 		}
@@ -219,8 +224,13 @@ namespace UnityEngine.Playables
 			PlayableGraph.DestroySubgraphInternal_Injected(ref this, ref playable);
 		}
 
+		public string GetEditorName()
+		{
+			return PlayableGraph.GetEditorName_Injected(ref this);
+		}
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void Create_Injected(out PlayableGraph ret);
+		private static extern void Create_Injected(string name, out PlayableGraph ret);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern void Destroy_Injected(ref PlayableGraph _unity_self);
@@ -241,7 +251,7 @@ namespace UnityEngine.Playables
 		private static extern void Stop_Injected(ref PlayableGraph _unity_self);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void Evaluate_Injected(ref PlayableGraph _unity_self, [DefaultValue(0)] float deltaTime);
+		private static extern void Evaluate_Injected(ref PlayableGraph _unity_self, [DefaultValue("0")] float deltaTime);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern DirectorUpdateMode GetTimeUpdateMode_Injected(ref PlayableGraph _unity_self);
@@ -296,5 +306,8 @@ namespace UnityEngine.Playables
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern void DestroySubgraphInternal_Injected(ref PlayableGraph _unity_self, ref PlayableHandle playable);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern string GetEditorName_Injected(ref PlayableGraph _unity_self);
 	}
 }

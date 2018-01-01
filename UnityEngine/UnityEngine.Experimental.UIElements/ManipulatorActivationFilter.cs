@@ -8,9 +8,12 @@ namespace UnityEngine.Experimental.UIElements
 
 		public EventModifiers modifiers;
 
+		public int clickCount;
+
 		public bool Matches(IMouseEvent e)
 		{
-			return this.button == (MouseButton)e.button && this.HasModifiers(e);
+			bool flag = this.clickCount == 0 || e.clickCount >= this.clickCount;
+			return this.button == (MouseButton)e.button && this.HasModifiers(e) && flag;
 		}
 
 		private bool HasModifiers(IMouseEvent e)

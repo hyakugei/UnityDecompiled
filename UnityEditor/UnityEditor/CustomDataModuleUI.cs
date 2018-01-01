@@ -14,15 +14,15 @@ namespace UnityEditor
 
 		private class Texts
 		{
-			public GUIContent mode = EditorGUIUtility.TextContent("Mode|Select the type of data to populate this stream with.");
+			public GUIContent mode = EditorGUIUtility.TrTextContent("Mode", "Select the type of data to populate this stream with.", null);
 
-			public GUIContent vectorComponentCount = EditorGUIUtility.TextContent("Number of Components|How many of the components (XYZW) to fill.");
+			public GUIContent vectorComponentCount = EditorGUIUtility.TrTextContent("Number of Components", "How many of the components (XYZW) to fill.", null);
 
 			public GUIContent[] modes = new GUIContent[]
 			{
-				EditorGUIUtility.TextContent("Disabled"),
-				EditorGUIUtility.TextContent("Vector"),
-				EditorGUIUtility.TextContent("Color")
+				EditorGUIUtility.TrTextContent("Disabled", null, null),
+				EditorGUIUtility.TrTextContent("Vector", null, null),
+				EditorGUIUtility.TrTextContent("Color", null, null)
 			};
 		}
 

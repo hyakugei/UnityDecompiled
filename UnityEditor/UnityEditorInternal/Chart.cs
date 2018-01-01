@@ -316,7 +316,7 @@ namespace UnityEditorInternal
 				position.x -= 180f;
 				position.width = 180f;
 				this.DoLegendGUI(position, type, cdata, typeForControl, active);
-				if (current.type == EventType.Repaint)
+				if (current.type == EventType.Repaint && GUIClip.visibleRect.Overlaps(rect))
 				{
 					Chart.Styles.rightPane.Draw(rect2, false, false, active, false);
 					if (this.m_NotSupportedWarning == null)

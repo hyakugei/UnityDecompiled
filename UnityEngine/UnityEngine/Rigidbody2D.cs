@@ -1,12 +1,12 @@
 using System;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using UnityEngine.Bindings;
 using UnityEngine.Internal;
-using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
-	[RequireComponent(typeof(Transform)), RequireComponent(typeof(Transform))]
+	[RequireComponent(typeof(Transform))]
 	public sealed class Rigidbody2D : Component
 	{
 		public Vector2 position
@@ -270,6 +270,7 @@ namespace UnityEngine
 			return this.IsTouching_AnyColliderWithFilter_Internal_Injected(ref contactFilter);
 		}
 
+		[ExcludeFromDocs]
 		public bool IsTouchingLayers()
 		{
 			return this.IsTouchingLayers(-1);
@@ -303,6 +304,7 @@ namespace UnityEngine
 			return result;
 		}
 
+		[ExcludeFromDocs]
 		public void AddForce(Vector2 force)
 		{
 			this.AddForce(force, ForceMode2D.Force);
@@ -313,6 +315,7 @@ namespace UnityEngine
 			this.AddForce_Injected(ref force, mode);
 		}
 
+		[ExcludeFromDocs]
 		public void AddRelativeForce(Vector2 relativeForce)
 		{
 			this.AddRelativeForce(relativeForce, ForceMode2D.Force);
@@ -323,6 +326,7 @@ namespace UnityEngine
 			this.AddRelativeForce_Injected(ref relativeForce, mode);
 		}
 
+		[ExcludeFromDocs]
 		public void AddForceAtPosition(Vector2 force, Vector2 position)
 		{
 			this.AddForceAtPosition(force, position, ForceMode2D.Force);
@@ -333,6 +337,7 @@ namespace UnityEngine
 			this.AddForceAtPosition_Injected(ref force, ref position, mode);
 		}
 
+		[ExcludeFromDocs]
 		public void AddTorque(float torque)
 		{
 			this.AddTorque(torque, ForceMode2D.Force);
@@ -383,55 +388,10 @@ namespace UnityEngine
 			return result;
 		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern int GetAttachedColliders(Collider2D[] results);
-
-		public int OverlapCollider(ContactFilter2D contactFilter, Collider2D[] results)
+		public int OverlapCollider(ContactFilter2D contactFilter, [Out] Collider2D[] results)
 		{
-			return Rigidbody2D.INTERNAL_CALL_OverlapCollider(this, ref contactFilter, results);
+			return this.OverlapCollider_Injected(ref contactFilter, results);
 		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern int INTERNAL_CALL_OverlapCollider(Rigidbody2D self, ref ContactFilter2D contactFilter, Collider2D[] results);
-
-		public int Cast(Vector2 direction, RaycastHit2D[] results, [DefaultValue("Mathf.Infinity")] float distance)
-		{
-			return Rigidbody2D.INTERNAL_CALL_Cast(this, ref direction, results, distance);
-		}
-
-		[ExcludeFromDocs]
-		public int Cast(Vector2 direction, RaycastHit2D[] results)
-		{
-			float distance = float.PositiveInfinity;
-			return Rigidbody2D.INTERNAL_CALL_Cast(this, ref direction, results, distance);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern int INTERNAL_CALL_Cast(Rigidbody2D self, ref Vector2 direction, RaycastHit2D[] results, float distance);
-
-		[ExcludeFromDocs]
-		public int Cast(Vector2 direction, ContactFilter2D contactFilter, RaycastHit2D[] results)
-		{
-			float distance = float.PositiveInfinity;
-			return this.Cast(direction, contactFilter, results, distance);
-		}
-
-		public int Cast(Vector2 direction, ContactFilter2D contactFilter, RaycastHit2D[] results, [DefaultValue("Mathf.Infinity")] float distance)
-		{
-			return this.Internal_Cast(direction, distance, contactFilter, results);
-		}
-
-		private int Internal_Cast(Vector2 direction, float distance, ContactFilter2D contactFilter, RaycastHit2D[] results)
-		{
-			return Rigidbody2D.INTERNAL_CALL_Internal_Cast(this, ref direction, distance, ref contactFilter, results);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern int INTERNAL_CALL_Internal_Cast(Rigidbody2D self, ref Vector2 direction, float distance, ref ContactFilter2D contactFilter, RaycastHit2D[] results);
 
 		public int GetContacts(ContactPoint2D[] contacts)
 		{
@@ -451,6 +411,41 @@ namespace UnityEngine
 		public int GetContacts(ContactFilter2D contactFilter, Collider2D[] colliders)
 		{
 			return Physics2D.GetContacts(this, contactFilter, colliders);
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public extern int GetAttachedColliders([Out] Collider2D[] results);
+
+		[ExcludeFromDocs]
+		public int Cast(Vector2 direction, RaycastHit2D[] results)
+		{
+			return this.Cast_Internal(direction, float.PositiveInfinity, results);
+		}
+
+		public int Cast(Vector2 direction, RaycastHit2D[] results, [DefaultValue("Mathf.Infinity")] float distance)
+		{
+			return this.Cast_Internal(direction, distance, results);
+		}
+
+		[ExcludeFromDocs]
+		public int Cast(Vector2 direction, ContactFilter2D contactFilter, RaycastHit2D[] results)
+		{
+			return this.CastFiltered_Internal(direction, float.PositiveInfinity, contactFilter, results);
+		}
+
+		public int Cast(Vector2 direction, ContactFilter2D contactFilter, RaycastHit2D[] results, [DefaultValue("Mathf.Infinity")] float distance)
+		{
+			return this.CastFiltered_Internal(direction, distance, contactFilter, results);
+		}
+
+		private int Cast_Internal(Vector2 direction, [DefaultValue("Mathf.Infinity")] float distance, [Out] RaycastHit2D[] results)
+		{
+			return this.Cast_Internal_Injected(ref direction, distance, results);
+		}
+
+		private int CastFiltered_Internal(Vector2 direction, float distance, ContactFilter2D contactFilter, [Out] RaycastHit2D[] results)
+		{
+			return this.CastFiltered_Internal_Injected(ref direction, distance, ref contactFilter, results);
 		}
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -515,5 +510,14 @@ namespace UnityEngine
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern void GetRelativePointVelocity_Injected(ref Vector2 relativePoint, out Vector2 ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern int OverlapCollider_Injected(ref ContactFilter2D contactFilter, [Out] Collider2D[] results);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern int Cast_Internal_Injected(ref Vector2 direction, [DefaultValue("Mathf.Infinity")] float distance, [Out] RaycastHit2D[] results);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern int CastFiltered_Internal_Injected(ref Vector2 direction, float distance, ref ContactFilter2D contactFilter, [Out] RaycastHit2D[] results);
 	}
 }

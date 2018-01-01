@@ -13,5 +13,7 @@ namespace UnityEngine
 		public uint secure;
 
 		public uint alert;
+
+		public int characterLimit;
 	}
 }

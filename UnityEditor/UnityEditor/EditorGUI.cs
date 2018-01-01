@@ -147,6 +147,8 @@ namespace UnityEditor
 
 			private bool m_CommitCommandSentOnLostFocus;
 
+			private const string CommitCommand = "DelayedControlShouldCommit";
+
 			private bool m_IgnoreBeginGUI = false;
 
 			public void BeginGUI()
@@ -200,9 +202,9 @@ namespace UnityEditor
 					this.viewThatHadFocus.SendEvent(EditorGUIUtility.CommandEvent("DelayedControlShouldCommit"));
 					this.m_IgnoreBeginGUI = false;
 					this.viewThatHadFocus.SetKeyboardControl(keyboardControl);
+					this.messageControl = 0;
 				}
 				base.EndEditing();
-				this.messageControl = 0;
 			}
 
 			public string OnGUI(int id, string value, out bool changed)
@@ -214,6 +216,7 @@ namespace UnityEditor
 					this.m_CommitCommandSentOnLostFocus = false;
 					changed = (value != this.controlThatHadFocusValue);
 					current.Use();
+					this.messageControl = 0;
 					result = this.controlThatHadFocusValue;
 				}
 				else
@@ -328,7 +331,7 @@ namespace UnityEditor
 
 			public int[] flagValues;
 
-			public string[] names;
+			public string[] displayNames;
 
 			public bool flags;
 
@@ -362,15 +365,6 @@ namespace UnityEditor
 			{
 				EditorGUI.EndProperty();
 			}
-		}
-
-		private class ColorBrightnessFieldStateObject
-		{
-			public float m_Hue;
-
-			public float m_Saturation;
-
-			public float m_Brightness;
 		}
 
 		internal sealed class GUIContents
@@ -1093,8 +1087,6 @@ namespace UnityEditor
 
 		private static double s_DragSensitivity = 0.0;
 
-		private const float kDragSensitivity = 0.03f;
-
 		internal const float kMiniLabelW = 13f;
 
 		internal const float kLabelW = 80f;
@@ -1176,25 +1168,27 @@ namespace UnityEditor
 			EditorGUIUtility.TextContent("H")
 		};
 
-		private static GUIContent s_CenterLabel = EditorGUIUtility.TextContent("Center");
+		private static GUIContent s_CenterLabel = EditorGUIUtility.TrTextContent("Center", null, null);
 
-		private static GUIContent s_ExtentLabel = EditorGUIUtility.TextContent("Extent");
+		private static GUIContent s_ExtentLabel = EditorGUIUtility.TrTextContent("Extent", null, null);
 
-		private static GUIContent s_PositionLabel = EditorGUIUtility.TextContent("Position");
+		private static GUIContent s_PositionLabel = EditorGUIUtility.TrTextContent("Position", null, null);
 
-		private static GUIContent s_SizeLabel = EditorGUIUtility.TextContent("Size");
+		private static GUIContent s_SizeLabel = EditorGUIUtility.TrTextContent("Size", null, null);
 
-		internal static readonly GUIContent s_ClipingPlanesLabel = EditorGUIUtility.TextContent("Clipping Planes|Distances from the camera to start and stop rendering.");
+		internal static readonly GUIContent s_ClipingPlanesLabel = EditorGUIUtility.TrTextContent("Clipping Planes", "Distances from the camera to start and stop rendering.", null);
 
 		internal static readonly GUIContent[] s_NearAndFarLabels = new GUIContent[]
 		{
-			EditorGUIUtility.TextContent("Near|The closest point relative to the camera that drawing will occur."),
-			EditorGUIUtility.TextContent("Far|The furthest point relative to the camera that drawing will occur.\n")
+			EditorGUIUtility.TrTextContent("Near", "The closest point relative to the camera that drawing will occur.", null),
+			EditorGUIUtility.TrTextContent("Far", "The furthest point relative to the camera that drawing will occur.\n", null)
 		};
 
 		internal const float kNearFarLabelsWidth = 35f;
 
 		private static int s_ColorPickID;
+
+		private static int s_CurveID;
 
 		internal static Color kCurveColor = Color.green;
 
@@ -1226,7 +1220,7 @@ namespace UnityEditor
 
 		private static bool s_ShowMixedValue;
 
-		private static GUIContent s_MixedValueContent = EditorGUIUtility.TextContent("—|Mixed Values");
+		private static GUIContent s_MixedValueContent = EditorGUIUtility.TrTextContent("—", "Mixed Values", null);
 
 		private static Color s_MixedValueContentColor = new Color(1f, 1f, 1f, 0.5f);
 
@@ -1248,7 +1242,21 @@ namespace UnityEditor
 
 		private static SerializedProperty s_PendingPropertyDelete = null;
 
-		private static string s_ArrayMultiInfoFormatString = EditorGUIUtility.TextContent("This field cannot display arrays with more than {0} elements when multiple objects are selected.").text;
+		private static Material s_ColorMaterial;
+
+		private static Material s_AlphaMaterial;
+
+		private static Material s_TransparentMaterial;
+
+		private static Material s_NormalmapMaterial;
+
+		private static Material s_LightmapRGBMMaterial;
+
+		private static Material s_LightmapDoubleLDRMaterial;
+
+		private static Material s_LightmapFullHDRMaterial;
+
+		private static string s_ArrayMultiInfoFormatString = EditorGUIUtility.TrTextContent("This field cannot display arrays with more than {0} elements when multiple objects are selected.", null, null).text;
 
 		private static GUIContent s_ArrayMultiInfoContent = new GUIContent();
 
@@ -1257,8 +1265,6 @@ namespace UnityEditor
 		private static readonly int s_GradientHash = "s_GradientHash".GetHashCode();
 
 		private static int s_GradientID;
-
-		private static readonly GUIContent s_HDRWarning = new GUIContent(string.Empty, EditorGUIUtility.warningIcon, LocalizationDatabase.GetLocalizedString("For HDR colors the normalized LDR hex color value is shown"));
 
 		private static int s_DropdownButtonHash = "DropdownButton".GetHashCode();
 
@@ -1356,22 +1362,6 @@ namespace UnityEditor
 			}
 		}
 
-		internal static Material alphaMaterial
-		{
-			get
-			{
-				return EditorGUIUtility.LoadRequired("Previews/PreviewAlphaMaterial.mat") as Material;
-			}
-		}
-
-		internal static Material transparentMaterial
-		{
-			get
-			{
-				return EditorGUIUtility.LoadRequired("Previews/PreviewTransparentMaterial.mat") as Material;
-			}
-		}
-
 		internal static Texture2D transparentCheckerTexture
 		{
 			get
@@ -1389,27 +1379,27 @@ namespace UnityEditor
 			}
 		}
 
-		internal static Material lightmapRGBMMaterial
+		internal static Material colorMaterial
 		{
 			get
 			{
-				return EditorGUIUtility.LoadRequired("Previews/PreviewEncodedLightmapRGBMMaterial.mat") as Material;
+				return EditorGUI.GetPreviewMaterial(ref EditorGUI.s_ColorMaterial, "Previews/PreviewColor2D.shader");
 			}
 		}
 
-		internal static Material lightmapDoubleLDRMaterial
+		internal static Material alphaMaterial
 		{
 			get
 			{
-				return EditorGUIUtility.LoadRequired("Previews/PreviewEncodedLightmapDoubleLDRMaterial.mat") as Material;
+				return EditorGUI.GetPreviewMaterial(ref EditorGUI.s_AlphaMaterial, "Previews/PreviewAlpha.shader");
 			}
 		}
 
-		internal static Material lightmapFullHDRMaterial
+		internal static Material transparentMaterial
 		{
 			get
 			{
-				return EditorGUIUtility.LoadRequired("Previews/PreviewEncodedLightmapFullHDRMaterial.mat") as Material;
+				return EditorGUI.GetPreviewMaterial(ref EditorGUI.s_TransparentMaterial, "Previews/PreviewTransparent.shader");
 			}
 		}
 
@@ -1417,7 +1407,31 @@ namespace UnityEditor
 		{
 			get
 			{
-				return EditorGUIUtility.LoadRequired("Previews/PreviewEncodedNormalsMaterial.mat") as Material;
+				return EditorGUI.GetPreviewMaterial(ref EditorGUI.s_NormalmapMaterial, "Previews/PreviewEncodedNormals.shader");
+			}
+		}
+
+		internal static Material lightmapRGBMMaterial
+		{
+			get
+			{
+				return EditorGUI.GetPreviewMaterial(ref EditorGUI.s_LightmapRGBMMaterial, "Previews/PreviewEncodedLightmapRGBM.shader");
+			}
+		}
+
+		internal static Material lightmapDoubleLDRMaterial
+		{
+			get
+			{
+				return EditorGUI.GetPreviewMaterial(ref EditorGUI.s_LightmapDoubleLDRMaterial, "Previews/PreviewEncodedLightmapDoubleLDR.shader");
+			}
+		}
+
+		internal static Material lightmapFullHDRMaterial
+		{
+			get
+			{
+				return EditorGUI.GetPreviewMaterial(ref EditorGUI.s_LightmapFullHDRMaterial, "Previews/PreviewEncodedLightmapFullHDR.shader");
 			}
 		}
 
@@ -2260,72 +2274,100 @@ namespace UnityEditor
 		}
 
 		[ExcludeFromDocs]
+		public static void DrawTextureAlpha(Rect position, Texture image, ScaleMode scaleMode, float imageAspect)
+		{
+			float mipLevel = -1f;
+			EditorGUI.DrawTextureAlpha(position, image, scaleMode, imageAspect, mipLevel);
+		}
+
+		[ExcludeFromDocs]
 		public static void DrawTextureAlpha(Rect position, Texture image, ScaleMode scaleMode)
 		{
+			float mipLevel = -1f;
 			float imageAspect = 0f;
-			EditorGUI.DrawTextureAlpha(position, image, scaleMode, imageAspect);
+			EditorGUI.DrawTextureAlpha(position, image, scaleMode, imageAspect, mipLevel);
 		}
 
 		[ExcludeFromDocs]
 		public static void DrawTextureAlpha(Rect position, Texture image)
 		{
+			float mipLevel = -1f;
 			float imageAspect = 0f;
 			ScaleMode scaleMode = ScaleMode.StretchToFill;
-			EditorGUI.DrawTextureAlpha(position, image, scaleMode, imageAspect);
+			EditorGUI.DrawTextureAlpha(position, image, scaleMode, imageAspect, mipLevel);
 		}
 
-		public static void DrawTextureAlpha(Rect position, Texture image, [DefaultValue("ScaleMode.StretchToFill")] ScaleMode scaleMode, [DefaultValue("0")] float imageAspect)
+		public static void DrawTextureAlpha(Rect position, Texture image, [DefaultValue("ScaleMode.StretchToFill")] ScaleMode scaleMode, [DefaultValue("0")] float imageAspect, [DefaultValue("-1")] float mipLevel)
 		{
-			EditorGUI.DrawTextureAlphaInternal(position, image, scaleMode, imageAspect);
+			EditorGUI.DrawTextureAlphaInternal(position, image, scaleMode, imageAspect, mipLevel);
+		}
+
+		[ExcludeFromDocs]
+		public static void DrawTextureTransparent(Rect position, Texture image, ScaleMode scaleMode, float imageAspect)
+		{
+			float mipLevel = -1f;
+			EditorGUI.DrawTextureTransparent(position, image, scaleMode, imageAspect, mipLevel);
 		}
 
 		[ExcludeFromDocs]
 		public static void DrawTextureTransparent(Rect position, Texture image, ScaleMode scaleMode)
 		{
+			float mipLevel = -1f;
 			float imageAspect = 0f;
-			EditorGUI.DrawTextureTransparent(position, image, scaleMode, imageAspect);
+			EditorGUI.DrawTextureTransparent(position, image, scaleMode, imageAspect, mipLevel);
 		}
 
 		[ExcludeFromDocs]
 		public static void DrawTextureTransparent(Rect position, Texture image)
 		{
+			float mipLevel = -1f;
 			float imageAspect = 0f;
 			ScaleMode scaleMode = ScaleMode.StretchToFill;
-			EditorGUI.DrawTextureTransparent(position, image, scaleMode, imageAspect);
+			EditorGUI.DrawTextureTransparent(position, image, scaleMode, imageAspect, mipLevel);
 		}
 
-		public static void DrawTextureTransparent(Rect position, Texture image, [DefaultValue("ScaleMode.StretchToFill")] ScaleMode scaleMode, [DefaultValue("0")] float imageAspect)
+		public static void DrawTextureTransparent(Rect position, Texture image, [DefaultValue("ScaleMode.StretchToFill")] ScaleMode scaleMode, [DefaultValue("0")] float imageAspect, [DefaultValue("-1")] float mipLevel)
 		{
-			EditorGUI.DrawTextureTransparentInternal(position, image, scaleMode, imageAspect);
+			EditorGUI.DrawTextureTransparentInternal(position, image, scaleMode, imageAspect, mipLevel);
+		}
+
+		[ExcludeFromDocs]
+		public static void DrawPreviewTexture(Rect position, Texture image, Material mat, ScaleMode scaleMode, float imageAspect)
+		{
+			float mipLevel = -1f;
+			EditorGUI.DrawPreviewTexture(position, image, mat, scaleMode, imageAspect, mipLevel);
 		}
 
 		[ExcludeFromDocs]
 		public static void DrawPreviewTexture(Rect position, Texture image, Material mat, ScaleMode scaleMode)
 		{
+			float mipLevel = -1f;
 			float imageAspect = 0f;
-			EditorGUI.DrawPreviewTexture(position, image, mat, scaleMode, imageAspect);
+			EditorGUI.DrawPreviewTexture(position, image, mat, scaleMode, imageAspect, mipLevel);
 		}
 
 		[ExcludeFromDocs]
 		public static void DrawPreviewTexture(Rect position, Texture image, Material mat)
 		{
+			float mipLevel = -1f;
 			float imageAspect = 0f;
 			ScaleMode scaleMode = ScaleMode.StretchToFill;
-			EditorGUI.DrawPreviewTexture(position, image, mat, scaleMode, imageAspect);
+			EditorGUI.DrawPreviewTexture(position, image, mat, scaleMode, imageAspect, mipLevel);
 		}
 
 		[ExcludeFromDocs]
 		public static void DrawPreviewTexture(Rect position, Texture image)
 		{
+			float mipLevel = -1f;
 			float imageAspect = 0f;
 			ScaleMode scaleMode = ScaleMode.StretchToFill;
 			Material mat = null;
-			EditorGUI.DrawPreviewTexture(position, image, mat, scaleMode, imageAspect);
+			EditorGUI.DrawPreviewTexture(position, image, mat, scaleMode, imageAspect, mipLevel);
 		}
 
-		public static void DrawPreviewTexture(Rect position, Texture image, [DefaultValue("null")] Material mat, [DefaultValue("ScaleMode.StretchToFill")] ScaleMode scaleMode, [DefaultValue("0")] float imageAspect)
+		public static void DrawPreviewTexture(Rect position, Texture image, [DefaultValue("null")] Material mat, [DefaultValue("ScaleMode.StretchToFill")] ScaleMode scaleMode, [DefaultValue("0")] float imageAspect, [DefaultValue("-1")] float mipLevel)
 		{
-			EditorGUI.DrawPreviewTextureInternal(position, image, mat, scaleMode, imageAspect);
+			EditorGUI.DrawPreviewTextureInternal(position, image, mat, scaleMode, imageAspect, mipLevel);
 		}
 
 		public static float GetPropertyHeight(SerializedProperty property, bool includeChildren)
@@ -2375,6 +2417,16 @@ namespace UnityEditor
 		public static bool PropertyField(Rect position, SerializedProperty property, GUIContent label, [DefaultValue("false")] bool includeChildren)
 		{
 			return EditorGUI.PropertyFieldInternal(position, property, label, includeChildren);
+		}
+
+		internal static int Popup(Rect position, GUIContent label, int selectedIndex, string[] displayedOptions, GUIStyle style)
+		{
+			return EditorGUI.PopupInternal(position, label, selectedIndex, EditorGUIUtility.TempContent(displayedOptions), style);
+		}
+
+		internal static int Popup(Rect position, GUIContent label, int selectedIndex, string[] displayedOptions)
+		{
+			return EditorGUI.Popup(position, label, selectedIndex, displayedOptions, EditorStyles.popup);
 		}
 
 		internal static void BeginHandleMixedValueContentColor()
@@ -2460,21 +2512,21 @@ namespace UnityEditor
 			{
 				if (EditorGUI.RecycledTextEditor.s_AllowContextCutOrPaste)
 				{
-					genericMenu.AddItem(EditorGUIUtility.TextContent("Cut"), false, new GenericMenu.MenuFunction(new EditorGUI.PopupMenuEvent("Cut", GUIView.current).SendEvent));
+					genericMenu.AddItem(EditorGUIUtility.TrTextContent("Cut", null, null), false, new GenericMenu.MenuFunction(new EditorGUI.PopupMenuEvent("Cut", GUIView.current).SendEvent));
 				}
-				genericMenu.AddItem(EditorGUIUtility.TextContent("Copy"), false, new GenericMenu.MenuFunction(new EditorGUI.PopupMenuEvent("Copy", GUIView.current).SendEvent));
+				genericMenu.AddItem(EditorGUIUtility.TrTextContent("Copy", null, null), false, new GenericMenu.MenuFunction(new EditorGUI.PopupMenuEvent("Copy", GUIView.current).SendEvent));
 			}
 			else
 			{
 				if (EditorGUI.RecycledTextEditor.s_AllowContextCutOrPaste)
 				{
-					genericMenu.AddDisabledItem(EditorGUIUtility.TextContent("Cut"));
+					genericMenu.AddDisabledItem(EditorGUIUtility.TrTextContent("Cut", null, null));
 				}
-				genericMenu.AddDisabledItem(EditorGUIUtility.TextContent("Copy"));
+				genericMenu.AddDisabledItem(EditorGUIUtility.TrTextContent("Copy", null, null));
 			}
 			if (EditorGUI.s_RecycledEditor.CanPaste() && EditorGUI.RecycledTextEditor.s_AllowContextCutOrPaste)
 			{
-				genericMenu.AddItem(EditorGUIUtility.TextContent("Paste"), false, new GenericMenu.MenuFunction(new EditorGUI.PopupMenuEvent("Paste", GUIView.current).SendEvent));
+				genericMenu.AddItem(EditorGUIUtility.TrTextContent("Paste", null, null), false, new GenericMenu.MenuFunction(new EditorGUI.PopupMenuEvent("Paste", GUIView.current).SendEvent));
 			}
 			genericMenu.ShowAsContext();
 		}
@@ -2571,12 +2623,16 @@ namespace UnityEditor
 					editor.isPasswordField = passwordField;
 					editor.DetectFocusChange();
 				}
-				else if (EditorGUIUtility.editingTextField)
+				else if (EditorGUIUtility.editingTextField || (current.GetTypeForControl(id) == EventType.ExecuteCommand && current.commandName == "NewKeyboardFocus"))
 				{
 					editor.BeginEditing(id, text, position, style, multiline, passwordField);
 					if (GUI.skin.settings.cursorColor.a > 0f)
 					{
 						editor.SelectAll();
+					}
+					if (current.GetTypeForControl(id) == EventType.ExecuteCommand)
+					{
+						current.Use();
 					}
 				}
 			}
@@ -2629,7 +2685,7 @@ namespace UnityEditor
 					GUIUtility.hotControl = id;
 					current.Use();
 				}
-				goto IL_9B4;
+				goto IL_9EB;
 			case EventType.MouseUp:
 				if (GUIUtility.hotControl == id)
 				{
@@ -2660,11 +2716,11 @@ namespace UnityEditor
 						current.Use();
 					}
 				}
-				goto IL_9B4;
+				goto IL_9EB;
 			case EventType.MouseMove:
 			case EventType.KeyUp:
 			case EventType.ScrollWheel:
-				IL_124:
+				IL_15B:
 				switch (typeForControl)
 				{
 				case EventType.ValidateCommand:
@@ -2701,7 +2757,7 @@ namespace UnityEditor
 							}
 						}
 					}
-					goto IL_9B4;
+					goto IL_9EB;
 				case EventType.ExecuteCommand:
 					if (GUIUtility.keyboardControl == id)
 					{
@@ -2769,9 +2825,9 @@ namespace UnityEditor
 							}
 						}
 					}
-					goto IL_9B4;
+					goto IL_9EB;
 				case EventType.DragExited:
-					goto IL_9B4;
+					goto IL_9EB;
 				case EventType.ContextClick:
 					if (position.Contains(current.mousePosition))
 					{
@@ -2784,9 +2840,9 @@ namespace UnityEditor
 						EditorGUI.ShowTextEditorPopupMenu();
 						Event.current.Use();
 					}
-					goto IL_9B4;
+					goto IL_9EB;
 				default:
-					goto IL_9B4;
+					goto IL_9EB;
 				}
 				break;
 			case EventType.MouseDrag:
@@ -2812,7 +2868,7 @@ namespace UnityEditor
 					EditorGUI.s_Dragged = true;
 					current.Use();
 				}
-				goto IL_9B4;
+				goto IL_9EB;
 			case EventType.KeyDown:
 				if (GUIUtility.keyboardControl == id)
 				{
@@ -2848,7 +2904,7 @@ namespace UnityEditor
 							{
 								editor.Insert(character);
 								flag = true;
-								goto IL_9B4;
+								goto IL_9EB;
 							}
 							editor.EndEditing();
 						}
@@ -2889,7 +2945,7 @@ namespace UnityEditor
 						}
 					}
 				}
-				goto IL_9B4;
+				goto IL_9EB;
 			case EventType.Repaint:
 			{
 				string text4;
@@ -2923,11 +2979,11 @@ namespace UnityEditor
 				{
 					editor.DrawCursor(text4);
 				}
-				goto IL_9B4;
+				goto IL_9EB;
 			}
 			}
-			goto IL_124;
-			IL_9B4:
+			goto IL_15B;
+			IL_9EB:
 			if (GUIUtility.keyboardControl == id)
 			{
 				GUIUtility.textFieldInput = EditorGUIUtility.editingTextField;
@@ -3524,25 +3580,6 @@ namespace UnityEditor
 			return EditorGUI.DoDoubleField(EditorGUI.s_RecycledEditor, position2, position, controlID, value, EditorGUI.kDoubleFieldFormatString, style, true);
 		}
 
-		private static double CalculateFloatDragSensitivity(double value)
-		{
-			double result;
-			if (double.IsInfinity(value) || double.IsNaN(value))
-			{
-				result = 0.0;
-			}
-			else
-			{
-				result = Math.Max(1.0, Math.Pow(Math.Abs(value), 0.5)) * 0.029999999329447746;
-			}
-			return result;
-		}
-
-		private static long CalculateIntDragSensitivity(long value)
-		{
-			return (long)Math.Max(1.0, Math.Pow(Math.Abs((double)value), 0.5) * 0.029999999329447746);
-		}
-
 		private static void DragNumberValue(EditorGUI.RecycledTextEditor editor, Rect position, Rect dragHotZone, int id, bool isDouble, ref double doubleVal, ref long longVal, string formatString, GUIStyle style, double dragSensitivity)
 		{
 			Event current = Event.current;
@@ -3627,7 +3664,7 @@ namespace UnityEditor
 
 		internal static float DoFloatField(EditorGUI.RecycledTextEditor editor, Rect position, Rect dragHotZone, int id, float value, string formatString, GUIStyle style, bool draggable)
 		{
-			return EditorGUI.DoFloatField(editor, position, dragHotZone, id, value, formatString, style, draggable, (Event.current.GetTypeForControl(id) != EventType.MouseDown) ? 0f : ((float)EditorGUI.CalculateFloatDragSensitivity(EditorGUI.s_DragStartValue)));
+			return EditorGUI.DoFloatField(editor, position, dragHotZone, id, value, formatString, style, draggable, (Event.current.GetTypeForControl(id) != EventType.MouseDown) ? 0f : ((float)NumericFieldDraggerUtility.CalculateFloatDragSensitivity(EditorGUI.s_DragStartValue)));
 		}
 
 		internal static float DoFloatField(EditorGUI.RecycledTextEditor editor, Rect position, Rect dragHotZone, int id, float value, string formatString, GUIStyle style, bool draggable, float dragSensitivity)
@@ -3648,7 +3685,7 @@ namespace UnityEditor
 
 		internal static double DoDoubleField(EditorGUI.RecycledTextEditor editor, Rect position, Rect dragHotZone, int id, double value, string formatString, GUIStyle style, bool draggable)
 		{
-			return EditorGUI.DoDoubleField(editor, position, dragHotZone, id, value, formatString, style, draggable, (Event.current.GetTypeForControl(id) != EventType.MouseDown) ? 0.0 : EditorGUI.CalculateFloatDragSensitivity(EditorGUI.s_DragStartValue));
+			return EditorGUI.DoDoubleField(editor, position, dragHotZone, id, value, formatString, style, draggable, (Event.current.GetTypeForControl(id) != EventType.MouseDown) ? 0.0 : NumericFieldDraggerUtility.CalculateFloatDragSensitivity(EditorGUI.s_DragStartValue));
 		}
 
 		internal static double DoDoubleField(EditorGUI.RecycledTextEditor editor, Rect position, Rect dragHotZone, int id, double value, string formatString, GUIStyle style, bool draggable, double dragSensitivity)
@@ -3708,38 +3745,14 @@ namespace UnityEditor
 					EditorGUI.s_RecycledCurrentEditingString = text;
 					if (isDouble)
 					{
-						string a = text.ToLower();
-						if (a == "inf" || a == "infinity")
+						if (EditorGUI.StringToDouble(text, out doubleVal))
 						{
-							doubleVal = double.PositiveInfinity;
+							EditorGUI.s_RecycledCurrentEditingFloat = doubleVal;
 						}
-						else if (a == "-inf" || a == "-infinity")
-						{
-							doubleVal = double.NegativeInfinity;
-						}
-						else
-						{
-							text = text.Replace(',', '.');
-							if (!double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture.NumberFormat, out doubleVal))
-							{
-								doubleVal = (EditorGUI.s_RecycledCurrentEditingFloat = ExpressionEvaluator.Evaluate<double>(text));
-							}
-							else
-							{
-								if (double.IsNaN(doubleVal))
-								{
-									doubleVal = 0.0;
-								}
-								EditorGUI.s_RecycledCurrentEditingFloat = doubleVal;
-							}
-						}
-					}
-					else if (!long.TryParse(text, out longVal))
-					{
-						longVal = (EditorGUI.s_RecycledCurrentEditingInt = ExpressionEvaluator.Evaluate<long>(text));
 					}
 					else
 					{
+						EditorGUI.StringToLong(text, out longVal);
 						EditorGUI.s_RecycledCurrentEditingInt = longVal;
 					}
 				}
@@ -3749,6 +3762,47 @@ namespace UnityEditor
 				bool flag;
 				text = EditorGUI.DoTextField(editor, id, position, text, style, allowedletters, out flag, false, false, false);
 			}
+		}
+
+		internal static bool StringToDouble(string str, out double value)
+		{
+			string a = str.ToLower();
+			bool result;
+			if (a == "inf" || a == "infinity")
+			{
+				value = double.PositiveInfinity;
+			}
+			else if (a == "-inf" || a == "-infinity")
+			{
+				value = double.NegativeInfinity;
+			}
+			else
+			{
+				str = str.Replace(',', '.');
+				if (!double.TryParse(str, NumberStyles.Float, CultureInfo.InvariantCulture.NumberFormat, out value))
+				{
+					value = ExpressionEvaluator.Evaluate<double>(str);
+					result = true;
+					return result;
+				}
+				if (double.IsNaN(value))
+				{
+					value = 0.0;
+				}
+				result = true;
+				return result;
+			}
+			result = false;
+			return result;
+		}
+
+		internal static bool StringToLong(string str, out long value)
+		{
+			if (!long.TryParse(str, out value))
+			{
+				value = ExpressionEvaluator.Evaluate<long>(str);
+			}
+			return true;
 		}
 
 		internal static int ArraySizeField(Rect position, GUIContent label, int value, GUIStyle style)
@@ -3939,7 +3993,7 @@ namespace UnityEditor
 		internal static int IntFieldInternal(Rect position, int value, GUIStyle style)
 		{
 			int controlID = GUIUtility.GetControlID(EditorGUI.s_FloatFieldHash, FocusType.Keyboard, position);
-			return EditorGUI.DoIntField(EditorGUI.s_RecycledEditor, EditorGUI.IndentedRect(position), new Rect(0f, 0f, 0f, 0f), controlID, value, EditorGUI.kIntFieldFormatString, style, false, (float)EditorGUI.CalculateIntDragSensitivity((long)value));
+			return EditorGUI.DoIntField(EditorGUI.s_RecycledEditor, EditorGUI.IndentedRect(position), new Rect(0f, 0f, 0f, 0f), controlID, value, EditorGUI.kIntFieldFormatString, style, false, (float)NumericFieldDraggerUtility.CalculateIntDragSensitivity((long)value));
 		}
 
 		internal static int IntFieldInternal(Rect position, GUIContent label, int value, GUIStyle style)
@@ -3947,13 +4001,13 @@ namespace UnityEditor
 			int controlID = GUIUtility.GetControlID(EditorGUI.s_FloatFieldHash, FocusType.Keyboard, position);
 			Rect position2 = EditorGUI.PrefixLabel(position, controlID, label);
 			position.xMax = position2.x;
-			return EditorGUI.DoIntField(EditorGUI.s_RecycledEditor, position2, position, controlID, value, EditorGUI.kIntFieldFormatString, style, true, (float)EditorGUI.CalculateIntDragSensitivity((long)value));
+			return EditorGUI.DoIntField(EditorGUI.s_RecycledEditor, position2, position, controlID, value, EditorGUI.kIntFieldFormatString, style, true, (float)NumericFieldDraggerUtility.CalculateIntDragSensitivity((long)value));
 		}
 
 		internal static long LongFieldInternal(Rect position, long value, GUIStyle style)
 		{
 			int controlID = GUIUtility.GetControlID(EditorGUI.s_FloatFieldHash, FocusType.Keyboard, position);
-			return EditorGUI.DoLongField(EditorGUI.s_RecycledEditor, EditorGUI.IndentedRect(position), new Rect(0f, 0f, 0f, 0f), controlID, value, EditorGUI.kIntFieldFormatString, style, false, (double)EditorGUI.CalculateIntDragSensitivity(value));
+			return EditorGUI.DoLongField(EditorGUI.s_RecycledEditor, EditorGUI.IndentedRect(position), new Rect(0f, 0f, 0f, 0f), controlID, value, EditorGUI.kIntFieldFormatString, style, false, (double)NumericFieldDraggerUtility.CalculateIntDragSensitivity(value));
 		}
 
 		internal static long LongFieldInternal(Rect position, GUIContent label, long value, GUIStyle style)
@@ -3961,27 +4015,7 @@ namespace UnityEditor
 			int controlID = GUIUtility.GetControlID(EditorGUI.s_FloatFieldHash, FocusType.Keyboard, position);
 			Rect position2 = EditorGUI.PrefixLabel(position, controlID, label);
 			position.xMax = position2.x;
-			return EditorGUI.DoLongField(EditorGUI.s_RecycledEditor, position2, position, controlID, value, EditorGUI.kIntFieldFormatString, style, true, (double)EditorGUI.CalculateIntDragSensitivity(value));
-		}
-
-		internal static void SliderWithTexture(Rect position, GUIContent label, SerializedProperty property, float leftValue, float rightValue, float power, GUIStyle sliderStyle, GUIStyle thumbStyle, Texture2D sliderBackground)
-		{
-			label = EditorGUI.BeginProperty(position, label, property);
-			EditorGUI.BeginChangeCheck();
-			float floatValue = EditorGUI.SliderWithTexture(position, label, property.floatValue, leftValue, rightValue, power, sliderStyle, thumbStyle, sliderBackground);
-			if (EditorGUI.EndChangeCheck())
-			{
-				property.floatValue = floatValue;
-			}
-			EditorGUI.EndProperty();
-		}
-
-		internal static float SliderWithTexture(Rect position, GUIContent label, float sliderValue, float leftValue, float rightValue, float power, GUIStyle sliderStyle, GUIStyle thumbStyle, Texture2D sliderBackground)
-		{
-			int controlID = GUIUtility.GetControlID(EditorGUI.s_SliderHash, FocusType.Keyboard, position);
-			Rect position2 = EditorGUI.PrefixLabel(position, controlID, label);
-			Rect dragZonePosition = (!EditorGUI.LabelHasContent(label)) ? default(Rect) : EditorGUIUtility.DragZoneRect(position);
-			return EditorGUI.DoSlider(position2, dragZonePosition, controlID, sliderValue, leftValue, rightValue, EditorGUI.kFloatFieldFormatString, power, sliderStyle, thumbStyle, sliderBackground);
+			return EditorGUI.DoLongField(EditorGUI.s_RecycledEditor, position2, position, controlID, value, EditorGUI.kIntFieldFormatString, style, true, (double)NumericFieldDraggerUtility.CalculateIntDragSensitivity(value));
 		}
 
 		public static float Slider(Rect position, float value, float leftValue, float rightValue)
@@ -3998,6 +4032,14 @@ namespace UnityEditor
 		public static float Slider(Rect position, GUIContent label, float value, float leftValue, float rightValue)
 		{
 			return EditorGUI.PowerSlider(position, label, value, leftValue, rightValue, 1f);
+		}
+
+		internal static float Slider(Rect position, GUIContent label, float value, float sliderMin, float sliderMax, float textFieldMin, float textFieldMax)
+		{
+			int controlID = GUIUtility.GetControlID(EditorGUI.s_SliderHash, FocusType.Keyboard, position);
+			Rect position2 = EditorGUI.PrefixLabel(position, controlID, label);
+			Rect dragZonePosition = (!EditorGUI.LabelHasContent(label)) ? default(Rect) : EditorGUIUtility.DragZoneRect(position);
+			return EditorGUI.DoSlider(position2, dragZonePosition, controlID, value, sliderMin, sliderMax, EditorGUI.kFloatFieldFormatString, textFieldMin, textFieldMax, 1f, GUI.skin.horizontalSlider, GUI.skin.horizontalSliderThumb, null);
 		}
 
 		internal static float PowerSlider(Rect position, string label, float sliderValue, float leftValue, float rightValue, float power)
@@ -4036,14 +4078,14 @@ namespace UnityEditor
 			}
 			if (property.serializedObject.targetObjects.Length == 1 && property.isInstantiatedPrefab)
 			{
-				GenericMenu arg_AB_0 = genericMenu;
-				GUIContent arg_AB_1 = EditorGUIUtility.TextContent("Revert Value to Prefab");
-				bool arg_AB_2 = false;
+				GenericMenu arg_AD_0 = genericMenu;
+				GUIContent arg_AD_1 = EditorGUIUtility.TrTextContent("Revert Value to Prefab", null, null);
+				bool arg_AD_2 = false;
 				if (EditorGUI.<>f__mg$cache1 == null)
 				{
 					EditorGUI.<>f__mg$cache1 = new GenericMenu.MenuFunction2(TargetChoiceHandler.SetPrefabOverride);
 				}
-				arg_AB_0.AddItem(arg_AB_1, arg_AB_2, EditorGUI.<>f__mg$cache1, serializedProperty);
+				arg_AD_0.AddItem(arg_AD_1, arg_AD_2, EditorGUI.<>f__mg$cache1, serializedProperty);
 			}
 			if (property.propertyPath.LastIndexOf(']') == property.propertyPath.Length - 1)
 			{
@@ -4055,12 +4097,12 @@ namespace UnityEditor
 					{
 						genericMenu.AddSeparator("");
 					}
-					genericMenu.AddItem(EditorGUIUtility.TextContent("Duplicate Array Element"), false, delegate(object a)
+					genericMenu.AddItem(EditorGUIUtility.TrTextContent("Duplicate Array Element", null, null), false, delegate(object a)
 					{
 						TargetChoiceHandler.DuplicateArrayElement(a);
 						EditorGUIUtility.editingTextField = false;
 					}, serializedProperty);
-					genericMenu.AddItem(EditorGUIUtility.TextContent("Delete Array Element"), false, delegate(object a)
+					genericMenu.AddItem(EditorGUIUtility.TrTextContent("Delete Array Element", null, null), false, delegate(object a)
 					{
 						TargetChoiceHandler.DeleteArrayElement(a);
 						EditorGUIUtility.editingTextField = false;
@@ -4073,7 +4115,7 @@ namespace UnityEditor
 				{
 					genericMenu.AddSeparator("");
 				}
-				genericMenu.AddItem(EditorGUIUtility.TextContent("Print Property Path"), false, delegate(object e)
+				genericMenu.AddItem(EditorGUIUtility.TrTextContent("Print Property Path", null, null), false, delegate(object e)
 				{
 					Debug.Log(((SerializedProperty)e).propertyPath);
 				}, serializedProperty);
@@ -4179,9 +4221,14 @@ namespace UnityEditor
 
 		private static float DoSlider(Rect position, Rect dragZonePosition, int id, float value, float left, float right, string formatString, float power, GUIStyle sliderStyle, GUIStyle thumbStyle, Texture2D sliderBackground)
 		{
+			return EditorGUI.DoSlider(position, dragZonePosition, id, value, left, right, formatString, left, right, power, sliderStyle, thumbStyle, sliderBackground);
+		}
+
+		private static float DoSlider(Rect position, Rect dragZonePosition, int id, float value, float sliderMin, float sliderMax, string formatString, float textFieldMin, float textFieldMax, float power, GUIStyle sliderStyle, GUIStyle thumbStyle, Texture2D sliderBackground)
+		{
 			int controlID = GUIUtility.GetControlID(EditorGUI.s_SliderKnobHash, FocusType.Passive, position);
-			left = Mathf.Clamp(left, -3.40282347E+38f, 3.40282347E+38f);
-			right = Mathf.Clamp(right, -3.40282347E+38f, 3.40282347E+38f);
+			sliderMin = Mathf.Clamp(sliderMin, -3.40282347E+38f, 3.40282347E+38f);
+			sliderMax = Mathf.Clamp(sliderMax, -3.40282347E+38f, 3.40282347E+38f);
 			float num = position.width;
 			if (num >= 65f + EditorGUIUtility.fieldWidth)
 			{
@@ -4191,25 +4238,26 @@ namespace UnityEditor
 				{
 					GUIUtility.keyboardControl = controlID;
 				}
-				float start = left;
-				float end = right;
+				float start = sliderMin;
+				float end = sliderMax;
+				float num3 = value;
 				if (power != 1f)
 				{
-					start = EditorGUI.PowPreserveSign(left, 1f / power);
-					end = EditorGUI.PowPreserveSign(right, 1f / power);
-					value = EditorGUI.PowPreserveSign(value, 1f / power);
+					start = EditorGUI.PowPreserveSign(sliderMin, 1f / power);
+					end = EditorGUI.PowPreserveSign(sliderMax, 1f / power);
+					num3 = EditorGUI.PowPreserveSign(value, 1f / power);
 				}
 				Rect rect = new Rect(position.x, position.y, num2, position.height);
 				if (sliderBackground != null && Event.current.type == EventType.Repaint)
 				{
-					Rect screenRect = sliderStyle.overflow.Add(rect);
+					Rect screenRect = sliderStyle.overflow.Add(sliderStyle.padding.Remove(rect));
 					Graphics.DrawTexture(screenRect, sliderBackground, new Rect(0.5f / (float)sliderBackground.width, 0.5f / (float)sliderBackground.height, 1f - 1f / (float)sliderBackground.width, 1f - 1f / (float)sliderBackground.height), 0, 0, 0, 0, Color.grey);
 				}
-				value = GUI.Slider(rect, value, 0f, start, end, sliderStyle, (!EditorGUI.showMixedValue) ? thumbStyle : "SliderMixed", true, controlID);
+				num3 = GUI.Slider(rect, num3, 0f, start, end, sliderStyle, (!EditorGUI.showMixedValue) ? thumbStyle : "SliderMixed", true, controlID);
 				if (power != 1f)
 				{
-					value = EditorGUI.PowPreserveSign(value, power);
-					value = Mathf.Clamp(value, Mathf.Min(left, right), Mathf.Max(left, right));
+					num3 = EditorGUI.PowPreserveSign(num3, power);
+					num3 = Mathf.Clamp(num3, Mathf.Min(sliderMin, sliderMax), Mathf.Max(sliderMin, sliderMax));
 				}
 				if (EditorGUIUtility.sliderLabels.HasLabels())
 				{
@@ -4226,37 +4274,43 @@ namespace UnityEditor
 				}
 				if (GUIUtility.keyboardControl == id && Event.current.type == EventType.KeyDown && !EditorGUI.s_RecycledEditor.IsEditingControl(id) && (Event.current.keyCode == KeyCode.LeftArrow || Event.current.keyCode == KeyCode.RightArrow))
 				{
-					float num3 = MathUtils.GetClosestPowerOfTen(Mathf.Abs((right - left) * 0.01f));
-					if (formatString == EditorGUI.kIntFieldFormatString && num3 < 1f)
+					float num4 = MathUtils.GetClosestPowerOfTen(Mathf.Abs((sliderMax - sliderMin) * 0.01f));
+					if (formatString == EditorGUI.kIntFieldFormatString && num4 < 1f)
 					{
-						num3 = 1f;
+						num4 = 1f;
 					}
 					if (Event.current.shift)
 					{
-						num3 *= 10f;
+						num4 *= 10f;
 					}
 					if (Event.current.keyCode == KeyCode.LeftArrow)
 					{
-						value -= num3 * 0.5001f;
+						num3 -= num4 * 0.5001f;
 					}
 					else
 					{
-						value += num3 * 0.5001f;
+						num3 += num4 * 0.5001f;
 					}
-					value = MathUtils.RoundToMultipleOf(value, num3);
+					num3 = MathUtils.RoundToMultipleOf(num3, num4);
 					GUI.changed = true;
 					Event.current.Use();
 				}
 				if (EditorGUI.EndChangeCheck())
 				{
-					float f = (right - left) / (num2 - (float)GUI.skin.horizontalSlider.padding.horizontal - GUI.skin.horizontalSliderThumb.fixedWidth);
-					value = MathUtils.RoundBasedOnMinimumDifference(value, Mathf.Abs(f));
+					float f = (sliderMax - sliderMin) / (num2 - (float)GUI.skin.horizontalSlider.padding.horizontal - GUI.skin.horizontalSliderThumb.fixedWidth);
+					num3 = MathUtils.RoundBasedOnMinimumDifference(num3, Mathf.Abs(f));
+					value = Mathf.Clamp(num3, Mathf.Min(sliderMin, sliderMax), Mathf.Max(sliderMin, sliderMax));
 					if (EditorGUI.s_RecycledEditor.IsEditingControl(id))
 					{
 						EditorGUI.s_RecycledEditor.EndEditing();
 					}
 				}
-				value = EditorGUI.DoFloatField(EditorGUI.s_RecycledEditor, new Rect(position.x + num2 + 5f, position.y, EditorGUIUtility.fieldWidth, position.height), dragZonePosition, id, value, formatString, EditorStyles.numberField, true);
+				EditorGUI.BeginChangeCheck();
+				float value2 = EditorGUI.DoFloatField(EditorGUI.s_RecycledEditor, new Rect(position.x + num2 + 5f, position.y, EditorGUIUtility.fieldWidth, position.height), dragZonePosition, id, value, formatString, EditorStyles.numberField, true);
+				if (EditorGUI.EndChangeCheck())
+				{
+					value = Mathf.Clamp(value2, Mathf.Min(textFieldMin, textFieldMax), Mathf.Max(textFieldMin, textFieldMax));
+				}
 			}
 			else
 			{
@@ -4264,8 +4318,8 @@ namespace UnityEditor
 				position.x = position.xMax - num;
 				position.width = num;
 				value = EditorGUI.DoFloatField(EditorGUI.s_RecycledEditor, position, dragZonePosition, id, value, formatString, EditorStyles.numberField, true);
+				value = Mathf.Clamp(value, Mathf.Min(textFieldMin, textFieldMax), Mathf.Max(textFieldMin, textFieldMax));
 			}
-			value = Mathf.Clamp(value, Mathf.Min(left, right), Mathf.Max(left, right));
 			return value;
 		}
 
@@ -4307,6 +4361,11 @@ namespace UnityEditor
 			return EditorGUI.PopupInternal(position, EditorGUIUtility.TempContent(label), selectedIndex, EditorGUIUtility.TempContent(displayedOptions), style);
 		}
 
+		private static int PopupInternal(Rect position, GUIContent label, int selectedIndex, string[] displayedOptions, GUIStyle style)
+		{
+			return EditorGUI.PopupInternal(position, label, selectedIndex, EditorGUIUtility.TempContent(displayedOptions), style);
+		}
+
 		private static int PopupInternal(Rect position, GUIContent label, int selectedIndex, GUIContent[] displayedOptions, GUIStyle style)
 		{
 			int controlID = GUIUtility.GetControlID(EditorGUI.s_PopupHash, FocusType.Keyboard, position);
@@ -4320,7 +4379,7 @@ namespace UnityEditor
 		private static void Popup(Rect position, SerializedProperty property, GUIContent label)
 		{
 			EditorGUI.BeginChangeCheck();
-			int enumValueIndex = EditorGUI.Popup(position, label, (!property.hasMultipleDifferentValues) ? property.enumValueIndex : -1, EditorGUIUtility.TempContent(property.enumDisplayNames));
+			int enumValueIndex = EditorGUI.Popup(position, label, (!property.hasMultipleDifferentValues) ? property.enumValueIndex : -1, EditorGUIUtility.TempContent(property.enumLocalizedDisplayNames));
 			if (EditorGUI.EndChangeCheck())
 			{
 				property.enumValueIndex = enumValueIndex;
@@ -4346,9 +4405,10 @@ namespace UnityEditor
 			{
 				throw new ArgumentException("Parameter selected must be of type System.Enum", "selected");
 			}
+			bool flag = EditorUtility.IsUnityAssembly(type);
 			EditorGUI.EnumData nonObsoleteEnumData = EditorGUI.GetNonObsoleteEnumData(type);
 			int num = Array.IndexOf<Enum>(nonObsoleteEnumData.values, selected);
-			num = EditorGUI.Popup(position, label, num, EditorGUIUtility.TempContent(nonObsoleteEnumData.names), style);
+			num = EditorGUI.Popup(position, label, num, (!flag) ? EditorGUIUtility.TempContent(nonObsoleteEnumData.displayNames) : EditorGUIUtility.TrTempContent(nonObsoleteEnumData.displayNames), style);
 			return (num >= 0 && num < nonObsoleteEnumData.flagValues.Length) ? nonObsoleteEnumData.values[num] : selected;
 		}
 
@@ -4546,7 +4606,7 @@ namespace UnityEditor
 					}
 				}
 				ArrayUtility.Add<string>(ref tags2, "");
-				ArrayUtility.Add<string>(ref tags2, "Add Tag...");
+				ArrayUtility.Add<string>(ref tags2, L10n.Tr("Add Tag..."));
 				EditorGUI.DoPopup(position, controlID, i, EditorGUIUtility.TempContent(tags2), style);
 				result = tag;
 			}
@@ -4594,7 +4654,7 @@ namespace UnityEditor
 					}
 				}
 				ArrayUtility.Add<string>(ref tags2, "");
-				ArrayUtility.Add<string>(ref tags2, "Add Tag...");
+				ArrayUtility.Add<string>(ref tags2, L10n.Tr("Add Tag..."));
 				EditorGUI.DoPopup(position, controlID, i, EditorGUIUtility.TempContent(tags2), style);
 				result = tag;
 			}
@@ -4657,7 +4717,7 @@ namespace UnityEditor
 				}
 				string[] layersWithId = InternalEditorUtility.GetLayersWithId();
 				ArrayUtility.Add<string>(ref layersWithId, "");
-				ArrayUtility.Add<string>(ref layersWithId, "Add Layer...");
+				ArrayUtility.Add<string>(ref layersWithId, L10n.Tr("Add Layer..."));
 				EditorGUI.DoPopup(position, controlID, num2, EditorGUIUtility.TempContent(layersWithId), style);
 				Event.current.Use();
 				result = layer;
@@ -4681,10 +4741,10 @@ namespace UnityEditor
 				enumData = default(EditorGUI.EnumData);
 				enumData.underlyingType = Enum.GetUnderlyingType(enumType);
 				enumData.unsigned = (enumData.underlyingType == typeof(byte) || enumData.underlyingType == typeof(ushort) || enumData.underlyingType == typeof(uint) || enumData.underlyingType == typeof(ulong));
-				enumData.names = (from n in Enum.GetNames(enumType)
+				enumData.displayNames = (from n in Enum.GetNames(enumType)
 				where enumType.GetField(n).GetCustomAttributes(typeof(ObsoleteAttribute), false).Length == 0
 				select n).ToArray<string>();
-				enumData.values = (from n in enumData.names
+				enumData.values = (from n in enumData.displayNames
 				select (Enum)Enum.Parse(enumType, n)).ToArray<Enum>();
 				int[] arg_15A_1;
 				if (enumData.unsigned)
@@ -4699,10 +4759,10 @@ namespace UnityEditor
 				}
 				enumData.flagValues = arg_15A_1;
 				int i = 0;
-				int num = enumData.names.Length;
+				int num = enumData.displayNames.Length;
 				while (i < num)
 				{
-					enumData.names[i] = ObjectNames.NicifyVariableName(enumData.names[i]);
+					enumData.displayNames[i] = ObjectNames.NicifyVariableName(enumData.displayNames[i]);
 					i++;
 				}
 				if (enumData.underlyingType == typeof(ushort))
@@ -4806,7 +4866,7 @@ namespace UnityEditor
 			position = EditorGUI.PrefixLabel(position, controlID, label);
 			int num = EditorGUI.EnumFlagsToInt(nonObsoleteEnumData, enumValue);
 			EditorGUI.BeginChangeCheck();
-			num = MaskFieldGUI.DoMaskField(position, controlID, num, nonObsoleteEnumData.names, nonObsoleteEnumData.flagValues, style, out changedFlags, out changedToValue);
+			num = MaskFieldGUI.DoMaskField(position, controlID, num, nonObsoleteEnumData.displayNames, nonObsoleteEnumData.flagValues, style, out changedFlags, out changedToValue);
 			Enum result;
 			if (!EditorGUI.EndChangeCheck())
 			{
@@ -5657,13 +5717,13 @@ namespace UnityEditor
 		public static Color ColorField(Rect position, Color value)
 		{
 			int controlID = GUIUtility.GetControlID(EditorGUI.s_ColorHash, FocusType.Keyboard, position);
-			return EditorGUI.DoColorField(EditorGUI.IndentedRect(position), controlID, value, true, true, false, null);
+			return EditorGUI.DoColorField(EditorGUI.IndentedRect(position), controlID, value, true, true, false);
 		}
 
 		internal static Color ColorField(Rect position, Color value, bool showEyedropper, bool showAlpha)
 		{
 			int controlID = GUIUtility.GetControlID(EditorGUI.s_ColorHash, FocusType.Keyboard, position);
-			return EditorGUI.DoColorField(position, controlID, value, showEyedropper, showAlpha, false, null);
+			return EditorGUI.DoColorField(position, controlID, value, showEyedropper, showAlpha, false);
 		}
 
 		public static Color ColorField(Rect position, string label, Color value)
@@ -5674,22 +5734,28 @@ namespace UnityEditor
 		public static Color ColorField(Rect position, GUIContent label, Color value)
 		{
 			int controlID = GUIUtility.GetControlID(EditorGUI.s_ColorHash, FocusType.Keyboard, position);
-			return EditorGUI.DoColorField(EditorGUI.PrefixLabel(position, controlID, label), controlID, value, true, true, false, null);
+			return EditorGUI.DoColorField(EditorGUI.PrefixLabel(position, controlID, label), controlID, value, true, true, false);
 		}
 
 		internal static Color ColorField(Rect position, GUIContent label, Color value, bool showEyedropper, bool showAlpha)
 		{
 			int controlID = GUIUtility.GetControlID(EditorGUI.s_ColorHash, FocusType.Keyboard, position);
-			return EditorGUI.DoColorField(EditorGUI.PrefixLabel(position, controlID, label), controlID, value, showEyedropper, showAlpha, false, null);
+			return EditorGUI.DoColorField(EditorGUI.PrefixLabel(position, controlID, label), controlID, value, showEyedropper, showAlpha, false);
 		}
 
+		[Obsolete("Use EditorGUI.ColorField(Rect position, GUIContent label, Color value, bool showEyedropper, bool showAlpha, bool hdr)")]
 		public static Color ColorField(Rect position, GUIContent label, Color value, bool showEyedropper, bool showAlpha, bool hdr, ColorPickerHDRConfig hdrConfig)
 		{
-			int controlID = GUIUtility.GetControlID(EditorGUI.s_ColorHash, FocusType.Keyboard, position);
-			return EditorGUI.DoColorField(EditorGUI.PrefixLabel(position, controlID, label), controlID, value, showEyedropper, showAlpha, hdr, hdrConfig);
+			return EditorGUI.ColorField(position, label, value, showEyedropper, showAlpha, hdr);
 		}
 
-		private static Color DoColorField(Rect position, int id, Color value, bool showEyedropper, bool showAlpha, bool hdr, ColorPickerHDRConfig hdrConfig)
+		public static Color ColorField(Rect position, GUIContent label, Color value, bool showEyedropper, bool showAlpha, bool hdr)
+		{
+			int controlID = GUIUtility.GetControlID(EditorGUI.s_ColorHash, FocusType.Keyboard, position);
+			return EditorGUI.DoColorField(EditorGUI.PrefixLabel(position, controlID, label), controlID, value, showEyedropper, showAlpha, hdr);
+		}
+
+		private static Color DoColorField(Rect position, int id, Color value, bool showEyedropper, bool showAlpha, bool hdr)
 		{
 			Event current = Event.current;
 			GUIStyle colorField = EditorStyles.colorField;
@@ -5704,10 +5770,10 @@ namespace UnityEditor
 				{
 					Event.current.Use();
 					EditorGUI.showMixedValue = false;
-					ColorPicker.Show(GUIView.current, value, showAlpha, hdr, hdrConfig);
+					ColorPicker.Show(GUIView.current, value, showAlpha, hdr);
 					GUIUtility.ExitGUI();
 				}
-				goto IL_406;
+				goto IL_418;
 			case EventType.KeyUp:
 			case EventType.ScrollWheel:
 				IL_46:
@@ -5723,16 +5789,16 @@ namespace UnityEditor
 								current.Use();
 							}
 						}
-						else if (GUIUtility.keyboardControl == id && ColorPicker.visible)
+						else if ((GUIUtility.keyboardControl == id || ColorPicker.originalKeyboardControl == id) && ColorPicker.visible)
 						{
 							ColorPicker.color = value;
 						}
 					}
-					goto IL_406;
+					goto IL_418;
 				}
 				if (typeForControl == EventType.ExecuteCommand)
 				{
-					if (GUIUtility.keyboardControl == id)
+					if (GUIUtility.keyboardControl == id || ColorPicker.originalKeyboardControl == id)
 					{
 						string commandName2 = current.commandName;
 						if (commandName2 != null)
@@ -5793,11 +5859,11 @@ namespace UnityEditor
 							}
 						}
 					}
-					goto IL_406;
+					goto IL_418;
 				}
 				if (typeForControl != EventType.MouseDown)
 				{
-					goto IL_406;
+					goto IL_418;
 				}
 				if (showEyedropper)
 				{
@@ -5842,7 +5908,7 @@ namespace UnityEditor
 					{
 						GUIUtility.keyboardControl = id;
 						EditorGUI.showMixedValue = false;
-						ColorPicker.Show(GUIView.current, value, showAlpha, hdr, hdrConfig);
+						ColorPicker.Show(GUIView.current, value, showAlpha, hdr);
 						GUIUtility.ExitGUI();
 					}
 				}
@@ -5852,12 +5918,12 @@ namespace UnityEditor
 					if (position.Contains(current.mousePosition))
 					{
 						GUIUtility.keyboardControl = id;
-						EyeDropper.Start(GUIView.current);
+						EyeDropper.Start(GUIView.current, true);
 						EditorGUI.s_ColorPickID = id;
 						GUIUtility.ExitGUI();
 					}
 				}
-				goto IL_406;
+				goto IL_418;
 			case EventType.Repaint:
 			{
 				Rect position2;
@@ -5887,88 +5953,11 @@ namespace UnityEditor
 				{
 					EditorStyles.colorPickerBox.Draw(position, GUIContent.none, id);
 				}
-				goto IL_406;
+				goto IL_418;
 			}
 			}
 			goto IL_46;
-			IL_406:
-			result = color;
-			return result;
-		}
-
-		internal static Color ColorSelector(Rect activatorRect, Rect renderRect, int id, Color value)
-		{
-			Event current = Event.current;
-			Color color = value;
-			value = ((!EditorGUI.showMixedValue) ? value : Color.white);
-			EventType typeForControl = current.GetTypeForControl(id);
-			Color result;
-			switch (typeForControl)
-			{
-			case EventType.KeyDown:
-				if (current.MainActionKeyForControl(id))
-				{
-					current.Use();
-					EditorGUI.showMixedValue = false;
-					ColorPicker.Show(GUIView.current, value, false, false, null);
-					GUIUtility.ExitGUI();
-				}
-				goto IL_182;
-			case EventType.KeyUp:
-			case EventType.ScrollWheel:
-				IL_40:
-				if (typeForControl == EventType.ValidateCommand)
-				{
-					if (current.commandName == "UndoRedoPerformed")
-					{
-						if (GUIUtility.keyboardControl == id && ColorPicker.visible)
-						{
-							ColorPicker.color = value;
-						}
-					}
-					goto IL_182;
-				}
-				if (typeForControl == EventType.ExecuteCommand)
-				{
-					if (GUIUtility.keyboardControl == id)
-					{
-						string commandName = current.commandName;
-						if (commandName != null)
-						{
-							if (commandName == "ColorPickerChanged")
-							{
-								current.Use();
-								GUI.changed = true;
-								HandleUtility.Repaint();
-								result = ColorPicker.color;
-								return result;
-							}
-						}
-					}
-					goto IL_182;
-				}
-				if (typeForControl != EventType.MouseDown)
-				{
-					goto IL_182;
-				}
-				if (activatorRect.Contains(current.mousePosition))
-				{
-					current.Use();
-					GUIUtility.keyboardControl = id;
-					EditorGUI.showMixedValue = false;
-					ColorPicker.Show(GUIView.current, value, false, false, null);
-					GUIUtility.ExitGUI();
-				}
-				goto IL_182;
-			case EventType.Repaint:
-				if (renderRect.height > 0f && renderRect.width > 0f)
-				{
-					EditorGUI.DrawRect(renderRect, value);
-				}
-				goto IL_182;
-			}
-			goto IL_40;
-			IL_182:
+			IL_418:
 			result = color;
 			return result;
 		}
@@ -6024,7 +6013,7 @@ namespace UnityEditor
 		{
 			if (property != null)
 			{
-				CurveEditorWindow.property = property;
+				CurveEditorWindow.curve = ((!property.hasMultipleDifferentValues) ? property.animationCurveValue : new AnimationCurve());
 			}
 			else
 			{
@@ -6033,14 +6022,23 @@ namespace UnityEditor
 			CurveEditorWindow.color = color;
 		}
 
-		private static AnimationCurve DoCurveField(Rect position, int id, AnimationCurve value, Color color, Rect ranges, SerializedProperty property)
+		internal static AnimationCurve DoCurveField(Rect position, int id, AnimationCurve value, Color color, Rect ranges, SerializedProperty property)
 		{
 			Event current = Event.current;
 			position.width = Mathf.Max(position.width, 2f);
 			position.height = Mathf.Max(position.height, 2f);
-			if (EditorGUI.MatchesCurvePopup(value, property))
+			if (GUIUtility.keyboardControl == id && Event.current.type != EventType.Layout)
 			{
-				if (CurveEditorWindow.visible && Event.current.type == EventType.Repaint)
+				if (EditorGUI.s_CurveID != id)
+				{
+					EditorGUI.s_CurveID = id;
+					if (CurveEditorWindow.visible)
+					{
+						EditorGUI.SetCurveEditorWindowCurve(value, property, color);
+						EditorGUI.ShowCurvePopup(GUIView.current, ranges);
+					}
+				}
+				else if (CurveEditorWindow.visible && Event.current.type == EventType.Repaint)
 				{
 					EditorGUI.SetCurveEditorWindowCurve(value, property, color);
 					CurveEditorWindow.instance.Repaint();
@@ -6053,31 +6051,34 @@ namespace UnityEditor
 			case EventType.KeyDown:
 				if (current.MainActionKeyForControl(id))
 				{
+					EditorGUI.s_CurveID = id;
 					EditorGUI.SetCurveEditorWindowCurve(value, property, color);
 					EditorGUI.ShowCurvePopup(GUIView.current, ranges);
 					current.Use();
 					GUIUtility.ExitGUI();
 				}
-				goto IL_213;
+				goto IL_26C;
 			case EventType.KeyUp:
 			case EventType.ScrollWheel:
-				IL_95:
+				IL_DE:
 				if (typeForControl == EventType.MouseDown)
 				{
 					if (position.Contains(current.mousePosition))
 					{
+						EditorGUI.s_CurveID = id;
+						GUIUtility.keyboardControl = id;
 						EditorGUI.SetCurveEditorWindowCurve(value, property, color);
 						EditorGUI.ShowCurvePopup(GUIView.current, ranges);
 						current.Use();
 						GUIUtility.ExitGUI();
 					}
-					goto IL_213;
+					goto IL_26C;
 				}
 				if (typeForControl != EventType.ExecuteCommand)
 				{
-					goto IL_213;
+					goto IL_26C;
 				}
-				if (EditorGUI.MatchesCurvePopup(value, property))
+				if (EditorGUI.s_CurveID == id)
 				{
 					string commandName = current.commandName;
 					if (commandName != null)
@@ -6100,7 +6101,7 @@ namespace UnityEditor
 						}
 					}
 				}
-				goto IL_213;
+				goto IL_26C;
 			case EventType.Repaint:
 			{
 				Rect position2 = position;
@@ -6115,11 +6116,11 @@ namespace UnityEditor
 					EditorGUIUtility.DrawCurveSwatch(position2, value, property, color, EditorGUI.kCurveBGColor);
 				}
 				EditorStyles.colorPickerBox.Draw(position2, GUIContent.none, id, false);
-				goto IL_213;
+				goto IL_26C;
 			}
 			}
-			goto IL_95;
-			IL_213:
+			goto IL_DE;
+			IL_26C:
 			result = value;
 			return result;
 		}
@@ -6135,20 +6136,6 @@ namespace UnityEditor
 				curveEditorSettings.vRangeMax = ranges.yMax;
 			}
 			CurveEditorWindow.instance.Show(GUIView.current, curveEditorSettings);
-		}
-
-		private static bool MatchesCurvePopup(AnimationCurve curve, SerializedProperty property)
-		{
-			bool result;
-			if (curve != null)
-			{
-				result = (curve == CurveEditorWindow.curve);
-			}
-			else
-			{
-				result = (CurveEditorWindow.property != null && CurveEditorWindow.property.serializedObject != null && SerializedProperty.EqualContents(property, CurveEditorWindow.property));
-			}
-			return result;
 		}
 
 		private static bool ValidTargetForIconSelection(UnityEngine.Object[] targets)
@@ -6326,6 +6313,8 @@ namespace UnityEditor
 				Texture2D miniThumbnail = AssetPreview.GetMiniThumbnail(targetObjs[0]);
 				GUIStyle.none.Draw(rect, EditorGUIUtility.TempContent(miniThumbnail), false, false, false, false);
 			}
+			bool enabled = GUI.enabled;
+			GUI.enabled = true;
 			EventType type = current.type;
 			if (type != EventType.MouseDown)
 			{
@@ -6342,6 +6331,7 @@ namespace UnityEditor
 				EditorUtility.DisplayObjectContextMenu(rect2, targetObjs, 0);
 				current.Use();
 			}
+			GUI.enabled = enabled;
 		}
 
 		internal static bool ToggleTitlebar(Rect position, GUIContent label, bool foldout, ref bool toggleValue)
@@ -6385,7 +6375,7 @@ namespace UnityEditor
 		internal static bool HelpIconButton(Rect position, UnityEngine.Object[] objs)
 		{
 			UnityEngine.Object @object = objs[0];
-			bool flag = Unsupported.IsDeveloperBuild();
+			bool flag = Unsupported.IsSourceBuild();
 			bool flag2 = !flag;
 			if (!flag2)
 			{
@@ -6725,6 +6715,11 @@ namespace UnityEditor
 
 		public static GUIContent BeginProperty(Rect totalPosition, GUIContent label, SerializedProperty property)
 		{
+			return EditorGUI.BeginPropertyInternal(totalPosition, label, property);
+		}
+
+		internal static GUIContent BeginPropertyInternal(Rect totalPosition, GUIContent label, SerializedProperty property)
+		{
 			Highlighter.HighlightIdentifier(totalPosition, property.propertyPath);
 			if (EditorGUI.s_PendingPropertyKeyboardHandling != null)
 			{
@@ -6737,7 +6732,7 @@ namespace UnityEditor
 				EditorGUI.HelpBox(totalPosition, "null", MessageType.Error);
 				throw new NullReferenceException(message);
 			}
-			EditorGUI.s_PropertyFieldTempContent.text = ((label != null) ? label.text : L10n.Tr(property.displayName));
+			EditorGUI.s_PropertyFieldTempContent.text = ((label != null) ? label.text : property.localizedDisplayName);
 			EditorGUI.s_PropertyFieldTempContent.tooltip = ((!EditorGUI.isCollectingTooltips) ? null : ((label != null) ? label.tooltip : property.tooltip));
 			string tooltip = ScriptAttributeUtility.GetHandler(property).tooltip;
 			if (tooltip != null)
@@ -6747,10 +6742,10 @@ namespace UnityEditor
 			EditorGUI.s_PropertyFieldTempContent.image = ((label != null) ? label.image : null);
 			if (Event.current.alt && property.serializedObject.inspectorMode != InspectorMode.Normal)
 			{
-				GUIContent arg_136_0 = EditorGUI.s_PropertyFieldTempContent;
+				GUIContent arg_131_0 = EditorGUI.s_PropertyFieldTempContent;
 				string propertyPath = property.propertyPath;
 				EditorGUI.s_PropertyFieldTempContent.text = propertyPath;
-				arg_136_0.tooltip = propertyPath;
+				arg_131_0.tooltip = propertyPath;
 			}
 			bool boldDefaultFont = EditorGUIUtility.GetBoldDefaultFont();
 			if (property.serializedObject.targetObjects.Length == 1 && property.isInstantiatedPrefab)
@@ -6758,8 +6753,11 @@ namespace UnityEditor
 				EditorGUIUtility.SetBoldDefaultFont(property.prefabOverride);
 			}
 			EditorGUI.s_PropertyStack.Push(new PropertyGUIData(property, totalPosition, boldDefaultFont, GUI.enabled, GUI.backgroundColor));
-			string targetTypeAssemblyQualifiedName = (!(property.serializedObject.targetObject != null)) ? null : property.serializedObject.targetObject.GetType().AssemblyQualifiedName;
-			GUIDebugger.LogBeginProperty(targetTypeAssemblyQualifiedName, property.propertyPath, totalPosition);
+			if (GUIDebugger.active)
+			{
+				string targetTypeAssemblyQualifiedName = (!(property.serializedObject.targetObject != null)) ? null : property.serializedObject.targetObject.GetType().AssemblyQualifiedName;
+				GUIDebugger.LogBeginProperty(targetTypeAssemblyQualifiedName, property.propertyPath, totalPosition);
+			}
 			EditorGUI.showMixedValue = property.hasMultipleDifferentValues;
 			if (property.isAnimated)
 			{
@@ -6781,7 +6779,10 @@ namespace UnityEditor
 
 		public static void EndProperty()
 		{
-			GUIDebugger.LogEndProperty();
+			if (GUIDebugger.active)
+			{
+				GUIDebugger.LogEndProperty();
+			}
 			EditorGUI.showMixedValue = false;
 			PropertyGUIData propertyGUIData = EditorGUI.s_PropertyStack.Pop();
 			if (Event.current.type == EventType.ContextClick && propertyGUIData.totalPosition.Contains(Event.current.mousePosition))
@@ -6840,6 +6841,21 @@ namespace UnityEditor
 
 		internal static void LayerMaskField(Rect position, SerializedProperty property, GUIContent label, GUIStyle style)
 		{
+			uint arg_28_1 = property.layerMaskBits;
+			if (EditorGUI.<>f__mg$cache2 == null)
+			{
+				EditorGUI.<>f__mg$cache2 = new EditorUtility.SelectMenuItemFunction(EditorGUI.SetLayerMaskValueDelegate);
+			}
+			EditorGUI.LayerMaskField(position, arg_28_1, property, label, style, EditorGUI.<>f__mg$cache2);
+		}
+
+		internal static void LayerMaskField(Rect position, uint layers, GUIContent label, EditorUtility.SelectMenuItemFunction callback)
+		{
+			EditorGUI.LayerMaskField(position, layers, null, label, EditorStyles.layerMaskField, callback);
+		}
+
+		internal static void LayerMaskField(Rect position, uint layers, SerializedProperty property, GUIContent label, GUIStyle style, EditorUtility.SelectMenuItemFunction callback)
+		{
 			int controlID = GUIUtility.GetControlID(EditorGUI.s_LayerMaskField, FocusType.Keyboard, position);
 			if (label != null)
 			{
@@ -6856,20 +6872,14 @@ namespace UnityEditor
 				}
 				else
 				{
-					style.Draw(position, EditorGUIUtility.TempContent(property.layerMaskStringValue), controlID, false);
+					style.Draw(position, EditorGUIUtility.TempContent(SerializedProperty.GetLayerMaskStringValue(layers)), controlID, false);
 				}
 			}
 			else if ((current.type == EventType.MouseDown && position.Contains(current.mousePosition)) || current.MainActionKeyForControl(controlID))
 			{
-				SerializedProperty userData = property.serializedObject.FindProperty(property.propertyPath);
-				Rect arg_F5_0 = position;
-				string[] arg_F5_1 = property.GetLayerMaskNames();
-				int[] arg_F5_2 = (!property.hasMultipleDifferentValues) ? property.GetLayerMaskSelectedIndex() : new int[0];
-				if (EditorGUI.<>f__mg$cache2 == null)
-				{
-					EditorGUI.<>f__mg$cache2 = new EditorUtility.SelectMenuItemFunction(EditorGUI.SetLayerMaskValueDelegate);
-				}
-				EditorUtility.DisplayCustomMenu(arg_F5_0, arg_F5_1, arg_F5_2, EditorGUI.<>f__mg$cache2, userData);
+				SerializedProperty item = (property == null) ? null : property.serializedObject.FindProperty(property.propertyPath);
+				Tuple<SerializedProperty, uint> userData = new Tuple<SerializedProperty, uint>(item, layers);
+				EditorUtility.DisplayCustomMenu(position, SerializedProperty.GetLayerMaskNames(layers), (property == null || !property.hasMultipleDifferentValues) ? SerializedProperty.GetLayerMaskSelectedIndex(layers) : new int[0], callback, userData);
 				Event.current.Use();
 				GUIUtility.keyboardControl = controlID;
 			}
@@ -6877,14 +6887,18 @@ namespace UnityEditor
 
 		internal static void SetLayerMaskValueDelegate(object userData, string[] options, int selected)
 		{
-			SerializedProperty serializedProperty = (SerializedProperty)userData;
-			serializedProperty.ToggleLayerMaskAtIndex(selected);
-			serializedProperty.serializedObject.ApplyModifiedProperties();
+			Tuple<SerializedProperty, uint> tuple = (Tuple<SerializedProperty, uint>)userData;
+			if (tuple.Item1 != null)
+			{
+				tuple.Item1.ToggleLayerMaskAtIndex(selected);
+				tuple.Item1.serializedObject.ApplyModifiedProperties();
+				tuple.Item2 = tuple.Item1.layerMaskBits;
+			}
 		}
 
 		internal static void ShowRepaints()
 		{
-			if (Unsupported.IsDeveloperBuild())
+			if (Unsupported.IsDeveloperMode())
 			{
 				Color backgroundColor = GUI.backgroundColor;
 				GUI.backgroundColor = new Color(UnityEngine.Random.value, UnityEngine.Random.value, UnityEngine.Random.value, 1f);
@@ -6895,12 +6909,12 @@ namespace UnityEditor
 			}
 		}
 
-		internal static void DrawTextureAlphaInternal(Rect position, Texture image, ScaleMode scaleMode, float imageAspect)
+		internal static void DrawTextureAlphaInternal(Rect position, Texture image, ScaleMode scaleMode, float imageAspect, float mipLevel)
 		{
-			EditorGUI.DrawPreviewTextureInternal(position, image, EditorGUI.alphaMaterial, scaleMode, imageAspect);
+			EditorGUI.DrawPreviewTextureInternal(position, image, EditorGUI.alphaMaterial, scaleMode, imageAspect, mipLevel);
 		}
 
-		internal static void DrawTextureTransparentInternal(Rect position, Texture image, ScaleMode scaleMode, float imageAspect)
+		internal static void DrawTextureTransparentInternal(Rect position, Texture image, ScaleMode scaleMode, float imageAspect, float mipLevel)
 		{
 			if (imageAspect == 0f && image == null)
 			{
@@ -6915,7 +6929,7 @@ namespace UnityEditor
 				EditorGUI.DrawTransparencyCheckerTexture(position, scaleMode, imageAspect);
 				if (image != null)
 				{
-					EditorGUI.DrawPreviewTexture(position, image, EditorGUI.transparentMaterial, scaleMode, imageAspect);
+					EditorGUI.DrawPreviewTexture(position, image, EditorGUI.transparentMaterial, scaleMode, imageAspect, mipLevel);
 				}
 			}
 		}
@@ -6928,7 +6942,7 @@ namespace UnityEditor
 			GUI.DrawTextureWithTexCoords(position2, EditorGUI.transparentCheckerTexture, new Rect(position2.width * -0.5f / (float)EditorGUI.transparentCheckerTexture.width, position2.height * -0.5f / (float)EditorGUI.transparentCheckerTexture.height, position2.width / (float)EditorGUI.transparentCheckerTexture.width, position2.height / (float)EditorGUI.transparentCheckerTexture.height), false);
 		}
 
-		internal static void DrawPreviewTextureInternal(Rect position, Texture image, Material mat, ScaleMode scaleMode, float imageAspect)
+		internal static void DrawPreviewTextureInternal(Rect position, Texture image, Material mat, ScaleMode scaleMode, float imageAspect, float mipLevel)
 		{
 			if (Event.current.type == EventType.Repaint)
 			{
@@ -6938,9 +6952,9 @@ namespace UnityEditor
 				}
 				if (mat == null)
 				{
-					mat = EditorGUI.GetMaterialForSpecialTexture(image);
+					mat = EditorGUI.GetMaterialForSpecialTexture(image, EditorGUI.colorMaterial);
 				}
-				GL.sRGBWrite = (QualitySettings.activeColorSpace == ColorSpace.Linear && !TextureUtil.GetLinearSampled(image));
+				mat.SetFloat("_Mip", mipLevel);
 				RenderTexture renderTexture = image as RenderTexture;
 				bool flag = renderTexture != null && renderTexture.bindTextureMS;
 				if (flag)
@@ -6953,24 +6967,16 @@ namespace UnityEditor
 					renderTexture.ResolveAntiAliasedSurface(temporary);
 					image = temporary;
 				}
-				if (mat == null)
+				Rect screenRect = default(Rect);
+				Rect sourceRect = default(Rect);
+				GUI.CalculateScaledTextureRects(position, scaleMode, imageAspect, ref screenRect, ref sourceRect);
+				Texture2D texture2D = image as Texture2D;
+				if (texture2D != null && TextureUtil.GetUsageMode(image) == TextureUsageMode.AlwaysPadded)
 				{
-					GUI.DrawTexture(position, image, scaleMode, false, imageAspect);
+					sourceRect.width *= (float)texture2D.width / (float)TextureUtil.GetGPUWidth(texture2D);
+					sourceRect.height *= (float)texture2D.height / (float)TextureUtil.GetGPUHeight(texture2D);
 				}
-				else
-				{
-					Rect screenRect = default(Rect);
-					Rect sourceRect = default(Rect);
-					GUI.CalculateScaledTextureRects(position, scaleMode, imageAspect, ref screenRect, ref sourceRect);
-					Texture2D texture2D = image as Texture2D;
-					if (texture2D != null && TextureUtil.GetUsageMode(image) == TextureUsageMode.AlwaysPadded)
-					{
-						sourceRect.width *= (float)texture2D.width / (float)TextureUtil.GetGPUWidth(texture2D);
-						sourceRect.height *= (float)texture2D.height / (float)TextureUtil.GetGPUHeight(texture2D);
-					}
-					Graphics.DrawTexture(screenRect, image, sourceRect, 0, 0, 0, 0, GUI.color, mat);
-				}
-				GL.sRGBWrite = false;
+				Graphics.DrawTexture(screenRect, image, sourceRect, 0, 0, 0, 0, GUI.color, mat);
 				if (flag)
 				{
 					RenderTexture.ReleaseTemporary(image as RenderTexture);
@@ -6978,7 +6984,7 @@ namespace UnityEditor
 			}
 		}
 
-		internal static Material GetMaterialForSpecialTexture(Texture t)
+		internal static Material GetMaterialForSpecialTexture(Texture t, Material defaultMat = null)
 		{
 			Material result;
 			if (t == null)
@@ -7011,10 +7017,20 @@ namespace UnityEditor
 				}
 				else
 				{
-					result = null;
+					result = defaultMat;
 				}
 			}
 			return result;
+		}
+
+		private static Material GetPreviewMaterial(ref Material m, string shaderPath)
+		{
+			if (m == null)
+			{
+				m = new Material(EditorGUIUtility.LoadRequired(shaderPath) as Shader);
+				m.hideFlags = HideFlags.HideAndDontSave;
+			}
+			return m;
 		}
 
 		private static void SetExpandedRecurse(SerializedProperty property, bool expanded)
@@ -7119,7 +7135,7 @@ namespace UnityEditor
 
 		internal static bool DefaultPropertyField(Rect position, SerializedProperty property, GUIContent label)
 		{
-			label = EditorGUI.BeginProperty(position, label, property);
+			label = EditorGUI.BeginPropertyInternal(position, label, property);
 			SerializedPropertyType propertyType = property.propertyType;
 			bool flag = false;
 			if (!EditorGUI.HasVisibleChildFields(property))
@@ -7490,6 +7506,16 @@ namespace UnityEditor
 			return result;
 		}
 
+		internal static int AdvancedPopup(Rect rect, int selectedIndex, string[] displayedOptions)
+		{
+			return StatelessAdvancedDropdown.SearchablePopup(rect, selectedIndex, displayedOptions, "MiniPullDown");
+		}
+
+		internal static int AdvancedPopup(Rect rect, int selectedIndex, string[] displayedOptions, GUIStyle style)
+		{
+			return StatelessAdvancedDropdown.SearchablePopup(rect, selectedIndex, displayedOptions, style);
+		}
+
 		[Obsolete("EnumMaskField has been deprecated. Use EnumFlagsField instead.")]
 		public static Enum EnumMaskField(Rect position, Enum enumValue)
 		{
@@ -7636,6 +7662,101 @@ namespace UnityEditor
 			return EditorGUI.EnumMaskField(position, label, selected, style, out changedFlags, out changedToValue);
 		}
 
+		internal static float AngularDial(Rect rect, GUIContent label, float angle, Texture thumbTexture, GUIStyle background, GUIStyle thumb)
+		{
+			int controlID = GUIUtility.GetControlID(FocusType.Passive);
+			Event current = Event.current;
+			if (label != null && label != GUIContent.none)
+			{
+				rect = EditorGUI.PrefixLabel(rect, controlID, label);
+			}
+			float num = Mathf.Min(rect.width, rect.height);
+			Vector2 vector = (thumb != null && thumb != GUIStyle.none) ? thumb.CalcSize(GUIContent.Temp(thumbTexture)) : Vector2.zero;
+			float num2 = Mathf.Max(vector.x, vector.y);
+			float result;
+			switch (current.GetTypeForControl(controlID))
+			{
+			case EventType.MouseDown:
+				if (rect.Contains(current.mousePosition))
+				{
+					Vector2 vector2 = current.mousePosition - rect.center;
+					float num3 = Mathf.Sqrt(vector2.x * vector2.x + vector2.y * vector2.y);
+					if (num3 < num * 0.5f && num3 > num * 0.5f - num2)
+					{
+						result = EditorGUI.UseAngularDialEventAndGetAngle(controlID, current, rect.center, angle);
+						return result;
+					}
+				}
+				break;
+			case EventType.MouseUp:
+				if (GUIUtility.hotControl == controlID)
+				{
+					GUIUtility.hotControl = 0;
+					result = EditorGUI.UseAngularDialEventAndGetAngle(controlID, current, rect.center, angle);
+					return result;
+				}
+				break;
+			case EventType.MouseDrag:
+				if (GUIUtility.hotControl == controlID)
+				{
+					result = EditorGUI.UseAngularDialEventAndGetAngle(controlID, current, rect.center, angle);
+					return result;
+				}
+				break;
+			case EventType.Repaint:
+			{
+				bool isHover = false;
+				if (rect.Contains(current.mousePosition))
+				{
+					Vector2 vector3 = current.mousePosition - rect.center;
+					float num4 = Mathf.Sqrt(vector3.x * vector3.x + vector3.y * vector3.y);
+					isHover = (num4 < num * 0.5f && num4 > num * 0.5f - num2);
+				}
+				bool isActive = GUIUtility.hotControl == controlID;
+				if (background != null && background != GUIStyle.none)
+				{
+					background.Draw(rect, isHover, isActive, false, false);
+				}
+				if (thumb != null && thumb != GUIStyle.none)
+				{
+					float d = num * 0.5f - num2 * 0.5f;
+					float f = -0.0174532924f * angle;
+					Vector2 center = new Vector2(Mathf.Cos(f), Mathf.Sin(f)) * d + rect.center;
+					Vector2 size = thumb.CalcSize(GUIContent.none);
+					if (thumb.fixedWidth == 0f)
+					{
+						size.x = Mathf.Max(size.x, num2);
+					}
+					if (thumb.fixedHeight == 0f)
+					{
+						size.y = Mathf.Max(size.y, num2);
+					}
+					Rect position = new Rect
+					{
+						size = size,
+						center = center
+					};
+					position.center = center;
+					thumb.Draw(position, thumbTexture, position.Contains(current.mousePosition), isActive, false, false);
+				}
+				break;
+			}
+			}
+			result = angle;
+			return result;
+		}
+
+		private static float UseAngularDialEventAndGetAngle(int id, Event evt, Vector2 center, float angle)
+		{
+			GUIUtility.hotControl = ((evt.type != EventType.MouseUp) ? id : 0);
+			GUIUtility.keyboardControl = 0;
+			GUI.changed = true;
+			evt.Use();
+			Vector2 normalized = (evt.mousePosition - center).normalized;
+			float target = -57.29578f * Mathf.Acos(normalized.x) * Mathf.Sign(Vector2.Dot(Vector2.up, normalized));
+			return angle + Mathf.DeltaAngle(angle, target);
+		}
+
 		internal static bool ButtonWithRotatedIcon(Rect rect, GUIContent guiContent, float iconAngle, bool mouseDownButton, GUIStyle style)
 		{
 			bool result;
@@ -7668,92 +7789,6 @@ namespace UnityEditor
 				}
 			}
 			return result;
-		}
-
-		internal static Color ColorBrightnessField(Rect r, GUIContent label, Color value, float minBrightness, float maxBrightness)
-		{
-			return EditorGUI.ColorBrightnessFieldInternal(r, label, value, minBrightness, maxBrightness, EditorStyles.numberField);
-		}
-
-		internal static Color ColorBrightnessFieldInternal(Rect position, GUIContent label, Color value, float minBrightness, float maxBrightness, GUIStyle style)
-		{
-			int controlID = GUIUtility.GetControlID(EditorGUI.s_FloatFieldHash, FocusType.Keyboard, position);
-			Rect rect = EditorGUI.PrefixLabel(position, controlID, label);
-			position.xMax = rect.x;
-			return EditorGUI.DoColorBrightnessField(rect, position, value, minBrightness, maxBrightness, style);
-		}
-
-		internal static Color DoColorBrightnessField(Rect rect, Rect dragRect, Color col, float minBrightness, float maxBrightness, GUIStyle style)
-		{
-			float a = col.a;
-			int controlID = GUIUtility.GetControlID(18975602, FocusType.Keyboard);
-			Event current = Event.current;
-			switch (current.GetTypeForControl(controlID))
-			{
-			case EventType.MouseDown:
-				if (current.button == 0)
-				{
-					if (dragRect.Contains(Event.current.mousePosition))
-					{
-						if (GUIUtility.hotControl == 0)
-						{
-							EditorGUI.ColorBrightnessFieldStateObject colorBrightnessFieldStateObject = GUIUtility.GetStateObject(typeof(EditorGUI.ColorBrightnessFieldStateObject), controlID) as EditorGUI.ColorBrightnessFieldStateObject;
-							if (colorBrightnessFieldStateObject != null)
-							{
-								Color.RGBToHSV(col, out colorBrightnessFieldStateObject.m_Hue, out colorBrightnessFieldStateObject.m_Saturation, out colorBrightnessFieldStateObject.m_Brightness);
-							}
-							GUIUtility.keyboardControl = 0;
-							GUIUtility.hotControl = controlID;
-							GUI.changed = true;
-							current.Use();
-							EditorGUIUtility.SetWantsMouseJumping(1);
-						}
-					}
-				}
-				break;
-			case EventType.MouseUp:
-				if (GUIUtility.hotControl == controlID)
-				{
-					GUIUtility.hotControl = 0;
-					EditorGUIUtility.SetWantsMouseJumping(0);
-				}
-				break;
-			case EventType.MouseDrag:
-				if (GUIUtility.hotControl == controlID)
-				{
-					EditorGUI.ColorBrightnessFieldStateObject colorBrightnessFieldStateObject2 = GUIUtility.QueryStateObject(typeof(EditorGUI.ColorBrightnessFieldStateObject), controlID) as EditorGUI.ColorBrightnessFieldStateObject;
-					float maxColorComponent = col.maxColorComponent;
-					float num = Mathf.Clamp01(Mathf.Max(1f, Mathf.Pow(Mathf.Abs(maxColorComponent), 0.5f)) * 0.004f);
-					float num2 = HandleUtility.niceMouseDelta * num;
-					float num3 = Mathf.Clamp(colorBrightnessFieldStateObject2.m_Brightness + num2, minBrightness, maxBrightness);
-					colorBrightnessFieldStateObject2.m_Brightness = (float)Math.Round((double)num3, 3);
-					Color color = Color.HSVToRGB(colorBrightnessFieldStateObject2.m_Hue, colorBrightnessFieldStateObject2.m_Saturation, colorBrightnessFieldStateObject2.m_Brightness, maxBrightness > 1f);
-					col = new Color(color.r, color.g, color.b, col.a);
-					GUIUtility.keyboardControl = 0;
-					GUI.changed = true;
-					current.Use();
-				}
-				break;
-			case EventType.Repaint:
-				if (GUIUtility.hotControl == 0)
-				{
-					EditorGUIUtility.AddCursorRect(dragRect, MouseCursor.SlideArrow);
-				}
-				break;
-			}
-			EditorGUI.BeginChangeCheck();
-			float value = EditorGUI.DelayedFloatField(rect, col.maxColorComponent, style);
-			if (EditorGUI.EndChangeCheck())
-			{
-				float h;
-				float s;
-				float num4;
-				Color.RGBToHSV(col, out h, out s, out num4);
-				float v = Mathf.Clamp(value, minBrightness, maxBrightness);
-				Color color2 = Color.HSVToRGB(h, s, v, maxBrightness > 1f);
-				col = new Color(color2.r, color2.g, color2.b, col.a);
-			}
-			return new Color(col.r, col.g, col.b, a);
 		}
 
 		internal static Gradient GradientField(Rect position, Gradient gradient)
@@ -7900,48 +7935,31 @@ namespace UnityEditor
 			return result;
 		}
 
-		internal static Color HexColorTextField(Rect rect, GUIContent label, Color color, bool showAlpha)
+		internal static Color32 HexColorTextField(Rect rect, GUIContent label, Color32 color, bool showAlpha)
 		{
 			return EditorGUI.HexColorTextField(rect, label, color, showAlpha, EditorStyles.textField);
 		}
 
-		internal static Color HexColorTextField(Rect rect, GUIContent label, Color color, bool showAlpha, GUIStyle style)
+		internal static Color32 HexColorTextField(Rect rect, GUIContent label, Color32 color, bool showAlpha, GUIStyle style)
 		{
-			int controlID = GUIUtility.GetControlID(EditorGUI.s_FloatFieldHash, FocusType.Keyboard, rect);
-			Rect rect2 = EditorGUI.PrefixLabel(rect, controlID, label);
-			return EditorGUI.DoHexColorTextField(rect2, color, showAlpha, style);
+			int controlID = GUIUtility.GetControlID(EditorGUI.s_TextFieldHash, FocusType.Keyboard, rect);
+			return EditorGUI.DoHexColorTextField(controlID, EditorGUI.PrefixLabel(rect, controlID, label), color, showAlpha, style);
 		}
 
-		internal static Color DoHexColorTextField(Rect rect, Color color, bool showAlpha, GUIStyle style)
+		internal static Color32 DoHexColorTextField(int id, Rect rect, Color32 color, bool showAlpha, GUIStyle style)
 		{
-			bool flag = false;
-			if (color.maxColorComponent > 1f)
-			{
-				color = color.RGBMultiplied(1f / color.maxColorComponent);
-				flag = true;
-			}
-			Rect position = new Rect(rect.x, rect.y, 14f, rect.height);
-			rect.xMin += 14f;
-			GUI.Label(position, GUIContent.Temp("#"));
 			string text = (!showAlpha) ? ColorUtility.ToHtmlStringRGB(color) : ColorUtility.ToHtmlStringRGBA(color);
 			EditorGUI.BeginChangeCheck();
-			int controlID = GUIUtility.GetControlID(EditorGUI.s_TextFieldHash, FocusType.Keyboard, rect);
-			bool flag2;
-			string str = EditorGUI.DoTextField(EditorGUI.s_RecycledEditor, controlID, rect, text, style, "0123456789ABCDEFabcdef", out flag2, false, false, false);
+			bool flag;
+			string str = EditorGUI.DoTextField(EditorGUI.s_RecycledEditor, id, rect, text, style, "0123456789ABCDEFabcdef", out flag, false, false, false);
 			if (EditorGUI.EndChangeCheck())
 			{
 				EditorGUI.s_RecycledEditor.text = EditorGUI.s_RecycledEditor.text.ToUpper();
 				Color color2;
 				if (ColorUtility.TryParseHtmlString("#" + str, out color2))
 				{
-					color = new Color(color2.r, color2.g, color2.b, (!showAlpha) ? color.a : color2.a);
+					color = new Color(color2.r, color2.g, color2.b, (!showAlpha) ? ((float)color.a) : color2.a);
 				}
-			}
-			if (flag)
-			{
-				EditorGUIUtility.SetIconSize(new Vector2(16f, 16f));
-				GUI.Label(new Rect(position.x - 20f, rect.y, 20f, 20f), EditorGUI.s_HDRWarning);
-				EditorGUIUtility.SetIconSize(Vector2.zero);
 			}
 			return color;
 		}
@@ -8620,6 +8638,32 @@ namespace UnityEditor
 			IL_161:
 			result = null;
 			return result;
+		}
+
+		internal static void SliderWithTexture(Rect position, GUIContent label, SerializedProperty property, float sliderMin, float sliderMax, float power, Texture2D sliderBackground)
+		{
+			label = EditorGUI.BeginProperty(position, label, property);
+			EditorGUI.BeginChangeCheck();
+			string formatString = (property.propertyType != SerializedPropertyType.Integer) ? EditorGUI.kFloatFieldFormatString : EditorGUI.kIntFieldFormatString;
+			float floatValue = EditorGUI.SliderWithTexture(position, label, property.floatValue, sliderMin, sliderMax, formatString, sliderMin, sliderMax, power, sliderBackground);
+			if (EditorGUI.EndChangeCheck())
+			{
+				property.floatValue = floatValue;
+			}
+			EditorGUI.EndProperty();
+		}
+
+		internal static float SliderWithTexture(Rect rect, GUIContent label, float sliderValue, float sliderMin, float sliderMax, string formatString, Texture2D sliderBackground, params GUILayoutOption[] options)
+		{
+			return EditorGUI.SliderWithTexture(rect, label, sliderValue, sliderMin, sliderMax, formatString, sliderMin, sliderMax, 1f, sliderBackground);
+		}
+
+		internal static float SliderWithTexture(Rect position, GUIContent label, float sliderValue, float sliderMin, float sliderMax, string formatString, float textFieldMin, float textFieldMax, float power, Texture2D sliderBackground)
+		{
+			int controlID = GUIUtility.GetControlID(EditorGUI.s_SliderHash, FocusType.Keyboard, position);
+			Rect position2 = EditorGUI.PrefixLabel(position, controlID, label);
+			Rect dragZonePosition = (!EditorGUI.LabelHasContent(label)) ? default(Rect) : EditorGUIUtility.DragZoneRect(position);
+			return EditorGUI.DoSlider(position2, dragZonePosition, controlID, sliderValue, sliderMin, sliderMax, formatString, textFieldMin, textFieldMax, power, "ColorPickerSliderBackground", "ColorPickerHorizThumb", sliderBackground);
 		}
 
 		internal static void TargetChoiceField(Rect position, SerializedProperty property, GUIContent label)

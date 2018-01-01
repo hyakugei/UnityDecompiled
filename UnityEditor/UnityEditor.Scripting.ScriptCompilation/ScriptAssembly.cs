@@ -55,6 +55,12 @@ namespace UnityEditor.Scripting.ScriptCompilation
 			set;
 		}
 
+		public string[] AdditionalReferences
+		{
+			get;
+			set;
+		}
+
 		public string[] Defines
 		{
 			get;

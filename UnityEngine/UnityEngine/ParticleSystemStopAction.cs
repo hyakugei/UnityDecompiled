@@ -6,6 +6,7 @@ namespace UnityEngine
 	{
 		None,
 		Disable,
-		Destroy
+		Destroy,
+		Callback
 	}
 }

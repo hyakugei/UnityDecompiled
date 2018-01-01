@@ -1,7 +1,12 @@
 using System;
+using UnityEngine.Bindings;
 
 namespace UnityEngine
 {
+	[VisibleToOtherModules(new string[]
+	{
+		"UnityEngine.IMGUIModule"
+	})]
 	internal struct Internal_DrawTextureArguments
 	{
 		public Rect screenRect;

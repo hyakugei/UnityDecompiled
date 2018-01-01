@@ -43,27 +43,35 @@ namespace UnityEngineInternal
 			{
 				result = targetUrl;
 			}
+			else if (targetUrl.StartsWith("blob:http"))
+			{
+				result = targetUrl;
+			}
 			else
 			{
 				Uri uri = new Uri(localUrl);
-				if (targetUrl.StartsWith("//"))
+				Uri uri2 = null;
+				if (targetUrl[0] == '/')
 				{
-					targetUrl = uri.Scheme + ":" + targetUrl;
+					uri2 = new Uri(uri, targetUrl);
 				}
-				if (targetUrl.StartsWith("/"))
-				{
-					targetUrl = uri.Scheme + "://" + uri.Host + targetUrl;
-				}
-				if (WebRequestUtils.domainRegex.IsMatch(targetUrl))
+				if (uri2 == null && WebRequestUtils.domainRegex.IsMatch(targetUrl))
 				{
 					targetUrl = uri.Scheme + "://" + targetUrl;
 				}
-				Uri uri2 = null;
+				FormatException ex = null;
 				try
 				{
-					uri2 = new Uri(targetUrl);
+					if (uri2 == null && targetUrl[0] != '.')
+					{
+						uri2 = new Uri(targetUrl);
+					}
 				}
-				catch (FormatException ex)
+				catch (FormatException ex2)
+				{
+					ex = ex2;
+				}
+				if (uri2 == null)
 				{
 					try
 					{

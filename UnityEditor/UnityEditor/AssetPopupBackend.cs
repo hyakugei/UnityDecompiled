@@ -148,7 +148,7 @@ namespace UnityEditor
 				}
 			}
 			genericMenu.AddSeparator("");
-			genericMenu.AddItem(new GUIContent("Create New..."), false, delegate
+			genericMenu.AddItem(EditorGUIUtility.TrTextContent("Create New...", null, null), false, delegate
 			{
 				T t = Activator.CreateInstance<T>();
 				ProjectWindowUtil.CreateAsset(t, "New " + typeName + "." + fileExtension);

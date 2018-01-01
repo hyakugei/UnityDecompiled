@@ -85,7 +85,7 @@ namespace UnityEditor
 			{
 				this.SetExpanded(this.m_RootItem, true);
 			}
-			IHierarchyProperty hierarchyProperty = new HierarchyProperty(HierarchyType.Assets);
+			HierarchyProperty hierarchyProperty = new HierarchyProperty(HierarchyType.Assets, false);
 			hierarchyProperty.Reset();
 			if (!hierarchyProperty.Find(this.m_RootInstanceID, null))
 			{

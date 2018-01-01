@@ -1,18 +1,21 @@
 using System;
 using UnityEngine;
+using UnityEngine.Experimental.UIElements;
 
 namespace UnityEditor.Experimental.UIElements.GraphView
 {
-	internal interface ISelectable
+	public interface ISelectable
 	{
 		bool IsSelectable();
 
+		bool HitTest(Vector2 localPoint);
+
 		bool Overlaps(Rect rectangle);
 
-		void Select(GraphView selectionContainer, bool additive);
+		void Select(VisualElement selectionContainer, bool additive);
 
-		void Unselect(GraphView selectionContainer);
+		void Unselect(VisualElement selectionContainer);
 
-		bool IsSelected(GraphView selectionContainer);
+		bool IsSelected(VisualElement selectionContainer);
 	}
 }

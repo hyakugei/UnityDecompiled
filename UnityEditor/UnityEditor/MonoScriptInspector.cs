@@ -11,20 +11,23 @@ namespace UnityEditor
 		{
 			if (base.targets.Length == 1)
 			{
-				GUILayout.Label("Assembly Information", EditorStyles.boldLabel, new GUILayoutOption[0]);
 				string assetPath = AssetDatabase.GetAssetPath(base.target);
 				string assemblyNameFromScriptPath = CompilationPipeline.GetAssemblyNameFromScriptPath(assetPath);
-				EditorGUILayout.LabelField("Filename", assemblyNameFromScriptPath, new GUILayoutOption[0]);
-				string assemblyDefinitionFilePathFromScriptPath = CompilationPipeline.GetAssemblyDefinitionFilePathFromScriptPath(assetPath);
-				if (assemblyDefinitionFilePathFromScriptPath != null)
+				if (assemblyNameFromScriptPath != null)
 				{
-					TextAsset obj = AssetDatabase.LoadAssetAtPath<TextAsset>(assemblyDefinitionFilePathFromScriptPath);
-					using (new EditorGUI.DisabledScope(true))
+					GUILayout.Label("Assembly Information", EditorStyles.boldLabel, new GUILayoutOption[0]);
+					EditorGUILayout.LabelField("Filename", assemblyNameFromScriptPath, new GUILayoutOption[0]);
+					string assemblyDefinitionFilePathFromScriptPath = CompilationPipeline.GetAssemblyDefinitionFilePathFromScriptPath(assetPath);
+					if (assemblyDefinitionFilePathFromScriptPath != null)
 					{
-						EditorGUILayout.ObjectField("Definition File", obj, typeof(TextAsset), false, new GUILayoutOption[0]);
+						TextAsset obj = AssetDatabase.LoadAssetAtPath<TextAsset>(assemblyDefinitionFilePathFromScriptPath);
+						using (new EditorGUI.DisabledScope(true))
+						{
+							EditorGUILayout.ObjectField("Definition File", obj, typeof(TextAsset), false, new GUILayoutOption[0]);
+						}
 					}
+					EditorGUILayout.Space();
 				}
-				EditorGUILayout.Space();
 			}
 			base.OnInspectorGUI();
 		}

@@ -48,12 +48,12 @@ namespace UnityEditor
 			{
 				AudioClipInspector.s_PreButton = "preButton";
 				AudioClipInspector.m_bAutoPlay = EditorPrefs.GetBool("AutoPlayAudio", false);
-				AudioClipInspector.s_AutoPlayIcons[0] = EditorGUIUtility.IconContent("preAudioAutoPlayOff", "|Turn Auto Play on");
-				AudioClipInspector.s_AutoPlayIcons[1] = EditorGUIUtility.IconContent("preAudioAutoPlayOn", "|Turn Auto Play off");
-				AudioClipInspector.s_PlayIcons[0] = EditorGUIUtility.IconContent("preAudioPlayOff", "|Play");
-				AudioClipInspector.s_PlayIcons[1] = EditorGUIUtility.IconContent("preAudioPlayOn", "|Stop");
-				AudioClipInspector.s_LoopIcons[0] = EditorGUIUtility.IconContent("preAudioLoopOff", "|Loop on");
-				AudioClipInspector.s_LoopIcons[1] = EditorGUIUtility.IconContent("preAudioLoopOn", "|Loop off");
+				AudioClipInspector.s_AutoPlayIcons[0] = EditorGUIUtility.TrIconContent("preAudioAutoPlayOff", "Turn Auto Play on");
+				AudioClipInspector.s_AutoPlayIcons[1] = EditorGUIUtility.TrIconContent("preAudioAutoPlayOn", "Turn Auto Play off");
+				AudioClipInspector.s_PlayIcons[0] = EditorGUIUtility.TrIconContent("preAudioPlayOff", "Play");
+				AudioClipInspector.s_PlayIcons[1] = EditorGUIUtility.TrIconContent("preAudioPlayOn", "Stop");
+				AudioClipInspector.s_LoopIcons[0] = EditorGUIUtility.TrIconContent("preAudioLoopOff", "Loop on");
+				AudioClipInspector.s_LoopIcons[1] = EditorGUIUtility.TrIconContent("preAudioLoopOn", "Loop off");
 				AudioClipInspector.s_DefaultIcon = EditorGUIUtility.LoadIcon("Profiler.Audio");
 			}
 		}

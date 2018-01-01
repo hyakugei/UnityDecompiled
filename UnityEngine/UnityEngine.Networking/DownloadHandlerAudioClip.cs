@@ -18,6 +18,11 @@ namespace UnityEngine.Networking
 			this.InternalCreateAudioClip(url, audioType);
 		}
 
+		public DownloadHandlerAudioClip(Uri uri, AudioType audioType)
+		{
+			this.InternalCreateAudioClip(uri.AbsoluteUri, audioType);
+		}
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern IntPtr Create(DownloadHandlerAudioClip obj, string url, AudioType audioType);
 

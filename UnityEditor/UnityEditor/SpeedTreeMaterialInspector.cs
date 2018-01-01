@@ -155,6 +155,7 @@ namespace UnityEditor
 				EditorGUILayout.Space();
 				base.RenderQueueField();
 				base.EnableInstancingField();
+				base.DoubleSidedGIField();
 			}
 		}
 

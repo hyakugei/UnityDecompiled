@@ -7,9 +7,9 @@ namespace UnityEditor
 	{
 		private class Texts
 		{
-			public GUIContent color = EditorGUIUtility.TextContent("Color|Controls the color of each particle based on its speed.");
+			public GUIContent color = EditorGUIUtility.TrTextContent("Color", "Controls the color of each particle based on its speed.", null);
 
-			public GUIContent velocityRange = EditorGUIUtility.TextContent("Speed Range|Remaps speed in the defined range to a color.");
+			public GUIContent velocityRange = EditorGUIUtility.TrTextContent("Speed Range", "Remaps speed in the defined range to a color.", null);
 		}
 
 		private static ColorByVelocityModuleUI.Texts s_Texts;

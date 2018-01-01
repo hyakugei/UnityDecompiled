@@ -9,6 +9,7 @@ using UnityEngineInternal;
 
 namespace UnityEngine
 {
+	[ExcludeFromPreset]
 	public sealed class AssetBundle : Object
 	{
 		public extern Object mainAsset
@@ -23,6 +24,28 @@ namespace UnityEngine
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
+		}
+
+		private AssetBundle()
+		{
+		}
+
+		[EditorBrowsable(EditorBrowsableState.Never), Obsolete("Method CreateFromFile has been renamed to LoadFromFile (UnityUpgradable) -> LoadFromFile(*)", true)]
+		public static AssetBundle CreateFromFile(string path)
+		{
+			return null;
+		}
+
+		[EditorBrowsable(EditorBrowsableState.Never), Obsolete("Method CreateFromMemory has been renamed to LoadFromMemoryAsync (UnityUpgradable) -> LoadFromMemoryAsync(*)", true)]
+		public static AssetBundleCreateRequest CreateFromMemory(byte[] binary)
+		{
+			return null;
+		}
+
+		[EditorBrowsable(EditorBrowsableState.Never), Obsolete("Method CreateFromMemoryImmediate has been renamed to LoadFromMemory (UnityUpgradable) -> LoadFromMemory(*)", true)]
+		public static AssetBundle CreateFromMemoryImmediate(byte[] binary)
+		{
+			return null;
 		}
 
 		[GeneratedByOldBindingsGenerator]
@@ -98,6 +121,22 @@ namespace UnityEngine
 			return AssetBundle.LoadFromMemory(binary, crc);
 		}
 
+		internal static void ValidateLoadFromStream(Stream stream)
+		{
+			if (stream == null)
+			{
+				throw new ArgumentNullException("ManagedStream object must be non-null", "stream");
+			}
+			if (!stream.CanRead)
+			{
+				throw new ArgumentException("ManagedStream object must be readable (stream.CanRead must return true)", "stream");
+			}
+			if (!stream.CanSeek)
+			{
+				throw new ArgumentException("ManagedStream object must be seekable (stream.CanSeek must return true)", "stream");
+			}
+		}
+
 		[ExcludeFromDocs]
 		public static AssetBundleCreateRequest LoadFromStreamAsync(Stream stream, uint crc)
 		{
@@ -115,7 +154,7 @@ namespace UnityEngine
 
 		public static AssetBundleCreateRequest LoadFromStreamAsync(Stream stream, [UnityEngine.Internal.DefaultValue("0")] uint crc, [UnityEngine.Internal.DefaultValue("0")] uint managedReadBufferSize)
 		{
-			ManagedStreamHelpers.ValidateLoadFromStream(stream);
+			AssetBundle.ValidateLoadFromStream(stream);
 			return AssetBundle.LoadFromStreamAsyncInternal(stream, crc, managedReadBufferSize);
 		}
 
@@ -136,7 +175,7 @@ namespace UnityEngine
 
 		public static AssetBundle LoadFromStream(Stream stream, [UnityEngine.Internal.DefaultValue("0")] uint crc, [UnityEngine.Internal.DefaultValue("0")] uint managedReadBufferSize)
 		{
-			ManagedStreamHelpers.ValidateLoadFromStream(stream);
+			AssetBundle.ValidateLoadFromStream(stream);
 			return AssetBundle.LoadFromStreamInternal(stream, crc, managedReadBufferSize);
 		}
 
@@ -270,9 +309,28 @@ namespace UnityEngine
 			return this.LoadAssetWithSubAssets(name, typeof(Object));
 		}
 
+		internal static T[] ConvertObjects<T>(Object[] rawObjects) where T : Object
+		{
+			T[] result;
+			if (rawObjects == null)
+			{
+				result = null;
+			}
+			else
+			{
+				T[] array = new T[rawObjects.Length];
+				for (int i = 0; i < array.Length; i++)
+				{
+					array[i] = (T)((object)rawObjects[i]);
+				}
+				result = array;
+			}
+			return result;
+		}
+
 		public T[] LoadAssetWithSubAssets<T>(string name) where T : Object
 		{
-			return Resources.ConvertObjects<T>(this.LoadAssetWithSubAssets(name, typeof(T)));
+			return AssetBundle.ConvertObjects<T>(this.LoadAssetWithSubAssets(name, typeof(T)));
 		}
 
 		public Object[] LoadAssetWithSubAssets(string name, Type type)
@@ -334,7 +392,7 @@ namespace UnityEngine
 
 		public T[] LoadAllAssets<T>() where T : Object
 		{
-			return Resources.ConvertObjects<T>(this.LoadAllAssets(typeof(T)));
+			return AssetBundle.ConvertObjects<T>(this.LoadAllAssets(typeof(T)));
 		}
 
 		public Object[] LoadAllAssets(Type type)
@@ -382,23 +440,5 @@ namespace UnityEngine
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern string[] GetAllScenePaths();
-
-		[EditorBrowsable(EditorBrowsableState.Never), Obsolete("Method CreateFromFile has been renamed to LoadFromFile (UnityUpgradable) -> LoadFromFile(*)", true)]
-		public static AssetBundle CreateFromFile(string path)
-		{
-			return null;
-		}
-
-		[EditorBrowsable(EditorBrowsableState.Never), Obsolete("Method CreateFromMemory has been renamed to LoadFromMemoryAsync (UnityUpgradable) -> LoadFromMemoryAsync(*)", true)]
-		public static AssetBundleCreateRequest CreateFromMemory(byte[] binary)
-		{
-			return null;
-		}
-
-		[EditorBrowsable(EditorBrowsableState.Never), Obsolete("Method CreateFromMemoryImmediate has been renamed to LoadFromMemory (UnityUpgradable) -> LoadFromMemory(*)", true)]
-		public static AssetBundle CreateFromMemoryImmediate(byte[] binary)
-		{
-			return null;
-		}
 	}
 }

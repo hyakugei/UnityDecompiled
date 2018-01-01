@@ -18,21 +18,21 @@ namespace UnityEditor
 
 			public readonly GUIStyle sToolBarButton = "toolbarbutton";
 
-			public readonly GUIContent sSingleMode1 = EditorGUIUtility.IconContent("LookDevSingle1", "Single1|Single1 object view");
+			public readonly GUIContent sSingleMode1 = EditorGUIUtility.TrIconContent("LookDevSingle1", "Single1 object view");
 
-			public readonly GUIContent sSingleMode2 = EditorGUIUtility.IconContent("LookDevSingle2", "Single2|Single2 object view");
+			public readonly GUIContent sSingleMode2 = EditorGUIUtility.TrIconContent("LookDevSingle2", "Single2 object view");
 
-			public readonly GUIContent sSideBySideMode = EditorGUIUtility.IconContent("LookDevSideBySide", "Side|Side by side comparison view");
+			public readonly GUIContent sSideBySideMode = EditorGUIUtility.TrIconContent("LookDevSideBySide", "Side by side comparison view");
 
-			public readonly GUIContent sSplitMode = EditorGUIUtility.IconContent("LookDevSplit", "Split|Single object split comparison view");
+			public readonly GUIContent sSplitMode = EditorGUIUtility.TrIconContent("LookDevSplit", "Single object split comparison view");
 
-			public readonly GUIContent sZoneMode = EditorGUIUtility.IconContent("LookDevZone", "Zone|Single object zone comparison view");
+			public readonly GUIContent sZoneMode = EditorGUIUtility.TrIconContent("LookDevZone", "Single object zone comparison view");
 
-			public readonly GUIContent sLinkActive = EditorGUIUtility.IconContent("LookDevMirrorViewsActive", "Link|Links the property between the different views");
+			public readonly GUIContent sLinkActive = EditorGUIUtility.TrIconContent("LookDevMirrorViewsActive", "Links the property between the different views");
 
-			public readonly GUIContent sLinkInactive = EditorGUIUtility.IconContent("LookDevMirrorViewsInactive", "Link|Links the property between the different views");
+			public readonly GUIContent sLinkInactive = EditorGUIUtility.TrIconContent("LookDevMirrorViewsInactive", "Links the property between the different views");
 
-			public readonly GUIContent sDragAndDropObjsText = EditorGUIUtility.TextContent("Drag and drop Prefabs here.");
+			public readonly GUIContent sDragAndDropObjsText = EditorGUIUtility.TrTextContent("Drag and drop Prefabs here.", null, null);
 
 			public readonly GUIStyle[] sPropertyLabelStyle = new GUIStyle[]
 			{
@@ -279,7 +279,6 @@ namespace UnityEditor
 
 		public static void DrawFullScreenQuad(Rect previewRect)
 		{
-			GL.sRGBWrite = (QualitySettings.activeColorSpace == ColorSpace.Linear);
 			GL.PushMatrix();
 			GL.LoadOrtho();
 			GL.Viewport(previewRect);
@@ -294,7 +293,6 @@ namespace UnityEditor
 			GL.Vertex3(1f, 0f, 0f);
 			GL.End();
 			GL.PopMatrix();
-			GL.sRGBWrite = false;
 		}
 
 		public void CreateNewLibrary(string assetPath)
@@ -1007,7 +1005,7 @@ namespace UnityEditor
 		{
 			if (RenderDoc.IsInstalled() && !RenderDoc.IsLoaded())
 			{
-				menu.AddItem(new GUIContent("Load RenderDoc"), false, new GenericMenu.MenuFunction(this.LoadRenderDoc));
+				menu.AddItem(EditorGUIUtility.TrTextContent("Load RenderDoc", null, null), false, new GenericMenu.MenuFunction(this.LoadRenderDoc));
 			}
 		}
 
@@ -1094,9 +1092,9 @@ namespace UnityEditor
 			this.LoadLookDevConfig();
 			base.autoRepaintOnSceneChange = true;
 			base.titleContent = base.GetLocalizedTitleContent();
-			this.m_RenderdocContent = EditorGUIUtility.IconContent("renderdoc", "Capture|Capture the current view and open in RenderDoc");
-			this.m_SyncLightVertical = EditorGUIUtility.IconContent("LookDevCenterLight", "Sync|Sync all light vertically with current light position in current selected HDRI");
-			this.m_ResetEnvironment = EditorGUIUtility.IconContent("LookDevResetEnv", "Reset|Reset all environment");
+			this.m_RenderdocContent = EditorGUIUtility.TrIconContent("renderdoc", "Capture the current view and open in RenderDoc");
+			this.m_SyncLightVertical = EditorGUIUtility.TrIconContent("LookDevCenterLight", "Sync all light vertically with current light position in current selected HDRI");
+			this.m_ResetEnvironment = EditorGUIUtility.TrIconContent("LookDevResetEnv", "Reset all environment");
 			this.UpdateLookDevModeToggle(this.m_LookDevConfig.lookDevMode, true);
 			this.m_LookDevConfig.cameraStateCommon.rotation.valueChanged.AddListener(new UnityAction(base.Repaint));
 			this.m_LookDevConfig.cameraStateCommon.pivot.valueChanged.AddListener(new UnityAction(base.Repaint));
@@ -1222,10 +1220,9 @@ namespace UnityEditor
 				LookDevResources.m_LookDevCompositing.SetVector("_ToneMapCoeffs2", value14);
 				LookDevResources.m_LookDevCompositing.SetPass((int)this.m_LookDevConfig.lookDevMode);
 				LookDevView.DrawFullScreenQuad(new Rect(0f, 0f, previewRect.width, previewRect.height));
-				RenderTexture.active = active;
-				GL.sRGBWrite = (QualitySettings.activeColorSpace == ColorSpace.Linear);
-				GUI.DrawTexture(previewRect, this.m_FinalCompositionTexture, ScaleMode.StretchToFill, false);
 				GL.sRGBWrite = false;
+				RenderTexture.active = active;
+				GUI.DrawTexture(previewRect, this.m_FinalCompositionTexture, ScaleMode.StretchToFill, false);
 			}
 		}
 
@@ -1269,6 +1266,7 @@ namespace UnityEditor
 				this.m_CurrentObjRotationOffset = (this.m_CurrentObjRotationOffset + Time.deltaTime * 360f * 0.3f * this.m_LookDevConfig.objRotationSpeed * this.m_ObjRotationAcc) % 360f;
 				this.m_LookDevConfig.lookDevContexts[0].envRotation = (this.m_LookDevConfig.lookDevContexts[0].envRotation + Time.deltaTime * 360f * 0.03f * this.m_LookDevConfig.envRotationSpeed * this.m_EnvRotationAcc) % 720f;
 				this.m_LookDevConfig.lookDevContexts[1].envRotation = (this.m_LookDevConfig.lookDevContexts[1].envRotation + Time.deltaTime * 360f * 0.03f * this.m_LookDevConfig.envRotationSpeed * this.m_EnvRotationAcc) % 720f;
+				GL.sRGBWrite = (QualitySettings.activeColorSpace == ColorSpace.Linear);
 				switch (this.m_LookDevConfig.lookDevMode)
 				{
 				case LookDevMode.Single1:
@@ -1283,6 +1281,7 @@ namespace UnityEditor
 					this.RenderPreviewDualView();
 					break;
 				}
+				GL.sRGBWrite = false;
 			}
 		}
 

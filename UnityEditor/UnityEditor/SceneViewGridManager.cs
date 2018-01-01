@@ -53,12 +53,14 @@ namespace UnityEditor
 			{
 				SceneView.onSceneGUIDelegate = (SceneView.OnSceneFunc)Delegate.Combine(SceneView.onSceneGUIDelegate, new SceneView.OnSceneFunc(this.OnSceneGuiDelegate));
 				Selection.selectionChanged = (Action)Delegate.Combine(Selection.selectionChanged, new Action(this.UpdateCache));
-				EditorApplication.hierarchyWindowChanged = (EditorApplication.CallbackFunction)Delegate.Combine(EditorApplication.hierarchyWindowChanged, new EditorApplication.CallbackFunction(this.UpdateCache));
+				EditorApplication.hierarchyChanged += new Action(this.UpdateCache);
 				EditMode.editModeStarted += new Action<IToolModeOwner, EditMode.SceneViewEditMode>(this.OnEditModeStart);
 				EditMode.editModeEnded += new Action<IToolModeOwner>(this.OnEditModeEnd);
 				GridPaintingState.brushChanged += new Action<GridBrushBase>(this.OnBrushChanged);
 				GridPaintingState.scenePaintTargetChanged += new Action<GameObject>(this.OnScenePaintTargetChanged);
 				Undo.undoRedoPerformed = (Undo.UndoRedoCallback)Delegate.Combine(Undo.undoRedoPerformed, new Undo.UndoRedoCallback(this.OnUndoRedoPerformed));
+				GridSnapping.snapPosition = new Func<Vector3, Vector3>(this.OnSnapPosition);
+				GridSnapping.activeFunc = new Func<bool>(this.GetActive);
 				this.m_RegisteredEventHandlers = true;
 			}
 		}
@@ -93,12 +95,14 @@ namespace UnityEditor
 			SceneViewGridManager.FlushCachedGridProxy();
 			SceneView.onSceneGUIDelegate = (SceneView.OnSceneFunc)Delegate.Remove(SceneView.onSceneGUIDelegate, new SceneView.OnSceneFunc(this.OnSceneGuiDelegate));
 			Selection.selectionChanged = (Action)Delegate.Remove(Selection.selectionChanged, new Action(this.UpdateCache));
-			EditorApplication.hierarchyWindowChanged = (EditorApplication.CallbackFunction)Delegate.Remove(EditorApplication.hierarchyWindowChanged, new EditorApplication.CallbackFunction(this.UpdateCache));
+			EditorApplication.hierarchyChanged -= new Action(this.UpdateCache);
 			EditMode.editModeStarted -= new Action<IToolModeOwner, EditMode.SceneViewEditMode>(this.OnEditModeStart);
 			EditMode.editModeEnded -= new Action<IToolModeOwner>(this.OnEditModeEnd);
 			GridPaintingState.brushChanged -= new Action<GridBrushBase>(this.OnBrushChanged);
 			GridPaintingState.scenePaintTargetChanged -= new Action<GameObject>(this.OnScenePaintTargetChanged);
 			Undo.undoRedoPerformed = (Undo.UndoRedoCallback)Delegate.Remove(Undo.undoRedoPerformed, new Undo.UndoRedoCallback(this.OnUndoRedoPerformed));
+			GridSnapping.snapPosition = null;
+			GridSnapping.activeFunc = null;
 			this.m_RegisteredEventHandlers = false;
 		}
 
@@ -158,6 +162,25 @@ namespace UnityEditor
 					disposable.Dispose();
 				}
 			}
+		}
+
+		private bool GetActive()
+		{
+			return this.active;
+		}
+
+		private Vector3 OnSnapPosition(Vector3 position)
+		{
+			Vector3 result = position;
+			if (this.active && !EditorGUI.actionKey)
+			{
+				Vector3 localPosition = this.activeGridProxy.WorldToLocal(position);
+				Vector3 vector = this.activeGridProxy.LocalToCellInterpolated(localPosition);
+				Vector3 cellPosition = new Vector3(Mathf.Round(2f * vector.x) / 2f, Mathf.Round(2f * vector.y) / 2f, Mathf.Round(2f * vector.z) / 2f);
+				localPosition = this.activeGridProxy.CellToLocalInterpolated(cellPosition);
+				result = this.activeGridProxy.LocalToWorld(localPosition);
+			}
+			return result;
 		}
 
 		internal static void FlushCachedGridProxy()

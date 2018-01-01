@@ -1,4 +1,5 @@
 using System;
+using UnityEngine;
 
 namespace UnityEditor.Modules
 {
@@ -6,11 +7,15 @@ namespace UnityEditor.Modules
 	{
 		void ShowPlatformBuildOptions();
 
+		void ShowPlatformBuildWarnings();
+
 		void ShowInternalPlatformBuildOptions();
 
 		bool EnabledBuildButton();
 
 		bool EnabledBuildAndRunButton();
+
+		void GetBuildButtonTitles(out GUIContent buildButtonTitle, out GUIContent buildAndRunButtonTitle);
 
 		bool ShouldDrawScriptDebuggingCheckbox();
 
@@ -21,6 +26,8 @@ namespace UnityEditor.Modules
 		bool ShouldDrawExplicitNullCheckbox();
 
 		bool ShouldDrawExplicitDivideByZeroCheckbox();
+
+		bool ShouldDrawExplicitArrayBoundsCheckbox();
 
 		bool ShouldDrawForceOptimizeScriptsCheckbox();
 	}

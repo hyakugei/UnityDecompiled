@@ -44,7 +44,7 @@ namespace UnityEditor.Collaboration
 			}
 		}
 
-		public static void OnCompleteJob()
+		public static void OnJobsCompleted()
 		{
 			CollabTesting.OnAsyncSignalReceived(CollabTesting.AsyncState.WaitForJobComplete);
 		}

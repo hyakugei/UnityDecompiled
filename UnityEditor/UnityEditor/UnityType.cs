@@ -22,6 +22,8 @@ namespace UnityEditor
 
 			public string classNamespace;
 
+			public string module;
+
 			public int persistentTypeID;
 
 			public uint flags;
@@ -46,6 +48,12 @@ namespace UnityEditor
 		}
 
 		public string nativeNamespace
+		{
+			get;
+			private set;
+		}
+
+		public string module
 		{
 			get;
 			private set;
@@ -136,6 +144,7 @@ namespace UnityEditor
 					descendantCount = array[i].descendantCount,
 					name = array[i].className,
 					nativeNamespace = array[i].classNamespace,
+					module = array[i].module,
 					persistentTypeID = array[i].persistentTypeID,
 					baseClass = baseClass,
 					flags = (UnityTypeFlags)array[i].flags
@@ -147,7 +156,6 @@ namespace UnityEditor
 			}
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern UnityType.UnityTypeTransport[] Internal_GetAllTypes();
 

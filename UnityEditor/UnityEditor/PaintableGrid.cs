@@ -34,7 +34,9 @@ namespace UnityEditor
 
 		private PaintableGrid.MarqueeType m_MarqueeType = PaintableGrid.MarqueeType.None;
 
-		private bool m_PaintingOrErasing;
+		private bool m_IsExecuting;
+
+		private EditMode.SceneViewEditMode m_ModeBeforePicking;
 
 		public Vector2Int mouseGridPosition
 		{
@@ -68,15 +70,15 @@ namespace UnityEditor
 			}
 		}
 
-		protected bool paintingOrErasing
+		protected bool executing
 		{
 			get
 			{
-				return this.m_PaintingOrErasing;
+				return this.m_IsExecuting;
 			}
 			set
 			{
-				this.m_PaintingOrErasing = (value && this.isHotControl);
+				this.m_IsExecuting = (value && this.isHotControl);
 			}
 		}
 
@@ -232,8 +234,10 @@ namespace UnityEditor
 			Event current = Event.current;
 			if (current.type == EventType.MouseDown && this.IsPickingEvent(current) && !this.isHotControl)
 			{
+				this.m_ModeBeforePicking = EditMode.SceneViewEditMode.GridPainting;
 				if (this.inEditMode && EditMode.editMode != EditMode.SceneViewEditMode.GridPicking)
 				{
+					this.m_ModeBeforePicking = EditMode.editMode;
 					EditMode.ChangeEditMode(EditMode.SceneViewEditMode.GridPicking, ScriptableSingleton<GridPaintingState>.instance);
 				}
 				this.m_MarqueeStart = new Vector2Int?(this.mouseGridPosition);
@@ -258,9 +262,9 @@ namespace UnityEditor
 				{
 					Vector2Int marqueePivot = this.GetMarqueePivot(this.m_MarqueeStart.Value, this.mouseGridPosition);
 					this.PickBrush(new BoundsInt(new Vector3Int(marqueeRect2.xMin, marqueeRect2.yMin, 0), new Vector3Int(marqueeRect2.size.x, marqueeRect2.size.y, 1)), new Vector3Int(marqueePivot.x, marqueePivot.y, 0));
-					if (this.inEditMode && EditMode.editMode != EditMode.SceneViewEditMode.GridPainting)
+					if (this.inEditMode && EditMode.editMode != this.m_ModeBeforePicking)
 					{
-						EditMode.ChangeEditMode(EditMode.SceneViewEditMode.GridPainting, ScriptableSingleton<GridPaintingState>.instance);
+						EditMode.ChangeEditMode(this.m_ModeBeforePicking, ScriptableSingleton<GridPaintingState>.instance);
 					}
 					GridPaletteBrushes.ActiveGridBrushAssetChanged();
 					PaintableGrid.s_LastActivePaintableGrid = this;
@@ -322,25 +326,27 @@ namespace UnityEditor
 		private void HandleMoveTool()
 		{
 			Event current = Event.current;
-			if (current.type == EventType.MouseDown && current.button == 0 && EditMode.editMode == EditMode.SceneViewEditMode.GridMove)
+			if (current.type == EventType.MouseDown && current.button == 0 && !current.alt && EditMode.editMode == EditMode.SceneViewEditMode.GridMove)
 			{
 				this.RegisterUndo();
 				Vector3Int position = new Vector3Int(this.mouseGridPosition.x, this.mouseGridPosition.y, GridSelection.position.zMin);
 				if (GridSelection.active && GridSelection.position.Contains(position))
 				{
+					GUIUtility.hotControl = this.m_PermanentControlID;
+					this.executing = true;
 					this.m_MarqueeStart = null;
 					this.m_MarqueeType = PaintableGrid.MarqueeType.None;
 					this.m_PreviousMove = new Vector2Int?(this.mouseGridPosition);
 					this.MoveStart(GridSelection.position);
+					PaintableGrid.s_LastActivePaintableGrid = this;
 				}
-				PaintableGrid.s_LastActivePaintableGrid = this;
-				GUIUtility.hotControl = this.m_PermanentControlID;
 				Event.current.Use();
 			}
 			if (current.type == EventType.MouseDrag && current.button == 0 && EditMode.editMode == EditMode.SceneViewEditMode.GridMove && GUIUtility.hotControl == this.m_PermanentControlID)
 			{
 				if (this.m_MouseGridPositionChanged && this.m_PreviousMove.HasValue)
 				{
+					this.executing = true;
 					BoundsInt position2 = GridSelection.position;
 					BoundsInt from = new BoundsInt(new Vector3Int(position2.xMin, position2.yMin, 0), new Vector3Int(position2.size.x, position2.size.y, 1));
 					Vector2Int vector2Int = this.mouseGridPosition - this.m_PreviousMove.Value;
@@ -359,6 +365,7 @@ namespace UnityEditor
 					this.m_PreviousMove = null;
 					this.MoveEnd(GridSelection.position);
 				}
+				this.executing = false;
 				GUIUtility.hotControl = 0;
 				Event.current.Use();
 			}
@@ -369,7 +376,6 @@ namespace UnityEditor
 			Event current = Event.current;
 			if (this.IsPaintingEvent(current) || this.IsErasingEvent(current))
 			{
-				this.paintingOrErasing = false;
 				EventType type = current.type;
 				if (type != EventType.MouseDown)
 				{
@@ -377,7 +383,7 @@ namespace UnityEditor
 					{
 						if (type == EventType.MouseUp)
 						{
-							this.paintingOrErasing = false;
+							this.executing = false;
 							if (this.isHotControl)
 							{
 								if (Event.current.shift && EditMode.editMode != EditMode.SceneViewEditMode.GridPainting)
@@ -413,7 +419,7 @@ namespace UnityEditor
 							Event.current.Use();
 							GUI.changed = true;
 						}
-						this.paintingOrErasing = true;
+						this.executing = true;
 					}
 				}
 				else
@@ -438,7 +444,7 @@ namespace UnityEditor
 					Event.current.Use();
 					GUIUtility.hotControl = this.m_PermanentControlID;
 					GUI.changed = true;
-					this.paintingOrErasing = true;
+					this.executing = true;
 				}
 			}
 		}
@@ -450,7 +456,7 @@ namespace UnityEditor
 
 		private bool IsErasingEvent(Event evt)
 		{
-			return evt.button == 0 && ((!evt.control && !evt.alt && evt.shift && EditMode.editMode != EditMode.SceneViewEditMode.GridBox && EditMode.editMode != EditMode.SceneViewEditMode.GridFloodFill && EditMode.editMode != EditMode.SceneViewEditMode.GridSelect && EditMode.editMode != EditMode.SceneViewEditMode.GridMove) || EditMode.editMode == EditMode.SceneViewEditMode.GridEraser);
+			return evt.button == 0 && !evt.control && !evt.alt && ((evt.shift && EditMode.editMode != EditMode.SceneViewEditMode.GridBox && EditMode.editMode != EditMode.SceneViewEditMode.GridFloodFill && EditMode.editMode != EditMode.SceneViewEditMode.GridSelect && EditMode.editMode != EditMode.SceneViewEditMode.GridMove) || EditMode.editMode == EditMode.SceneViewEditMode.GridEraser);
 		}
 
 		private void HandleFloodFill()
@@ -458,14 +464,16 @@ namespace UnityEditor
 			if (EditMode.editMode == EditMode.SceneViewEditMode.GridFloodFill && GridPaintingState.gridBrush != null && this.ValidateFloodFillPosition(new Vector3Int(this.mouseGridPosition.x, this.mouseGridPosition.y, 0)))
 			{
 				Event current = Event.current;
-				if (current.type == EventType.MouseDown && current.button == 0)
+				if (current.type == EventType.MouseDown && current.button == 0 && !current.alt)
 				{
 					GUIUtility.hotControl = this.m_PermanentControlID;
 					GUI.changed = true;
+					this.executing = true;
 					Event.current.Use();
 				}
 				if (current.type == EventType.MouseUp && current.button == 0 && this.isHotControl)
 				{
+					this.executing = false;
 					this.RegisterUndo();
 					this.FloodFill(new Vector3Int(this.mouseGridPosition.x, this.mouseGridPosition.y, 0));
 					GUI.changed = true;
@@ -478,12 +486,13 @@ namespace UnityEditor
 		private void HandleBoxTool()
 		{
 			Event current = Event.current;
-			if (current.type == EventType.MouseDown && current.button == 0 && EditMode.editMode == EditMode.SceneViewEditMode.GridBox)
+			if (current.type == EventType.MouseDown && current.button == 0 && !current.alt && EditMode.editMode == EditMode.SceneViewEditMode.GridBox)
 			{
 				this.m_MarqueeStart = new Vector2Int?(this.mouseGridPosition);
 				this.m_MarqueeType = PaintableGrid.MarqueeType.Box;
 				Event.current.Use();
 				GUI.changed = true;
+				this.executing = true;
 				GUIUtility.hotControl = this.m_PermanentControlID;
 			}
 			if (current.type == EventType.MouseDrag && current.button == 0 && EditMode.editMode == EditMode.SceneViewEditMode.GridBox)
@@ -491,6 +500,7 @@ namespace UnityEditor
 				if (this.isHotControl && this.m_MarqueeStart.HasValue)
 				{
 					Event.current.Use();
+					this.executing = true;
 					GUI.changed = true;
 				}
 			}
@@ -509,6 +519,7 @@ namespace UnityEditor
 						this.BoxFill(new BoundsInt(marqueeRect.x, marqueeRect.y, 0, marqueeRect.size.x, marqueeRect.size.y, 1));
 					}
 					Event.current.Use();
+					this.executing = false;
 					GUI.changed = true;
 					GUIUtility.hotControl = 0;
 				}

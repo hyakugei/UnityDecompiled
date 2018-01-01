@@ -71,17 +71,17 @@ namespace UnityEditor
 			static Styles()
 			{
 				LightProbeProxyVolumeEditor.Styles.richTextMiniLabel = new GUIStyle(EditorStyles.miniLabel);
-				LightProbeProxyVolumeEditor.Styles.volumeResolutionText = EditorGUIUtility.TextContent("Proxy Volume Resolution|Specifies the resolution of the 3D grid of interpolated light probes. Higher resolution/density means better lighting but the CPU cost will increase.");
+				LightProbeProxyVolumeEditor.Styles.volumeResolutionText = EditorGUIUtility.TrTextContent("Proxy Volume Resolution", "Specifies the resolution of the 3D grid of interpolated light probes. Higher resolution/density means better lighting but the CPU cost will increase.", null);
 				LightProbeProxyVolumeEditor.Styles.resolutionXText = new GUIContent("X");
 				LightProbeProxyVolumeEditor.Styles.resolutionYText = new GUIContent("Y");
 				LightProbeProxyVolumeEditor.Styles.resolutionZText = new GUIContent("Z");
-				LightProbeProxyVolumeEditor.Styles.sizeText = EditorGUIUtility.TextContent("Size");
-				LightProbeProxyVolumeEditor.Styles.bbSettingsText = EditorGUIUtility.TextContent("Bounding Box Settings");
-				LightProbeProxyVolumeEditor.Styles.originText = EditorGUIUtility.TextContent("Origin");
-				LightProbeProxyVolumeEditor.Styles.bbModeText = EditorGUIUtility.TextContent("Bounding Box Mode|The mode in which the bounding box is computed. A 3D grid of interpolated light probes will be generated inside this bounding box.\n\nAutomatic Local - the local-space bounding box of the Renderer is used.\n\nAutomatic Global - a bounding box is computed which encloses the current Renderer and all the Renderers down the hierarchy that have the Light Probes property set to Use Proxy Volume. The bounding box will be world-space aligned.\n\nCustom - a custom bounding box is used. The bounding box is specified in the local-space of the game object.");
-				LightProbeProxyVolumeEditor.Styles.resModeText = EditorGUIUtility.TextContent("Resolution Mode|The mode in which the resolution of the 3D grid of interpolated light probes is specified:\n\nAutomatic - the resolution on each axis is computed using a user-specified number of interpolated light probes per unit area(Density).\n\nCustom - the user can specify a different resolution on each axis.");
-				LightProbeProxyVolumeEditor.Styles.probePositionText = EditorGUIUtility.TextContent("Probe Position Mode|The mode in which the interpolated probe positions are generated.\n\nCellCorner - divide the volume in cells and generate interpolated probe positions in the corner/edge of the cells.\n\nCellCenter - divide the volume in cells and generate interpolated probe positions in the center of the cells.");
-				LightProbeProxyVolumeEditor.Styles.refreshModeText = EditorGUIUtility.TextContent("Refresh Mode");
+				LightProbeProxyVolumeEditor.Styles.sizeText = EditorGUIUtility.TrTextContent("Size", null, null);
+				LightProbeProxyVolumeEditor.Styles.bbSettingsText = EditorGUIUtility.TrTextContent("Bounding Box Settings", null, null);
+				LightProbeProxyVolumeEditor.Styles.originText = EditorGUIUtility.TrTextContent("Origin", null, null);
+				LightProbeProxyVolumeEditor.Styles.bbModeText = EditorGUIUtility.TrTextContent("Bounding Box Mode", "The mode in which the bounding box is computed. A 3D grid of interpolated light probes will be generated inside this bounding box.\n\nAutomatic Local - the local-space bounding box of the Renderer is used.\n\nAutomatic Global - a bounding box is computed which encloses the current Renderer and all the Renderers down the hierarchy that have the Light Probes property set to Use Proxy Volume. The bounding box will be world-space aligned.\n\nCustom - a custom bounding box is used. The bounding box is specified in the local-space of the game object.", null);
+				LightProbeProxyVolumeEditor.Styles.resModeText = EditorGUIUtility.TrTextContent("Resolution Mode", "The mode in which the resolution of the 3D grid of interpolated light probes is specified:\n\nAutomatic - the resolution on each axis is computed using a user-specified number of interpolated light probes per unit area(Density).\n\nCustom - the user can specify a different resolution on each axis.", null);
+				LightProbeProxyVolumeEditor.Styles.probePositionText = EditorGUIUtility.TrTextContent("Probe Position Mode", "The mode in which the interpolated probe positions are generated.\n\nCellCorner - divide the volume in cells and generate interpolated probe positions in the corner/edge of the cells.\n\nCellCenter - divide the volume in cells and generate interpolated probe positions in the center of the cells.", null);
+				LightProbeProxyVolumeEditor.Styles.refreshModeText = EditorGUIUtility.TrTextContent("Refresh Mode", null, null);
 				LightProbeProxyVolumeEditor.Styles.bbMode = (from x in (from x in Enum.GetNames(typeof(LightProbeProxyVolume.BoundingBoxMode))
 				select ObjectNames.NicifyVariableName(x)).ToArray<string>()
 				select new GUIContent(x)).ToArray<GUIContent>();
@@ -94,11 +94,11 @@ namespace UnityEditor
 				LightProbeProxyVolumeEditor.Styles.refreshMode = (from x in (from x in Enum.GetNames(typeof(LightProbeProxyVolume.RefreshMode))
 				select ObjectNames.NicifyVariableName(x)).ToArray<string>()
 				select new GUIContent(x)).ToArray<GUIContent>();
-				LightProbeProxyVolumeEditor.Styles.resProbesPerUnit = EditorGUIUtility.TextContent("Density|Density in probes per world unit.");
-				LightProbeProxyVolumeEditor.Styles.componentUnusedNote = EditorGUIUtility.TextContent("In order to use the component on this game object, the Light Probes property should be set to 'Use Proxy Volume' in Renderer.");
-				LightProbeProxyVolumeEditor.Styles.noRendererNode = EditorGUIUtility.TextContent("The component is unused by this game object because there is no Renderer component attached.");
-				LightProbeProxyVolumeEditor.Styles.noLightProbes = EditorGUIUtility.TextContent("The scene doesn't contain any light probes. Add light probes using Light Probe Group components (menu: Component->Rendering->Light Probe Group).");
-				LightProbeProxyVolumeEditor.Styles.componentUnsuportedOnTreesNote = EditorGUIUtility.TextContent("Tree rendering doesn't support Light Probe Proxy Volume components.");
+				LightProbeProxyVolumeEditor.Styles.resProbesPerUnit = EditorGUIUtility.TrTextContent("Density", "Density in probes per world unit.", null);
+				LightProbeProxyVolumeEditor.Styles.componentUnusedNote = EditorGUIUtility.TrTextContent("In order to use the component on this game object, the Light Probes property should be set to 'Use Proxy Volume' in Renderer.", null, null);
+				LightProbeProxyVolumeEditor.Styles.noRendererNode = EditorGUIUtility.TrTextContent("The component is unused by this game object because there is no Renderer component attached.", null, null);
+				LightProbeProxyVolumeEditor.Styles.noLightProbes = EditorGUIUtility.TrTextContent("The scene doesn't contain any light probes. Add light probes using Light Probe Group components (menu: Component->Rendering->Light Probe Group).", null, null);
+				LightProbeProxyVolumeEditor.Styles.componentUnsuportedOnTreesNote = EditorGUIUtility.TrTextContent("Tree rendering doesn't support Light Probe Proxy Volume components.", null, null);
 				LightProbeProxyVolumeEditor.Styles.volTextureSizesValues = new int[]
 				{
 					1,
@@ -113,7 +113,7 @@ namespace UnityEditor
 				LightProbeProxyVolumeEditor.Styles.toolContents = new GUIContent[]
 				{
 					PrimitiveBoundsHandle.editModeButton,
-					EditorGUIUtility.IconContent("MoveTool", "|Move the selected objects.")
+					EditorGUIUtility.TrIconContent("MoveTool", "Move the selected objects.")
 				};
 				LightProbeProxyVolumeEditor.Styles.sceneViewEditModes = new EditMode.SceneViewEditMode[]
 				{

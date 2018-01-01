@@ -2,7 +2,7 @@ using System;
 
 namespace UnityEngine.Experimental.UIElements
 {
-	public class Label : VisualElement
+	public class Label : BaseTextElement
 	{
 		public Label() : this(string.Empty)
 		{
@@ -10,7 +10,7 @@ namespace UnityEngine.Experimental.UIElements
 
 		public Label(string text)
 		{
-			base.text = text;
+			this.text = text;
 		}
 	}
 }

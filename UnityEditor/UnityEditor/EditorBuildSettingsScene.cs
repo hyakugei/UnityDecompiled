@@ -1,27 +1,33 @@
 using System;
 using System.Linq;
 using System.Runtime.InteropServices;
+using UnityEngine.Bindings;
+using UnityEngine.Scripting;
 
 namespace UnityEditor
 {
+	[UsedByNativeCode]
 	[StructLayout(LayoutKind.Sequential)]
-	public sealed class EditorBuildSettingsScene : IComparable
+	public class EditorBuildSettingsScene : IComparable
 	{
-		private int m_Enabled;
+		[NativeName("enabled")]
+		private bool m_enabled;
 
-		private string m_Path;
+		[NativeName("path")]
+		private string m_path;
 
-		private GUID m_GUID;
+		[NativeName("guid")]
+		private GUID m_guid;
 
 		public bool enabled
 		{
 			get
 			{
-				return this.m_Enabled != 0;
+				return this.m_enabled;
 			}
 			set
 			{
-				this.m_Enabled = ((!value) ? 0 : 1);
+				this.m_enabled = value;
 			}
 		}
 
@@ -29,11 +35,11 @@ namespace UnityEditor
 		{
 			get
 			{
-				return this.m_Path;
+				return this.m_path;
 			}
 			set
 			{
-				this.m_Path = value.Replace("\\", "/");
+				this.m_path = value.Replace("\\", "/");
 			}
 		}
 
@@ -41,11 +47,11 @@ namespace UnityEditor
 		{
 			get
 			{
-				return this.m_GUID;
+				return this.m_guid;
 			}
 			set
 			{
-				this.m_GUID = value;
+				this.m_guid = value;
 			}
 		}
 
@@ -53,28 +59,18 @@ namespace UnityEditor
 		{
 		}
 
-		public EditorBuildSettingsScene(string path, bool enable)
+		public EditorBuildSettingsScene(string path, bool enabled)
 		{
-			this.m_Path = path.Replace("\\", "/");
-			this.enabled = enable;
-			GUID.TryParse(AssetDatabase.AssetPathToGUID(path), out this.m_GUID);
+			this.m_path = path.Replace("\\", "/");
+			this.m_enabled = enabled;
+			GUID.TryParse(AssetDatabase.AssetPathToGUID(path), out this.m_guid);
 		}
 
-		public EditorBuildSettingsScene(GUID guid, bool enable)
+		public EditorBuildSettingsScene(GUID guid, bool enabled)
 		{
-			this.m_GUID = guid;
-			this.enabled = enable;
-			this.m_Path = AssetDatabase.GUIDToAssetPath(guid.ToString());
-		}
-
-		public int CompareTo(object obj)
-		{
-			if (obj is EditorBuildSettingsScene)
-			{
-				EditorBuildSettingsScene editorBuildSettingsScene = (EditorBuildSettingsScene)obj;
-				return editorBuildSettingsScene.m_Path.CompareTo(this.m_Path);
-			}
-			throw new ArgumentException("object is not a EditorBuildSettingsScene");
+			this.m_guid = guid;
+			this.m_enabled = enabled;
+			this.m_path = AssetDatabase.GUIDToAssetPath(guid.ToString());
 		}
 
 		public static string[] GetActiveSceneList(EditorBuildSettingsScene[] scenes)
@@ -82,6 +78,16 @@ namespace UnityEditor
 			return (from scene in scenes
 			where scene.enabled
 			select scene.path).ToArray<string>();
+		}
+
+		public int CompareTo(object obj)
+		{
+			if (obj is EditorBuildSettingsScene)
+			{
+				EditorBuildSettingsScene editorBuildSettingsScene = (EditorBuildSettingsScene)obj;
+				return editorBuildSettingsScene.path.CompareTo(this.path);
+			}
+			throw new ArgumentException("object is not a EditorBuildSettingsScene");
 		}
 	}
 }

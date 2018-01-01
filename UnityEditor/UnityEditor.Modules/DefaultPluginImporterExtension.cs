@@ -216,27 +216,22 @@ namespace UnityEditor.Modules
 
 		protected Dictionary<string, List<PluginImporter>> GetCompatiblePlugins(string buildTargetName)
 		{
-			PluginImporter[] array = (from imp in PluginImporter.GetAllImporters()
-			where (imp.GetCompatibleWithPlatform(buildTargetName) || imp.GetCompatibleWithAnyPlatform()) && !string.IsNullOrEmpty(imp.assetPath)
-			select imp).ToArray<PluginImporter>();
+			IEnumerable<PluginImporter> enumerable = from imp in PluginImporter.GetAllImporters()
+			where imp.GetCompatibleWithPlatformOrAnyPlatformBuildTarget(buildTargetName)
+			select imp;
 			Dictionary<string, List<PluginImporter>> dictionary = new Dictionary<string, List<PluginImporter>>();
-			PluginImporter[] array2 = array;
-			for (int i = 0; i < array2.Length; i++)
+			foreach (PluginImporter current in enumerable)
 			{
-				PluginImporter pluginImporter = array2[i];
-				if (!string.IsNullOrEmpty(pluginImporter.assetPath))
+				string text = this.CalculateFinalPluginPath(buildTargetName, current);
+				if (!string.IsNullOrEmpty(text))
 				{
-					string text = this.CalculateFinalPluginPath(buildTargetName, pluginImporter);
-					if (!string.IsNullOrEmpty(text))
+					List<PluginImporter> list = null;
+					if (!dictionary.TryGetValue(text, out list))
 					{
-						List<PluginImporter> list = null;
-						if (!dictionary.TryGetValue(text, out list))
-						{
-							list = new List<PluginImporter>();
-							dictionary[text] = list;
-						}
-						list.Add(pluginImporter);
+						list = new List<PluginImporter>();
+						dictionary[text] = list;
 					}
+					list.Add(current);
 				}
 			}
 			return dictionary;

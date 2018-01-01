@@ -6,40 +6,40 @@ using UnityEngine;
 namespace UnityEditor.Experimental.UIElements.GraphView
 {
 	[Serializable]
-	internal class NodePresenter : SimpleElementPresenter
+	public class NodePresenter : SimpleElementPresenter
 	{
 		[SerializeField]
-		protected List<NodeAnchorPresenter> m_InputAnchors;
+		protected List<PortPresenter> m_InputPorts;
 
 		[SerializeField]
-		protected List<NodeAnchorPresenter> m_OutputAnchors;
+		protected List<PortPresenter> m_OutputPorts;
 
 		[SerializeField]
 		private bool m_expanded;
 
 		protected Orientation m_Orientation;
 
-		public List<NodeAnchorPresenter> inputAnchors
+		public List<PortPresenter> inputPorts
 		{
 			get
 			{
-				List<NodeAnchorPresenter> arg_1C_0;
-				if ((arg_1C_0 = this.m_InputAnchors) == null)
+				List<PortPresenter> arg_1C_0;
+				if ((arg_1C_0 = this.m_InputPorts) == null)
 				{
-					arg_1C_0 = (this.m_InputAnchors = new List<NodeAnchorPresenter>());
+					arg_1C_0 = (this.m_InputPorts = new List<PortPresenter>());
 				}
 				return arg_1C_0;
 			}
 		}
 
-		public List<NodeAnchorPresenter> outputAnchors
+		public List<PortPresenter> outputPorts
 		{
 			get
 			{
-				List<NodeAnchorPresenter> arg_1C_0;
-				if ((arg_1C_0 = this.m_OutputAnchors) == null)
+				List<PortPresenter> arg_1C_0;
+				if ((arg_1C_0 = this.m_OutputPorts) == null)
 				{
-					arg_1C_0 = (this.m_OutputAnchors = new List<NodeAnchorPresenter>());
+					arg_1C_0 = (this.m_OutputPorts = new List<PortPresenter>());
 				}
 				return arg_1C_0;
 			}
@@ -69,7 +69,7 @@ namespace UnityEditor.Experimental.UIElements.GraphView
 		{
 			get
 			{
-				return this.inputAnchors.Concat(this.outputAnchors).Cast<GraphElementPresenter>();
+				return this.inputPorts.Concat(this.outputPorts).Cast<GraphElementPresenter>();
 			}
 		}
 

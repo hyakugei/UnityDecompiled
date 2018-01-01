@@ -79,9 +79,9 @@ namespace UnityEditor.CrashReporting
 			get
 			{
 				string result;
-				if (!string.IsNullOrEmpty(CrashReporting.ServiceBaseUrl) && !string.IsNullOrEmpty(PlayerSettings.cloudProjectId))
+				if (!string.IsNullOrEmpty(CrashReporting.ServiceBaseUrl) && !string.IsNullOrEmpty(CloudProjectSettings.projectId))
 				{
-					result = new Uri(new Uri(CrashReporting.ServiceBaseUrl), string.Format("token/{0}", PlayerSettings.cloudProjectId)).ToString();
+					result = new Uri(new Uri(CrashReporting.ServiceBaseUrl), string.Format("token/{0}", CloudProjectSettings.projectId)).ToString();
 				}
 				else
 				{
@@ -110,7 +110,6 @@ namespace UnityEditor.CrashReporting
 					result = string.Empty;
 					return result;
 				}
-				string cloudProjectId = PlayerSettings.cloudProjectId;
 				if (Application.platform != RuntimePlatform.OSXEditor)
 				{
 					ServicePointManager.ServerCertificateValidationCallback = ((object a, X509Certificate b, X509Chain c, SslPolicyErrors d) => true);

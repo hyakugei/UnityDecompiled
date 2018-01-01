@@ -35,21 +35,20 @@ namespace UnityEditor
 			{
 				TransformTool.s_Scale = Vector3.one;
 			}
-			Vector3 a = handlePosition;
+			Vector3 vector = handlePosition;
 			Quaternion handleRotation = Tools.handleRotation;
 			Quaternion quaternion = handleRotation;
-			Vector3 vector = TransformTool.s_Scale;
-			Vector3 vector2 = vector;
-			Handles.TransformHandle(@default, ref a, ref quaternion, ref vector2, Handles.TransformHandleParam.Default);
-			TransformTool.s_Scale = vector2;
+			Vector3 vector2 = TransformTool.s_Scale;
+			Vector3 vector3 = vector2;
+			Handles.TransformHandle(@default, ref vector, ref quaternion, ref vector3, Handles.TransformHandleParam.Default);
+			TransformTool.s_Scale = vector3;
 			if (EditorGUI.EndChangeCheck() && !isStatic)
 			{
 				Undo.RecordObjects(Selection.transforms, "Transform Manipulation");
-				Vector3 vector3 = a - TransformManipulator.mouseDownHandlePosition;
-				if (vector3 != Vector3.zero)
+				if (TransformManipulator.HandleHasMoved(vector))
 				{
 					ManipulationToolUtility.SetMinDragDifferenceForPos(handlePosition);
-					TransformManipulator.SetPositionDelta(vector3);
+					TransformManipulator.SetPositionDelta(vector, TransformManipulator.mouseDownHandlePosition);
 				}
 				float num;
 				Vector3 point;
@@ -80,9 +79,9 @@ namespace UnityEditor
 					}
 					Tools.handleRotation = quaternion;
 				}
-				if (vector2 != vector)
+				if (vector3 != vector2)
 				{
-					TransformManipulator.SetScaleDelta(vector2, quaternion);
+					TransformManipulator.SetScaleDelta(vector3, quaternion);
 				}
 			}
 			TransformManipulator.EndManipulationHandling();

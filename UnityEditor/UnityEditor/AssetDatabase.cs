@@ -148,6 +148,10 @@ namespace UnityEditor
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern string GetCurrentCacheServerIp();
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern bool IsMainAsset(int instanceID);
 
 		public static bool IsSubAsset(UnityEngine.Object obj)
@@ -193,10 +197,6 @@ namespace UnityEditor
 			}
 			return AssetDatabase.IsPackagedAsset(obj.GetInstanceID());
 		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern string GetPackagesRootPath();
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -271,10 +271,6 @@ namespace UnityEditor
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern bool IsInternalizedPackagedAssetPath(string path);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void CreateAsset(UnityEngine.Object asset, string path);
 
 		[GeneratedByOldBindingsGenerator]
@@ -321,6 +317,10 @@ namespace UnityEditor
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern int GetMainAssetOrInProgressProxyInstanceID(string assetPath);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern string GetAssetOrScenePath(UnityEngine.Object assetObject);
 
 		[GeneratedByOldBindingsGenerator]
@@ -343,6 +343,10 @@ namespace UnityEditor
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern UnityEngine.Object LoadMainAssetAtPath(string assetPath);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern UnityEngine.Object LoadMainAssetAtGUID(GUID assetGUID);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -440,10 +444,6 @@ namespace UnityEditor
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern void INTERNAL_CALL_GetAssetDependencyHash(string path, out Hash128 value);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern int GetInstanceIDFromGUID(string guid);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -722,6 +722,18 @@ namespace UnityEditor
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern string GetPackagesMountPoint();
 
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern bool IsV1Enabled();
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern bool IsV2Enabled();
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern bool IsV1Postponed();
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern void ReSerializeAssetsForced(GUID[] guids, ForceReserializeAssetsOptions options);
 
@@ -769,6 +781,24 @@ namespace UnityEditor
 			GUID[] array = new GUID[hashSet.Count];
 			hashSet.CopyTo(array);
 			AssetDatabase.ReSerializeAssetsForced(array, options);
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern bool GetGUIDAndLocalIdentifierInFile(int instanceID, out GUID outGuid, out long outLocalId);
+
+		public static bool TryGetGUIDAndLocalFileIdentifier(UnityEngine.Object obj, out string guid, out int localId)
+		{
+			return AssetDatabase.TryGetGUIDAndLocalFileIdentifier(obj.GetInstanceID(), out guid, out localId);
+		}
+
+		public static bool TryGetGUIDAndLocalFileIdentifier(int instanceID, out string guid, out int localId)
+		{
+			GUID gUID;
+			long num;
+			bool gUIDAndLocalIdentifierInFile = AssetDatabase.GetGUIDAndLocalIdentifierInFile(instanceID, out gUID, out num);
+			guid = gUID.ToString();
+			localId = (int)num;
+			return gUIDAndLocalIdentifierInFile;
 		}
 
 		public static void ForceReserializeAssets()

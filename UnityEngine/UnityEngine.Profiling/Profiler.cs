@@ -173,5 +173,9 @@ namespace UnityEngine.Profiling
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern long GetTotalReservedMemoryLong();
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern long GetAllocatedMemoryForGraphicsDriver();
 	}
 }

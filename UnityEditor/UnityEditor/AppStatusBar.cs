@@ -1,6 +1,7 @@
 using System;
 using UnityEditorInternal;
 using UnityEngine;
+using UnityEngine.Experimental.UIElements;
 using UnityEngine.Scripting;
 
 namespace UnityEditor
@@ -18,6 +19,7 @@ namespace UnityEditor
 		protected override void OnEnable()
 		{
 			base.OnEnable();
+			base.visualTree.clippingOptions = VisualElement.ClippingOptions.NoClipping;
 			AppStatusBar.s_AppStatusBar = this;
 			AppStatusBar.s_StatusWheel = new GUIContent[12];
 			for (int i = 0; i < 12; i++)
@@ -38,7 +40,7 @@ namespace UnityEditor
 		private void OnInspectorUpdate()
 		{
 			string miniMemoryOverview = ProfilerDriver.miniMemoryOverview;
-			if (Unsupported.IsDeveloperBuild() && this.m_LastMiniMemoryOverview != miniMemoryOverview)
+			if (Unsupported.IsDeveloperMode() && this.m_LastMiniMemoryOverview != miniMemoryOverview)
 			{
 				this.m_LastMiniMemoryOverview = miniMemoryOverview;
 				base.Repaint();
@@ -114,7 +116,7 @@ namespace UnityEditor
 					GUI.Label(new Rect(num - 310f, 0f, 310f, 19f), "THIS IS AN UNTESTED BLEEDINGEDGE UNITY BUILD");
 					GUI.color = color;
 				}
-				else if (Unsupported.IsDeveloperBuild())
+				else if (Unsupported.IsDeveloperMode())
 				{
 					GUI.Label(new Rect(num - 200f, 0f, 200f, 19f), this.m_LastMiniMemoryOverview, EditorStyles.progressBarText);
 					EditorGUIUtility.CleanCache(this.m_LastMiniMemoryOverview);

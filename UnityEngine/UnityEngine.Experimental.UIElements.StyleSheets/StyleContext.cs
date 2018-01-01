@@ -6,14 +6,14 @@ namespace UnityEngine.Experimental.UIElements.StyleSheets
 {
 	internal class StyleContext
 	{
-		private struct RuleRef
+		internal struct RuleRef
 		{
 			public StyleComplexSelector selector;
 
 			public StyleSheet sheet;
 		}
 
-		private class StyleContextHierarchyTraversal : HierarchyTraversal
+		internal class StyleContextHierarchyTraversal : HierarchyTraversal
 		{
 			private List<StyleContext.RuleRef> m_MatchedRules = new List<StyleContext.RuleRef>(0);
 
@@ -46,22 +46,26 @@ namespace UnityEngine.Experimental.UIElements.StyleSheets
 
 			public override void OnBeginElementTest(VisualElement element, List<RuleMatcher> ruleMatchers)
 			{
+				if (element.IsDirty(ChangeType.Styles))
+				{
+					element.triggerPseudoMask = (PseudoStates)0;
+					element.dependencyPseudoMask = (PseudoStates)0;
+				}
 				if (element != null && element.styleSheets != null)
 				{
-					foreach (StyleSheet current in element.styleSheets)
+					for (int i = 0; i < element.styleSheets.Count; i++)
 					{
-						StyleComplexSelector[] complexSelectors = current.complexSelectors;
+						StyleSheet styleSheet = element.styleSheets[i];
+						StyleComplexSelector[] complexSelectors = styleSheet.complexSelectors;
 						int val = ruleMatchers.Count + complexSelectors.Length;
 						ruleMatchers.Capacity = Math.Max(ruleMatchers.Capacity, val);
-						for (int i = 0; i < complexSelectors.Length; i++)
+						for (int j = 0; j < complexSelectors.Length; j++)
 						{
-							StyleComplexSelector complexSelector = complexSelectors[i];
+							StyleComplexSelector complexSelector = complexSelectors[j];
 							ruleMatchers.Add(new RuleMatcher
 							{
-								sheet = current,
-								complexSelector = complexSelector,
-								simpleSelectorIndex = 0,
-								depth = 2147483647
+								sheet = styleSheet,
+								complexSelector = complexSelector
 							});
 						}
 					}
@@ -70,6 +74,12 @@ namespace UnityEngine.Experimental.UIElements.StyleSheets
 				string fullTypeName = element.fullTypeName;
 				long num = (long)fullTypeName.GetHashCode();
 				this.m_MatchingRulesHash = (num * 397L ^ (long)this.currentPixelsPerPoint.GetHashCode());
+			}
+
+			public override void OnProcessMatchResult(VisualElement element, ref RuleMatcher matcher, ref HierarchyTraversal.MatchResultInfo matchInfo)
+			{
+				element.triggerPseudoMask |= matchInfo.triggerPseudoMask;
+				element.dependencyPseudoMask |= matchInfo.dependencyPseudoMask;
 			}
 
 			public override void ProcessMatchedRules(VisualElement element)
@@ -97,13 +107,11 @@ namespace UnityEngine.Experimental.UIElements.StyleSheets
 			}
 		}
 
-		private List<RuleMatcher> m_Matchers;
-
 		private VisualElement m_VisualTree;
 
 		private static Dictionary<long, VisualElementStylesData> s_StyleCache = new Dictionary<long, VisualElementStylesData>();
 
-		private static StyleContext.StyleContextHierarchyTraversal s_StyleContextHierarchyTraversal = new StyleContext.StyleContextHierarchyTraversal();
+		internal static StyleContext.StyleContextHierarchyTraversal styleContextHierarchyTraversal = new StyleContext.StyleContextHierarchyTraversal();
 
 		public float currentPixelsPerPoint
 		{
@@ -113,8 +121,9 @@ namespace UnityEngine.Experimental.UIElements.StyleSheets
 
 		public StyleContext(VisualElement tree)
 		{
+			this.<currentPixelsPerPoint>k__BackingField = 1f;
+			base..ctor();
 			this.m_VisualTree = tree;
-			this.m_Matchers = new List<RuleMatcher>(0);
 		}
 
 		public void DirtyStyleSheets()
@@ -125,9 +134,8 @@ namespace UnityEngine.Experimental.UIElements.StyleSheets
 		public void ApplyStyles()
 		{
 			Debug.Assert(this.m_VisualTree.panel != null);
-			StyleContext.s_StyleContextHierarchyTraversal.currentPixelsPerPoint = this.currentPixelsPerPoint;
-			StyleContext.s_StyleContextHierarchyTraversal.Traverse(this.m_VisualTree, 0, this.m_Matchers);
-			this.m_Matchers.Clear();
+			StyleContext.styleContextHierarchyTraversal.currentPixelsPerPoint = this.currentPixelsPerPoint;
+			StyleContext.styleContextHierarchyTraversal.Traverse(this.m_VisualTree);
 		}
 
 		private static void PropagateDirtyStyleSheets(VisualElement element)

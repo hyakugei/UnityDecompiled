@@ -7,9 +7,9 @@ namespace UnityEditor
 	{
 		private class Texts
 		{
-			public GUIContent size = EditorGUIUtility.TextContent("Size|Controls the size of each particle during its lifetime.");
+			public GUIContent size = EditorGUIUtility.TrTextContent("Size", "Controls the size of each particle during its lifetime.", null);
 
-			public GUIContent separateAxes = EditorGUIUtility.TextContent("Separate Axes|If enabled, you can control the angular velocity limit separately for each axis.");
+			public GUIContent separateAxes = EditorGUIUtility.TrTextContent("Separate Axes", "If enabled, you can control the angular velocity limit separately for each axis.", null);
 
 			public GUIContent x = EditorGUIUtility.TextContent("X");
 

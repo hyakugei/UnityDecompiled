@@ -1,11 +1,9 @@
 using System;
-using System.Runtime.InteropServices;
 using UnityEngine.Scripting.APIUpdating;
 
 namespace UnityEngine.XR.WSA.Input
 {
 	[MovedFrom("UnityEngine.VR.WSA.Input")]
-	[StructLayout(LayoutKind.Sequential, Size = 1)]
 	public struct GestureErrorEventArgs
 	{
 		public string error

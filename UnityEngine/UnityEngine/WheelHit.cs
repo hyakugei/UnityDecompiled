@@ -1,23 +1,32 @@
 using System;
+using UnityEngine.Bindings;
 
 namespace UnityEngine
 {
 	public struct WheelHit
 	{
+		[NativeName("point")]
 		private Vector3 m_Point;
 
+		[NativeName("normal")]
 		private Vector3 m_Normal;
 
+		[NativeName("forwardDir")]
 		private Vector3 m_ForwardDir;
 
+		[NativeName("sidewaysDir")]
 		private Vector3 m_SidewaysDir;
 
+		[NativeName("force")]
 		private float m_Force;
 
+		[NativeName("forwardSlip")]
 		private float m_ForwardSlip;
 
+		[NativeName("sidewaysSlip")]
 		private float m_SidewaysSlip;
 
+		[NativeName("collider")]
 		private Collider m_Collider;
 
 		public Collider collider
@@ -100,7 +109,7 @@ namespace UnityEngine
 			}
 			set
 			{
-				this.m_Force = this.m_ForwardSlip;
+				this.m_ForwardSlip = value;
 			}
 		}
 
