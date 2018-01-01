@@ -16,49 +16,49 @@ namespace UnityEditor
 		{
 			public readonly GUIStyle separator = "sv_iconselector_sep";
 
-			public readonly GUIContent materials = EditorGUIUtility.TextContent("Materials");
+			public readonly GUIContent materials = EditorGUIUtility.TrTextContent("Materials", null, null);
 
-			public readonly GUIContent shaderPass = EditorGUIUtility.TextContent("Shader Pass|Shader Pass used to update the Custom Texture.");
+			public readonly GUIContent shaderPass = EditorGUIUtility.TrTextContent("Shader Pass", "Shader Pass used to update the Custom Render Texture.", null);
 
-			public readonly GUIContent needSwap = EditorGUIUtility.TextContent("Swap (Double Buffer)|If ticked, and if the texture is double buffered, a request is made to swap the buffers before the next update. If this is not ticked, the buffers will not be swapped.");
+			public readonly GUIContent needSwap = EditorGUIUtility.TrTextContent("Swap (Double Buffer)", "If ticked, and if the texture is double buffered, a request is made to swap the buffers before the next update. If this is not ticked, the buffers will not be swapped.", null);
 
-			public readonly GUIContent updateMode = EditorGUIUtility.TextContent("Update Mode|Specify how the texture should be updated.");
+			public readonly GUIContent updateMode = EditorGUIUtility.TrTextContent("Update Mode", "Specify how the texture should be updated.", null);
 
-			public readonly GUIContent updatePeriod = EditorGUIUtility.TextContent("Period|Period in seconds at which real-time textures are updated (0.0 will update every frame).");
+			public readonly GUIContent updatePeriod = EditorGUIUtility.TrTextContent("Period", "Period in seconds at which real-time textures are updated (0.0 will update every frame).", null);
 
-			public readonly GUIContent doubleBuffered = EditorGUIUtility.TextContent("Double Buffered|If ticked, the custom Texture is double buffered so that you can access it during its own update. If unticked, the custom Texture will be not be double buffered.");
+			public readonly GUIContent doubleBuffered = EditorGUIUtility.TrTextContent("Double Buffered", "If ticked, the Custom Render Texture is double buffered so that you can access it during its own update. If unticked, the Custom Render Texture will be not be double buffered.", null);
 
-			public readonly GUIContent initializationMode = EditorGUIUtility.TextContent("Initialization Mode|Specify how the texture should be initialized.");
+			public readonly GUIContent initializationMode = EditorGUIUtility.TrTextContent("Initialization Mode", "Specify how the texture should be initialized.", null);
 
-			public readonly GUIContent initSource = EditorGUIUtility.TextContent("Source|Specify if the texture is initialized by a Material or by a Texture and a Color.");
+			public readonly GUIContent initSource = EditorGUIUtility.TrTextContent("Source", "Specify if the texture is initialized by a Material or by a Texture and a Color.", null);
 
-			public readonly GUIContent initColor = EditorGUIUtility.TextContent("Color|Color with which the custom texture is initialized.");
+			public readonly GUIContent initColor = EditorGUIUtility.TrTextContent("Color", "Color with which the Custom Render Texture is initialized.", null);
 
-			public readonly GUIContent initTexture = EditorGUIUtility.TextContent("Texture|Texture with which the custom texture is initialized (multiplied by the initialization color).");
+			public readonly GUIContent initTexture = EditorGUIUtility.TrTextContent("Texture", "Texture with which the Custom Render Texture is initialized (multiplied by the initialization color).", null);
 
-			public readonly GUIContent initMaterial = EditorGUIUtility.TextContent("Material|Material with which the custom texture is initialized.");
+			public readonly GUIContent initMaterial = EditorGUIUtility.TrTextContent("Material", "Material with which the Custom Render Texture is initialized.", null);
 
-			public readonly GUIContent updateZoneSpace = EditorGUIUtility.TextContent("Update Zone Space|Space in which the update zones are expressed (Normalized or Pixel space).");
+			public readonly GUIContent updateZoneSpace = EditorGUIUtility.TrTextContent("Update Zone Space", "Space in which the update zones are expressed (Normalized or Pixel space).", null);
 
-			public readonly GUIContent updateZoneList = EditorGUIUtility.TextContent("Update Zones|List of partial update zones.");
+			public readonly GUIContent updateZoneList = EditorGUIUtility.TrTextContent("Update Zones", "List of partial update zones.", null);
 
-			public readonly GUIContent cubemapFacesLabel = EditorGUIUtility.TextContent("Cubemap Faces|Enable or disable rendering on each face of the cubemap.");
+			public readonly GUIContent cubemapFacesLabel = EditorGUIUtility.TrTextContent("Cubemap Faces", "Enable or disable rendering on each face of the cubemap.", null);
 
-			public readonly GUIContent updateZoneCenter = EditorGUIUtility.TextContent("Center|Center of the partial update zone.");
+			public readonly GUIContent updateZoneCenter = EditorGUIUtility.TrTextContent("Center", "Center of the partial update zone.", null);
 
-			public readonly GUIContent updateZoneSize = EditorGUIUtility.TextContent("Size|Size of the partial update zone.");
+			public readonly GUIContent updateZoneSize = EditorGUIUtility.TrTextContent("Size", "Size of the partial update zone.", null);
 
-			public readonly GUIContent updateZoneRotation = EditorGUIUtility.TextContent("Rotation|Rotation of the update zone.");
+			public readonly GUIContent updateZoneRotation = EditorGUIUtility.TrTextContent("Rotation", "Rotation of the update zone.", null);
 
-			public readonly GUIContent wrapUpdateZones = EditorGUIUtility.TextContent("Wrap Update Zones|If ticked, Update zones will wrap around the border of the Custom Texture. If unticked, Update zones will be clamped at the border of the Custom Texture.");
+			public readonly GUIContent wrapUpdateZones = EditorGUIUtility.TrTextContent("Wrap Update Zones", "If ticked, Update zones will wrap around the border of the Custom Render Texture. If unticked, Update zones will be clamped at the border of the Custom Render Texture.", null);
 
-			public readonly GUIContent saveButton = EditorGUIUtility.TextContent("Save Texture|Save the content of the custom texture to an EXR or PNG file.");
+			public readonly GUIContent saveButton = EditorGUIUtility.TrTextContent("Save Texture", "Save the content of the Custom Render Texture to an EXR or PNG file.", null);
 
 			public readonly GUIContent[] updateModeStrings = new GUIContent[]
 			{
 				EditorGUIUtility.TextContent("OnLoad"),
 				EditorGUIUtility.TextContent("Realtime"),
-				EditorGUIUtility.TextContent("OnDemand")
+				EditorGUIUtility.TrTextContent("OnDemand", null, null)
 			};
 
 			public readonly int[] updateModeValues = new int[]
@@ -71,7 +71,7 @@ namespace UnityEditor
 			public readonly GUIContent[] initSourceStrings = new GUIContent[]
 			{
 				EditorGUIUtility.TextContent("Texture and Color"),
-				EditorGUIUtility.TextContent("Material")
+				EditorGUIUtility.TrTextContent("Material", null, null)
 			};
 
 			public readonly int[] initSourceValues = new int[]
@@ -83,7 +83,7 @@ namespace UnityEditor
 			public readonly GUIContent[] updateZoneSpaceStrings = new GUIContent[]
 			{
 				EditorGUIUtility.TextContent("Normalized"),
-				EditorGUIUtility.TextContent("Pixel")
+				EditorGUIUtility.TrTextContent("Pixel", null, null)
 			};
 
 			public readonly int[] updateZoneSpaceValues = new int[]
@@ -99,7 +99,7 @@ namespace UnityEditor
 				EditorGUIUtility.TextContent("+Y"),
 				EditorGUIUtility.TextContent("-Y"),
 				EditorGUIUtility.TextContent("+Z"),
-				EditorGUIUtility.TextContent("-Z")
+				EditorGUIUtility.TrTextContent("-Z", null, null)
 			};
 		}
 
@@ -541,7 +541,7 @@ namespace UnityEditor
 			UnityEngine.Object.DestroyImmediate(texture2D);
 			string extension = (!flag) ? "png" : "exr";
 			string directoryName = Path.GetDirectoryName(AssetDatabase.GetAssetPath(customRenderTexture.GetInstanceID()));
-			string text = EditorUtility.SaveFilePanel("Save Custom Texture", directoryName, customRenderTexture.name, extension);
+			string text = EditorUtility.SaveFilePanel("Save Custom Render Texture", directoryName, customRenderTexture.name, extension);
 			if (!string.IsNullOrEmpty(text))
 			{
 				File.WriteAllBytes(text, bytes);

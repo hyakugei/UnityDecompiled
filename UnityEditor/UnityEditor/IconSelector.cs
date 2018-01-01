@@ -225,6 +225,7 @@ namespace UnityEditor
 			if (EditorGUILayout.IconButton(controlID, content, GUIStyle.none, new GUILayoutOption[0]))
 			{
 				Texture2D icon = this.ConvertSmallIconToLargeIcon((Texture2D)content.image, labelIcon);
+				Undo.RecordObject(this.m_TargetObject, "Set Icon On GameObject");
 				EditorGUIUtility.SetIconForObject(this.m_TargetObject, icon);
 				EditorUtility.ForceReloadInspectors();
 				AnnotationWindow.IconChanged();
@@ -356,6 +357,7 @@ namespace UnityEditor
 				if (commandName == "ObjectSelectorUpdated" && ObjectSelector.get.objectSelectorID == controlID && GUIUtility.keyboardControl == controlID)
 				{
 					Texture2D icon = ObjectSelector.GetCurrentObject() as Texture2D;
+					Undo.RecordObject(this.m_TargetObject, "Set Icon On GameObject");
 					EditorGUIUtility.SetIconForObject(this.m_TargetObject, icon);
 					GUI.changed = true;
 					current.Use();

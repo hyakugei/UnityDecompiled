@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using Unity.DataContract;
 using UnityEditor;
-using UnityEditor.BuildReporting;
+using UnityEditor.Build.Reporting;
 using UnityEditor.Modules;
 using UnityEditor.Scripting.Compilers;
 
@@ -64,6 +64,14 @@ namespace UnityEditorInternal
 		}
 
 		public virtual bool supportsEngineStripping
+		{
+			get
+			{
+				return false;
+			}
+		}
+
+		public virtual bool enableDebugger
 		{
 			get
 			{

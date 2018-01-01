@@ -5,7 +5,7 @@ using UnityEngine.Scripting;
 
 namespace UnityEngine.Video
 {
-	[RequireComponent(typeof(Transform))]
+	[RequireComponent(typeof(Transform)), UsedByNativeCode]
 	public sealed class VideoPlayer : Behaviour
 	{
 		public delegate void EventHandler(VideoPlayer source);
@@ -315,6 +315,16 @@ namespace UnityEngine.Video
 		}
 
 		public extern float targetCameraAlpha
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public extern Video3DLayout targetCamera3DLayout
 		{
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]

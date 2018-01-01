@@ -4,7 +4,7 @@ using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
-	internal sealed class BootConfigData
+	internal class BootConfigData
 	{
 		private IntPtr m_Ptr;
 
@@ -19,30 +19,32 @@ namespace UnityEngine
 
 		public void AddKey(string key)
 		{
-			BootConfigData.Append(this.m_Ptr, key, null);
+			this.Append(key, null);
 		}
 
-		public void Append(string key, string value)
+		public string Get(string key)
 		{
-			BootConfigData.Append(this.m_Ptr, key, value);
+			return this.GetValue(key, 0);
 		}
 
-		public void Set(string key, string value)
+		public string Get(string key, int index)
 		{
-			BootConfigData.Set(this.m_Ptr, key, value);
+			return this.GetValue(key, index);
 		}
 
-		private static BootConfigData Wrap(IntPtr nativeHandle)
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public extern void Append(string key, string value);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public extern void Set(string key, string value);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern string GetValue(string key, int index);
+
+		[RequiredByNativeCode]
+		private static BootConfigData WrapBootConfigData(IntPtr nativeHandle)
 		{
 			return new BootConfigData(nativeHandle);
 		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void Append(IntPtr nativeHandle, string key, string val);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void Set(IntPtr nativeHandle, string key, string val);
 	}
 }

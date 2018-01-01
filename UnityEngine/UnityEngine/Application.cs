@@ -84,25 +84,63 @@ namespace UnityEngine
 		{
 			add
 			{
-				UnityAction unityAction = Application.onBeforeRender;
-				UnityAction unityAction2;
-				do
-				{
-					unityAction2 = unityAction;
-					unityAction = Interlocked.CompareExchange<UnityAction>(ref Application.onBeforeRender, (UnityAction)Delegate.Combine(unityAction2, value), unityAction);
-				}
-				while (unityAction != unityAction2);
+				BeforeRenderHelper.RegisterCallback(value);
 			}
 			remove
 			{
-				UnityAction unityAction = Application.onBeforeRender;
-				UnityAction unityAction2;
+				BeforeRenderHelper.UnregisterCallback(value);
+			}
+		}
+
+		public static event Func<bool> wantsToQuit
+		{
+			add
+			{
+				Func<bool> func = Application.wantsToQuit;
+				Func<bool> func2;
 				do
 				{
-					unityAction2 = unityAction;
-					unityAction = Interlocked.CompareExchange<UnityAction>(ref Application.onBeforeRender, (UnityAction)Delegate.Remove(unityAction2, value), unityAction);
+					func2 = func;
+					func = Interlocked.CompareExchange<Func<bool>>(ref Application.wantsToQuit, (Func<bool>)Delegate.Combine(func2, value), func);
 				}
-				while (unityAction != unityAction2);
+				while (func != func2);
+			}
+			remove
+			{
+				Func<bool> func = Application.wantsToQuit;
+				Func<bool> func2;
+				do
+				{
+					func2 = func;
+					func = Interlocked.CompareExchange<Func<bool>>(ref Application.wantsToQuit, (Func<bool>)Delegate.Remove(func2, value), func);
+				}
+				while (func != func2);
+			}
+		}
+
+		public static event Action quitting
+		{
+			add
+			{
+				Action action = Application.quitting;
+				Action action2;
+				do
+				{
+					action2 = action;
+					action = Interlocked.CompareExchange<Action>(ref Application.quitting, (Action)Delegate.Combine(action2, value), action);
+				}
+				while (action != action2);
+			}
+			remove
+			{
+				Action action = Application.quitting;
+				Action action2;
+				do
+				{
+					action2 = action;
+					action = Interlocked.CompareExchange<Action>(ref Application.quitting, (Action)Delegate.Remove(action2, value), action);
+				}
+				while (action != action2);
 			}
 		}
 
@@ -142,6 +180,7 @@ namespace UnityEngine
 			get;
 		}
 
+		[Obsolete("This property is deprecated and will be removed in a future version of Unity, Webplayer support has been removed since Unity 5.4", true)]
 		public static extern bool isWebPlayer
 		{
 			[GeneratedByOldBindingsGenerator]
@@ -274,6 +313,7 @@ namespace UnityEngine
 			get;
 		}
 
+		[Obsolete("Application.srcValue is obsolete and has no effect. It will be removed in a subsequent Unity release.", true)]
 		public static extern string srcValue
 		{
 			[GeneratedByOldBindingsGenerator]
@@ -351,7 +391,7 @@ namespace UnityEngine
 			get;
 		}
 
-		[Obsolete("Application.webSecurityEnabled is no longer supported, since the Unity Web Player is no longer supported by Unity."), ThreadAndSerializationSafe]
+		[Obsolete("Application.webSecurityEnabled is no longer supported, since the Unity Web Player is no longer supported by Unity.", true), ThreadAndSerializationSafe]
 		public static extern bool webSecurityEnabled
 		{
 			[GeneratedByOldBindingsGenerator]
@@ -359,7 +399,7 @@ namespace UnityEngine
 			get;
 		}
 
-		[Obsolete("Application.webSecurityHostUrl is no longer supported, since the Unity Web Player is no longer supported by Unity."), ThreadAndSerializationSafe]
+		[Obsolete("Application.webSecurityHostUrl is no longer supported, since the Unity Web Player is no longer supported by Unity.", true), ThreadAndSerializationSafe]
 		public static extern string webSecurityHostUrl
 		{
 			[GeneratedByOldBindingsGenerator]
@@ -469,24 +509,6 @@ namespace UnityEngine
 			}
 		}
 
-		[Obsolete("absoluteUrl is deprecated. Please use absoluteURL instead (UnityUpgradable) -> absoluteURL", true)]
-		public static string absoluteUrl
-		{
-			get
-			{
-				return Application.absoluteURL;
-			}
-		}
-
-		[Obsolete("bundleIdentifier is deprecated. Please use identifier instead (UnityUpgradable) -> identifier", true)]
-		public static string bundleIdentifier
-		{
-			get
-			{
-				return Application.identifier;
-			}
-		}
-
 		[RequiredByNativeCode]
 		private static void CallLowMemory()
 		{
@@ -501,7 +523,7 @@ namespace UnityEngine
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void Quit();
 
-		[GeneratedByOldBindingsGenerator]
+		[Obsolete("CancelQuit is deprecated. Use the wantsToQuit event instead."), GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void CancelQuit();
 
@@ -642,6 +664,7 @@ namespace UnityEngine
 			return result;
 		}
 
+		[Obsolete("Application.ExternalCall is deprecated. See https://docs.unity3d.com/Manual/webgl-interactingwithbrowserscripting.html for alternatives.")]
 		public static void ExternalCall(string functionName, params object[] args)
 		{
 			Application.Internal_ExternalCall(Application.BuildInvocationForArguments(functionName, args));
@@ -666,6 +689,7 @@ namespace UnityEngine
 			return stringBuilder.ToString();
 		}
 
+		[Obsolete("Application.ExternalEval is deprecated. See https://docs.unity3d.com/Manual/webgl-interactingwithbrowserscripting.html for alternatives.")]
 		public static void ExternalEval(string script)
 		{
 			if (script.Length > 0 && script[script.Length - 1] != ';')
@@ -738,13 +762,46 @@ namespace UnityEngine
 		public static extern bool HasUserAuthorization(UserAuthorization mode);
 
 		[RequiredByNativeCode]
+		private static bool Internal_ApplicationWantsToQuit()
+		{
+			bool result;
+			if (Application.wantsToQuit != null)
+			{
+				Delegate[] invocationList = Application.wantsToQuit.GetInvocationList();
+				for (int i = 0; i < invocationList.Length; i++)
+				{
+					Func<bool> func = (Func<bool>)invocationList[i];
+					try
+					{
+						if (!func())
+						{
+							result = false;
+							return result;
+						}
+					}
+					catch (Exception exception)
+					{
+						Debug.LogException(exception);
+					}
+				}
+			}
+			result = true;
+			return result;
+		}
+
+		[RequiredByNativeCode]
+		private static void Internal_ApplicationQuit()
+		{
+			if (Application.quitting != null)
+			{
+				Application.quitting();
+			}
+		}
+
+		[RequiredByNativeCode]
 		internal static void InvokeOnBeforeRender()
 		{
-			UnityAction unityAction = Application.onBeforeRender;
-			if (unityAction != null)
-			{
-				unityAction();
-			}
+			BeforeRenderHelper.Invoke();
 		}
 
 		[Obsolete("Application.RegisterLogCallback is deprecated. Use Application.logMessageReceived instead.")]

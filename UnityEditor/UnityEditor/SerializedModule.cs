@@ -7,7 +7,9 @@ namespace UnityEditor
 	{
 		protected string m_ModuleName;
 
-		private SerializedObject m_Object;
+		protected SerializedObject m_Object;
+
+		protected SerializedProperty m_ModuleRootProperty;
 
 		internal SerializedObject serializedObject
 		{
@@ -21,6 +23,7 @@ namespace UnityEditor
 		{
 			this.m_Object = o;
 			this.m_ModuleName = name;
+			this.m_ModuleRootProperty = this.m_Object.FindProperty(name);
 		}
 
 		public SerializedProperty GetProperty0(string name)

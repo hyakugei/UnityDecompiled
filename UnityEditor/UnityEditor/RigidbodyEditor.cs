@@ -8,9 +8,9 @@ namespace UnityEditor
 	{
 		private SerializedProperty m_Constraints;
 
-		private static GUIContent m_FreezePositionLabel = new GUIContent("Freeze Position");
+		private static GUIContent m_FreezePositionLabel = EditorGUIUtility.TrTextContent("Freeze Position", null, null);
 
-		private static GUIContent m_FreezeRotationLabel = new GUIContent("Freeze Rotation");
+		private static GUIContent m_FreezeRotationLabel = EditorGUIUtility.TrTextContent("Freeze Rotation", null, null);
 
 		public void OnEnable()
 		{

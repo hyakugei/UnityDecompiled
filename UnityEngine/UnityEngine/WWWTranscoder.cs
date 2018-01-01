@@ -1,9 +1,14 @@
 using System;
 using System.IO;
 using System.Text;
+using UnityEngine.Bindings;
 
 namespace UnityEngine
 {
+	[VisibleToOtherModules(new string[]
+	{
+		"UnityEngine.UnityWebRequestWWWModule"
+	})]
 	internal class WWWTranscoder
 	{
 		private static byte[] ucHexChars = WWWForm.DefaultEncoding.GetBytes("0123456789ABCDEF");
@@ -12,13 +17,21 @@ namespace UnityEngine
 
 		private static byte urlEscapeChar = 37;
 
-		private static byte urlSpace = 43;
+		private static byte[] urlSpace = new byte[]
+		{
+			43
+		};
+
+		private static byte[] dataSpace = WWWForm.DefaultEncoding.GetBytes("%20");
 
 		private static byte[] urlForbidden = WWWForm.DefaultEncoding.GetBytes("@&;:<>=?\"'/\\!#%+$,{}|^[]`");
 
 		private static byte qpEscapeChar = 61;
 
-		private static byte qpSpace = 95;
+		private static byte[] qpSpace = new byte[]
+		{
+			95
+		};
 
 		private static byte[] qpForbidden = WWWForm.DefaultEncoding.GetBytes("&;=?\"'%+_");
 
@@ -78,6 +91,22 @@ namespace UnityEngine
 			return WWWTranscoder.Encode(toEncode, WWWTranscoder.urlEscapeChar, WWWTranscoder.urlSpace, WWWTranscoder.urlForbidden, false);
 		}
 
+		public static string DataEncode(string toEncode)
+		{
+			return WWWTranscoder.DataEncode(toEncode, Encoding.UTF8);
+		}
+
+		public static string DataEncode(string toEncode, Encoding e)
+		{
+			byte[] array = WWWTranscoder.Encode(e.GetBytes(toEncode), WWWTranscoder.urlEscapeChar, WWWTranscoder.dataSpace, WWWTranscoder.urlForbidden, false);
+			return WWWForm.DefaultEncoding.GetString(array, 0, array.Length);
+		}
+
+		public static byte[] DataEncode(byte[] toEncode)
+		{
+			return WWWTranscoder.Encode(toEncode, WWWTranscoder.urlEscapeChar, WWWTranscoder.dataSpace, WWWTranscoder.urlForbidden, false);
+		}
+
 		public static string QPEncode(string toEncode)
 		{
 			return WWWTranscoder.QPEncode(toEncode, Encoding.UTF8);
@@ -94,7 +123,7 @@ namespace UnityEngine
 			return WWWTranscoder.Encode(toEncode, WWWTranscoder.qpEscapeChar, WWWTranscoder.qpSpace, WWWTranscoder.qpForbidden, true);
 		}
 
-		public static byte[] Encode(byte[] input, byte escapeChar, byte space, byte[] forbidden, bool uppercase)
+		public static byte[] Encode(byte[] input, byte escapeChar, byte[] space, byte[] forbidden, bool uppercase)
 		{
 			byte[] result;
 			using (MemoryStream memoryStream = new MemoryStream(input.Length * 2))
@@ -103,7 +132,7 @@ namespace UnityEngine
 				{
 					if (input[i] == 32)
 					{
-						memoryStream.WriteByte(space);
+						memoryStream.Write(space, 0, space.Length);
 					}
 					else if (input[i] < 32 || input[i] > 126 || WWWTranscoder.ByteArrayContains(forbidden, input[i]))
 					{
@@ -152,6 +181,22 @@ namespace UnityEngine
 			return WWWTranscoder.Decode(toEncode, WWWTranscoder.urlEscapeChar, WWWTranscoder.urlSpace);
 		}
 
+		public static string DataDecode(string toDecode)
+		{
+			return WWWTranscoder.DataDecode(toDecode, Encoding.UTF8);
+		}
+
+		public static string DataDecode(string toDecode, Encoding e)
+		{
+			byte[] array = WWWTranscoder.Decode(WWWForm.DefaultEncoding.GetBytes(toDecode), WWWTranscoder.urlEscapeChar, WWWTranscoder.dataSpace);
+			return e.GetString(array, 0, array.Length);
+		}
+
+		public static byte[] DataDecode(byte[] toDecode)
+		{
+			return WWWTranscoder.Decode(toDecode, WWWTranscoder.urlEscapeChar, WWWTranscoder.dataSpace);
+		}
+
 		public static string QPDecode(string toEncode)
 		{
 			return WWWTranscoder.QPDecode(toEncode, Encoding.UTF8);
@@ -168,15 +213,38 @@ namespace UnityEngine
 			return WWWTranscoder.Decode(toEncode, WWWTranscoder.qpEscapeChar, WWWTranscoder.qpSpace);
 		}
 
-		public static byte[] Decode(byte[] input, byte escapeChar, byte space)
+		private static bool ByteSubArrayEquals(byte[] array, int index, byte[] comperand)
+		{
+			bool result;
+			if (array.Length - index < comperand.Length)
+			{
+				result = false;
+			}
+			else
+			{
+				for (int i = 0; i < comperand.Length; i++)
+				{
+					if (array[index + i] != comperand[i])
+					{
+						result = false;
+						return result;
+					}
+				}
+				result = true;
+			}
+			return result;
+		}
+
+		public static byte[] Decode(byte[] input, byte escapeChar, byte[] space)
 		{
 			byte[] result;
 			using (MemoryStream memoryStream = new MemoryStream(input.Length))
 			{
 				for (int i = 0; i < input.Length; i++)
 				{
-					if (input[i] == space)
+					if (WWWTranscoder.ByteSubArrayEquals(input, i, space))
 					{
+						i += space.Length - 1;
 						memoryStream.WriteByte(32);
 					}
 					else if (input[i] == escapeChar && i + 2 < input.Length)

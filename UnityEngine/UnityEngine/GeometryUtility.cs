@@ -1,39 +1,55 @@
 using System;
 using System.Runtime.CompilerServices;
-using UnityEngine.Scripting;
+using System.Runtime.InteropServices;
 
 namespace UnityEngine
 {
 	public sealed class GeometryUtility
 	{
-		private static void Internal_ExtractPlanes(Plane[] planes, Matrix4x4 worldToProjectionMatrix)
+		public static Plane[] CalculateFrustumPlanes(Camera camera)
 		{
-			GeometryUtility.INTERNAL_CALL_Internal_ExtractPlanes(planes, ref worldToProjectionMatrix);
+			Plane[] array = new Plane[6];
+			GeometryUtility.CalculateFrustumPlanes(camera, array);
+			return array;
 		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_Internal_ExtractPlanes(Plane[] planes, ref Matrix4x4 worldToProjectionMatrix);
-
-		public static bool TestPlanesAABB(Plane[] planes, Bounds bounds)
+		public static Plane[] CalculateFrustumPlanes(Matrix4x4 worldToProjectionMatrix)
 		{
-			return GeometryUtility.INTERNAL_CALL_TestPlanesAABB(planes, ref bounds);
+			Plane[] array = new Plane[6];
+			GeometryUtility.CalculateFrustumPlanes(worldToProjectionMatrix, array);
+			return array;
 		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern bool INTERNAL_CALL_TestPlanesAABB(Plane[] planes, ref Bounds bounds);
-
-		private static Bounds Internal_CalculateBounds(Vector3[] positions, Matrix4x4 transform)
+		public static void CalculateFrustumPlanes(Camera camera, Plane[] planes)
 		{
-			Bounds result;
-			GeometryUtility.INTERNAL_CALL_Internal_CalculateBounds(positions, ref transform, out result);
-			return result;
+			GeometryUtility.CalculateFrustumPlanes(camera.projectionMatrix * camera.worldToCameraMatrix, planes);
 		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_Internal_CalculateBounds(Vector3[] positions, ref Matrix4x4 transform, out Bounds value);
+		public static void CalculateFrustumPlanes(Matrix4x4 worldToProjectionMatrix, Plane[] planes)
+		{
+			if (planes == null)
+			{
+				throw new ArgumentNullException("planes");
+			}
+			if (planes.Length != 6)
+			{
+				throw new ArgumentException("Planes array must be of length 6.", "planes");
+			}
+			GeometryUtility.Internal_ExtractPlanes(planes, worldToProjectionMatrix);
+		}
+
+		public static Bounds CalculateBounds(Vector3[] positions, Matrix4x4 transform)
+		{
+			if (positions == null)
+			{
+				throw new ArgumentNullException("positions");
+			}
+			if (positions.Length == 0)
+			{
+				throw new ArgumentException("Zero-sized array is not allowed.", "positions");
+			}
+			return GeometryUtility.Internal_CalculateBounds(positions, transform);
+		}
 
 		public static bool TryCreatePlaneFromPolygon(Vector3[] vertices, out Plane plane)
 		{
@@ -78,29 +94,30 @@ namespace UnityEngine
 			return result;
 		}
 
-		public static Plane[] CalculateFrustumPlanes(Camera camera)
+		private static void Internal_ExtractPlanes([Out] Plane[] planes, Matrix4x4 worldToProjectionMatrix)
 		{
-			return GeometryUtility.CalculateFrustumPlanes(camera.projectionMatrix * camera.worldToCameraMatrix);
+			GeometryUtility.Internal_ExtractPlanes_Injected(planes, ref worldToProjectionMatrix);
 		}
 
-		public static Plane[] CalculateFrustumPlanes(Matrix4x4 worldToProjectionMatrix)
+		public static bool TestPlanesAABB(Plane[] planes, Bounds bounds)
 		{
-			Plane[] array = new Plane[6];
-			GeometryUtility.Internal_ExtractPlanes(array, worldToProjectionMatrix);
-			return array;
+			return GeometryUtility.TestPlanesAABB_Injected(planes, ref bounds);
 		}
 
-		public static Bounds CalculateBounds(Vector3[] positions, Matrix4x4 transform)
+		private static Bounds Internal_CalculateBounds(Vector3[] positions, Matrix4x4 transform)
 		{
-			if (positions == null)
-			{
-				throw new ArgumentNullException("positions");
-			}
-			if (positions.Length == 0)
-			{
-				throw new ArgumentException("Zero-sized array is not allowed.", "positions");
-			}
-			return GeometryUtility.Internal_CalculateBounds(positions, transform);
+			Bounds result;
+			GeometryUtility.Internal_CalculateBounds_Injected(positions, ref transform, out result);
+			return result;
 		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void Internal_ExtractPlanes_Injected([Out] Plane[] planes, ref Matrix4x4 worldToProjectionMatrix);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern bool TestPlanesAABB_Injected(Plane[] planes, ref Bounds bounds);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void Internal_CalculateBounds_Injected(Vector3[] positions, ref Matrix4x4 transform, out Bounds ret);
 	}
 }

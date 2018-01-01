@@ -13,9 +13,9 @@ namespace UnityEditor
 
 			public GUIContent z = EditorGUIUtility.TextContent("Z");
 
-			public GUIContent randomizePerFrame = EditorGUIUtility.TextContent("Randomize|Randomize force every frame. Only available when using random between two constants or random between two curves.");
+			public GUIContent randomizePerFrame = EditorGUIUtility.TrTextContent("Randomize", "Randomize force every frame. Only available when using random between two constants or random between two curves.", null);
 
-			public GUIContent space = EditorGUIUtility.TextContent("Space|Specifies if the force values are in local space (rotated with the transform) or world space.");
+			public GUIContent space = EditorGUIUtility.TrTextContent("Space", "Specifies if the force values are in local space (rotated with the transform) or world space.", null);
 
 			public string[] spaces = new string[]
 			{
@@ -59,10 +59,6 @@ namespace UnityEditor
 
 		public override void OnInspectorGUI(InitialModuleUI initial)
 		{
-			if (ForceModuleUI.s_Texts == null)
-			{
-				ForceModuleUI.s_Texts = new ForceModuleUI.Texts();
-			}
 			MinMaxCurveState state = this.m_X.state;
 			base.GUITripleMinMaxCurve(GUIContent.none, ForceModuleUI.s_Texts.x, this.m_X, ForceModuleUI.s_Texts.y, this.m_Y, ForceModuleUI.s_Texts.z, this.m_Z, this.m_RandomizePerFrame, new GUILayoutOption[0]);
 			ModuleUI.GUIBoolAsPopup(ForceModuleUI.s_Texts.space, this.m_InWorldSpace, ForceModuleUI.s_Texts.spaces, new GUILayoutOption[0]);

@@ -1,4 +1,5 @@
 using System;
+using UnityEngine.Bindings;
 using UnityEngine.Scripting;
 
 namespace UnityEngine.Playables
@@ -18,6 +19,7 @@ namespace UnityEngine.Playables
 			}
 		}
 
+		[VisibleToOtherModules]
 		internal Playable(PlayableHandle handle)
 		{
 			this.m_Handle = handle;

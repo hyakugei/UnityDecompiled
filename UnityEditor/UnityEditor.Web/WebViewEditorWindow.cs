@@ -75,10 +75,10 @@ namespace UnityEditor.Web
 
 		public virtual void AddItemsToMenu(GenericMenu menu)
 		{
-			menu.AddItem(new GUIContent("Reload"), false, new GenericMenu.MenuFunction(this.Reload));
-			if (Unsupported.IsDeveloperBuild())
+			menu.AddItem(EditorGUIUtility.TrTextContent("Reload", null, null), false, new GenericMenu.MenuFunction(this.Reload));
+			if (Unsupported.IsDeveloperMode())
 			{
-				menu.AddItem(new GUIContent("About"), false, new GenericMenu.MenuFunction(this.About));
+				menu.AddItem(EditorGUIUtility.TrTextContent("About", null, null), false, new GenericMenu.MenuFunction(this.About));
 			}
 		}
 
@@ -103,6 +103,10 @@ namespace UnityEditor.Web
 			if (!this.webView)
 			{
 			}
+		}
+
+		public virtual void OnLocationChanged(string url)
+		{
 		}
 
 		public void ToggleMaximize()

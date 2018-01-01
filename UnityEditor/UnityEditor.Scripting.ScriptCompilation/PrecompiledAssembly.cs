@@ -7,5 +7,7 @@ namespace UnityEditor.Scripting.ScriptCompilation
 		public string Path;
 
 		public AssemblyFlags Flags;
+
+		public OptionalUnityReferences OptionalUnityReferences;
 	}
 }

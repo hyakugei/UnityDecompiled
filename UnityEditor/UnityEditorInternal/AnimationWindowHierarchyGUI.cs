@@ -9,7 +9,7 @@ namespace UnityEditorInternal
 {
 	internal class AnimationWindowHierarchyGUI : TreeViewGUI
 	{
-		private readonly GUIContent k_AnimatePropertyLabel = new GUIContent("Add Property");
+		private readonly GUIContent k_AnimatePropertyLabel = EditorGUIUtility.TrTextContent("Add Property", null, null);
 
 		private GUIStyle m_AnimationRowEvenStyle;
 
@@ -175,7 +175,6 @@ namespace UnityEditorInternal
 			Rect rect2 = new Rect(rect.xMin + num, rect.yMin + num2, rect.width - num * 2f, rect.height - num2 * 2f);
 			if (this.DoTreeViewButton(this.m_HierarchyItemButtonControlIDs[row], rect2, this.k_AnimatePropertyLabel, GUI.skin.button))
 			{
-				AddCurvesPopup.selection = this.state.selection;
 				AddCurvesPopupHierarchyDataSource.showEntireHierarchy = true;
 				if (AddCurvesPopup.ShowAtPosition(rect2, this.state, new AddCurvesPopup.OnNewCurveAdded(this.OnNewCurveAdded)))
 				{
@@ -402,12 +401,11 @@ namespace UnityEditorInternal
 					if (EditorGUI.EndChangeCheck())
 					{
 						string undoLabel = "Edit Key";
-						float num3 = this.state.currentTime - animationWindowCurve.timeOffset;
-						AnimationKeyTime time = AnimationKeyTime.Time(num3, animationWindowCurve.clip.frameRate);
+						AnimationKeyTime time = AnimationKeyTime.Time(this.state.currentTime, animationWindowCurve.clip.frameRate);
 						AnimationWindowKeyframe animationWindowKeyframe = null;
 						foreach (AnimationWindowKeyframe current in animationWindowCurve.m_Keyframes)
 						{
-							if (Mathf.Approximately(current.time, num3))
+							if (Mathf.Approximately(current.time, this.state.currentTime))
 							{
 								animationWindowKeyframe = current;
 							}
@@ -600,9 +598,9 @@ namespace UnityEditorInternal
 			{
 				string str = (!this.state.activeAnimationClip.legacy) ? "" : " (Not fully supported in Legacy)";
 				GenericMenu.MenuFunction2 menuFunction = null;
-				genericMenu.AddItem(new GUIContent("Interpolation/Euler Angles" + str), rotationInterpolationMode == RotationCurveInterpolation.Mode.RawEuler, (!enabled) ? menuFunction : new GenericMenu.MenuFunction2(this.ChangeRotationInterpolation), RotationCurveInterpolation.Mode.RawEuler);
-				genericMenu.AddItem(new GUIContent("Interpolation/Euler Angles (Quaternion)"), rotationInterpolationMode == RotationCurveInterpolation.Mode.Baked, (!enabled) ? menuFunction : new GenericMenu.MenuFunction2(this.ChangeRotationInterpolation), RotationCurveInterpolation.Mode.Baked);
-				genericMenu.AddItem(new GUIContent("Interpolation/Quaternion"), rotationInterpolationMode == RotationCurveInterpolation.Mode.NonBaked, (!enabled) ? menuFunction : new GenericMenu.MenuFunction2(this.ChangeRotationInterpolation), RotationCurveInterpolation.Mode.NonBaked);
+				genericMenu.AddItem(EditorGUIUtility.TrTextContent("Interpolation/Euler Angles" + str, null, null), rotationInterpolationMode == RotationCurveInterpolation.Mode.RawEuler, (!enabled) ? menuFunction : new GenericMenu.MenuFunction2(this.ChangeRotationInterpolation), RotationCurveInterpolation.Mode.RawEuler);
+				genericMenu.AddItem(EditorGUIUtility.TrTextContent("Interpolation/Euler Angles (Quaternion)", null, null), rotationInterpolationMode == RotationCurveInterpolation.Mode.Baked, (!enabled) ? menuFunction : new GenericMenu.MenuFunction2(this.ChangeRotationInterpolation), RotationCurveInterpolation.Mode.Baked);
+				genericMenu.AddItem(EditorGUIUtility.TrTextContent("Interpolation/Quaternion", null, null), rotationInterpolationMode == RotationCurveInterpolation.Mode.NonBaked, (!enabled) ? menuFunction : new GenericMenu.MenuFunction2(this.ChangeRotationInterpolation), RotationCurveInterpolation.Mode.NonBaked);
 			}
 			if (this.state.previewing)
 			{

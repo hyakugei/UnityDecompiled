@@ -27,6 +27,10 @@ namespace UnityEngine.Playables
 
 		internal float m_EffectiveWeight;
 
+		internal double m_EffectiveParentDelay;
+
+		internal float m_EffectiveParentSpeed;
+
 		internal float m_EffectiveSpeed;
 
 		internal FrameData.Flags m_Flags;
@@ -60,6 +64,22 @@ namespace UnityEngine.Playables
 			get
 			{
 				return this.m_EffectiveWeight;
+			}
+		}
+
+		public double effectiveParentDelay
+		{
+			get
+			{
+				return this.m_EffectiveParentDelay;
+			}
+		}
+
+		public float effectiveParentSpeed
+		{
+			get
+			{
+				return this.m_EffectiveParentSpeed;
 			}
 		}
 

@@ -22,6 +22,14 @@ namespace UnityEditor.Sprites
 
 		private const uint kDefaultPaddingPower = 3u;
 
+		public virtual bool AllowSequentialPacking
+		{
+			get
+			{
+				return false;
+			}
+		}
+
 		protected virtual string TagPrefix
 		{
 			get

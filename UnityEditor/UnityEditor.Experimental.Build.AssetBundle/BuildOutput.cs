@@ -1,4 +1,6 @@
 using System;
+using System.Collections.ObjectModel;
+using UnityEngine.Bindings;
 using UnityEngine.Scripting;
 
 namespace UnityEditor.Experimental.Build.AssetBundle
@@ -7,50 +9,15 @@ namespace UnityEditor.Experimental.Build.AssetBundle
 	[Serializable]
 	public struct BuildOutput
 	{
-		[UsedByNativeCode]
-		[Serializable]
-		public struct ResourceFile
+		[NativeName("results")]
+		internal WriteResult[] m_Results;
+
+		public ReadOnlyCollection<WriteResult> results
 		{
-			public string fileName;
-
-			public string fileAlias;
-
-			public bool serializedFile;
+			get
+			{
+				return Array.AsReadOnly<WriteResult>(this.m_Results);
+			}
 		}
-
-		[UsedByNativeCode]
-		[Serializable]
-		public struct ObjectLocation
-		{
-			public string fileName;
-
-			public ulong offset;
-
-			public uint size;
-		}
-
-		[UsedByNativeCode]
-		[Serializable]
-		public struct SerializedObject
-		{
-			public ObjectIdentifier serializedObject;
-
-			public BuildOutput.ObjectLocation header;
-
-			public BuildOutput.ObjectLocation rawData;
-		}
-
-		[UsedByNativeCode]
-		[Serializable]
-		public struct Result
-		{
-			public string assetBundleName;
-
-			public BuildOutput.SerializedObject[] assetBundleObjects;
-
-			public BuildOutput.ResourceFile[] resourceFiles;
-		}
-
-		public BuildOutput.Result[] results;
 	}
 }

@@ -322,7 +322,7 @@ namespace UnityEngine.UI
 
 		private void UpdateCachedReferences()
 		{
-			if (this.m_FillRect)
+			if (this.m_FillRect && this.m_FillRect != (RectTransform)base.transform)
 			{
 				this.m_FillTransform = this.m_FillRect.transform;
 				this.m_FillImage = this.m_FillRect.GetComponent<Image>();
@@ -333,10 +333,11 @@ namespace UnityEngine.UI
 			}
 			else
 			{
+				this.m_FillRect = null;
 				this.m_FillContainerRect = null;
 				this.m_FillImage = null;
 			}
-			if (this.m_HandleRect)
+			if (this.m_HandleRect && this.m_HandleRect != (RectTransform)base.transform)
 			{
 				this.m_HandleTransform = this.m_HandleRect.transform;
 				if (this.m_HandleTransform.parent != null)
@@ -346,6 +347,7 @@ namespace UnityEngine.UI
 			}
 			else
 			{
+				this.m_HandleRect = null;
 				this.m_HandleContainerRect = null;
 			}
 		}

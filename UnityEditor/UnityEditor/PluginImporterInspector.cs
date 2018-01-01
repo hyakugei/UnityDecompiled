@@ -26,6 +26,8 @@ namespace UnityEditor
 
 		private bool m_HasModified;
 
+		private string m_ReferencesUnityEngineModule;
+
 		private PluginImporterInspector.Compatibility m_CompatibleWithAnyPlatform;
 
 		private PluginImporterInspector.Compatibility m_CompatibleWithEditor;
@@ -34,9 +36,7 @@ namespace UnityEditor
 
 		private static readonly BuildTarget[] m_StandaloneTargets = new BuildTarget[]
 		{
-			BuildTarget.StandaloneOSXIntel,
-			BuildTarget.StandaloneOSXIntel64,
-			BuildTarget.StandaloneOSXUniversal,
+			BuildTarget.StandaloneOSX,
 			BuildTarget.StandaloneWindows,
 			BuildTarget.StandaloneWindows64,
 			BuildTarget.StandaloneLinux,
@@ -175,9 +175,24 @@ namespace UnityEditor
 			return PluginImporterInspector.m_StandaloneTargets.Contains(buildTarget);
 		}
 
+		internal static bool IsValidBuildTarget(BuildTarget buildTarget)
+		{
+			return buildTarget > (BuildTarget)0;
+		}
+
 		internal PluginImporterInspector.Compatibility GetPlatformCompatibility(string platformName)
 		{
-			return this.m_CompatibleWithPlatform[(int)BuildPipeline.GetBuildTargetByName(platformName)];
+			BuildTarget buildTargetByName = BuildPipeline.GetBuildTargetByName(platformName);
+			PluginImporterInspector.Compatibility result;
+			if (!PluginImporterInspector.IsValidBuildTarget(buildTargetByName))
+			{
+				result = PluginImporterInspector.Compatibility.NotCompatible;
+			}
+			else
+			{
+				result = this.m_CompatibleWithPlatform[(int)buildTargetByName];
+			}
+			return result;
 		}
 
 		internal void SetPlatformCompatibility(string platformName, bool compatible)
@@ -191,10 +206,10 @@ namespace UnityEditor
 			{
 				throw new ArgumentException("compatibility value cannot be Mixed");
 			}
-			int buildTargetByName = (int)BuildPipeline.GetBuildTargetByName(platformName);
-			if (this.m_CompatibleWithPlatform[buildTargetByName] != compatibility)
+			BuildTarget buildTargetByName = BuildPipeline.GetBuildTargetByName(platformName);
+			if (PluginImporterInspector.IsValidBuildTarget(buildTargetByName) && this.m_CompatibleWithPlatform[(int)buildTargetByName] != compatibility)
 			{
-				this.m_CompatibleWithPlatform[buildTargetByName] = compatibility;
+				this.m_CompatibleWithPlatform[(int)buildTargetByName] = compatibility;
 				this.m_HasModified = true;
 			}
 		}
@@ -207,7 +222,7 @@ namespace UnityEditor
 				while (enumerator.MoveNext())
 				{
 					BuildTarget buildTarget = (BuildTarget)enumerator.Current;
-					if (buildTarget > (BuildTarget)0)
+					if (PluginImporterInspector.IsValidBuildTarget(buildTarget))
 					{
 						if (!PluginImporterInspector.IgnorePlatform(buildTarget))
 						{
@@ -461,6 +476,7 @@ namespace UnityEditor
 					}
 					this.m_PluginInformation["Assembly Info"] = value;
 				}
+				this.m_ReferencesUnityEngineModule = this.importer.HasDiscouragedReferences();
 			}
 		}
 
@@ -648,6 +664,10 @@ namespace UnityEditor
 				if (EditorApplication.scriptingRuntimeVersion == ScriptingRuntimeVersion.Legacy && this.importer.dllType == DllType.ManagedNET40 && this.m_CompatibleWithEditor == PluginImporterInspector.Compatibility.Compatible)
 				{
 					EditorGUILayout.HelpBox("Plugin targets .NET 4.x and is marked as compatible with Editor, Editor can only use assemblies targeting .NET 3.5 or lower, please unselect Editor as compatible platform.", MessageType.Error);
+				}
+				if (this.m_ReferencesUnityEngineModule != null)
+				{
+					EditorGUILayout.HelpBox(string.Format("This plugin references at least one UnityEngine module assemblies directly ({0}.dll). To assure forward compatibility, only reference UnityEngine.dll, which contains type forwarders for all the module dlls.", this.m_ReferencesUnityEngineModule), MessageType.Warning);
 				}
 			}
 		}

@@ -7,6 +7,8 @@ namespace UnityEngine.EventSystems
 	[AddComponentMenu("Event/Physics 2D Raycaster"), RequireComponent(typeof(Camera))]
 	public class Physics2DRaycaster : PhysicsRaycaster
 	{
+		private RaycastHit2D[] m_Hits;
+
 		protected Physics2DRaycaster()
 		{
 		}
@@ -18,31 +20,50 @@ namespace UnityEngine.EventSystems
 				Ray r;
 				float f;
 				base.ComputeRayAndDistance(eventData, out r, out f);
-				if (ReflectionMethodsCache.Singleton.getRayIntersectionAll != null)
+				int num;
+				if (base.maxRayIntersections == 0)
 				{
-					RaycastHit2D[] array = ReflectionMethodsCache.Singleton.getRayIntersectionAll(r, f, base.finalEventMask);
-					if (array.Length != 0)
+					if (ReflectionMethodsCache.Singleton.getRayIntersectionAll == null)
 					{
-						int i = 0;
-						int num = array.Length;
-						while (i < num)
+						return;
+					}
+					this.m_Hits = ReflectionMethodsCache.Singleton.getRayIntersectionAll(r, f, base.finalEventMask);
+					num = this.m_Hits.Length;
+				}
+				else
+				{
+					if (ReflectionMethodsCache.Singleton.getRayIntersectionAllNonAlloc == null)
+					{
+						return;
+					}
+					if (this.m_LastMaxRayIntersections != this.m_MaxRayIntersections)
+					{
+						this.m_Hits = new RaycastHit2D[base.maxRayIntersections];
+						this.m_LastMaxRayIntersections = this.m_MaxRayIntersections;
+					}
+					num = ReflectionMethodsCache.Singleton.getRayIntersectionAllNonAlloc(r, this.m_Hits, f, base.finalEventMask);
+				}
+				if (num != 0)
+				{
+					int i = 0;
+					int num2 = num;
+					while (i < num2)
+					{
+						SpriteRenderer component = this.m_Hits[i].collider.gameObject.GetComponent<SpriteRenderer>();
+						RaycastResult item = new RaycastResult
 						{
-							SpriteRenderer component = array[i].collider.gameObject.GetComponent<SpriteRenderer>();
-							RaycastResult item = new RaycastResult
-							{
-								gameObject = array[i].collider.gameObject,
-								module = this,
-								distance = Vector3.Distance(this.eventCamera.transform.position, array[i].point),
-								worldPosition = array[i].point,
-								worldNormal = array[i].normal,
-								screenPosition = eventData.position,
-								index = (float)resultAppendList.Count,
-								sortingLayer = ((!(component != null)) ? 0 : component.sortingLayerID),
-								sortingOrder = ((!(component != null)) ? 0 : component.sortingOrder)
-							};
-							resultAppendList.Add(item);
-							i++;
-						}
+							gameObject = this.m_Hits[i].collider.gameObject,
+							module = this,
+							distance = Vector3.Distance(this.eventCamera.transform.position, this.m_Hits[i].point),
+							worldPosition = this.m_Hits[i].point,
+							worldNormal = this.m_Hits[i].normal,
+							screenPosition = eventData.position,
+							index = (float)resultAppendList.Count,
+							sortingLayer = ((!(component != null)) ? 0 : component.sortingLayerID),
+							sortingOrder = ((!(component != null)) ? 0 : component.sortingOrder)
+						};
+						resultAppendList.Add(item);
+						i++;
 					}
 				}
 			}

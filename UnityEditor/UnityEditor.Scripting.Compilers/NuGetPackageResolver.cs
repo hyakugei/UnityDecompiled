@@ -44,17 +44,17 @@ namespace UnityEditor.Scripting.Compilers
 		{
 			string json = File.ReadAllText(this.ProjectLockFile);
 			Dictionary<string, object> dictionary = (Dictionary<string, object>)Json.Deserialize(json);
-			Dictionary<string, object> dictionary2 = (Dictionary<string, object>)dictionary["targets"];
-			Dictionary<string, object> dictionary3 = (Dictionary<string, object>)dictionary2[this.TargetMoniker];
+			Dictionary<string, object> targets = (Dictionary<string, object>)dictionary["targets"];
+			Dictionary<string, object> dictionary2 = this.FindUWPTarget(targets);
 			List<string> list = new List<string>();
 			string path = this.ConvertToWindowsPath(this.GetPackagesPath());
-			foreach (KeyValuePair<string, object> current in dictionary3)
+			foreach (KeyValuePair<string, object> current in dictionary2)
 			{
-				Dictionary<string, object> dictionary4 = (Dictionary<string, object>)current.Value;
+				Dictionary<string, object> dictionary3 = (Dictionary<string, object>)current.Value;
 				object obj;
-				if (dictionary4.TryGetValue("compile", out obj))
+				if (dictionary3.TryGetValue("compile", out obj))
 				{
-					Dictionary<string, object> dictionary5 = (Dictionary<string, object>)obj;
+					Dictionary<string, object> dictionary4 = (Dictionary<string, object>)obj;
 					string[] array = current.Key.Split(new char[]
 					{
 						'/'
@@ -66,7 +66,7 @@ namespace UnityEditor.Scripting.Compilers
 					{
 						throw new Exception(string.Format("Package directory not found: \"{0}\".", text));
 					}
-					foreach (string current2 in dictionary5.Keys)
+					foreach (string current2 in dictionary4.Keys)
 					{
 						if (!string.Equals(Path.GetFileName(current2), "_._", StringComparison.InvariantCultureIgnoreCase))
 						{
@@ -78,7 +78,7 @@ namespace UnityEditor.Scripting.Compilers
 							list.Add(text2);
 						}
 					}
-					if (dictionary4.ContainsKey("frameworkAssemblies"))
+					if (dictionary3.ContainsKey("frameworkAssemblies"))
 					{
 						throw new NotImplementedException("Support for \"frameworkAssemblies\" property has not been implemented yet.");
 					}
@@ -86,6 +86,18 @@ namespace UnityEditor.Scripting.Compilers
 			}
 			this.ResolvedReferences = list.ToArray();
 			return this.ResolvedReferences;
+		}
+
+		private Dictionary<string, object> FindUWPTarget(Dictionary<string, object> targets)
+		{
+			foreach (KeyValuePair<string, object> current in targets)
+			{
+				if (current.Key.StartsWith(this.TargetMoniker) && !current.Key.Contains("/"))
+				{
+					return (Dictionary<string, object>)current.Value;
+				}
+			}
+			throw new InvalidOperationException("Could not find suitable target for " + this.TargetMoniker + " in project.lock.json file.");
 		}
 
 		private string GetPackagesPath()

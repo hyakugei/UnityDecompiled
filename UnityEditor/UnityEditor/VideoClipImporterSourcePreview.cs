@@ -32,7 +32,7 @@ namespace UnityEditor
 		{
 			if (this.m_Title == null)
 			{
-				this.m_Title = new GUIContent("Source Info");
+				this.m_Title = EditorGUIUtility.TrTextContent("Source Info", null, null);
 			}
 			return this.m_Title;
 		}
@@ -81,6 +81,7 @@ namespace UnityEditor
 				int resizeWidth = videoClipImporter.GetResizeWidth(VideoResizeMode.OriginalSize);
 				int resizeHeight = videoClipImporter.GetResizeHeight(VideoResizeMode.OriginalSize);
 				this.ShowProperty(ref rect, ref rect2, "Pixels", resizeWidth + "x" + resizeHeight);
+				this.ShowProperty(ref rect, ref rect2, "PAR", videoClipImporter.pixelAspectRatioNumerator + ":" + videoClipImporter.pixelAspectRatioDenominator);
 				this.ShowProperty(ref rect, ref rect2, "Alpha", (!videoClipImporter.sourceHasAlpha) ? "No" : "Yes");
 				ushort sourceAudioTrackCount = videoClipImporter.sourceAudioTrackCount;
 				this.ShowProperty(ref rect, ref rect2, "Audio", (sourceAudioTrackCount != 0) ? ((sourceAudioTrackCount != 1) ? "" : this.GetAudioTrackDescription(videoClipImporter, 0)) : "none");

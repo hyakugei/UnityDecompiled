@@ -1,10 +1,11 @@
 using System;
 using System.Runtime.CompilerServices;
+using UnityEngine.Bindings;
 using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
-	[UsedByNativeCode]
+	[NativeType(Header = "Runtime/Math/Matrix4x4.h"), UsedByNativeCode, ThreadAndSerializationSafe]
 	public struct Matrix4x4
 	{
 		public float m00;
@@ -43,6 +44,46 @@ namespace UnityEngine
 
 		private static readonly Matrix4x4 identityMatrix = new Matrix4x4(new Vector4(1f, 0f, 0f, 0f), new Vector4(0f, 1f, 0f, 0f), new Vector4(0f, 0f, 1f, 0f), new Vector4(0f, 0f, 0f, 1f));
 
+		public Quaternion rotation
+		{
+			get
+			{
+				return this.GetRotation();
+			}
+		}
+
+		public Vector3 lossyScale
+		{
+			get
+			{
+				return this.GetLossyScale();
+			}
+		}
+
+		public bool isIdentity
+		{
+			get
+			{
+				return this.IsIdentity();
+			}
+		}
+
+		public float determinant
+		{
+			get
+			{
+				return this.GetDeterminant();
+			}
+		}
+
+		public FrustumPlanes decomposeProjection
+		{
+			get
+			{
+				return this.DecomposeProjection();
+			}
+		}
+
 		public Matrix4x4 inverse
 		{
 			get
@@ -56,21 +97,6 @@ namespace UnityEngine
 			get
 			{
 				return Matrix4x4.Transpose(this);
-			}
-		}
-
-		public extern bool isIdentity
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-		}
-
-		public float determinant
-		{
-			get
-			{
-				return Matrix4x4.Determinant(this);
 			}
 		}
 
@@ -240,95 +266,105 @@ namespace UnityEngine
 			this.m33 = column3.w;
 		}
 
-		[ThreadAndSerializationSafe]
-		public static Matrix4x4 Inverse(Matrix4x4 m)
+		private Quaternion GetRotation()
 		{
-			Matrix4x4 result;
-			Matrix4x4.INTERNAL_CALL_Inverse(ref m, out result);
+			Quaternion result;
+			Matrix4x4.GetRotation_Injected(ref this, out result);
 			return result;
 		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_Inverse(ref Matrix4x4 m, out Matrix4x4 value);
-
-		public static Matrix4x4 Transpose(Matrix4x4 m)
+		private Vector3 GetLossyScale()
 		{
-			Matrix4x4 result;
-			Matrix4x4.INTERNAL_CALL_Transpose(ref m, out result);
+			Vector3 result;
+			Matrix4x4.GetLossyScale_Injected(ref this, out result);
 			return result;
 		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_Transpose(ref Matrix4x4 m, out Matrix4x4 value);
-
-		internal static bool Invert(Matrix4x4 inMatrix, out Matrix4x4 dest)
+		private bool IsIdentity()
 		{
-			return Matrix4x4.INTERNAL_CALL_Invert(ref inMatrix, out dest);
+			return Matrix4x4.IsIdentity_Injected(ref this);
 		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern bool INTERNAL_CALL_Invert(ref Matrix4x4 inMatrix, out Matrix4x4 dest);
+		private float GetDeterminant()
+		{
+			return Matrix4x4.GetDeterminant_Injected(ref this);
+		}
+
+		private FrustumPlanes DecomposeProjection()
+		{
+			FrustumPlanes result;
+			Matrix4x4.DecomposeProjection_Injected(ref this, out result);
+			return result;
+		}
+
+		public bool ValidTRS()
+		{
+			return Matrix4x4.ValidTRS_Injected(ref this);
+		}
 
 		public static float Determinant(Matrix4x4 m)
 		{
-			return Matrix4x4.INTERNAL_CALL_Determinant(ref m);
+			return m.determinant;
 		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern float INTERNAL_CALL_Determinant(ref Matrix4x4 m);
+		public static Matrix4x4 TRS(Vector3 pos, Quaternion q, Vector3 s)
+		{
+			Matrix4x4 result;
+			Matrix4x4.TRS_Injected(ref pos, ref q, ref s, out result);
+			return result;
+		}
 
 		public void SetTRS(Vector3 pos, Quaternion q, Vector3 s)
 		{
 			this = Matrix4x4.TRS(pos, q, s);
 		}
 
-		public static Matrix4x4 TRS(Vector3 pos, Quaternion q, Vector3 s)
+		public static Matrix4x4 Inverse(Matrix4x4 m)
 		{
 			Matrix4x4 result;
-			Matrix4x4.INTERNAL_CALL_TRS(ref pos, ref q, ref s, out result);
+			Matrix4x4.Inverse_Injected(ref m, out result);
 			return result;
 		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_TRS(ref Vector3 pos, ref Quaternion q, ref Vector3 s, out Matrix4x4 value);
+		public static Matrix4x4 Transpose(Matrix4x4 m)
+		{
+			Matrix4x4 result;
+			Matrix4x4.Transpose_Injected(ref m, out result);
+			return result;
+		}
 
 		public static Matrix4x4 Ortho(float left, float right, float bottom, float top, float zNear, float zFar)
 		{
 			Matrix4x4 result;
-			Matrix4x4.INTERNAL_CALL_Ortho(left, right, bottom, top, zNear, zFar, out result);
+			Matrix4x4.Ortho_Injected(left, right, bottom, top, zNear, zFar, out result);
 			return result;
 		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_Ortho(float left, float right, float bottom, float top, float zNear, float zFar, out Matrix4x4 value);
 
 		public static Matrix4x4 Perspective(float fov, float aspect, float zNear, float zFar)
 		{
 			Matrix4x4 result;
-			Matrix4x4.INTERNAL_CALL_Perspective(fov, aspect, zNear, zFar, out result);
+			Matrix4x4.Perspective_Injected(fov, aspect, zNear, zFar, out result);
 			return result;
 		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_Perspective(float fov, float aspect, float zNear, float zFar, out Matrix4x4 value);
 
 		public static Matrix4x4 LookAt(Vector3 from, Vector3 to, Vector3 up)
 		{
 			Matrix4x4 result;
-			Matrix4x4.INTERNAL_CALL_LookAt(ref from, ref to, ref up, out result);
+			Matrix4x4.LookAt_Injected(ref from, ref to, ref up, out result);
 			return result;
 		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_LookAt(ref Vector3 from, ref Vector3 to, ref Vector3 up, out Matrix4x4 value);
+		public static Matrix4x4 Frustum(float left, float right, float bottom, float top, float zNear, float zFar)
+		{
+			Matrix4x4 result;
+			Matrix4x4.Frustum_Injected(left, right, bottom, top, zNear, zFar, out result);
+			return result;
+		}
+
+		public static Matrix4x4 Frustum(FrustumPlanes fp)
+		{
+			return Matrix4x4.Frustum(fp.left, fp.right, fp.bottom, fp.top, fp.zNear, fp.zFar);
+		}
 
 		public override int GetHashCode()
 		{
@@ -623,5 +659,44 @@ namespace UnityEngine
 				this.m33.ToString(format)
 			});
 		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void GetRotation_Injected(ref Matrix4x4 _unity_self, out Quaternion ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void GetLossyScale_Injected(ref Matrix4x4 _unity_self, out Vector3 ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern bool IsIdentity_Injected(ref Matrix4x4 _unity_self);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern float GetDeterminant_Injected(ref Matrix4x4 _unity_self);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void DecomposeProjection_Injected(ref Matrix4x4 _unity_self, out FrustumPlanes ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern bool ValidTRS_Injected(ref Matrix4x4 _unity_self);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void TRS_Injected(ref Vector3 pos, ref Quaternion q, ref Vector3 s, out Matrix4x4 ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void Inverse_Injected(ref Matrix4x4 m, out Matrix4x4 ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void Transpose_Injected(ref Matrix4x4 m, out Matrix4x4 ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void Ortho_Injected(float left, float right, float bottom, float top, float zNear, float zFar, out Matrix4x4 ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void Perspective_Injected(float fov, float aspect, float zNear, float zFar, out Matrix4x4 ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void LookAt_Injected(ref Vector3 from, ref Vector3 to, ref Vector3 up, out Matrix4x4 ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void Frustum_Injected(float left, float right, float bottom, float top, float zNear, float zFar, out Matrix4x4 ret);
 	}
 }

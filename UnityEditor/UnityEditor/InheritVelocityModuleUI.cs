@@ -13,14 +13,14 @@ namespace UnityEditor
 
 		private class Texts
 		{
-			public GUIContent mode = EditorGUIUtility.TextContent("Mode|Specifies whether the emitter velocity is inherited as a one-shot when a particle is born, always using the current emitter velocity, or using the emitter velocity when the particle was born.");
+			public GUIContent mode = EditorGUIUtility.TrTextContent("Mode", "Specifies whether the emitter velocity is inherited as a one-shot when a particle is born, always using the current emitter velocity, or using the emitter velocity when the particle was born.", null);
 
-			public GUIContent velocity = EditorGUIUtility.TextContent("Multiplier|Controls the amount of emitter velocity inherited during each particle's lifetime.");
+			public GUIContent velocity = EditorGUIUtility.TrTextContent("Multiplier", "Controls the amount of emitter velocity inherited during each particle's lifetime.", null);
 
-			public string[] modes = new string[]
+			public GUIContent[] modes = new GUIContent[]
 			{
-				"Initial",
-				"Current"
+				EditorGUIUtility.TrTextContent("Initial", null, null),
+				EditorGUIUtility.TrTextContent("Current", null, null)
 			};
 		}
 
@@ -50,10 +50,6 @@ namespace UnityEditor
 
 		public override void OnInspectorGUI(InitialModuleUI initial)
 		{
-			if (InheritVelocityModuleUI.s_Texts == null)
-			{
-				InheritVelocityModuleUI.s_Texts = new InheritVelocityModuleUI.Texts();
-			}
 			ModuleUI.GUIPopup(InheritVelocityModuleUI.s_Texts.mode, this.m_Mode, InheritVelocityModuleUI.s_Texts.modes, new GUILayoutOption[0]);
 			ModuleUI.GUIMinMaxCurve(InheritVelocityModuleUI.s_Texts.velocity, this.m_Curve, new GUILayoutOption[0]);
 		}

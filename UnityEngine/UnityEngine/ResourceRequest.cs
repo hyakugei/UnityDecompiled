@@ -6,7 +6,7 @@ namespace UnityEngine
 {
 	[RequiredByNativeCode]
 	[StructLayout(LayoutKind.Sequential)]
-	public sealed class ResourceRequest : AsyncOperation
+	public class ResourceRequest : AsyncOperation
 	{
 		internal string m_Path;
 

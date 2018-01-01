@@ -134,7 +134,7 @@ namespace UnityEngine
 			get;
 		}
 
-		public AudioClip()
+		private AudioClip()
 		{
 			this.m_PCMReaderCallback = null;
 			this.m_PCMSetPositionCallback = null;

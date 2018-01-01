@@ -53,7 +53,7 @@ namespace UnityEditor
 
 		private static SceneView s_RestoreSceneView;
 
-		private static DrawCameraMode s_OldSceneDrawMode = DrawCameraMode.Textured;
+		private static SceneView.CameraMode s_OldSceneDrawMode;
 
 		private static bool s_OldSceneLightingMode;
 
@@ -152,7 +152,7 @@ namespace UnityEditor
 					ShadowCascadeSplitGUI.s_DragCache = null;
 					if (ShadowCascadeSplitGUI.s_RestoreSceneView != null)
 					{
-						ShadowCascadeSplitGUI.s_RestoreSceneView.renderMode = ShadowCascadeSplitGUI.s_OldSceneDrawMode;
+						ShadowCascadeSplitGUI.s_RestoreSceneView.cameraMode = ShadowCascadeSplitGUI.s_OldSceneDrawMode;
 						ShadowCascadeSplitGUI.s_RestoreSceneView.m_SceneLighting = ShadowCascadeSplitGUI.s_OldSceneLightingMode;
 						ShadowCascadeSplitGUI.s_RestoreSceneView = null;
 					}
@@ -171,9 +171,9 @@ namespace UnityEditor
 					ShadowCascadeSplitGUI.s_RestoreSceneView = SceneView.lastActiveSceneView;
 					if (ShadowCascadeSplitGUI.s_RestoreSceneView != null)
 					{
-						ShadowCascadeSplitGUI.s_OldSceneDrawMode = ShadowCascadeSplitGUI.s_RestoreSceneView.renderMode;
+						ShadowCascadeSplitGUI.s_OldSceneDrawMode = ShadowCascadeSplitGUI.s_RestoreSceneView.cameraMode;
 						ShadowCascadeSplitGUI.s_OldSceneLightingMode = ShadowCascadeSplitGUI.s_RestoreSceneView.m_SceneLighting;
-						ShadowCascadeSplitGUI.s_RestoreSceneView.renderMode = DrawCameraMode.ShadowCascades;
+						ShadowCascadeSplitGUI.s_RestoreSceneView.cameraMode = SceneView.GetBuiltinCameraMode(DrawCameraMode.ShadowCascades);
 					}
 				}
 			}

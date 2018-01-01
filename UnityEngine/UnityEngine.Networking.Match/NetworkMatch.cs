@@ -84,7 +84,7 @@ namespace UnityEngine.Networking.Match
 				wWWForm.AddField("privateAddress", req.privateAddress);
 				wWWForm.AddField("eloScore", req.eloScore.ToString());
 				wWWForm.headers["Accept"] = "application/json";
-				WWW client = new WWW(uri.ToString(), wWWForm);
+				UnityWebRequest client = UnityWebRequest.Post(uri.ToString(), wWWForm);
 				result = base.StartCoroutine(this.ProcessMatchResponse<CreateMatchResponse, NetworkMatch.DataResponseDelegate<MatchInfo>>(client, new NetworkMatch.InternalResponseDelegate<CreateMatchResponse, NetworkMatch.DataResponseDelegate<MatchInfo>>(this.OnMatchCreate), callback));
 			}
 			return result;
@@ -136,7 +136,7 @@ namespace UnityEngine.Networking.Match
 				wWWForm.AddField("privateAddress", req.privateAddress);
 				wWWForm.AddField("eloScore", req.eloScore.ToString());
 				wWWForm.headers["Accept"] = "application/json";
-				WWW client = new WWW(uri.ToString(), wWWForm);
+				UnityWebRequest client = UnityWebRequest.Post(uri.ToString(), wWWForm);
 				result = base.StartCoroutine(this.ProcessMatchResponse<JoinMatchResponse, NetworkMatch.DataResponseDelegate<MatchInfo>>(client, new NetworkMatch.InternalResponseDelegate<JoinMatchResponse, NetworkMatch.DataResponseDelegate<MatchInfo>>(this.OnMatchJoined), callback));
 			}
 			return result;
@@ -180,7 +180,7 @@ namespace UnityEngine.Networking.Match
 				wWWForm.AddField("domain", req.domain);
 				wWWForm.AddField("networkId", req.networkId.ToString());
 				wWWForm.headers["Accept"] = "application/json";
-				WWW client = new WWW(uri.ToString(), wWWForm);
+				UnityWebRequest client = UnityWebRequest.Post(uri.ToString(), wWWForm);
 				result = base.StartCoroutine(this.ProcessMatchResponse<BasicResponse, NetworkMatch.BasicResponseDelegate>(client, new NetworkMatch.InternalResponseDelegate<BasicResponse, NetworkMatch.BasicResponseDelegate>(this.OnMatchDestroyed), callback));
 			}
 			return result;
@@ -222,7 +222,7 @@ namespace UnityEngine.Networking.Match
 				wWWForm.AddField("networkId", req.networkId.ToString());
 				wWWForm.AddField("nodeId", req.nodeId.ToString());
 				wWWForm.headers["Accept"] = "application/json";
-				WWW client = new WWW(uri.ToString(), wWWForm);
+				UnityWebRequest client = UnityWebRequest.Post(uri.ToString(), wWWForm);
 				result = base.StartCoroutine(this.ProcessMatchResponse<DropConnectionResponse, NetworkMatch.BasicResponseDelegate>(client, new NetworkMatch.InternalResponseDelegate<DropConnectionResponse, NetworkMatch.BasicResponseDelegate>(this.OnDropConnection), callback));
 			}
 			return result;
@@ -280,7 +280,7 @@ namespace UnityEngine.Networking.Match
 				wWWForm.AddField("filterOutPrivateMatches", req.filterOutPrivateMatches.ToString());
 				wWWForm.AddField("eloScore", req.eloScore.ToString());
 				wWWForm.headers["Accept"] = "application/json";
-				WWW client = new WWW(uri.ToString(), wWWForm);
+				UnityWebRequest client = UnityWebRequest.Post(uri.ToString(), wWWForm);
 				result = base.StartCoroutine(this.ProcessMatchResponse<ListMatchResponse, NetworkMatch.DataResponseDelegate<List<MatchInfoSnapshot>>>(client, new NetworkMatch.InternalResponseDelegate<ListMatchResponse, NetworkMatch.DataResponseDelegate<List<MatchInfoSnapshot>>>(this.OnMatchList), callback));
 			}
 			return result;
@@ -327,7 +327,7 @@ namespace UnityEngine.Networking.Match
 				wWWForm.AddField("networkId", req.networkId.ToString());
 				wWWForm.AddField("isListed", req.isListed.ToString());
 				wWWForm.headers["Accept"] = "application/json";
-				WWW client = new WWW(uri.ToString(), wWWForm);
+				UnityWebRequest client = UnityWebRequest.Post(uri.ToString(), wWWForm);
 				result = base.StartCoroutine(this.ProcessMatchResponse<BasicResponse, NetworkMatch.BasicResponseDelegate>(client, new NetworkMatch.InternalResponseDelegate<BasicResponse, NetworkMatch.BasicResponseDelegate>(this.OnSetMatchAttributes), callback));
 			}
 			return result;
@@ -339,7 +339,7 @@ namespace UnityEngine.Networking.Match
 		}
 
 		[DebuggerHidden]
-		private IEnumerator ProcessMatchResponse<JSONRESPONSE, USERRESPONSEDELEGATETYPE>(WWW client, NetworkMatch.InternalResponseDelegate<JSONRESPONSE, USERRESPONSEDELEGATETYPE> internalCallback, USERRESPONSEDELEGATETYPE userCallback) where JSONRESPONSE : Response, new()
+		private IEnumerator ProcessMatchResponse<JSONRESPONSE, USERRESPONSEDELEGATETYPE>(UnityWebRequest client, NetworkMatch.InternalResponseDelegate<JSONRESPONSE, USERRESPONSEDELEGATETYPE> internalCallback, USERRESPONSEDELEGATETYPE userCallback) where JSONRESPONSE : Response, new()
 		{
 			NetworkMatch.<ProcessMatchResponse>c__Iterator0<JSONRESPONSE, USERRESPONSEDELEGATETYPE> <ProcessMatchResponse>c__Iterator = new NetworkMatch.<ProcessMatchResponse>c__Iterator0<JSONRESPONSE, USERRESPONSEDELEGATETYPE>();
 			<ProcessMatchResponse>c__Iterator.client = client;

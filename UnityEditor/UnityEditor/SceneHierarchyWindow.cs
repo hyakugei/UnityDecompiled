@@ -24,7 +24,7 @@ namespace UnityEditor
 
 			public GUIContent defaultSortingContent = new GUIContent(EditorGUIUtility.FindTexture("CustomSorting"));
 
-			public GUIContent createContent = new GUIContent("Create");
+			public GUIContent createContent = EditorGUIUtility.TrTextContent("Create", null, null);
 
 			public GUIContent fetchWarning = new GUIContent("", EditorGUIUtility.FindTexture("console.warnicon.sml"), "The current sorting method is taking a lot of time. Consider using 'Transform Sort' in playmode for better performance.");
 
@@ -60,7 +60,7 @@ namespace UnityEditor
 		private int m_CurrenRootInstanceID = 0;
 
 		[SerializeField]
-		private bool m_Locked;
+		private EditorGUIUtility.EditorLockTracker m_LockTracker = new EditorGUIUtility.EditorLockTracker();
 
 		[SerializeField]
 		private string m_CurrentSortingName = "";
@@ -97,6 +97,18 @@ namespace UnityEditor
 			get
 			{
 				return SceneHierarchyWindow.s_LastInteractedHierarchy;
+			}
+		}
+
+		internal bool isLocked
+		{
+			get
+			{
+				return this.m_LockTracker.isLocked;
+			}
+			set
+			{
+				this.m_LockTracker.isLocked = value;
 			}
 		}
 
@@ -364,7 +376,7 @@ namespace UnityEditor
 			base.OnEnable();
 			base.titleContent = base.GetLocalizedTitleContent();
 			SceneHierarchyWindow.s_SceneHierarchyWindow.Add(this);
-			EditorApplication.projectWindowChanged = (EditorApplication.CallbackFunction)Delegate.Combine(EditorApplication.projectWindowChanged, new EditorApplication.CallbackFunction(this.ReloadData));
+			EditorApplication.projectChanged += new Action(this.ReloadData);
 			EditorApplication.editorApplicationQuit = (UnityAction)Delegate.Combine(EditorApplication.editorApplicationQuit, new UnityAction(this.OnQuit));
 			EditorApplication.searchChanged = (EditorApplication.CallbackFunction)Delegate.Combine(EditorApplication.searchChanged, new EditorApplication.CallbackFunction(this.SearchChanged));
 			EditorApplication.projectWasLoaded = (UnityAction)Delegate.Combine(EditorApplication.projectWasLoaded, new UnityAction(this.OnProjectWasLoaded));
@@ -375,7 +387,7 @@ namespace UnityEditor
 
 		public override void OnDisable()
 		{
-			EditorApplication.projectWindowChanged = (EditorApplication.CallbackFunction)Delegate.Remove(EditorApplication.projectWindowChanged, new EditorApplication.CallbackFunction(this.ReloadData));
+			EditorApplication.projectChanged -= new Action(this.ReloadData);
 			EditorApplication.editorApplicationQuit = (UnityAction)Delegate.Remove(EditorApplication.editorApplicationQuit, new UnityAction(this.OnQuit));
 			EditorApplication.searchChanged = (EditorApplication.CallbackFunction)Delegate.Remove(EditorApplication.searchChanged, new EditorApplication.CallbackFunction(this.SearchChanged));
 			EditorApplication.projectWasLoaded = (UnityAction)Delegate.Remove(EditorApplication.projectWasLoaded, new UnityAction(this.OnProjectWasLoaded));
@@ -420,7 +432,7 @@ namespace UnityEditor
 			{
 				this.selectionSyncNeeded = false;
 				bool flag = EditorApplication.timeSinceStartup - this.m_LastUserInteractionTime < 0.2;
-				bool flag2 = !this.m_Locked || this.m_FrameOnSelectionSync || flag;
+				bool flag2 = !this.m_LockTracker.isLocked || this.m_FrameOnSelectionSync || flag;
 				bool animatedFraming = flag && flag2;
 				this.m_FrameOnSelectionSync = false;
 				this.treeView.SetSelection(Selection.instanceIDs, flag2, animatedFraming);
@@ -462,7 +474,6 @@ namespace UnityEditor
 		private void OnLostFocus()
 		{
 			this.treeView.EndNameEditing(true);
-			EditorGUI.EndEditingActiveTextField();
 		}
 
 		public static bool IsSceneHeaderInHierarchyWindow(Scene scene)
@@ -720,7 +731,7 @@ namespace UnityEditor
 		private void AfterCreateGameObjectMenuItemWasExecuted(string menuPath, UnityEngine.Object[] contextObjects, int userData)
 		{
 			EditorSceneManager.SetTargetSceneForNewGameObjects(0);
-			if (this.m_Locked)
+			if (this.m_LockTracker.isLocked)
 			{
 				this.m_FrameOnSelectionSync = true;
 			}
@@ -900,19 +911,19 @@ namespace UnityEditor
 
 		private void CreateGameObjectContextClick(GenericMenu menu, int contextClickedItemID)
 		{
-			menu.AddItem(EditorGUIUtility.TextContent("Copy"), false, new GenericMenu.MenuFunction(this.CopyGO));
-			menu.AddItem(EditorGUIUtility.TextContent("Paste"), false, new GenericMenu.MenuFunction(this.PasteGO));
+			menu.AddItem(EditorGUIUtility.TrTextContent("Copy", null, null), false, new GenericMenu.MenuFunction(this.CopyGO));
+			menu.AddItem(EditorGUIUtility.TrTextContent("Paste", null, null), false, new GenericMenu.MenuFunction(this.PasteGO));
 			menu.AddSeparator("");
 			if (!base.hasSearchFilter && this.m_TreeViewState.selectedIDs.Count == 1)
 			{
-				menu.AddItem(EditorGUIUtility.TextContent("Rename"), false, new GenericMenu.MenuFunction(this.RenameGO));
+				menu.AddItem(EditorGUIUtility.TrTextContent("Rename", null, null), false, new GenericMenu.MenuFunction(this.RenameGO));
 			}
 			else
 			{
-				menu.AddDisabledItem(EditorGUIUtility.TextContent("Rename"));
+				menu.AddDisabledItem(EditorGUIUtility.TrTextContent("Rename", null, null));
 			}
-			menu.AddItem(EditorGUIUtility.TextContent("Duplicate"), false, new GenericMenu.MenuFunction(this.DuplicateGO));
-			menu.AddItem(EditorGUIUtility.TextContent("Delete"), false, new GenericMenu.MenuFunction(this.DeleteGO));
+			menu.AddItem(EditorGUIUtility.TrTextContent("Duplicate", null, null), false, new GenericMenu.MenuFunction(this.DuplicateGO));
+			menu.AddItem(EditorGUIUtility.TrTextContent("Delete", null, null), false, new GenericMenu.MenuFunction(this.DeleteGO));
 			menu.AddSeparator("");
 			bool flag = false;
 			if (this.m_TreeViewState.selectedIDs.Count == 1)
@@ -923,7 +934,7 @@ namespace UnityEditor
 					UnityEngine.Object prefab = PrefabUtility.GetPrefabParent(gameObjectTreeViewItem.objectPPTR);
 					if (prefab != null)
 					{
-						menu.AddItem(EditorGUIUtility.TextContent("Select Prefab"), false, delegate
+						menu.AddItem(EditorGUIUtility.TrTextContent("Select Prefab", null, null), false, delegate
 						{
 							Selection.activeObject = prefab;
 							EditorGUIUtility.PingObject(prefab.GetInstanceID());
@@ -934,7 +945,7 @@ namespace UnityEditor
 			}
 			if (!flag)
 			{
-				menu.AddDisabledItem(EditorGUIUtility.TextContent("Select Prefab"));
+				menu.AddDisabledItem(EditorGUIUtility.TrTextContent("Select Prefab", null, null));
 			}
 			menu.AddSeparator("");
 			this.AddCreateGameObjectItemsToMenu(menu, (from t in Selection.transforms
@@ -954,7 +965,7 @@ namespace UnityEditor
 				bool flag = SceneManager.sceneCount > 1;
 				if (sceneByHandle.isLoaded)
 				{
-					GUIContent content = EditorGUIUtility.TextContent("Set Active Scene");
+					GUIContent content = EditorGUIUtility.TrTextContent("Set Active Scene", null, null);
 					if (flag && SceneManager.GetActiveScene() != sceneByHandle)
 					{
 						menu.AddItem(content, false, new GenericMenu.MenuFunction2(this.SetSceneActive), contextClickedItemID);
@@ -969,29 +980,29 @@ namespace UnityEditor
 				{
 					if (!EditorApplication.isPlaying)
 					{
-						menu.AddItem(EditorGUIUtility.TextContent("Save Scene"), false, new GenericMenu.MenuFunction2(this.SaveSelectedScenes), contextClickedItemID);
-						menu.AddItem(EditorGUIUtility.TextContent("Save Scene As"), false, new GenericMenu.MenuFunction2(this.SaveSceneAs), contextClickedItemID);
+						menu.AddItem(EditorGUIUtility.TrTextContent("Save Scene", null, null), false, new GenericMenu.MenuFunction2(this.SaveSelectedScenes), contextClickedItemID);
+						menu.AddItem(EditorGUIUtility.TrTextContent("Save Scene As", null, null), false, new GenericMenu.MenuFunction2(this.SaveSceneAs), contextClickedItemID);
 						if (flag)
 						{
-							menu.AddItem(EditorGUIUtility.TextContent("Save All"), false, new GenericMenu.MenuFunction2(this.SaveAllScenes), contextClickedItemID);
+							menu.AddItem(EditorGUIUtility.TrTextContent("Save All", null, null), false, new GenericMenu.MenuFunction2(this.SaveAllScenes), contextClickedItemID);
 						}
 						else
 						{
-							menu.AddDisabledItem(EditorGUIUtility.TextContent("Save All"));
+							menu.AddDisabledItem(EditorGUIUtility.TrTextContent("Save All", null, null));
 						}
 					}
 					else
 					{
-						menu.AddDisabledItem(EditorGUIUtility.TextContent("Save Scene"));
-						menu.AddDisabledItem(EditorGUIUtility.TextContent("Save Scene As"));
-						menu.AddDisabledItem(EditorGUIUtility.TextContent("Save All"));
+						menu.AddDisabledItem(EditorGUIUtility.TrTextContent("Save Scene", null, null));
+						menu.AddDisabledItem(EditorGUIUtility.TrTextContent("Save Scene As", null, null));
+						menu.AddDisabledItem(EditorGUIUtility.TrTextContent("Save All", null, null));
 					}
 					menu.AddSeparator("");
 				}
 				bool flag2 = EditorSceneManager.loadedSceneCount != this.GetNumLoadedScenesInSelection();
 				if (sceneByHandle.isLoaded)
 				{
-					GUIContent content2 = EditorGUIUtility.TextContent("Unload Scene");
+					GUIContent content2 = EditorGUIUtility.TrTextContent("Unload Scene", null, null);
 					bool flag3 = flag2 && !EditorApplication.isPlaying && !string.IsNullOrEmpty(sceneByHandle.path);
 					if (flag3)
 					{
@@ -1004,7 +1015,7 @@ namespace UnityEditor
 				}
 				else
 				{
-					GUIContent content3 = EditorGUIUtility.TextContent("Load Scene");
+					GUIContent content3 = EditorGUIUtility.TrTextContent("Load Scene", null, null);
 					bool flag4 = !EditorApplication.isPlaying;
 					if (flag4)
 					{
@@ -1015,7 +1026,7 @@ namespace UnityEditor
 						menu.AddDisabledItem(content3);
 					}
 				}
-				GUIContent content4 = EditorGUIUtility.TextContent("Remove Scene");
+				GUIContent content4 = EditorGUIUtility.TrTextContent("Remove Scene", null, null);
 				bool flag5 = this.GetSelectedScenes().Count == SceneManager.sceneCount;
 				bool flag6 = flag2 && !flag5 && !EditorApplication.isPlaying;
 				if (flag6)
@@ -1028,7 +1039,7 @@ namespace UnityEditor
 				}
 				if (sceneByHandle.isLoaded)
 				{
-					GUIContent content5 = EditorGUIUtility.TextContent("Discard changes");
+					GUIContent content5 = EditorGUIUtility.TrTextContent("Discard changes", null, null);
 					List<int> selectedScenes = this.GetSelectedScenes();
 					Scene[] modifiedScenes = this.GetModifiedScenes(selectedScenes);
 					bool flag7 = !EditorApplication.isPlaying && modifiedScenes.Length > 0;
@@ -1042,7 +1053,7 @@ namespace UnityEditor
 					}
 				}
 				menu.AddSeparator("");
-				GUIContent content6 = EditorGUIUtility.TextContent("Select Scene Asset");
+				GUIContent content6 = EditorGUIUtility.TrTextContent("Select Scene Asset", null, null);
 				if (!string.IsNullOrEmpty(sceneByHandle.path))
 				{
 					menu.AddItem(content6, false, new GenericMenu.MenuFunction2(this.SelectSceneAsset), contextClickedItemID);
@@ -1051,7 +1062,7 @@ namespace UnityEditor
 				{
 					menu.AddDisabledItem(content6);
 				}
-				GUIContent content7 = EditorGUIUtility.TextContent("Add New Scene");
+				GUIContent content7 = EditorGUIUtility.TrTextContent("Add New Scene", null, null);
 				if (!EditorApplication.isPlaying)
 				{
 					menu.AddItem(content7, false, new GenericMenu.MenuFunction2(this.AddNewScene), contextClickedItemID);
@@ -1091,22 +1102,6 @@ namespace UnityEditor
 			{
 				int num = array[i];
 				if (SceneHierarchyWindow.IsSceneHeaderInHierarchyWindow(EditorSceneManager.GetSceneByHandle(num)))
-				{
-					list.Add(num);
-				}
-			}
-			return list;
-		}
-
-		private List<int> GetSelectedGameObjects()
-		{
-			List<int> list = new List<int>();
-			int[] selection = this.m_TreeView.GetSelection();
-			int[] array = selection;
-			for (int i = 0; i < array.Length; i++)
-			{
-				int num = array[i];
-				if (!SceneHierarchyWindow.IsSceneHeaderInHierarchyWindow(EditorSceneManager.GetSceneByHandle(num)))
 				{
 					list.Add(num);
 				}
@@ -1225,12 +1220,12 @@ namespace UnityEditor
 
 		private bool UserAllowedDiscardingChanges(Scene[] modifiedScenes)
 		{
-			string localizedString = LocalizationDatabase.GetLocalizedString("Discard Changes");
-			string text = LocalizationDatabase.GetLocalizedString("Are you sure you want to discard the changes in the following scenes:\n\n   {0}\n\nYour changes will be lost.");
+			string title = "Discard Changes";
+			string text = "Are you sure you want to discard the changes in the following scenes:\n\n   {0}\n\nYour changes will be lost.";
 			string arg = string.Join("\n   ", (from scene in modifiedScenes
 			select scene.name).ToArray<string>());
 			text = string.Format(text, arg);
-			return EditorUtility.DisplayDialog(localizedString, text, LocalizationDatabase.GetLocalizedString("OK"), LocalizationDatabase.GetLocalizedString("Cancel"));
+			return EditorUtility.DisplayDialog(title, text, "OK", "Cancel");
 		}
 
 		private void DiscardChangesInSelectedScenes(object userData)
@@ -1289,8 +1284,8 @@ namespace UnityEditor
 			Scene sceneByPath = SceneManager.GetSceneByPath("");
 			if (sceneByPath.IsValid())
 			{
-				string text = EditorGUIUtility.TextContent("Save Untitled Scene").text;
-				string text2 = EditorGUIUtility.TextContent("Existing Untitled scene needs to be saved before creating a new scene. Only one untitled scene is supported at a time.").text;
+				string text = EditorGUIUtility.TrTextContent("Save Untitled Scene", null, null).text;
+				string text2 = EditorGUIUtility.TrTextContent("Existing Untitled scene needs to be saved before creating a new scene. Only one untitled scene is supported at a time.", null, null).text;
 				if (!EditorUtility.DisplayDialog(text, text2, "Save", "Cancel"))
 				{
 					return;
@@ -1312,10 +1307,9 @@ namespace UnityEditor
 		private void SelectSceneAsset(object userData)
 		{
 			int handle = (int)userData;
-			string guid = AssetDatabase.AssetPathToGUID(EditorSceneManager.GetSceneByHandle(handle).path);
-			int instanceIDFromGUID = AssetDatabase.GetInstanceIDFromGUID(guid);
-			Selection.activeInstanceID = instanceIDFromGUID;
-			EditorGUIUtility.PingObject(instanceIDFromGUID);
+			UnityEngine.Object @object = AssetDatabase.LoadMainAssetAtPath(EditorSceneManager.GetSceneByHandle(handle).path);
+			Selection.activeObject = @object;
+			EditorGUIUtility.PingObject(@object);
 		}
 
 		private void SelectAll()
@@ -1332,15 +1326,16 @@ namespace UnityEditor
 
 		public virtual void AddItemsToMenu(GenericMenu menu)
 		{
-			if (Unsupported.IsDeveloperBuild())
+			this.m_LockTracker.AddItemsToMenu(menu, false);
+			if (Unsupported.IsDeveloperMode())
 			{
-				GUIContent arg_35_1 = new GUIContent("DEVELOPER/Toggle DebugMode");
-				bool arg_35_2 = false;
+				GUIContent arg_44_1 = EditorGUIUtility.TrTextContent("DEVELOPER/Toggle DebugMode", null, null);
+				bool arg_44_2 = false;
 				if (SceneHierarchyWindow.<>f__mg$cache0 == null)
 				{
 					SceneHierarchyWindow.<>f__mg$cache0 = new GenericMenu.MenuFunction(SceneHierarchyWindow.ToggleDebugMode);
 				}
-				menu.AddItem(arg_35_1, arg_35_2, SceneHierarchyWindow.<>f__mg$cache0);
+				menu.AddItem(arg_44_1, arg_44_2, SceneHierarchyWindow.<>f__mg$cache0);
 			}
 		}
 
@@ -1370,7 +1365,7 @@ namespace UnityEditor
 			{
 				SceneHierarchyWindow.s_Styles = new SceneHierarchyWindow.Styles();
 			}
-			this.m_Locked = GUI.Toggle(r, this.m_Locked, GUIContent.none, SceneHierarchyWindow.s_Styles.lockButton);
+			this.m_LockTracker.ShowButton(r, SceneHierarchyWindow.s_Styles.lockButton, false);
 		}
 	}
 }

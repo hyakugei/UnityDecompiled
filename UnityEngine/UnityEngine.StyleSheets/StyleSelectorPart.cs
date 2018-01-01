@@ -1,7 +1,12 @@
 using System;
+using UnityEngine.Bindings;
 
 namespace UnityEngine.StyleSheets
 {
+	[VisibleToOtherModules(new string[]
+	{
+		"UnityEngine.UIElementsModule"
+	})]
 	[Serializable]
 	internal struct StyleSelectorPart
 	{
@@ -10,6 +15,12 @@ namespace UnityEngine.StyleSheets
 
 		[SerializeField]
 		private StyleSelectorType m_Type;
+
+		[VisibleToOtherModules(new string[]
+		{
+			"UnityEngine.UIElementsModule"
+		})]
+		internal object tempData;
 
 		public string value
 		{
@@ -29,6 +40,10 @@ namespace UnityEngine.StyleSheets
 			{
 				return this.m_Type;
 			}
+			[VisibleToOtherModules(new string[]
+			{
+				"UnityEngine.UIElementsModule"
+			})]
 			internal set
 			{
 				this.m_Type = value;
@@ -38,6 +53,50 @@ namespace UnityEngine.StyleSheets
 		public override string ToString()
 		{
 			return string.Format("[StyleSelectorPart: value={0}, type={1}]", this.value, this.type);
+		}
+
+		public static StyleSelectorPart CreateClass(string className)
+		{
+			return new StyleSelectorPart
+			{
+				m_Type = StyleSelectorType.Class,
+				m_Value = className
+			};
+		}
+
+		public static StyleSelectorPart CreateId(string Id)
+		{
+			return new StyleSelectorPart
+			{
+				m_Type = StyleSelectorType.ID,
+				m_Value = Id
+			};
+		}
+
+		public static StyleSelectorPart CreateType(Type t)
+		{
+			return new StyleSelectorPart
+			{
+				m_Type = StyleSelectorType.Type,
+				m_Value = t.Name
+			};
+		}
+
+		public static StyleSelectorPart CreatePredicate(object predicate)
+		{
+			return new StyleSelectorPart
+			{
+				m_Type = StyleSelectorType.Predicate,
+				tempData = predicate
+			};
+		}
+
+		public static StyleSelectorPart CreateWildCard()
+		{
+			return new StyleSelectorPart
+			{
+				m_Type = StyleSelectorType.Wildcard
+			};
 		}
 	}
 }

@@ -10,6 +10,8 @@ namespace UnityEditor.Scripting.ScriptCompilation
 
 		public string[] references;
 
+		public string[] optionalUnityReferences;
+
 		public string[] includePlatforms;
 
 		public string[] excludePlatforms;
@@ -30,6 +32,11 @@ namespace UnityEditor.Scripting.ScriptCompilation
 				throw new Exception("Both 'excludePlatforms' and 'includePlatforms' are set.");
 			}
 			return customScriptAssemblyData;
+		}
+
+		public static string ToJson(CustomScriptAssemblyData data)
+		{
+			return JsonUtility.ToJson(data, true);
 		}
 	}
 }

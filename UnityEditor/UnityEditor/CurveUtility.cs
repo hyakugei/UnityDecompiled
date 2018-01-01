@@ -9,8 +9,6 @@ namespace UnityEditor
 
 		private static Texture2D iconCurve;
 
-		private static Texture2D iconNone;
-
 		public static int GetPathAndTypeID(string path, Type type)
 		{
 			return path.GetHashCode() * 27 ^ type.GetHashCode();
@@ -84,7 +82,8 @@ namespace UnityEditor
 				{
 					flag = true;
 				}
-				if (AnimationUtility.GetKeyRightTangentMode(curve[keyIndex - 1]) == AnimationUtility.TangentMode.ClampedAuto)
+				AnimationUtility.TangentMode keyRightTangentMode = AnimationUtility.GetKeyRightTangentMode(curve[keyIndex - 1]);
+				if (keyRightTangentMode == AnimationUtility.TangentMode.ClampedAuto || keyRightTangentMode == AnimationUtility.TangentMode.Auto)
 				{
 					flag2 = true;
 				}
@@ -95,7 +94,8 @@ namespace UnityEditor
 				{
 					flag = true;
 				}
-				if (AnimationUtility.GetKeyLeftTangentMode(curve[keyIndex + 1]) == AnimationUtility.TangentMode.ClampedAuto)
+				AnimationUtility.TangentMode keyLeftTangentMode = AnimationUtility.GetKeyLeftTangentMode(curve[keyIndex + 1]);
+				if (keyLeftTangentMode == AnimationUtility.TangentMode.ClampedAuto || keyLeftTangentMode == AnimationUtility.TangentMode.Auto)
 				{
 					flag2 = true;
 				}
@@ -110,6 +110,14 @@ namespace UnityEditor
 				if (keyIndex < curve.length - 1)
 				{
 					AnimationUtility.SetKeyRightTangentMode(ref key, AnimationUtility.GetKeyLeftTangentMode(curve[keyIndex + 1]));
+				}
+				if (keyIndex == 0)
+				{
+					AnimationUtility.SetKeyLeftTangentMode(ref key, AnimationUtility.GetKeyRightTangentMode(key));
+				}
+				if (keyIndex == curve.length - 1)
+				{
+					AnimationUtility.SetKeyRightTangentMode(ref key, AnimationUtility.GetKeyLeftTangentMode(key));
 				}
 			}
 			else

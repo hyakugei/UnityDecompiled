@@ -125,9 +125,13 @@ namespace UnityEditor
 			get;
 		}
 
+		public HierarchyProperty(HierarchyType hierarchyType) : this(hierarchyType, true)
+		{
+		}
+
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern HierarchyProperty(HierarchyType hierarchytType);
+		public extern HierarchyProperty(HierarchyType hierarchyType, bool forceImport);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]

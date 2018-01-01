@@ -4,21 +4,10 @@ namespace UnityEngine.Experimental.UIElements
 {
 	public interface IEventHandler
 	{
-		IPanel panel
-		{
-			get;
-		}
+		void HandleEvent(EventBase evt);
 
-		EventPhase phaseInterest
-		{
-			get;
-			set;
-		}
+		bool HasCaptureHandlers();
 
-		EventPropagation HandleEvent(Event evt, VisualElement finalTarget);
-
-		void OnLostCapture();
-
-		void OnLostKeyboardFocus();
+		bool HasBubbleHandlers();
 	}
 }

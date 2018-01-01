@@ -15,31 +15,19 @@ namespace UnityEditor.U2D.Interface
 			Undo.undoRedoPerformed = (Undo.UndoRedoCallback)Delegate.Remove(Undo.undoRedoPerformed, undoCallback);
 		}
 
-		public void RegisterCompleteObjectUndo(IUndoableObject obj, string undoText)
+		public void RegisterCompleteObjectUndo(ScriptableObject so, string undoText)
 		{
-			ScriptableObject scriptableObject = this.CheckUndoObjectType(obj);
-			if (scriptableObject != null)
+			if (so != null)
 			{
-				Undo.RegisterCompleteObjectUndo(scriptableObject, undoText);
+				Undo.RegisterCompleteObjectUndo(so, undoText);
 			}
 		}
 
-		private ScriptableObject CheckUndoObjectType(IUndoableObject obj)
+		public void ClearUndo(ScriptableObject so)
 		{
-			ScriptableObject scriptableObject = obj as ScriptableObject;
-			if (scriptableObject == null)
+			if (so != null)
 			{
-				Debug.LogError("Register Undo object is not a ScriptableObject");
-			}
-			return scriptableObject;
-		}
-
-		public void ClearUndo(IUndoableObject obj)
-		{
-			ScriptableObject scriptableObject = this.CheckUndoObjectType(obj);
-			if (scriptableObject != null)
-			{
-				Undo.ClearUndo(scriptableObject);
+				Undo.ClearUndo(so);
 			}
 		}
 	}

@@ -1,40 +1,19 @@
 using System;
-using UnityEngine.Scripting;
 
 namespace UnityEngine.VR
 {
-	[UsedByNativeCode]
+	[Obsolete("VRNodeState has been moved and renamed.  Use UnityEngine.XR.XRNodeState instead (UnityUpgradable) -> UnityEngine.XR.XRNodeState", true)]
 	public struct VRNodeState
 	{
-		private VRNode m_Type;
-
-		private AvailableTrackingData m_AvailableFields;
-
-		private Vector3 m_Position;
-
-		private Quaternion m_Rotation;
-
-		private Vector3 m_Velocity;
-
-		private Quaternion m_AngularVelocity;
-
-		private Vector3 m_Acceleration;
-
-		private Quaternion m_AngularAcceleration;
-
-		private int m_Tracked;
-
-		private ulong m_UniqueID;
-
 		public ulong uniqueID
 		{
 			get
 			{
-				return this.m_UniqueID;
+				throw new NotSupportedException("VRNodeState has been moved and renamed.  Use UnityEngine.XR.XRNodeState instead.");
 			}
 			set
 			{
-				this.m_UniqueID = value;
+				throw new NotSupportedException("VRNodeState has been moved and renamed.  Use UnityEngine.XR.XRNodeState instead.");
 			}
 		}
 
@@ -42,11 +21,11 @@ namespace UnityEngine.VR
 		{
 			get
 			{
-				return this.m_Type;
+				throw new NotSupportedException("VRNodeState has been moved and renamed.  Use UnityEngine.XR.XRNodeState instead.");
 			}
 			set
 			{
-				this.m_Type = value;
+				throw new NotSupportedException("VRNodeState has been moved and renamed.  Use UnityEngine.XR.XRNodeState instead.");
 			}
 		}
 
@@ -54,11 +33,11 @@ namespace UnityEngine.VR
 		{
 			get
 			{
-				return this.m_Tracked == 1;
+				throw new NotSupportedException("VRNodeState has been moved and renamed.  Use UnityEngine.XR.XRNodeState instead.");
 			}
 			set
 			{
-				this.m_Tracked = ((!value) ? 0 : 1);
+				throw new NotSupportedException("VRNodeState has been moved and renamed.  Use UnityEngine.XR.XRNodeState instead.");
 			}
 		}
 
@@ -66,8 +45,7 @@ namespace UnityEngine.VR
 		{
 			set
 			{
-				this.m_Position = value;
-				this.m_AvailableFields |= AvailableTrackingData.PositionAvailable;
+				throw new NotSupportedException("VRNodeState has been moved and renamed.  Use UnityEngine.XR.XRNodeState instead.");
 			}
 		}
 
@@ -75,8 +53,7 @@ namespace UnityEngine.VR
 		{
 			set
 			{
-				this.m_Rotation = value;
-				this.m_AvailableFields |= AvailableTrackingData.RotationAvailable;
+				throw new NotSupportedException("VRNodeState has been moved and renamed.  Use UnityEngine.XR.XRNodeState instead.");
 			}
 		}
 
@@ -84,8 +61,15 @@ namespace UnityEngine.VR
 		{
 			set
 			{
-				this.m_Velocity = value;
-				this.m_AvailableFields |= AvailableTrackingData.VelocityAvailable;
+				throw new NotSupportedException("VRNodeState has been moved and renamed.  Use UnityEngine.XR.XRNodeState instead.");
+			}
+		}
+
+		public Vector3 angularVelocity
+		{
+			set
+			{
+				throw new NotSupportedException("VRNodeState has been moved and renamed.  Use UnityEngine.XR.XRNodeState instead.");
 			}
 		}
 
@@ -93,45 +77,52 @@ namespace UnityEngine.VR
 		{
 			set
 			{
-				this.m_Acceleration = value;
-				this.m_AvailableFields |= AvailableTrackingData.AccelerationAvailable;
+				throw new NotSupportedException("VRNodeState has been moved and renamed.  Use UnityEngine.XR.XRNodeState instead.");
+			}
+		}
+
+		public Vector3 angularAcceleration
+		{
+			set
+			{
+				throw new NotSupportedException("VRNodeState has been moved and renamed.  Use UnityEngine.XR.XRNodeState instead.");
 			}
 		}
 
 		public bool TryGetPosition(out Vector3 position)
 		{
-			return this.TryGet<Vector3>(this.m_Position, AvailableTrackingData.PositionAvailable, out position);
+			position = default(Vector3);
+			throw new NotSupportedException("VRNodeState has been moved and renamed.  Use UnityEngine.XR.XRNodeState instead.");
 		}
 
 		public bool TryGetRotation(out Quaternion rotation)
 		{
-			return this.TryGet<Quaternion>(this.m_Rotation, AvailableTrackingData.RotationAvailable, out rotation);
+			rotation = default(Quaternion);
+			throw new NotSupportedException("VRNodeState has been moved and renamed.  Use UnityEngine.XR.XRNodeState instead.");
 		}
 
 		public bool TryGetVelocity(out Vector3 velocity)
 		{
-			return this.TryGet<Vector3>(this.m_Velocity, AvailableTrackingData.VelocityAvailable, out velocity);
+			velocity = default(Vector3);
+			throw new NotSupportedException("VRNodeState has been moved and renamed.  Use UnityEngine.XR.XRNodeState instead.");
+		}
+
+		public bool TryGetAngularVelocity(out Vector3 angularVelocity)
+		{
+			angularVelocity = default(Vector3);
+			throw new NotSupportedException("VRNodeState has been moved and renamed.  Use UnityEngine.XR.XRNodeState instead.");
 		}
 
 		public bool TryGetAcceleration(out Vector3 acceleration)
 		{
-			return this.TryGet<Vector3>(this.m_Acceleration, AvailableTrackingData.AccelerationAvailable, out acceleration);
+			acceleration = default(Vector3);
+			throw new NotSupportedException("VRNodeState has been moved and renamed.  Use UnityEngine.XR.XRNodeState instead.");
 		}
 
-		private bool TryGet<T>(T inValue, AvailableTrackingData availabilityFlag, out T outValue) where T : new()
+		public bool TryGetAngularAcceleration(out Vector3 angularAcceleration)
 		{
-			bool result;
-			if (this.m_Tracked == 1 && (this.m_AvailableFields & availabilityFlag) > AvailableTrackingData.None)
-			{
-				outValue = inValue;
-				result = true;
-			}
-			else
-			{
-				outValue = Activator.CreateInstance<T>();
-				result = false;
-			}
-			return result;
+			angularAcceleration = default(Vector3);
+			throw new NotSupportedException("VRNodeState has been moved and renamed.  Use UnityEngine.XR.XRNodeState instead.");
 		}
 	}
 }

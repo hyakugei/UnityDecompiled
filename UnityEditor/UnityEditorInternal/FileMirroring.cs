@@ -152,7 +152,18 @@ namespace UnityEditorInternal
 
 		public static bool CanSkipCopy(string from, string to)
 		{
-			return File.Exists(to) && FileMirroring.AreFilesIdentical(from, to);
+			bool flag = !File.Exists(from);
+			bool flag2 = !File.Exists(to);
+			bool result;
+			if (flag || flag2)
+			{
+				result = (flag && flag2);
+			}
+			else
+			{
+				result = FileMirroring.AreFilesIdentical(from, to);
+			}
+			return result;
 		}
 
 		private static bool AreFilesIdentical(string filePath1, string filePath2)

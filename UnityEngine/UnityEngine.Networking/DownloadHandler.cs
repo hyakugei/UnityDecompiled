@@ -2,6 +2,7 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
+using UnityEngine.Bindings;
 using UnityEngine.Scripting;
 
 namespace UnityEngine.Networking
@@ -9,14 +10,16 @@ namespace UnityEngine.Networking
 	[StructLayout(LayoutKind.Sequential)]
 	public class DownloadHandler : IDisposable
 	{
+		[VisibleToOtherModules]
 		[NonSerialized]
 		internal IntPtr m_Ptr;
 
-		public extern bool isDone
+		public bool isDone
 		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
+			get
+			{
+				return this.IsDone();
+			}
 		}
 
 		public byte[] data
@@ -35,45 +38,30 @@ namespace UnityEngine.Networking
 			}
 		}
 
+		[VisibleToOtherModules]
 		internal DownloadHandler()
 		{
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern void InternalCreateBuffer();
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern void InternalCreateScript();
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern void InternalCreateAssetBundle(string url, uint crc);
-
-		internal void InternalCreateAssetBundleCached(string url, string name, Hash128 hash, uint crc)
-		{
-			DownloadHandler.INTERNAL_CALL_InternalCreateAssetBundleCached(this, url, name, ref hash, crc);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_InternalCreateAssetBundleCached(DownloadHandler self, string url, string name, ref Hash128 hash, uint crc);
-
-		[GeneratedByOldBindingsGenerator, ThreadAndSerializationSafe]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void InternalDestroy();
+		private extern void Release();
 
 		~DownloadHandler()
 		{
-			this.InternalDestroy();
+			this.Dispose();
 		}
 
 		public void Dispose()
 		{
-			this.InternalDestroy();
-			GC.SuppressFinalize(this);
+			if (this.m_Ptr != IntPtr.Zero)
+			{
+				this.Release();
+				this.m_Ptr = IntPtr.Zero;
+			}
 		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern bool IsDone();
 
 		protected virtual byte[] GetData()
 		{
@@ -133,7 +121,6 @@ namespace UnityEngine.Networking
 			return result;
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern string GetContentType();
 
@@ -175,5 +162,9 @@ namespace UnityEngine.Networking
 			}
 			return (T)((object)www.downloadHandler);
 		}
+
+		[VisibleToOtherModules]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern byte[] InternalGetByteArray(DownloadHandler dh);
 	}
 }

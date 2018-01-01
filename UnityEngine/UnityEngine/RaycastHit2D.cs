@@ -16,7 +16,7 @@ namespace UnityEngine
 
 		private float m_Fraction;
 
-		private Collider2D m_Collider;
+		private int m_Collider;
 
 		public Vector2 centroid
 		{
@@ -82,7 +82,7 @@ namespace UnityEngine
 		{
 			get
 			{
-				return this.m_Collider;
+				return Object.FindObjectFromInstanceID(this.m_Collider) as Collider2D;
 			}
 		}
 

@@ -124,13 +124,13 @@ namespace UnityEditor.Scripting.Compilers
 			return text;
 		}
 
-		public static IEnumerable<Version> GetInstalledSDKVersions()
+		public static IEnumerable<UWPSDK> GetInstalledSDKs()
 		{
 			string windowsKit = UWPReferences.GetWindowsKit10();
-			IEnumerable<Version> result;
+			IEnumerable<UWPSDK> result;
 			if (string.IsNullOrEmpty(windowsKit))
 			{
-				result = new Version[0];
+				result = Enumerable.Empty<UWPSDK>();
 			}
 			else
 			{
@@ -142,15 +142,15 @@ namespace UnityEditor.Scripting.Compilers
 				});
 				if (!Directory.Exists(path))
 				{
-					result = new Version[0];
+					result = Enumerable.Empty<UWPSDK>();
 				}
 				else
 				{
+					List<UWPSDK> list = new List<UWPSDK>();
 					string[] files = Directory.GetFiles(path, "*", SearchOption.AllDirectories);
 					IEnumerable<string> enumerable = from f in files
 					where string.Equals("Platform.xml", Path.GetFileName(f), StringComparison.OrdinalIgnoreCase)
 					select f;
-					List<Version> list = new List<Version>();
 					foreach (string current in enumerable)
 					{
 						XDocument xDocument;
@@ -162,22 +162,38 @@ namespace UnityEditor.Scripting.Compilers
 						{
 							continue;
 						}
-						foreach (XNode current2 in xDocument.Nodes())
+						foreach (XElement current2 in xDocument.Elements("ApplicationPlatform"))
 						{
-							XElement xElement = current2 as XElement;
-							if (xElement != null)
+							Version version;
+							if (UWPReferences.FindVersionInNode(current2, out version))
 							{
-								Version item;
-								if (UWPReferences.FindVersionInNode(xElement, out item))
-								{
-									list.Add(item);
-								}
+								string s = (from e in current2.Elements("MinimumVisualStudioVersion")
+								select e.Value).FirstOrDefault<string>();
+								list.Add(new UWPSDK(version, UWPReferences.TryParseVersion(s)));
 							}
 						}
 					}
 					result = list;
 				}
 			}
+			return result;
+		}
+
+		private static Version TryParseVersion(string s)
+		{
+			Version result;
+			if (!string.IsNullOrEmpty(s))
+			{
+				try
+				{
+					result = new Version(s);
+					return result;
+				}
+				catch
+				{
+				}
+			}
+			result = null;
 			return result;
 		}
 
@@ -188,14 +204,11 @@ namespace UnityEditor.Scripting.Compilers
 			{
 				if (string.Equals(xAttribute.Name.LocalName, "version", StringComparison.OrdinalIgnoreCase))
 				{
-					try
+					version = UWPReferences.TryParseVersion(xAttribute.Value);
+					if (version != null)
 					{
-						version = new Version(xAttribute.Value);
 						result = true;
 						return result;
-					}
-					catch
-					{
 					}
 				}
 			}

@@ -4,7 +4,7 @@ using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
-	[RequiredByNativeCode]
+	[RequiredByNativeCode(Optional = true)]
 	public struct NetworkViewID
 	{
 		private int a;

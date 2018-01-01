@@ -6,7 +6,7 @@ using UnityEngine;
 namespace UnityEditor
 {
 	[CustomEditor(typeof(TagManager))]
-	internal class TagManagerInspector : Editor
+	internal class TagManagerInspector : ProjectSettingsBaseEditor
 	{
 		internal enum InitialExpansionState
 		{

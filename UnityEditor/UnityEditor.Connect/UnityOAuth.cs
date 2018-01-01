@@ -1,5 +1,4 @@
 using System;
-using System.Runtime.InteropServices;
 using System.Threading;
 using UnityEditorInternal;
 
@@ -7,7 +6,6 @@ namespace UnityEditor.Connect
 {
 	public static class UnityOAuth
 	{
-		[StructLayout(LayoutKind.Sequential, Size = 1)]
 		public struct AuthCodeResponse
 		{
 			public string AuthCode
@@ -112,6 +110,22 @@ namespace UnityEditor.Connect
 							else if (jSONValue.ContainsKey("message"))
 							{
 								obj.Exception = new InvalidOperationException(string.Format("Error from server: {0}", jSONValue["message"].AsString()));
+							}
+							else if (jSONValue.ContainsKey("location") && !jSONValue["location"].IsNull())
+							{
+								UnityConnectConsentView unityConnectConsentView = UnityConnectConsentView.ShowUnityConnectConsentView(jSONValue["location"].AsString());
+								if (!string.IsNullOrEmpty(unityConnectConsentView.Code))
+								{
+									obj.AuthCode = unityConnectConsentView.Code;
+								}
+								else if (!string.IsNullOrEmpty(unityConnectConsentView.Error))
+								{
+									obj.Exception = new InvalidOperationException(string.Format("Error from server: {0}", unityConnectConsentView.Error));
+								}
+								else
+								{
+									obj.Exception = new InvalidOperationException("Consent Windows was closed unexpected.");
+								}
 							}
 							else
 							{

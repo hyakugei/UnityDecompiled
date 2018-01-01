@@ -8,6 +8,7 @@ namespace UnityEditor
 		NET_2_0_Subset,
 		NET_4_6,
 		NET_Web,
-		NET_Micro
+		NET_Micro,
+		NET_Standard_2_0
 	}
 }

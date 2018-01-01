@@ -7,6 +7,14 @@ namespace UnityEngine
 {
 	public sealed class TouchScreenKeyboard
 	{
+		public enum Status
+		{
+			Visible,
+			Done,
+			Canceled,
+			LostFocus
+		}
+
 		[NonSerialized]
 		internal IntPtr m_Ptr;
 
@@ -25,32 +33,28 @@ namespace UnityEngine
 					return result;
 				case RuntimePlatform.WP8Player:
 				case RuntimePlatform.BB10Player:
-				case RuntimePlatform.PSP2:
-				case RuntimePlatform.PS4:
-					IL_34:
+					IL_28:
 					switch (platform)
 					{
-					case RuntimePlatform.WiiU:
-					case RuntimePlatform.tvOS:
-					case RuntimePlatform.Switch:
-						goto IL_66;
-					default:
-						switch (platform)
+					case RuntimePlatform.IPhonePlayer:
+					case RuntimePlatform.Android:
+						goto IL_55;
+					case RuntimePlatform.PS3:
+					case RuntimePlatform.XBOX360:
+						IL_40:
+						if (platform != RuntimePlatform.tvOS && platform != RuntimePlatform.Switch)
 						{
-						case RuntimePlatform.IPhonePlayer:
-						case RuntimePlatform.Android:
-							goto IL_66;
+							result = false;
+							return result;
 						}
-						result = false;
-						return result;
+						goto IL_55;
 					}
-					break;
+					goto IL_40;
 				case RuntimePlatform.TizenPlayer:
-				case RuntimePlatform.PSM:
-					goto IL_66;
+					goto IL_55;
 				}
-				goto IL_34;
-				IL_66:
+				goto IL_28;
+				IL_55:
 				result = true;
 				return result;
 			}
@@ -86,6 +90,7 @@ namespace UnityEngine
 			set;
 		}
 
+		[Obsolete("property done is deprecated, use status instead")]
 		public extern bool done
 		{
 			[GeneratedByOldBindingsGenerator]
@@ -93,7 +98,15 @@ namespace UnityEngine
 			get;
 		}
 
+		[Obsolete("property wasCanceled is deprecated, use status instead.")]
 		public extern bool wasCanceled
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+		}
+
+		public extern TouchScreenKeyboard.Status status
 		{
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
@@ -107,6 +120,13 @@ namespace UnityEngine
 			get;
 		}
 
+		public extern bool canSetSelection
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+		}
+
 		public RangeInt selection
 		{
 			get
@@ -114,6 +134,10 @@ namespace UnityEngine
 				RangeInt result;
 				this.GetSelectionInternal(out result.start, out result.length);
 				return result;
+			}
+			set
+			{
+				this.SetSelectionInternal(value.start, value.length);
 			}
 		}
 
@@ -151,7 +175,7 @@ namespace UnityEngine
 			get;
 		}
 
-		public TouchScreenKeyboard(string text, TouchScreenKeyboardType keyboardType, bool autocorrection, bool multiline, bool secure, bool alert, string textPlaceholder)
+		public TouchScreenKeyboard(string text, TouchScreenKeyboardType keyboardType, bool autocorrection, bool multiline, bool secure, bool alert, string textPlaceholder, int characterLimit)
 		{
 			TouchScreenKeyboard_InternalConstructorHelperArguments touchScreenKeyboard_InternalConstructorHelperArguments = default(TouchScreenKeyboard_InternalConstructorHelperArguments);
 			touchScreenKeyboard_InternalConstructorHelperArguments.keyboardType = Convert.ToUInt32(keyboardType);
@@ -159,6 +183,7 @@ namespace UnityEngine
 			touchScreenKeyboard_InternalConstructorHelperArguments.multiline = Convert.ToUInt32(multiline);
 			touchScreenKeyboard_InternalConstructorHelperArguments.secure = Convert.ToUInt32(secure);
 			touchScreenKeyboard_InternalConstructorHelperArguments.alert = Convert.ToUInt32(alert);
+			touchScreenKeyboard_InternalConstructorHelperArguments.characterLimit = characterLimit;
 			this.TouchScreenKeyboard_InternalConstructorHelper(ref touchScreenKeyboard_InternalConstructorHelperArguments, text, textPlaceholder);
 		}
 
@@ -176,70 +201,87 @@ namespace UnityEngine
 		private extern void TouchScreenKeyboard_InternalConstructorHelper(ref TouchScreenKeyboard_InternalConstructorHelperArguments arguments, string text, string textPlaceholder);
 
 		[ExcludeFromDocs]
+		public static TouchScreenKeyboard Open(string text, TouchScreenKeyboardType keyboardType, bool autocorrection, bool multiline, bool secure, bool alert, string textPlaceholder)
+		{
+			int characterLimit = 0;
+			return TouchScreenKeyboard.Open(text, keyboardType, autocorrection, multiline, secure, alert, textPlaceholder, characterLimit);
+		}
+
+		[ExcludeFromDocs]
 		public static TouchScreenKeyboard Open(string text, TouchScreenKeyboardType keyboardType, bool autocorrection, bool multiline, bool secure, bool alert)
 		{
+			int characterLimit = 0;
 			string textPlaceholder = "";
-			return TouchScreenKeyboard.Open(text, keyboardType, autocorrection, multiline, secure, alert, textPlaceholder);
+			return TouchScreenKeyboard.Open(text, keyboardType, autocorrection, multiline, secure, alert, textPlaceholder, characterLimit);
 		}
 
 		[ExcludeFromDocs]
 		public static TouchScreenKeyboard Open(string text, TouchScreenKeyboardType keyboardType, bool autocorrection, bool multiline, bool secure)
 		{
+			int characterLimit = 0;
 			string textPlaceholder = "";
 			bool alert = false;
-			return TouchScreenKeyboard.Open(text, keyboardType, autocorrection, multiline, secure, alert, textPlaceholder);
+			return TouchScreenKeyboard.Open(text, keyboardType, autocorrection, multiline, secure, alert, textPlaceholder, characterLimit);
 		}
 
 		[ExcludeFromDocs]
 		public static TouchScreenKeyboard Open(string text, TouchScreenKeyboardType keyboardType, bool autocorrection, bool multiline)
 		{
+			int characterLimit = 0;
 			string textPlaceholder = "";
 			bool alert = false;
 			bool secure = false;
-			return TouchScreenKeyboard.Open(text, keyboardType, autocorrection, multiline, secure, alert, textPlaceholder);
+			return TouchScreenKeyboard.Open(text, keyboardType, autocorrection, multiline, secure, alert, textPlaceholder, characterLimit);
 		}
 
 		[ExcludeFromDocs]
 		public static TouchScreenKeyboard Open(string text, TouchScreenKeyboardType keyboardType, bool autocorrection)
 		{
+			int characterLimit = 0;
 			string textPlaceholder = "";
 			bool alert = false;
 			bool secure = false;
 			bool multiline = false;
-			return TouchScreenKeyboard.Open(text, keyboardType, autocorrection, multiline, secure, alert, textPlaceholder);
+			return TouchScreenKeyboard.Open(text, keyboardType, autocorrection, multiline, secure, alert, textPlaceholder, characterLimit);
 		}
 
 		[ExcludeFromDocs]
 		public static TouchScreenKeyboard Open(string text, TouchScreenKeyboardType keyboardType)
 		{
+			int characterLimit = 0;
 			string textPlaceholder = "";
 			bool alert = false;
 			bool secure = false;
 			bool multiline = false;
 			bool autocorrection = true;
-			return TouchScreenKeyboard.Open(text, keyboardType, autocorrection, multiline, secure, alert, textPlaceholder);
+			return TouchScreenKeyboard.Open(text, keyboardType, autocorrection, multiline, secure, alert, textPlaceholder, characterLimit);
 		}
 
 		[ExcludeFromDocs]
 		public static TouchScreenKeyboard Open(string text)
 		{
+			int characterLimit = 0;
 			string textPlaceholder = "";
 			bool alert = false;
 			bool secure = false;
 			bool multiline = false;
 			bool autocorrection = true;
 			TouchScreenKeyboardType keyboardType = TouchScreenKeyboardType.Default;
-			return TouchScreenKeyboard.Open(text, keyboardType, autocorrection, multiline, secure, alert, textPlaceholder);
+			return TouchScreenKeyboard.Open(text, keyboardType, autocorrection, multiline, secure, alert, textPlaceholder, characterLimit);
 		}
 
-		public static TouchScreenKeyboard Open(string text, [DefaultValue("TouchScreenKeyboardType.Default")] TouchScreenKeyboardType keyboardType, [DefaultValue("true")] bool autocorrection, [DefaultValue("false")] bool multiline, [DefaultValue("false")] bool secure, [DefaultValue("false")] bool alert, [DefaultValue("\"\"")] string textPlaceholder)
+		public static TouchScreenKeyboard Open(string text, [DefaultValue("TouchScreenKeyboardType.Default")] TouchScreenKeyboardType keyboardType, [DefaultValue("true")] bool autocorrection, [DefaultValue("false")] bool multiline, [DefaultValue("false")] bool secure, [DefaultValue("false")] bool alert, [DefaultValue("\"\"")] string textPlaceholder, [DefaultValue("0")] int characterLimit)
 		{
-			return new TouchScreenKeyboard(text, keyboardType, autocorrection, multiline, secure, alert, textPlaceholder);
+			return new TouchScreenKeyboard(text, keyboardType, autocorrection, multiline, secure, alert, textPlaceholder, characterLimit);
 		}
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern void GetSelectionInternal(out int start, out int length);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void SetSelectionInternal(int start, int length);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]

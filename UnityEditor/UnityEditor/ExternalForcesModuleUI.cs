@@ -7,7 +7,7 @@ namespace UnityEditor
 	{
 		private class Texts
 		{
-			public GUIContent multiplier = EditorGUIUtility.TextContent("Multiplier|Used to scale the force applied to this particle system.");
+			public GUIContent multiplier = EditorGUIUtility.TrTextContent("Multiplier", "Used to scale the force applied to this particle system.", null);
 		}
 
 		private SerializedProperty m_Multiplier;
@@ -33,10 +33,6 @@ namespace UnityEditor
 
 		public override void OnInspectorGUI(InitialModuleUI initial)
 		{
-			if (ExternalForcesModuleUI.s_Texts == null)
-			{
-				ExternalForcesModuleUI.s_Texts = new ExternalForcesModuleUI.Texts();
-			}
 			ModuleUI.GUIFloat(ExternalForcesModuleUI.s_Texts.multiplier, this.m_Multiplier, new GUILayoutOption[0]);
 		}
 

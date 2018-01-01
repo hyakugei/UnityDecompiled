@@ -7,9 +7,9 @@ namespace UnityEditor
 	{
 		private class Texts
 		{
-			public GUIContent size = EditorGUIUtility.TextContent("Size|Controls the size of each particle during its lifetime.");
+			public GUIContent size = EditorGUIUtility.TrTextContent("Size", "Controls the size of each particle during its lifetime.", null);
 
-			public GUIContent separateAxes = EditorGUIUtility.TextContent("Separate Axes|If enabled, you can control the angular velocity limit separately for each axis.");
+			public GUIContent separateAxes = EditorGUIUtility.TrTextContent("Separate Axes", "If enabled, you can control the angular velocity limit separately for each axis.", null);
 
 			public GUIContent x = EditorGUIUtility.TextContent("X");
 
@@ -53,21 +53,12 @@ namespace UnityEditor
 
 		public override void OnInspectorGUI(InitialModuleUI initial)
 		{
-			if (SizeModuleUI.s_Texts == null)
-			{
-				SizeModuleUI.s_Texts = new SizeModuleUI.Texts();
-			}
 			EditorGUI.BeginChangeCheck();
 			bool flag = ModuleUI.GUIToggle(SizeModuleUI.s_Texts.separateAxes, this.m_SeparateAxes, new GUILayoutOption[0]);
 			if (EditorGUI.EndChangeCheck())
 			{
-				if (flag)
+				if (!flag)
 				{
-					this.m_X.RemoveCurveFromEditor();
-				}
-				else
-				{
-					this.m_X.RemoveCurveFromEditor();
 					this.m_Y.RemoveCurveFromEditor();
 					this.m_Z.RemoveCurveFromEditor();
 				}

@@ -9,50 +9,24 @@ namespace UnityEngine
 	{
 		public extern int cubemapCount
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
 
 		public extern TextureFormat format
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
 
-		public CubemapArray(int faceSize, int cubemapCount, TextureFormat format, bool mipmap)
-		{
-			CubemapArray.Internal_Create(this, faceSize, cubemapCount, format, mipmap, false);
-		}
-
-		public CubemapArray(int faceSize, int cubemapCount, TextureFormat format, bool mipmap, bool linear)
+		public CubemapArray(int faceSize, int cubemapCount, TextureFormat format, bool mipmap, [DefaultValue("false")] bool linear)
 		{
 			CubemapArray.Internal_Create(this, faceSize, cubemapCount, format, mipmap, linear);
 		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern void Apply([DefaultValue("true")] bool updateMipmaps, [DefaultValue("false")] bool makeNoLongerReadable);
-
-		[ExcludeFromDocs]
-		public void Apply(bool updateMipmaps)
+		public CubemapArray(int faceSize, int cubemapCount, TextureFormat format, bool mipmap) : this(faceSize, cubemapCount, format, mipmap, false)
 		{
-			bool makeNoLongerReadable = false;
-			this.Apply(updateMipmaps, makeNoLongerReadable);
 		}
-
-		[ExcludeFromDocs]
-		public void Apply()
-		{
-			bool makeNoLongerReadable = false;
-			bool updateMipmaps = true;
-			this.Apply(updateMipmaps, makeNoLongerReadable);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void Internal_Create([Writable] CubemapArray mono, int faceSize, int cubemapCount, TextureFormat format, bool mipmap, bool linear);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -96,6 +70,42 @@ namespace UnityEngine
 		{
 			int miplevel = 0;
 			return this.GetPixels32(face, arrayElement, miplevel);
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern bool IsReadable();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern bool Internal_CreateImpl([Writable] CubemapArray mono, int ext, int count, TextureFormat format, bool mipmap, bool linear);
+
+		private static void Internal_Create([Writable] CubemapArray mono, int ext, int count, TextureFormat format, bool mipmap, bool linear)
+		{
+			if (!CubemapArray.Internal_CreateImpl(mono, ext, count, format, mipmap, linear))
+			{
+				throw new UnityException("Failed to create cubemap array texture because of invalid parameters.");
+			}
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void ApplyImpl(bool updateMipmaps, bool makeNoLongerReadable);
+
+		public void Apply([DefaultValue("true")] bool updateMipmaps, [DefaultValue("false")] bool makeNoLongerReadable)
+		{
+			if (!this.IsReadable())
+			{
+				throw base.CreateNonReadableException(this);
+			}
+			this.ApplyImpl(updateMipmaps, makeNoLongerReadable);
+		}
+
+		public void Apply(bool updateMipmaps)
+		{
+			this.Apply(updateMipmaps, false);
+		}
+
+		public void Apply()
+		{
+			this.Apply(true, false);
 		}
 	}
 }

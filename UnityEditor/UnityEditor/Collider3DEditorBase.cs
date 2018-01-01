@@ -9,6 +9,10 @@ namespace UnityEditor
 
 		protected SerializedProperty m_IsTrigger;
 
+		protected GUIContent materialContent = EditorGUIUtility.TrTextContent("Material", "Reference to the Physic Material that determines how this Collider interacts with others.", null);
+
+		protected GUIContent triggerContent = EditorGUIUtility.TrTextContent("Is Trigger", "If enabled, this Collider is used for triggering events and is ignored by the physics engine.", null);
+
 		public override void OnEnable()
 		{
 			base.OnEnable();
@@ -19,8 +23,8 @@ namespace UnityEditor
 		public override void OnInspectorGUI()
 		{
 			base.serializedObject.Update();
-			EditorGUILayout.PropertyField(this.m_IsTrigger, new GUILayoutOption[0]);
-			EditorGUILayout.PropertyField(this.m_Material, new GUILayoutOption[0]);
+			EditorGUILayout.PropertyField(this.m_IsTrigger, this.triggerContent, new GUILayoutOption[0]);
+			EditorGUILayout.PropertyField(this.m_Material, this.materialContent, new GUILayoutOption[0]);
 			base.serializedObject.ApplyModifiedProperties();
 		}
 	}

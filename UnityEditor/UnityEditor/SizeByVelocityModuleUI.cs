@@ -7,11 +7,11 @@ namespace UnityEditor
 	{
 		private class Texts
 		{
-			public GUIContent velocityRange = EditorGUIUtility.TextContent("Speed Range|Remaps speed in the defined range to a size.");
+			public GUIContent velocityRange = EditorGUIUtility.TrTextContent("Speed Range", "Remaps speed in the defined range to a size.", null);
 
-			public GUIContent size = EditorGUIUtility.TextContent("Size|Controls the size of each particle based on its speed.");
+			public GUIContent size = EditorGUIUtility.TrTextContent("Size", "Controls the size of each particle based on its speed.", null);
 
-			public GUIContent separateAxes = new GUIContent("Separate Axes", "If enabled, you can control the angular velocity limit separately for each axis.");
+			public GUIContent separateAxes = EditorGUIUtility.TrTextContent("Separate Axes", "If enabled, you can control the angular velocity limit separately for each axis.", null);
 
 			public GUIContent x = new GUIContent("X");
 
@@ -58,21 +58,12 @@ namespace UnityEditor
 
 		public override void OnInspectorGUI(InitialModuleUI initial)
 		{
-			if (SizeByVelocityModuleUI.s_Texts == null)
-			{
-				SizeByVelocityModuleUI.s_Texts = new SizeByVelocityModuleUI.Texts();
-			}
 			EditorGUI.BeginChangeCheck();
 			bool flag = ModuleUI.GUIToggle(SizeByVelocityModuleUI.s_Texts.separateAxes, this.m_SeparateAxes, new GUILayoutOption[0]);
 			if (EditorGUI.EndChangeCheck())
 			{
-				if (flag)
+				if (!flag)
 				{
-					this.m_X.RemoveCurveFromEditor();
-				}
-				else
-				{
-					this.m_X.RemoveCurveFromEditor();
 					this.m_Y.RemoveCurveFromEditor();
 					this.m_Z.RemoveCurveFromEditor();
 				}

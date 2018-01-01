@@ -8,17 +8,17 @@ namespace UnityEditor.U2D.Common
 	{
 		private class Styles
 		{
-			public readonly GUIContent textureFormatLabel = EditorGUIUtility.TextContent("Format");
+			public readonly GUIContent textureFormatLabel = EditorGUIUtility.TrTextContent("Format", null, null);
 
-			public readonly GUIContent maxTextureSizeLabel = EditorGUIUtility.TextContent("Max Texture Size|Maximum size of the packed texture.");
+			public readonly GUIContent maxTextureSizeLabel = EditorGUIUtility.TrTextContent("Max Texture Size", "Maximum size of the packed texture.", null);
 
-			public readonly GUIContent compressionLabel = EditorGUIUtility.TextContent("Compression|How will this texture be compressed?");
+			public readonly GUIContent compressionLabel = EditorGUIUtility.TrTextContent("Compression", "How will this texture be compressed?", null);
 
-			public readonly GUIContent useCrunchedCompressionLabel = EditorGUIUtility.TextContent("Use Crunch Compression|Texture is crunch-compressed to save space on disk when applicable.");
+			public readonly GUIContent useCrunchedCompressionLabel = EditorGUIUtility.TrTextContent("Use Crunch Compression", "Texture is crunch-compressed to save space on disk when applicable.", null);
 
-			public readonly GUIContent compressionQualityLabel = EditorGUIUtility.TextContent("Compressor Quality");
+			public readonly GUIContent compressionQualityLabel = EditorGUIUtility.TrTextContent("Compressor Quality", null, null);
 
-			public readonly GUIContent compressionQualitySliderLabel = EditorGUIUtility.TextContent("Compressor Quality|Use the slider to adjust compression quality from 0 (Fastest) to 100 (Best)");
+			public readonly GUIContent compressionQualitySliderLabel = EditorGUIUtility.TrTextContent("Compressor Quality", "Use the slider to adjust compression quality from 0 (Fastest) to 100 (Best)", null);
 
 			public readonly int[] kMaxTextureSizeValues = new int[]
 			{
@@ -37,10 +37,10 @@ namespace UnityEditor.U2D.Common
 
 			public readonly GUIContent[] kTextureCompressionOptions = new GUIContent[]
 			{
-				EditorGUIUtility.TextContent("None|Texture is not compressed."),
-				EditorGUIUtility.TextContent("Low Quality|Texture compressed with low quality but high performance, high compression format."),
-				EditorGUIUtility.TextContent("Normal Quality|Texture is compressed with a standard format."),
-				EditorGUIUtility.TextContent("High Quality|Texture compressed with a high quality format.")
+				EditorGUIUtility.TrTextContent("None", "Texture is not compressed.", null),
+				EditorGUIUtility.TrTextContent("Low Quality", "Texture compressed with low quality but high performance, high compression format.", null),
+				EditorGUIUtility.TrTextContent("Normal Quality", "Texture is compressed with a standard format.", null),
+				EditorGUIUtility.TrTextContent("High Quality", "Texture compressed with a high quality format.", null)
 			};
 
 			public readonly int[] kTextureCompressionValues = new int[]
@@ -53,9 +53,9 @@ namespace UnityEditor.U2D.Common
 
 			public readonly GUIContent[] kMobileCompressionQualityOptions = new GUIContent[]
 			{
-				EditorGUIUtility.TextContent("Fast"),
-				EditorGUIUtility.TextContent("Normal"),
-				EditorGUIUtility.TextContent("Best")
+				EditorGUIUtility.TrTextContent("Fast", null, null),
+				EditorGUIUtility.TrTextContent("Normal", null, null),
+				EditorGUIUtility.TrTextContent("Best", null, null)
 			};
 
 			public Styles()

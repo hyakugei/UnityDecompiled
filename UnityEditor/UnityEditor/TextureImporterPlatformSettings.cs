@@ -1,11 +1,13 @@
 using System;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using UnityEngine;
 using UnityEngine.Scripting;
 
 namespace UnityEditor
 {
 	[Serializable]
+	[StructLayout(LayoutKind.Sequential)]
 	public sealed class TextureImporterPlatformSettings
 	{
 		[SerializeField]
@@ -16,6 +18,9 @@ namespace UnityEditor
 
 		[SerializeField]
 		private int m_MaxTextureSize = 2048;
+
+		[SerializeField]
+		private int m_ResizeAlgorithm = 0;
 
 		[SerializeField]
 		private int m_TextureFormat = -1;
@@ -31,6 +36,9 @@ namespace UnityEditor
 
 		[SerializeField]
 		private int m_AllowsAlphaSplitting = 0;
+
+		[SerializeField]
+		private int m_AndroidETC2FallbackOverride = 0;
 
 		public string name
 		{
@@ -65,6 +73,18 @@ namespace UnityEditor
 			set
 			{
 				this.m_MaxTextureSize = value;
+			}
+		}
+
+		public TextureResizeAlgorithm resizeAlgorithm
+		{
+			get
+			{
+				return (TextureResizeAlgorithm)this.m_ResizeAlgorithm;
+			}
+			set
+			{
+				this.m_ResizeAlgorithm = (int)value;
 			}
 		}
 
@@ -125,6 +145,18 @@ namespace UnityEditor
 			set
 			{
 				this.m_AllowsAlphaSplitting = ((!value) ? 0 : 1);
+			}
+		}
+
+		public AndroidETC2FallbackOverride androidETC2FallbackOverride
+		{
+			get
+			{
+				return (AndroidETC2FallbackOverride)this.m_AndroidETC2FallbackOverride;
+			}
+			set
+			{
+				this.m_AndroidETC2FallbackOverride = (int)value;
 			}
 		}
 

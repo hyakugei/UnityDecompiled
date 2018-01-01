@@ -6,19 +6,50 @@ namespace UnityEditorInternal.VR
 {
 	internal class VRCustomOptionsDaydream : VRCustomOptionsGoogleVR
 	{
-		private static GUIContent s_ForegroundIconLabel = EditorGUIUtility.TextContent("Foreground Icon|Icon should be a Texture with dimensions of 512px by 512px and a 1:1 aspect ratio.");
+		private const int kDisabled = 0;
 
-		private static GUIContent s_BackgroundIconLabel = EditorGUIUtility.TextContent("Background Icon|Icon should be a Texture with dimensions of 512px by 512px and a 1:1 aspect ratio.");
+		private const int kSupported = 1;
 
-		private static GUIContent s_SustainedPerformanceModeLabel = EditorGUIUtility.TextContent("Use Sustained Performance Mode|Sustained Performance Mode is intended to provide a consistent level of performance for a prolonged amount of time");
+		private const int kRequired = 2;
 
-		private SerializedProperty m_DaydreamOnly;
+		private const int kThreeDoFHeadTracking = 0;
+
+		private const int kSixDoFHeadTracking = 1;
+
+		private const float s_Indent = 10f;
+
+		private static GUIContent s_ForegroundIconLabel = EditorGUIUtility.TrTextContent("Foreground Icon", "Icon should be a Texture with dimensions of 512px by 512px and a 1:1 aspect ratio.", null);
+
+		private static GUIContent s_BackgroundIconLabel = EditorGUIUtility.TrTextContent("Background Icon", "Icon should be a Texture with dimensions of 512px by 512px and a 1:1 aspect ratio.", null);
+
+		private static GUIContent s_SustainedPerformanceModeLabel = EditorGUIUtility.TrTextContent("Sustained Performance", "Sustained Performance mode is intended to provide a consistent level of performance for a prolonged amount of time", null);
+
+		private static GUIContent s_EnableVideoLayer = EditorGUIUtility.TrTextContent("Video Surface", "Enable the use of the video surface integrated with Daydream asynchronous reprojection.", null);
+
+		private static GUIContent s_UseProtectedVideoMemoryLabel = EditorGUIUtility.TrTextContent("Protected Memory", "Enable the use of DRM protection. Only usable if all content is DRM Protected.", null);
+
+		private static GUIContent s_MinimumTargetHeadTracking = EditorGUIUtility.TrTextContent("Positional Head Tracking", "Requested head tracking support of target devices to run the application on.", null);
+
+		private static GUIContent[] s_TargetHeadTrackingOptions = new GUIContent[]
+		{
+			EditorGUIUtility.TrTextContent("Disabled", "Will run on any device and provides no head tracking.", null),
+			EditorGUIUtility.TrTextContent("Supported", "Will run on any device and will provide head tracking on devices that support head tracking.", null),
+			EditorGUIUtility.TrTextContent("Required", "Will only run on devices with full 6 DoF head tracking support.", null)
+		};
 
 		private SerializedProperty m_DaydreamIcon;
 
 		private SerializedProperty m_DaydreamIconBackground;
 
 		private SerializedProperty m_DaydreamUseSustainedPerformanceMode;
+
+		private SerializedProperty m_DaydreamEnableVideoLayer;
+
+		private SerializedProperty m_DaydreamUseProtectedMemory;
+
+		private SerializedProperty m_MinimumSupportedHeadTracking;
+
+		private SerializedProperty m_MaximumSupportedHeadTracking;
 
 		public override void Initialize(SerializedObject settings)
 		{
@@ -31,6 +62,10 @@ namespace UnityEditorInternal.VR
 			this.m_DaydreamIcon = base.FindPropertyAssert("daydreamIconForeground");
 			this.m_DaydreamIconBackground = base.FindPropertyAssert("daydreamIconBackground");
 			this.m_DaydreamUseSustainedPerformanceMode = base.FindPropertyAssert("useSustainedPerformanceMode");
+			this.m_DaydreamEnableVideoLayer = base.FindPropertyAssert("enableVideoLayer");
+			this.m_DaydreamUseProtectedMemory = base.FindPropertyAssert("useProtectedVideoMemory");
+			this.m_MinimumSupportedHeadTracking = base.FindPropertyAssert("minimumSupportedHeadTracking");
+			this.m_MaximumSupportedHeadTracking = base.FindPropertyAssert("maximumSupportedHeadTracking");
 		}
 
 		private Rect DrawTextureUI(Rect rect, GUIContent propLabel, SerializedProperty prop)
@@ -48,6 +83,49 @@ namespace UnityEditorInternal.VR
 			return rect;
 		}
 
+		private int GetHeadTrackingValue()
+		{
+			int result = 0;
+			if (this.m_MinimumSupportedHeadTracking.intValue == 0 && this.m_MaximumSupportedHeadTracking.intValue == 0)
+			{
+				result = 0;
+			}
+			else if (this.m_MinimumSupportedHeadTracking.intValue == 0 && this.m_MaximumSupportedHeadTracking.intValue == 1)
+			{
+				result = 1;
+			}
+			else if (this.m_MinimumSupportedHeadTracking.intValue == 1 && this.m_MaximumSupportedHeadTracking.intValue == 1)
+			{
+				result = 2;
+			}
+			return result;
+		}
+
+		private void SetHeadTrackingValue(int headTrackingValue)
+		{
+			if (headTrackingValue != 0)
+			{
+				if (headTrackingValue != 1)
+				{
+					if (headTrackingValue == 2)
+					{
+						this.m_MinimumSupportedHeadTracking.intValue = 1;
+						this.m_MaximumSupportedHeadTracking.intValue = 1;
+					}
+				}
+				else
+				{
+					this.m_MinimumSupportedHeadTracking.intValue = 0;
+					this.m_MaximumSupportedHeadTracking.intValue = 1;
+				}
+			}
+			else
+			{
+				this.m_MinimumSupportedHeadTracking.intValue = 0;
+				this.m_MaximumSupportedHeadTracking.intValue = 0;
+			}
+		}
+
 		public override Rect Draw(Rect rect)
 		{
 			rect = base.Draw(rect);
@@ -56,19 +134,67 @@ namespace UnityEditorInternal.VR
 			rect.height = EditorGUIUtility.singleLineHeight;
 			GUIContent label = EditorGUI.BeginProperty(rect, VRCustomOptionsDaydream.s_SustainedPerformanceModeLabel, this.m_DaydreamUseSustainedPerformanceMode);
 			EditorGUI.BeginChangeCheck();
-			bool boolValue = EditorGUI.Toggle(rect, label, this.m_DaydreamUseSustainedPerformanceMode.boolValue);
+			bool flag = EditorGUI.Toggle(rect, label, this.m_DaydreamUseSustainedPerformanceMode.boolValue);
 			if (EditorGUI.EndChangeCheck())
 			{
-				this.m_DaydreamUseSustainedPerformanceMode.boolValue = boolValue;
+				this.m_DaydreamUseSustainedPerformanceMode.boolValue = flag;
 			}
 			EditorGUI.EndProperty();
+			rect.y += rect.height + EditorGUIUtility.standardVerticalSpacing;
+			rect.height = EditorGUIUtility.singleLineHeight;
+			label = EditorGUI.BeginProperty(rect, VRCustomOptionsDaydream.s_EnableVideoLayer, this.m_DaydreamEnableVideoLayer);
+			EditorGUI.BeginChangeCheck();
+			flag = EditorGUI.Toggle(rect, label, this.m_DaydreamEnableVideoLayer.boolValue);
+			if (EditorGUI.EndChangeCheck())
+			{
+				this.m_DaydreamEnableVideoLayer.boolValue = flag;
+				if (!flag)
+				{
+					this.m_DaydreamUseProtectedMemory.boolValue = false;
+				}
+			}
+			EditorGUI.EndProperty();
+			rect.y += rect.height + EditorGUIUtility.standardVerticalSpacing;
+			if (this.m_DaydreamEnableVideoLayer.boolValue)
+			{
+				rect.x += 10f;
+				rect.width -= 10f;
+				rect.height = EditorGUIUtility.singleLineHeight;
+				label = EditorGUI.BeginProperty(rect, VRCustomOptionsDaydream.s_UseProtectedVideoMemoryLabel, this.m_DaydreamUseProtectedMemory);
+				EditorGUI.BeginChangeCheck();
+				flag = EditorGUI.Toggle(rect, label, this.m_DaydreamUseProtectedMemory.boolValue);
+				if (EditorGUI.EndChangeCheck())
+				{
+					this.m_DaydreamUseProtectedMemory.boolValue = flag;
+				}
+				EditorGUI.EndProperty();
+				rect.y += rect.height + EditorGUIUtility.standardVerticalSpacing;
+				rect.x -= 10f;
+				rect.width += 10f;
+			}
+			rect.y += EditorGUIUtility.standardVerticalSpacing;
+			rect.height = EditorGUIUtility.singleLineHeight;
+			EditorGUI.BeginChangeCheck();
+			int headTrackingValue = EditorGUI.Popup(rect, VRCustomOptionsDaydream.s_MinimumTargetHeadTracking, this.GetHeadTrackingValue(), VRCustomOptionsDaydream.s_TargetHeadTrackingOptions);
+			if (EditorGUI.EndChangeCheck())
+			{
+				this.SetHeadTrackingValue(headTrackingValue);
+			}
 			rect.y += rect.height + EditorGUIUtility.standardVerticalSpacing;
 			return rect;
 		}
 
 		public override float GetHeight()
 		{
-			return base.GetHeight() + EditorGUIUtility.singleLineHeight * 1f + 128f + EditorGUIUtility.standardVerticalSpacing * 3f;
+			float num = 5f;
+			float num2 = 2f;
+			float num3 = 4f;
+			if (this.m_DaydreamEnableVideoLayer.boolValue)
+			{
+				num += 1f;
+				num3 += 1f;
+			}
+			return base.GetHeight() + EditorGUIUtility.singleLineHeight * num + 64f * num2 + EditorGUIUtility.standardVerticalSpacing * num3;
 		}
 	}
 }

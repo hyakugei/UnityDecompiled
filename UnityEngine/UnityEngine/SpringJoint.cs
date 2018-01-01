@@ -4,6 +4,7 @@ using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
+	[NativeClass("Unity::SpringJoint")]
 	public sealed class SpringJoint : Joint
 	{
 		public extern float spring

@@ -114,18 +114,6 @@ namespace UnityEditor
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern string GetCurrentSpatializerEffectName();
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern string[] GetSpatializerPluginNames();
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern void SetSpatializerPluginName(string pluginName);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern string[] GetAmbisonicDecoderPluginNames();
 
 		[GeneratedByOldBindingsGenerator]

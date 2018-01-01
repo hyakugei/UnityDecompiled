@@ -1,9 +1,12 @@
 using System;
-using System.Runtime.InteropServices;
+using UnityEngine.Bindings;
 
 namespace UnityEngine
 {
-	[StructLayout(LayoutKind.Sequential, Size = 1)]
+	[VisibleToOtherModules(new string[]
+	{
+		"UnityEngine.UIElementsModule"
+	})]
 	internal struct EventInterests
 	{
 		public bool wantsMouseMove

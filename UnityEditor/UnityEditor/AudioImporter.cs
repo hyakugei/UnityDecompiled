@@ -249,7 +249,7 @@ namespace UnityEditor
 			bool result;
 			if (buildTargetGroupByName == BuildTargetGroup.Unknown)
 			{
-				Debug.LogError("Unknown platform passed to AudioImporter.ContainsSampleSettingsOverride (" + platform + "), please use one of 'Web', 'Standalone', 'iOS', 'Android', 'WebGL', 'PS4', 'PSP2', 'PSM', 'XboxOne' or 'WSA'");
+				Debug.LogError("Unknown platform passed to AudioImporter.ContainsSampleSettingsOverride (" + platform + "), please use one of 'Web', 'Standalone', 'iOS', 'Android', 'WebGL', 'PS4', 'PSP2', 'XboxOne' or 'WSA'");
 				result = false;
 			}
 			else
@@ -269,7 +269,7 @@ namespace UnityEditor
 			AudioImporterSampleSettings result;
 			if (buildTargetGroupByName == BuildTargetGroup.Unknown)
 			{
-				Debug.LogError("Unknown platform passed to AudioImporter.GetOverrideSampleSettings (" + platform + "), please use one of 'Web', 'Standalone', 'iOS', 'Android', 'WebGL', 'PS4', 'PSP2', 'PSM', 'XboxOne' or 'WSA'");
+				Debug.LogError("Unknown platform passed to AudioImporter.GetOverrideSampleSettings (" + platform + "), please use one of 'Web', 'Standalone', 'iOS', 'Android', 'WebGL', 'PS4', 'PSP2', 'XboxOne' or 'WSA'");
 				result = this.defaultSampleSettings;
 			}
 			else
@@ -289,7 +289,7 @@ namespace UnityEditor
 			bool result;
 			if (buildTargetGroupByName == BuildTargetGroup.Unknown)
 			{
-				Debug.LogError("Unknown platform passed to AudioImporter.SetOverrideSampleSettings (" + platform + "), please use one of 'Web', 'Standalone', 'iOS', 'Android', 'WebGL', 'PS4', 'PSP2', 'PSM', 'XboxOne' or 'WSA'");
+				Debug.LogError("Unknown platform passed to AudioImporter.SetOverrideSampleSettings (" + platform + "), please use one of 'Web', 'Standalone', 'iOS', 'Android', 'WebGL', 'PS4', 'PSP2', 'XboxOne' or 'WSA'");
 				result = false;
 			}
 			else
@@ -309,7 +309,7 @@ namespace UnityEditor
 			bool result;
 			if (buildTargetGroupByName == BuildTargetGroup.Unknown)
 			{
-				Debug.LogError("Unknown platform passed to AudioImporter.ClearSampleSettingOverride (" + platform + "), please use one of 'Web', 'Standalone', 'iOS', 'Android', 'WebGL', 'PS4', 'PSP2', 'PSM', 'XboxOne' or 'WSA'");
+				Debug.LogError("Unknown platform passed to AudioImporter.ClearSampleSettingOverride (" + platform + "), please use one of 'Web', 'Standalone', 'iOS', 'Android', 'WebGL', 'PS4', 'PSP2', 'XboxOne' or 'WSA'");
 				result = false;
 			}
 			else

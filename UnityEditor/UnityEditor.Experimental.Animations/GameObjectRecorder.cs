@@ -1,17 +1,17 @@
 using System;
 using System.Runtime.CompilerServices;
 using UnityEngine;
+using UnityEngine.Bindings;
 
 namespace UnityEditor.Experimental.Animations
 {
+	[NativeType]
 	public class GameObjectRecorder : UnityEngine.Object
 	{
 		public extern GameObject root
 		{
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
 		}
 
 		public extern float currentTime
@@ -26,13 +26,18 @@ namespace UnityEditor.Experimental.Animations
 			get;
 		}
 
+		[Obsolete("The GameObjectRecorder constructor now takes a root GameObject", true)]
 		public GameObjectRecorder()
 		{
-			GameObjectRecorder.Internal_Create(this);
+		}
+
+		public GameObjectRecorder(GameObject root)
+		{
+			GameObjectRecorder.Internal_Create(this, root);
 		}
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void Internal_Create([Writable] GameObjectRecorder notSelf);
+		private static extern void Internal_Create([Writable] GameObjectRecorder notSelf, [NotNull] GameObject root);
 
 		public void Bind(EditorCurveBinding binding)
 		{

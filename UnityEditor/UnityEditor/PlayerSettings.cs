@@ -1,23 +1,26 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using UnityEditor.Build;
 using UnityEditor.Rendering;
+using UnityEditor.XR.Daydream;
+using UnityEditorInternal;
+using UnityEditorInternal.VR;
 using UnityEngine;
+using UnityEngine.Bindings;
 using UnityEngine.Internal;
 using UnityEngine.Rendering;
 using UnityEngine.Scripting;
 
 namespace UnityEditor
 {
+	[NativeClass(null)]
 	public sealed class PlayerSettings : UnityEngine.Object
 	{
-		public sealed class PSM
-		{
-		}
-
 		public sealed class Android
 		{
 			public static extern bool disableDepthAndStencilBuffers
@@ -122,6 +125,16 @@ namespace UnityEditor
 				set;
 			}
 
+			internal static extern bool androidTangoEnabled
+			{
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
 			internal static extern bool androidBannerEnabled
 			{
 				[GeneratedByOldBindingsGenerator]
@@ -152,7 +165,7 @@ namespace UnityEditor
 				set;
 			}
 
-			public static extern AndroidTargetDevice targetDevice
+			public static extern AndroidArchitecture targetArchitectures
 			{
 				[GeneratedByOldBindingsGenerator]
 				[MethodImpl(MethodImplOptions.InternalCall)]
@@ -239,6 +252,87 @@ namespace UnityEditor
 				set;
 			}
 
+			public static extern AndroidBlitType blitType
+			{
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			internal static extern int supportedAspectRatioMode
+			{
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern float maxAspectRatio
+			{
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			internal static extern bool useLowAccuracyLocation
+			{
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+			}
+
+			[Obsolete("Use targetArchitectures instead. (UnityUpgradable) -> targetArchitectures", false)]
+			public static AndroidTargetDevice targetDevice
+			{
+				get
+				{
+					AndroidArchitecture targetArchitectures = PlayerSettings.Android.targetArchitectures;
+					AndroidTargetDevice result;
+					if (targetArchitectures != AndroidArchitecture.ARMv7)
+					{
+						if (targetArchitectures != AndroidArchitecture.X86)
+						{
+							result = AndroidTargetDevice.FAT;
+						}
+						else
+						{
+							result = AndroidTargetDevice.x86;
+						}
+					}
+					else
+					{
+						result = AndroidTargetDevice.ARMv7;
+					}
+					return result;
+				}
+				set
+				{
+					if (value != AndroidTargetDevice.ARMv7)
+					{
+						if (value != AndroidTargetDevice.x86)
+						{
+							PlayerSettings.Android.targetArchitectures = (AndroidArchitecture.ARMv7 | AndroidArchitecture.X86);
+						}
+						else
+						{
+							PlayerSettings.Android.targetArchitectures = AndroidArchitecture.X86;
+						}
+					}
+					else
+					{
+						PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARMv7;
+					}
+				}
+			}
+
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			internal static extern AndroidBanner[] GetAndroidBanners();
@@ -296,372 +390,51 @@ namespace UnityEditor
 				[MethodImpl(MethodImplOptions.InternalCall)]
 				set;
 			}
+
+			public static extern SupportedHeadTracking minimumSupportedHeadTracking
+			{
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern SupportedHeadTracking maximumSupportedHeadTracking
+			{
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern bool enableVideoSurface
+			{
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern bool enableVideoSurfaceProtectedMemory
+			{
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
 		}
 
 		public sealed class Facebook
 		{
 			public static extern string sdkVersion
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-		}
-
-		public sealed class iOS
-		{
-			public static extern string applicationDisplayName
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static string buildNumber
-			{
-				get
-				{
-					return PlayerSettings.GetBuildNumber(BuildTargetGroup.iPhone);
-				}
-				set
-				{
-					PlayerSettings.SetBuildNumber(BuildTargetGroup.iPhone, value);
-				}
-			}
-
-			public static extern ScriptCallOptimizationLevel scriptCallOptimization
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern iOSSdkVersion sdkVersion
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			[Obsolete("targetOSVersion is obsolete, use targetOSVersionString")]
-			public static extern iOSTargetOSVersion targetOSVersion
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string targetOSVersionString
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern iOSTargetDevice targetDevice
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern bool prerenderedIcon
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern bool requiresPersistentWiFi
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern bool requiresFullScreen
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern iOSStatusBarStyle statusBarStyle
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern iOSAppInBackgroundBehavior appInBackgroundBehavior
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern iOSBackgroundMode backgroundModes
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern bool forceHardShadowsOnMetal
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern bool allowHTTPDownload
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string appleDeveloperTeamID
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string iOSManualProvisioningProfileID
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string tvOSManualProvisioningProfileID
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern bool appleEnableAutomaticSigning
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string cameraUsageDescription
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string locationUsageDescription
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string microphoneUsageDescription
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern iOSShowActivityIndicatorOnLoading showActivityIndicatorOnLoading
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern bool useOnDemandResources
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			[Obsolete("exitOnSuspend is deprecated, use appInBackgroundBehavior", false)]
-			public static bool exitOnSuspend
-			{
-				get
-				{
-					return PlayerSettings.iOS.appInBackgroundBehavior == iOSAppInBackgroundBehavior.Exit;
-				}
-				set
-				{
-					PlayerSettings.iOS.appInBackgroundBehavior = iOSAppInBackgroundBehavior.Exit;
-				}
-			}
-
-			[Obsolete("Use Screen.SetResolution at runtime", true)]
-			public static iOSTargetResolution targetResolution
-			{
-				get
-				{
-					return iOSTargetResolution.Native;
-				}
-				set
-				{
-				}
-			}
-
-			[Obsolete("Use PlayerSettings.muteOtherAudioSources instead (UnityUpgradable) -> UnityEditor.PlayerSettings.muteOtherAudioSources", false)]
-			public static bool overrideIPodMusic
-			{
-				get
-				{
-					return PlayerSettings.muteOtherAudioSources;
-				}
-				set
-				{
-					PlayerSettings.muteOtherAudioSources = value;
-				}
-			}
-
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			internal static extern string[] GetAssetBundleVariantsWithDeviceRequirements();
-
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			private static extern bool CheckAssetBundleVariantHasDeviceRequirements(string name);
-
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			public static extern void SetLaunchScreenImage(Texture2D image, iOSLaunchScreenImageType type);
-
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			public static extern void SetiPhoneLaunchScreenType(iOSLaunchScreenType type);
-
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			public static extern void SetiPadLaunchScreenType(iOSLaunchScreenType type);
-
-			internal static iOSDeviceRequirementGroup GetDeviceRequirementsForAssetBundleVariant(string name)
-			{
-				iOSDeviceRequirementGroup result;
-				if (!PlayerSettings.iOS.CheckAssetBundleVariantHasDeviceRequirements(name))
-				{
-					result = null;
-				}
-				else
-				{
-					result = new iOSDeviceRequirementGroup(name);
-				}
-				return result;
-			}
-
-			internal static void RemoveDeviceRequirementsForAssetBundleVariant(string name)
-			{
-				iOSDeviceRequirementGroup deviceRequirementsForAssetBundleVariant = PlayerSettings.iOS.GetDeviceRequirementsForAssetBundleVariant(name);
-				for (int i = 0; i < deviceRequirementsForAssetBundleVariant.count; i++)
-				{
-					deviceRequirementsForAssetBundleVariant.RemoveAt(0);
-				}
-			}
-
-			internal static iOSDeviceRequirementGroup AddDeviceRequirementsForAssetBundleVariant(string name)
-			{
-				return new iOSDeviceRequirementGroup(name);
-			}
-
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			internal static extern string[] GetURLSchemes();
-		}
-
-		public sealed class macOS
-		{
-			public static string buildNumber
-			{
-				get
-				{
-					return PlayerSettings.GetBuildNumber(BuildTargetGroup.Standalone);
-				}
-				set
-				{
-					PlayerSettings.SetBuildNumber(BuildTargetGroup.Standalone, value);
-				}
-			}
-
-			internal static extern string applicationCategoryType
 			{
 				[GeneratedByOldBindingsGenerator]
 				[MethodImpl(MethodImplOptions.InternalCall)]
@@ -849,1245 +622,6 @@ namespace UnityEditor
 			}
 
 			public static extern string applicationId
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-		}
-
-		public sealed class PS4
-		{
-			public enum PS4AppCategory
-			{
-				Application,
-				Patch,
-				Remaster
-			}
-
-			public enum PS4RemotePlayKeyAssignment
-			{
-				None = -1,
-				PatternA,
-				PatternB,
-				PatternC,
-				PatternD,
-				PatternE,
-				PatternF,
-				PatternG,
-				PatternH
-			}
-
-			public enum PS4EnterButtonAssignment
-			{
-				CircleButton,
-				CrossButton
-			}
-
-			public enum PlayStationVREyeToEyeDistanceSettings
-			{
-				PerUser,
-				ForceDefault,
-				DynamicModeAtRuntime
-			}
-
-			public static extern string npTrophyPackPath
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern int npAgeRating
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string npTitleSecret
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern int parentalLevel
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern int applicationParameter1
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern int applicationParameter2
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern int applicationParameter3
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern int applicationParameter4
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string passcode
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string monoEnv
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern bool playerPrefsSupport
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern bool restrictedAudioUsageRights
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern bool useResolutionFallback
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string contentID
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern PlayerSettings.PS4.PS4AppCategory category
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern int appType
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string masterVersion
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string appVersion
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern PlayerSettings.PS4.PS4RemotePlayKeyAssignment remotePlayKeyAssignment
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string remotePlayKeyMappingDir
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern int playTogetherPlayerCount
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern PlayerSettings.PS4.PS4EnterButtonAssignment enterButtonAssignment
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string paramSfxPath
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern int videoOutPixelFormat
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern int videoOutInitialWidth
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern int videoOutBaseModeInitialWidth
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern int videoOutReprojectionRate
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			[Obsolete("videoOutResolution is deprecated. Use PlayerSettings.PS4.videoOutInitialWidth and PlayerSettings.PS4.videoOutReprojectionRate to control initial display resolution and reprojection rate.")]
-			public static extern int videoOutResolution
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string PronunciationXMLPath
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string PronunciationSIGPath
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string BackgroundImagePath
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string StartupImagePath
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string SaveDataImagePath
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string SdkOverride
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string BGMPath
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string ShareFilePath
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string ShareOverlayImagePath
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string PrivacyGuardImagePath
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern bool patchDayOne
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string PatchPkgPath
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string PatchLatestPkgPath
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string PatchChangeinfoPath
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string NPtitleDatPath
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			[Obsolete("UnityEditor.PS4.useDebugIl2cppLibs no longer has any affect.")]
-			internal static extern bool useDebugIl2cppLibs
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern bool pnSessions
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern bool pnPresence
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern bool pnFriends
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern bool pnGameCustomData
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern int downloadDataSize
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern int garlicHeapSize
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern int proGarlicHeapSize
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern bool reprojectionSupport
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern bool useAudio3dBackend
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern int audio3dVirtualSpeakerCount
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern int scriptOptimizationLevel
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern int socialScreenEnabled
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern bool attribUserManagement
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern bool attribMoveSupport
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern bool attrib3DSupport
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern bool attribShareSupport
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern bool attribExclusiveVR
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern bool disableAutoHideSplash
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern int attribCpuUsage
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern bool videoRecordingFeaturesUsed
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern bool contentSearchFeaturesUsed
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern PlayerSettings.PS4.PlayStationVREyeToEyeDistanceSettings attribEyeToEyeDistanceSettingVR
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string[] includedModules
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-		}
-
-		public sealed class PSVita
-		{
-			public enum PSVitaPowerMode
-			{
-				ModeA,
-				ModeB,
-				ModeC
-			}
-
-			public enum PSVitaTvBootMode
-			{
-				Default,
-				PSVitaBootablePSVitaTvBootable,
-				PSVitaBootablePSVitaTvNotBootable
-			}
-
-			public enum PSVitaEnterButtonAssignment
-			{
-				Default,
-				CircleButton,
-				CrossButton
-			}
-
-			public enum PSVitaAppCategory
-			{
-				Application,
-				ApplicationPatch
-			}
-
-			public enum PSVitaMemoryExpansionMode
-			{
-				None,
-				ExpandBy29MB,
-				ExpandBy77MB,
-				ExpandBy109MB
-			}
-
-			public enum PSVitaDRMType
-			{
-				PaidFor,
-				Free
-			}
-
-			public static extern string npTrophyPackPath
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern PlayerSettings.PSVita.PSVitaPowerMode powerMode
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern bool acquireBGM
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern bool npSupportGBMorGJP
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern PlayerSettings.PSVita.PSVitaTvBootMode tvBootMode
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern bool tvDisableEmu
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern bool upgradable
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern bool healthWarning
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			[Obsolete("useLibLocation has no effect as of SDK 3.570")]
-			public static extern bool useLibLocation
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern bool infoBarOnStartup
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern bool infoBarColor
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			[Obsolete("UnityEditor.PSVita.useDebugIl2cppLibs no longer has any affect.")]
-			internal static extern bool useDebugIl2cppLibs
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern int scriptOptimizationLevel
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern PlayerSettings.PSVita.PSVitaEnterButtonAssignment enterButtonAssignment
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern int saveDataQuota
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern int parentalLevel
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string shortTitle
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string contentID
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern PlayerSettings.PSVita.PSVitaAppCategory category
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string masterVersion
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string appVersion
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			[Obsolete("AllowTwitterDialog has no effect as of SDK 3.570")]
-			public static extern bool AllowTwitterDialog
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern int npAgeRating
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string npTitleDatPath
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string npCommunicationsID
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string npCommsPassphrase
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string npCommsSig
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string paramSfxPath
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string manualPath
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string liveAreaGatePath
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string liveAreaBackroundPath
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string liveAreaPath
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string liveAreaTrialPath
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string patchChangeInfoPath
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string patchOriginalPackage
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string packagePassword
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string keystoneFile
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern PlayerSettings.PSVita.PSVitaMemoryExpansionMode memoryExpansionMode
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern PlayerSettings.PSVita.PSVitaDRMType drmType
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern int storageType
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern int mediaCapacity
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-		}
-
-		public sealed class SamsungTV
-		{
-			public enum SamsungTVProductCategories
-			{
-				Games,
-				Videos,
-				Sports,
-				Lifestyle,
-				Information,
-				Education,
-				Kids
-			}
-
-			public static extern string deviceAddress
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string productDescription
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string productAuthor
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string productAuthorEmail
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string productLink
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern PlayerSettings.SamsungTV.SamsungTVProductCategories productCategory
 			{
 				[GeneratedByOldBindingsGenerator]
 				[MethodImpl(MethodImplOptions.InternalCall)]
@@ -2340,258 +874,6 @@ namespace UnityEditor
 			private static extern void INTERNAL_set_backgroundColor(ref Color value);
 		}
 
-		public enum TizenCapability
-		{
-			Location,
-			DataSharing,
-			NetworkGet,
-			WifiDirect,
-			CallHistoryRead,
-			Power,
-			ContactWrite,
-			MessageWrite,
-			ContentWrite,
-			Push,
-			AccountRead,
-			ExternalStorage,
-			Recorder,
-			PackageManagerInfo,
-			NFCCardEmulation,
-			CalendarWrite,
-			WindowPrioritySet,
-			VolumeSet,
-			CallHistoryWrite,
-			AlarmSet,
-			Call,
-			Email,
-			ContactRead,
-			Shortcut,
-			KeyManager,
-			LED,
-			NetworkProfile,
-			AlarmGet,
-			Display,
-			CalendarRead,
-			NFC,
-			AccountWrite,
-			Bluetooth,
-			Notification,
-			NetworkSet,
-			ExternalStorageAppData,
-			Download,
-			Telephony,
-			MessageRead,
-			MediaStorage,
-			Internet,
-			Camera,
-			Haptic,
-			AppManagerLaunch,
-			SystemSettings
-		}
-
-		public sealed class Tizen
-		{
-			public static extern string productDescription
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string productURL
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string signingProfileName
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string deploymentTarget
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern int deploymentTargetType
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern TizenOSVersion minOSVersion
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern TizenShowActivityIndicatorOnLoading showActivityIndicatorOnLoading
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static void SetCapability(PlayerSettings.TizenCapability capability, bool value)
-			{
-				PlayerSettings.Tizen.InternalSetCapability(capability.ToString(), value.ToString());
-			}
-
-			public static bool GetCapability(PlayerSettings.TizenCapability capability)
-			{
-				string text = PlayerSettings.Tizen.InternalGetCapability(capability.ToString());
-				bool result;
-				if (string.IsNullOrEmpty(text))
-				{
-					result = false;
-				}
-				else
-				{
-					try
-					{
-						result = (bool)TypeDescriptor.GetConverter(typeof(bool)).ConvertFromString(text);
-					}
-					catch
-					{
-						Debug.LogError(string.Concat(new string[]
-						{
-							"Failed to parse value  ('",
-							capability.ToString(),
-							",",
-							text,
-							"') to bool type."
-						}));
-						result = false;
-					}
-				}
-				return result;
-			}
-
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			private static extern void InternalSetCapability(string name, string value);
-
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			private static extern string InternalGetCapability(string name);
-		}
-
-		public sealed class tvOS
-		{
-			public static extern tvOSSdkVersion sdkVersion
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static string buildNumber
-			{
-				get
-				{
-					return PlayerSettings.GetBuildNumber(BuildTargetGroup.tvOS);
-				}
-				set
-				{
-					PlayerSettings.SetBuildNumber(BuildTargetGroup.tvOS, value);
-				}
-			}
-
-			public static extern tvOSTargetOSVersion targetOSVersion
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string targetOSVersionString
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern bool requireExtendedGameController
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			internal static extern Texture2D[] GetSmallIconLayers();
-
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			internal static extern Texture2D[] GetLargeIconLayers();
-
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			internal static extern Texture2D[] GetTopShelfImageLayers();
-
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			internal static extern Texture2D[] GetTopShelfImageWideLayers();
-
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			internal static extern void SetSmallIconLayers(Texture2D[] layers);
-
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			internal static extern void SetLargeIconLayers(Texture2D[] layers);
-
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			internal static extern void SetTopShelfImageLayers(Texture2D[] layers);
-
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			internal static extern void SetTopShelfImageWideLayers(Texture2D[] layers);
-		}
-
 		public sealed class WebGL
 		{
 			public static extern int memorySize
@@ -2674,7 +956,18 @@ namespace UnityEditor
 				set;
 			}
 
+			[Obsolete("useWasm Property deprecated. Use linkerTarget instead")]
 			public static extern bool useWasm
+			{
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern WebGLLinkerTarget linkerTarget
 			{
 				[GeneratedByOldBindingsGenerator]
 				[MethodImpl(MethodImplOptions.InternalCall)]
@@ -2715,273 +1008,6 @@ namespace UnityEditor
 			}
 		}
 
-		public sealed class WiiU
-		{
-			public static extern string titleID
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string groupID
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern int commonSaveSize
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern int accountSaveSize
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string olvAccessKey
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string tinCode
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string joinGameId
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string joinGameModeMask
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern int commonBossSize
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern int accountBossSize
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string[] addOnUniqueIDs
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern bool supportsNunchuk
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern bool supportsClassicController
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern bool supportsBalanceBoard
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern bool supportsMotionPlus
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern bool supportsProController
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern bool allowScreenCapture
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern int controllerCount
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern int mainThreadStackSize
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern int loaderThreadStackSize
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern int systemHeapSize
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern WiiUTVResolution tvResolution
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern Texture2D tvStartupScreen
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-			}
-
-			public static extern Texture2D gamePadStartupScreen
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-			}
-
-			public static extern int gamePadMSAA
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string profilerLibraryPath
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern bool drcBufferDisabled
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-		}
-
 		public sealed class Switch
 		{
 			public enum ScreenResolutionBehavior
@@ -3005,7 +1031,10 @@ namespace UnityEditor
 				Dutch,
 				CanadianFrench,
 				Portuguese,
-				Russian
+				Russian,
+				SimplifiedChinese,
+				TraditionalChinese,
+				Korean
 			}
 
 			public enum StartupUserAccount
@@ -3031,6 +1060,7 @@ namespace UnityEditor
 			public enum LogoType
 			{
 				LicensedByNintendo,
+				[Obsolete("This attribute is no longer available as of NintendoSDK 4.3.", true)]
 				DistributedByNintendo,
 				Nintendo
 			}
@@ -3447,6 +1477,17 @@ namespace UnityEditor
 				get;
 			}
 
+			public static extern bool isScreenshotEnabled
+			{
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			[Obsolete("isAllowsScreenshot was renamed to isScreenshotEnabled.")]
 			public static extern bool isAllowsScreenshot
 			{
 				[GeneratedByOldBindingsGenerator]
@@ -3457,6 +1498,37 @@ namespace UnityEditor
 				set;
 			}
 
+			public static extern bool isVideoCapturingEnabled
+			{
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern bool isRuntimeAddOnContentInstallEnabled
+			{
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern bool isDataLossConfirmationEnabled
+			{
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			[Obsolete("isDataLossConfirmation was renamed to isDataLossConfirmationEnabled.")]
 			public static extern bool isDataLossConfirmation
 			{
 				[GeneratedByOldBindingsGenerator]
@@ -3548,6 +1620,36 @@ namespace UnityEditor
 			}
 
 			public static extern int socketBufferEfficiency
+			{
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern bool socketInitializeEnabled
+			{
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern bool networkInterfaceManagerInitializeEnabled
+			{
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern bool playerConnectionEnabled
 			{
 				[GeneratedByOldBindingsGenerator]
 				[MethodImpl(MethodImplOptions.InternalCall)]
@@ -3666,16 +1768,6 @@ namespace UnityEditor
 		{
 			PackageLogo = 1,
 			SplashScreenImage,
-			StoreTileLogo = 11,
-			StoreTileWideLogo,
-			StoreTileSmallLogo,
-			StoreSmallTile,
-			StoreLargeTile,
-			PhoneAppIcon = 21,
-			PhoneSmallTile,
-			PhoneMediumTile,
-			PhoneWideTile,
-			PhoneSplashScreen,
 			UWPSquare44x44Logo = 31,
 			UWPSquare71x71Logo,
 			UWPSquare150x150Logo,
@@ -3735,6 +1827,16 @@ namespace UnityEditor
 				}
 			}
 
+			public static extern bool transparentSwapchain
+			{
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
 			public static extern string packageName
 			{
 				[GeneratedByOldBindingsGenerator]
@@ -3746,39 +1848,6 @@ namespace UnityEditor
 			}
 
 			public static extern string packageLogo
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()")]
-			public static extern string packageLogo140
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()")]
-			public static extern string packageLogo180
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()")]
-			public static extern string packageLogo240
 			{
 				[GeneratedByOldBindingsGenerator]
 				[MethodImpl(MethodImplOptions.InternalCall)]
@@ -3844,424 +1913,6 @@ namespace UnityEditor
 			}
 
 			public static extern string applicationDescription
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()")]
-			public static extern string storeTileLogo80
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()")]
-			public static extern string storeTileLogo
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()")]
-			public static extern string storeTileLogo140
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()")]
-			public static extern string storeTileLogo180
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()")]
-			public static extern string storeTileWideLogo80
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()")]
-			public static extern string storeTileWideLogo
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()")]
-			public static extern string storeTileWideLogo140
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()")]
-			public static extern string storeTileWideLogo180
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()")]
-			public static extern string storeTileSmallLogo80
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()")]
-			public static extern string storeTileSmallLogo
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()")]
-			public static extern string storeTileSmallLogo140
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()")]
-			public static extern string storeTileSmallLogo180
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()")]
-			public static extern string storeSmallTile80
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()")]
-			public static extern string storeSmallTile
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()")]
-			public static extern string storeSmallTile140
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()")]
-			public static extern string storeSmallTile180
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()")]
-			public static extern string storeLargeTile80
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()")]
-			public static extern string storeLargeTile
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()")]
-			public static extern string storeLargeTile140
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()")]
-			public static extern string storeLargeTile180
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()")]
-			public static extern string storeSplashScreenImage
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()")]
-			public static extern string storeSplashScreenImageScale140
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()")]
-			public static extern string storeSplashScreenImageScale180
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()")]
-			public static extern string phoneAppIcon
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()")]
-			public static extern string phoneAppIcon140
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()")]
-			public static extern string phoneAppIcon240
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()")]
-			public static extern string phoneSmallTile
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()")]
-			public static extern string phoneSmallTile140
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()")]
-			public static extern string phoneSmallTile240
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()")]
-			public static extern string phoneMediumTile
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()")]
-			public static extern string phoneMediumTile140
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()")]
-			public static extern string phoneMediumTile240
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()")]
-			public static extern string phoneWideTile
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()")]
-			public static extern string phoneWideTile140
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()")]
-			public static extern string phoneWideTile240
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()")]
-			public static extern string phoneSplashScreenImage
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()")]
-			public static extern string phoneSplashScreenImageScale140
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()")]
-			public static extern string phoneSplashScreenImageScale240
 			{
 				[GeneratedByOldBindingsGenerator]
 				[MethodImpl(MethodImplOptions.InternalCall)]
@@ -4388,17 +2039,6 @@ namespace UnityEditor
 				set;
 			}
 
-			[Obsolete("PlayerSettings.enableLowLatencyPresentationAPI is deprecated. It is now always enabled.", false)]
-			public static extern bool enableLowLatencyPresentationAPI
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
 			private static extern bool splashScreenUseBackgroundColor
 			{
 				[GeneratedByOldBindingsGenerator]
@@ -4511,6 +2151,551 @@ namespace UnityEditor
 				}
 			}
 
+			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()", true)]
+			public static string storeTileLogo80
+			{
+				get
+				{
+					throw new NotSupportedException("PlayerSettings.storeTileLogo80 is deprecated. Use GetVisualAssetsImage() instead.");
+				}
+				set
+				{
+					throw new NotSupportedException("PlayerSettings.storeTileLogo80 is deprecated. Use SetVisualAssetsImage() instead.");
+				}
+			}
+
+			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()", true)]
+			public static string storeTileLogo
+			{
+				get
+				{
+					throw new NotSupportedException("PlayerSettings.storeTileLogo is deprecated. Use GetVisualAssetsImage() instead.");
+				}
+				set
+				{
+					throw new NotSupportedException("PlayerSettings.storeTileLogo is deprecated. Use SetVisualAssetsImage() instead.");
+				}
+			}
+
+			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()", true)]
+			public static string storeTileLogo140
+			{
+				get
+				{
+					throw new NotSupportedException("PlayerSettings.storeTileLogo140 is deprecated. Use GetVisualAssetsImage() instead.");
+				}
+				set
+				{
+					throw new NotSupportedException("PlayerSettings.storeTileLogo140 is deprecated. Use SetVisualAssetsImage() instead.");
+				}
+			}
+
+			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()", true)]
+			public static string storeTileLogo180
+			{
+				get
+				{
+					throw new NotSupportedException("PlayerSettings.storeTileLogo180 is deprecated. Use GetVisualAssetsImage() instead.");
+				}
+				set
+				{
+					throw new NotSupportedException("PlayerSettings.storeTileLogo180 is deprecated. Use SetVisualAssetsImage() instead.");
+				}
+			}
+
+			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()", true)]
+			public static string storeTileWideLogo80
+			{
+				get
+				{
+					throw new NotSupportedException("PlayerSettings.storeTileWideLogo80 is deprecated. Use GetVisualAssetsImage() instead.");
+				}
+				set
+				{
+					throw new NotSupportedException("PlayerSettings.storeTileWideLogo80 is deprecated. Use SetVisualAssetsImage() instead.");
+				}
+			}
+
+			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()", true)]
+			public static string storeTileWideLogo
+			{
+				get
+				{
+					throw new NotSupportedException("PlayerSettings.storeTileWideLogo is deprecated. Use GetVisualAssetsImage() instead.");
+				}
+				set
+				{
+					throw new NotSupportedException("PlayerSettings.storeTileWideLogo is deprecated. Use SetVisualAssetsImage() instead.");
+				}
+			}
+
+			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()", true)]
+			public static string storeTileWideLogo140
+			{
+				get
+				{
+					throw new NotSupportedException("PlayerSettings.storeTileWideLogo140 is deprecated. Use GetVisualAssetsImage() instead.");
+				}
+				set
+				{
+					throw new NotSupportedException("PlayerSettings.storeTileWideLogo140 is deprecated. Use SetVisualAssetsImage() instead.");
+				}
+			}
+
+			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()", true)]
+			public static string storeTileWideLogo180
+			{
+				get
+				{
+					throw new NotSupportedException("PlayerSettings.storeTileWideLogo180 is deprecated. Use GetVisualAssetsImage() instead.");
+				}
+				set
+				{
+					throw new NotSupportedException("PlayerSettings.storeTileWideLogo180 is deprecated. Use SetVisualAssetsImage() instead.");
+				}
+			}
+
+			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()", true)]
+			public static string storeTileSmallLogo80
+			{
+				get
+				{
+					throw new NotSupportedException("PlayerSettings.storeTileSmallLogo80 is deprecated. Use GetVisualAssetsImage() instead.");
+				}
+				set
+				{
+					throw new NotSupportedException("PlayerSettings.storeTileSmallLogo80 is deprecated. Use SetVisualAssetsImage() instead.");
+				}
+			}
+
+			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()", true)]
+			public static string storeTileSmallLogo
+			{
+				get
+				{
+					throw new NotSupportedException("PlayerSettings.storeTileSmallLogo is deprecated. Use GetVisualAssetsImage() instead.");
+				}
+				set
+				{
+					throw new NotSupportedException("PlayerSettings.storeTileSmallLogo is deprecated. Use SetVisualAssetsImage() instead.");
+				}
+			}
+
+			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()", true)]
+			public static string storeTileSmallLogo140
+			{
+				get
+				{
+					throw new NotSupportedException("PlayerSettings.storeTileSmallLogo140 is deprecated. Use GetVisualAssetsImage() instead.");
+				}
+				set
+				{
+					throw new NotSupportedException("PlayerSettings.storeTileSmallLogo140 is deprecated. Use SetVisualAssetsImage() instead.");
+				}
+			}
+
+			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()", true)]
+			public static string storeTileSmallLogo180
+			{
+				get
+				{
+					throw new NotSupportedException("PlayerSettings.storeTileSmallLogo180 is deprecated. Use GetVisualAssetsImage() instead.");
+				}
+				set
+				{
+					throw new NotSupportedException("PlayerSettings.storeTileSmallLogo180 is deprecated. Use SetVisualAssetsImage() instead.");
+				}
+			}
+
+			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()", true)]
+			public static string storeSmallTile80
+			{
+				get
+				{
+					throw new NotSupportedException("PlayerSettings.storeSmallTile80 is deprecated. Use GetVisualAssetsImage() instead.");
+				}
+				set
+				{
+					throw new NotSupportedException("PlayerSettings.storeSmallTile80 is deprecated. Use SetVisualAssetsImage() instead.");
+				}
+			}
+
+			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()", true)]
+			public static string storeSmallTile
+			{
+				get
+				{
+					throw new NotSupportedException("PlayerSettings.storeSmallTile is deprecated. Use GetVisualAssetsImage() instead.");
+				}
+				set
+				{
+					throw new NotSupportedException("PlayerSettings.storeSmallTile is deprecated. Use SetVisualAssetsImage() instead.");
+				}
+			}
+
+			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()", true)]
+			public static string storeSmallTile140
+			{
+				get
+				{
+					throw new NotSupportedException("PlayerSettings.storeSmallTile140 is deprecated. Use GetVisualAssetsImage() instead.");
+				}
+				set
+				{
+					throw new NotSupportedException("PlayerSettings.storeSmallTile140 is deprecated. Use SetVisualAssetsImage() instead.");
+				}
+			}
+
+			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()", true)]
+			public static string storeSmallTile180
+			{
+				get
+				{
+					throw new NotSupportedException("PlayerSettings.storeSmallTile180 is deprecated. Use GetVisualAssetsImage() instead.");
+				}
+				set
+				{
+					throw new NotSupportedException("PlayerSettings.storeSmallTile180 is deprecated. Use SetVisualAssetsImage() instead.");
+				}
+			}
+
+			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()", true)]
+			public static string storeLargeTile80
+			{
+				get
+				{
+					throw new NotSupportedException("PlayerSettings.storeLargeTile80 is deprecated. Use GetVisualAssetsImage() instead.");
+				}
+				set
+				{
+					throw new NotSupportedException("PlayerSettings.storeLargeTile80 is deprecated. Use SetVisualAssetsImage() instead.");
+				}
+			}
+
+			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()", true)]
+			public static string storeLargeTile
+			{
+				get
+				{
+					throw new NotSupportedException("PlayerSettings.storeLargeTile is deprecated. Use GetVisualAssetsImage() instead.");
+				}
+				set
+				{
+					throw new NotSupportedException("PlayerSettings.storeLargeTile is deprecated. Use SetVisualAssetsImage() instead.");
+				}
+			}
+
+			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()", true)]
+			public static string storeLargeTile140
+			{
+				get
+				{
+					throw new NotSupportedException("PlayerSettings.storeLargeTile140 is deprecated. Use GetVisualAssetsImage() instead.");
+				}
+				set
+				{
+					throw new NotSupportedException("PlayerSettings.storeLargeTile140 is deprecated. Use SetVisualAssetsImage() instead.");
+				}
+			}
+
+			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()", true)]
+			public static string storeLargeTile180
+			{
+				get
+				{
+					throw new NotSupportedException("PlayerSettings.storeLargeTile180 is deprecated. Use GetVisualAssetsImage() instead.");
+				}
+				set
+				{
+					throw new NotSupportedException("PlayerSettings.storeLargeTile180 is deprecated. Use SetVisualAssetsImage() instead.");
+				}
+			}
+
+			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()", true)]
+			public static string storeSplashScreenImage
+			{
+				get
+				{
+					throw new NotSupportedException("PlayerSettings.storeSplashScreenImage is deprecated. Use GetVisualAssetsImage() instead.");
+				}
+				set
+				{
+					throw new NotSupportedException("PlayerSettings.storeSplashScreenImage is deprecated. Use SetVisualAssetsImage() instead.");
+				}
+			}
+
+			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()", true)]
+			public static string storeSplashScreenImageScale140
+			{
+				get
+				{
+					throw new NotSupportedException("PlayerSettings.storeSplashScreenImageScale140 is deprecated. Use GetVisualAssetsImage() instead.");
+				}
+				set
+				{
+					throw new NotSupportedException("PlayerSettings.storeSplashScreenImageScale140 is deprecated. Use SetVisualAssetsImage() instead.");
+				}
+			}
+
+			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()", true)]
+			public static string storeSplashScreenImageScale180
+			{
+				get
+				{
+					throw new NotSupportedException("PlayerSettings.storeSplashScreenImageScale180 is deprecated. Use GetVisualAssetsImage() instead.");
+				}
+				set
+				{
+					throw new NotSupportedException("PlayerSettings.storeSplashScreenImageScale180 is deprecated. Use SetVisualAssetsImage() instead.");
+				}
+			}
+
+			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()", true)]
+			public static string phoneAppIcon
+			{
+				get
+				{
+					throw new NotSupportedException("PlayerSettings.phoneAppIcon is deprecated. Use GetVisualAssetsImage() instead.");
+				}
+				set
+				{
+					throw new NotSupportedException("PlayerSettings.phoneAppIcon is deprecated. Use SetVisualAssetsImage() instead.");
+				}
+			}
+
+			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()", true)]
+			public static string phoneAppIcon140
+			{
+				get
+				{
+					throw new NotSupportedException("PlayerSettings.phoneAppIcon140 is deprecated. Use GetVisualAssetsImage() instead.");
+				}
+				set
+				{
+					throw new NotSupportedException("PlayerSettings.phoneAppIcon140 is deprecated. Use SetVisualAssetsImage() instead.");
+				}
+			}
+
+			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()", true)]
+			public static string phoneAppIcon240
+			{
+				get
+				{
+					throw new NotSupportedException("PlayerSettings.phoneAppIcon240 is deprecated. Use GetVisualAssetsImage() instead.");
+				}
+				set
+				{
+					throw new NotSupportedException("PlayerSettings.phoneAppIcon240 is deprecated. Use SetVisualAssetsImage() instead.");
+				}
+			}
+
+			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()", true)]
+			public static string phoneSmallTile
+			{
+				get
+				{
+					throw new NotSupportedException("PlayerSettings.phoneSmallTile is deprecated. Use GetVisualAssetsImage() instead.");
+				}
+				set
+				{
+					throw new NotSupportedException("PlayerSettings.phoneSmallTile is deprecated. Use SetVisualAssetsImage() instead.");
+				}
+			}
+
+			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()", true)]
+			public static string phoneSmallTile140
+			{
+				get
+				{
+					throw new NotSupportedException("PlayerSettings.phoneSmallTile140 is deprecated. Use GetVisualAssetsImage() instead.");
+				}
+				set
+				{
+					throw new NotSupportedException("PlayerSettings.phoneSmallTile140 is deprecated. Use SetVisualAssetsImage() instead.");
+				}
+			}
+
+			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()", true)]
+			public static string phoneSmallTile240
+			{
+				get
+				{
+					throw new NotSupportedException("PlayerSettings.phoneSmallTile240 is deprecated. Use GetVisualAssetsImage() instead.");
+				}
+				set
+				{
+					throw new NotSupportedException("PlayerSettings.phoneSmallTile240 is deprecated. Use SetVisualAssetsImage() instead.");
+				}
+			}
+
+			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()", true)]
+			public static string phoneMediumTile
+			{
+				get
+				{
+					throw new NotSupportedException("PlayerSettings.phoneMediumTile is deprecated. Use GetVisualAssetsImage() instead.");
+				}
+				set
+				{
+					throw new NotSupportedException("PlayerSettings.phoneMediumTile is deprecated. Use SetVisualAssetsImage() instead.");
+				}
+			}
+
+			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()", true)]
+			public static string phoneMediumTile140
+			{
+				get
+				{
+					throw new NotSupportedException("PlayerSettings.phoneMediumTile140 is deprecated. Use GetVisualAssetsImage() instead.");
+				}
+				set
+				{
+					throw new NotSupportedException("PlayerSettings.phoneMediumTile140 is deprecated. Use SetVisualAssetsImage() instead.");
+				}
+			}
+
+			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()", true)]
+			public static string phoneMediumTile240
+			{
+				get
+				{
+					throw new NotSupportedException("PlayerSettings.phoneMediumTile240 is deprecated. Use GetVisualAssetsImage() instead.");
+				}
+				set
+				{
+					throw new NotSupportedException("PlayerSettings.phoneMediumTile240 is deprecated. Use SetVisualAssetsImage() instead.");
+				}
+			}
+
+			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()", true)]
+			public static string phoneWideTile
+			{
+				get
+				{
+					throw new NotSupportedException("PlayerSettings.phoneWideTile is deprecated. Use GetVisualAssetsImage() instead.");
+				}
+				set
+				{
+					throw new NotSupportedException("PlayerSettings.phoneWideTile is deprecated. Use SetVisualAssetsImage() instead.");
+				}
+			}
+
+			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()", true)]
+			public static string phoneWideTile140
+			{
+				get
+				{
+					throw new NotSupportedException("PlayerSettings.phoneWideTile140 is deprecated. Use GetVisualAssetsImage() instead.");
+				}
+				set
+				{
+					throw new NotSupportedException("PlayerSettings.phoneWideTile140 is deprecated. Use SetVisualAssetsImage() instead.");
+				}
+			}
+
+			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()", true)]
+			public static string phoneWideTile240
+			{
+				get
+				{
+					throw new NotSupportedException("PlayerSettings.phoneWideTile240 is deprecated. Use GetVisualAssetsImage() instead.");
+				}
+				set
+				{
+					throw new NotSupportedException("PlayerSettings.phoneWideTile240 is deprecated. Use SetVisualAssetsImage() instead.");
+				}
+			}
+
+			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()", true)]
+			public static string phoneSplashScreenImage
+			{
+				get
+				{
+					throw new NotSupportedException("PlayerSettings.phoneSplashScreenImage is deprecated. Use GetVisualAssetsImage() instead.");
+				}
+				set
+				{
+					throw new NotSupportedException("PlayerSettings.phoneSplashScreenImage is deprecated. Use SetVisualAssetsImage() instead.");
+				}
+			}
+
+			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()", true)]
+			public static string phoneSplashScreenImageScale140
+			{
+				get
+				{
+					throw new NotSupportedException("PlayerSettings.phoneSplashScreenImageScale140 is deprecated. Use GetVisualAssetsImage() instead.");
+				}
+				set
+				{
+					throw new NotSupportedException("PlayerSettings.phoneSplashScreenImageScale140 is deprecated. Use SetVisualAssetsImage() instead.");
+				}
+			}
+
+			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()", true)]
+			public static string phoneSplashScreenImageScale240
+			{
+				get
+				{
+					throw new NotSupportedException("PlayerSettings.phoneSplashScreenImageScale240 is deprecated. Use GetVisualAssetsImage() instead.");
+				}
+				set
+				{
+					throw new NotSupportedException("PlayerSettings.phoneSplashScreenImageScale240 is deprecated. Use SetVisualAssetsImage() instead.");
+				}
+			}
+
+			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()", true)]
+			public static string packageLogo140
+			{
+				get
+				{
+					throw new NotSupportedException("PlayerSettings.packageLogo140 is deprecated. Use GetVisualAssetsImage() instead.");
+				}
+				set
+				{
+					throw new NotSupportedException("PlayerSettings.packageLogo140 is deprecated. Use SetVisualAssetsImage() instead.");
+				}
+			}
+
+			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()", true)]
+			public static string packageLogo180
+			{
+				get
+				{
+					throw new NotSupportedException("PlayerSettings.packageLogo180 is deprecated. Use GetVisualAssetsImage() instead.");
+				}
+				set
+				{
+					throw new NotSupportedException("PlayerSettings.packageLogo180 is deprecated. Use SetVisualAssetsImage() instead.");
+				}
+			}
+
+			[Obsolete("Use GetVisualAssetsImage()/SetVisualAssetsImage()", true)]
+			public static string packageLogo240
+			{
+				get
+				{
+					throw new NotSupportedException("PlayerSettings.packageLogo240 is deprecated. Use GetVisualAssetsImage() instead.");
+				}
+				set
+				{
+					throw new NotSupportedException("PlayerSettings.packageLogo240 is deprecated. Use SetVisualAssetsImage() instead.");
+				}
+			}
+
+			[Obsolete("PlayerSettings.enableLowLatencyPresentationAPI is deprecated. It is now always enabled.", true)]
+			public static bool enableLowLatencyPresentationAPI
+			{
+				get
+				{
+					return true;
+				}
+				set
+				{
+				}
+			}
+
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			private static extern string GetWSAImage(PlayerSettings.WSAImageType type, PlayerSettings.WSAImageScale scale);
@@ -4574,40 +2759,19 @@ namespace UnityEditor
 			{
 				switch (type)
 				{
-				case PlayerSettings.WSAImageType.StoreTileLogo:
-				case PlayerSettings.WSAImageType.StoreTileWideLogo:
-				case PlayerSettings.WSAImageType.StoreTileSmallLogo:
-				case PlayerSettings.WSAImageType.StoreSmallTile:
-				case PlayerSettings.WSAImageType.StoreLargeTile:
-				case PlayerSettings.WSAImageType.PhoneAppIcon:
-				case PlayerSettings.WSAImageType.PhoneSmallTile:
-				case PlayerSettings.WSAImageType.PhoneMediumTile:
-				case PlayerSettings.WSAImageType.PhoneWideTile:
-				case PlayerSettings.WSAImageType.PhoneSplashScreen:
 				case PlayerSettings.WSAImageType.UWPSquare44x44Logo:
 				case PlayerSettings.WSAImageType.UWPSquare71x71Logo:
 				case PlayerSettings.WSAImageType.UWPSquare150x150Logo:
 				case PlayerSettings.WSAImageType.UWPSquare310x310Logo:
 				case PlayerSettings.WSAImageType.UWPWide310x150Logo:
-					return;
-				case (PlayerSettings.WSAImageType)16:
-				case (PlayerSettings.WSAImageType)17:
-				case (PlayerSettings.WSAImageType)18:
-				case (PlayerSettings.WSAImageType)19:
-				case (PlayerSettings.WSAImageType)20:
-				case (PlayerSettings.WSAImageType)26:
-				case (PlayerSettings.WSAImageType)27:
-				case (PlayerSettings.WSAImageType)28:
-				case (PlayerSettings.WSAImageType)29:
-				case (PlayerSettings.WSAImageType)30:
-					IL_6E:
+					break;
+				default:
 					if (type != PlayerSettings.WSAImageType.PackageLogo && type != PlayerSettings.WSAImageType.SplashScreenImage)
 					{
 						throw new Exception("Unknown WSA image type: " + type);
 					}
-					return;
+					break;
 				}
-				goto IL_6E;
 			}
 
 			private static void ValidateWSAImageScale(PlayerSettings.WSAImageScale scale)
@@ -4742,6 +2906,16 @@ namespace UnityEditor
 			}
 
 			public static extern bool EnableVariableGPU
+			{
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern uint PresentImmediateThreshold
 			{
 				[GeneratedByOldBindingsGenerator]
 				[MethodImpl(MethodImplOptions.InternalCall)]
@@ -4954,6 +3128,1930 @@ namespace UnityEditor
 			public static extern int GetGameRating(string name);
 		}
 
+		public class iOS
+		{
+			[Obsolete("exitOnSuspend is deprecated, use appInBackgroundBehavior", false)]
+			public static bool exitOnSuspend
+			{
+				get
+				{
+					return PlayerSettings.iOS.appInBackgroundBehavior == iOSAppInBackgroundBehavior.Exit;
+				}
+				set
+				{
+					PlayerSettings.iOS.appInBackgroundBehavior = iOSAppInBackgroundBehavior.Exit;
+				}
+			}
+
+			[Obsolete("Use Screen.SetResolution at runtime", true)]
+			public static iOSTargetResolution targetResolution
+			{
+				get
+				{
+					return iOSTargetResolution.Native;
+				}
+				set
+				{
+				}
+			}
+
+			[Obsolete("Use PlayerSettings.muteOtherAudioSources instead (UnityUpgradable) -> UnityEditor.PlayerSettings.muteOtherAudioSources", false)]
+			public static bool overrideIPodMusic
+			{
+				get
+				{
+					return PlayerSettings.muteOtherAudioSources;
+				}
+				set
+				{
+					PlayerSettings.muteOtherAudioSources = value;
+				}
+			}
+
+			public static extern string applicationDisplayName
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static string buildNumber
+			{
+				get
+				{
+					return PlayerSettings.GetBuildNumber(BuildTargetGroup.iPhone);
+				}
+				set
+				{
+					PlayerSettings.SetBuildNumber(BuildTargetGroup.iPhone, value);
+				}
+			}
+
+			public static extern bool disableDepthAndStencilBuffers
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			private static extern int scriptCallOptimizationInternal
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static ScriptCallOptimizationLevel scriptCallOptimization
+			{
+				get
+				{
+					return (ScriptCallOptimizationLevel)PlayerSettings.iOS.scriptCallOptimizationInternal;
+				}
+				set
+				{
+					PlayerSettings.iOS.scriptCallOptimizationInternal = (int)value;
+				}
+			}
+
+			private static extern int sdkVersionInternal
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static iOSSdkVersion sdkVersion
+			{
+				get
+				{
+					return (iOSSdkVersion)PlayerSettings.iOS.sdkVersionInternal;
+				}
+				set
+				{
+					PlayerSettings.iOS.sdkVersionInternal = (int)value;
+				}
+			}
+
+			[Obsolete("OBSOLETE warning targetOSVersion is obsolete, use targetOSVersionString")]
+			public static iOSTargetOSVersion targetOSVersion
+			{
+				get
+				{
+					return (iOSTargetOSVersion)PlayerSettings.iOS.iOSTargetOSVersionStringToObsoleteEnum(PlayerSettings.iOS.targetOSVersionString);
+				}
+				set
+				{
+					PlayerSettings.iOS.targetOSVersionString = PlayerSettings.iOS.iOSTargetOSVersionObsoleteEnumToString((int)value);
+				}
+			}
+
+			public static extern string targetOSVersionString
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			private static extern int targetDeviceInternal
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static iOSTargetDevice targetDevice
+			{
+				get
+				{
+					return (iOSTargetDevice)PlayerSettings.iOS.targetDeviceInternal;
+				}
+				set
+				{
+					PlayerSettings.iOS.targetDeviceInternal = (int)value;
+				}
+			}
+
+			public static extern bool prerenderedIcon
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern bool requiresPersistentWiFi
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern bool requiresFullScreen
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			private static extern int statusBarStyleInternal
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			[NativeProperty("UIStatusBarStyle")]
+			public static iOSStatusBarStyle statusBarStyle
+			{
+				get
+				{
+					return (iOSStatusBarStyle)PlayerSettings.iOS.statusBarStyleInternal;
+				}
+				set
+				{
+					PlayerSettings.iOS.statusBarStyleInternal = (int)value;
+				}
+			}
+
+			private static extern int deferSystemGesturesModeInternal
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static iOSSystemGestureDeferMode deferSystemGesturesMode
+			{
+				get
+				{
+					return (iOSSystemGestureDeferMode)PlayerSettings.iOS.deferSystemGesturesModeInternal;
+				}
+				set
+				{
+					PlayerSettings.iOS.deferSystemGesturesModeInternal = (int)value;
+				}
+			}
+
+			[NativeProperty("HideHomeButton")]
+			public static bool hideHomeButton
+			{
+				get;
+				set;
+			}
+
+			private static extern int appInBackgroundBehaviorInternal
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			[NativeProperty("IOSAppInBackgroundBehavior")]
+			public static iOSAppInBackgroundBehavior appInBackgroundBehavior
+			{
+				get
+				{
+					return (iOSAppInBackgroundBehavior)PlayerSettings.iOS.appInBackgroundBehaviorInternal;
+				}
+				set
+				{
+					PlayerSettings.iOS.appInBackgroundBehaviorInternal = (int)value;
+				}
+			}
+
+			private static extern int backgroundModesInternal
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			[NativeProperty("IOSAppInBackgroundBehavior")]
+			public static iOSBackgroundMode backgroundModes
+			{
+				get
+				{
+					return (iOSBackgroundMode)PlayerSettings.iOS.backgroundModesInternal;
+				}
+				set
+				{
+					PlayerSettings.iOS.backgroundModesInternal = (int)value;
+				}
+			}
+
+			public static extern bool forceHardShadowsOnMetal
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern bool allowHTTPDownload
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern string appleDeveloperTeamID
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern string iOSManualProvisioningProfileID
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern string tvOSManualProvisioningProfileID
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			private static extern int appleEnableAutomaticSigningInternal
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static bool appleEnableAutomaticSigning
+			{
+				get
+				{
+					return PlayerSettings.iOS.appleEnableAutomaticSigningInternal == 1;
+				}
+				set
+				{
+					PlayerSettings.iOS.appleEnableAutomaticSigningInternal = ((!value) ? 2 : 1);
+				}
+			}
+
+			public static extern string cameraUsageDescription
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern string locationUsageDescription
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern string microphoneUsageDescription
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			private static extern int showActivityIndicatorOnLoadingInternal
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			[NativeProperty("IOSAppInBackgroundBehavior")]
+			public static iOSShowActivityIndicatorOnLoading showActivityIndicatorOnLoading
+			{
+				get
+				{
+					return (iOSShowActivityIndicatorOnLoading)PlayerSettings.iOS.showActivityIndicatorOnLoadingInternal;
+				}
+				set
+				{
+					PlayerSettings.iOS.showActivityIndicatorOnLoadingInternal = (int)value;
+				}
+			}
+
+			public static extern bool useOnDemandResources
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			private static extern string[] iOSURLSchemes
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+			}
+
+			internal static extern bool requiresARKitSupport
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			internal static extern bool appleEnableProMotion
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			private static extern string iOSTargetOSVersionObsoleteEnumToString(int val);
+
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			private static extern int iOSTargetOSVersionStringToObsoleteEnum(string val);
+
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			internal static extern string[] GetAssetBundleVariantsWithDeviceRequirements();
+
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			private static extern int GetIOSDeviceRequirementCountForVariantName(string name);
+
+			private static bool CheckAssetBundleVariantHasDeviceRequirements(string name)
+			{
+				return PlayerSettings.iOS.GetIOSDeviceRequirementCountForVariantName(name) > 0;
+			}
+
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			private static extern void SetLaunchScreenImageInternal(Texture2D image, int type);
+
+			public static void SetLaunchScreenImage(Texture2D image, iOSLaunchScreenImageType type)
+			{
+				PlayerSettings.iOS.SetLaunchScreenImageInternal(image, (int)type);
+			}
+
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			private static extern void SetiOSLaunchScreenType(int type, int device);
+
+			public static void SetiPhoneLaunchScreenType(iOSLaunchScreenType type)
+			{
+				PlayerSettings.iOS.SetiOSLaunchScreenType((int)type, 0);
+			}
+
+			public static void SetiPadLaunchScreenType(iOSLaunchScreenType type)
+			{
+				PlayerSettings.iOS.SetiOSLaunchScreenType((int)type, 1);
+			}
+
+			internal static iOSDeviceRequirementGroup GetDeviceRequirementsForAssetBundleVariant(string name)
+			{
+				iOSDeviceRequirementGroup result;
+				if (!PlayerSettings.iOS.CheckAssetBundleVariantHasDeviceRequirements(name))
+				{
+					result = null;
+				}
+				else
+				{
+					result = new iOSDeviceRequirementGroup(name);
+				}
+				return result;
+			}
+
+			internal static void RemoveDeviceRequirementsForAssetBundleVariant(string name)
+			{
+				iOSDeviceRequirementGroup deviceRequirementsForAssetBundleVariant = PlayerSettings.iOS.GetDeviceRequirementsForAssetBundleVariant(name);
+				for (int i = 0; i < deviceRequirementsForAssetBundleVariant.count; i++)
+				{
+					deviceRequirementsForAssetBundleVariant.RemoveAt(0);
+				}
+			}
+
+			internal static iOSDeviceRequirementGroup AddDeviceRequirementsForAssetBundleVariant(string name)
+			{
+				return new iOSDeviceRequirementGroup(name);
+			}
+
+			internal static bool IsTargetVersionEqualOrHigher(Version requiredVersion)
+			{
+				Version version = new Version(8, 0);
+				Version v = (!string.IsNullOrEmpty(PlayerSettings.iOS.targetOSVersionString)) ? new Version(PlayerSettings.iOS.targetOSVersionString) : version;
+				return v >= requiredVersion;
+			}
+
+			internal static string[] GetURLSchemes()
+			{
+				return PlayerSettings.iOS.iOSURLSchemes;
+			}
+		}
+
+		public class macOS
+		{
+			public static string buildNumber
+			{
+				get
+				{
+					return PlayerSettings.GetBuildNumber(BuildTargetGroup.Standalone);
+				}
+				set
+				{
+					PlayerSettings.SetBuildNumber(BuildTargetGroup.Standalone, value);
+				}
+			}
+
+			internal static extern string applicationCategoryType
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+		}
+
+		public sealed class PS4
+		{
+			public enum PS4AppCategory
+			{
+				Application,
+				Patch,
+				Remaster
+			}
+
+			public enum PS4RemotePlayKeyAssignment
+			{
+				None = -1,
+				PatternA,
+				PatternB,
+				PatternC,
+				PatternD,
+				PatternE,
+				PatternF,
+				PatternG,
+				PatternH
+			}
+
+			public enum PS4EnterButtonAssignment
+			{
+				CircleButton,
+				CrossButton
+			}
+
+			public enum PlayStationVREyeToEyeDistanceSettings
+			{
+				PerUser,
+				ForceDefault,
+				DynamicModeAtRuntime
+			}
+
+			public static extern string npTrophyPackPath
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern int npAgeRating
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern string npTitleSecret
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern int parentalLevel
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern int applicationParameter1
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern int applicationParameter2
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern int applicationParameter3
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern int applicationParameter4
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern string passcode
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern string monoEnv
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern bool playerPrefsSupport
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern bool restrictedAudioUsageRights
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern bool useResolutionFallback
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern string contentID
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern PlayerSettings.PS4.PS4AppCategory category
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern int appType
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern string masterVersion
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern string appVersion
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern PlayerSettings.PS4.PS4RemotePlayKeyAssignment remotePlayKeyAssignment
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern string remotePlayKeyMappingDir
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern int playTogetherPlayerCount
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern PlayerSettings.PS4.PS4EnterButtonAssignment enterButtonAssignment
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern string paramSfxPath
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern int videoOutPixelFormat
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern int videoOutInitialWidth
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			[Obsolete("videoOutResolution is deprecated. Use PlayerSettings.PS4.videoOutInitialWidth and PlayerSettings.PS4.videoOutReprojectionRate to control initial display resolution and reprojection rate.")]
+			public static int videoOutResolution
+			{
+				get
+				{
+					int videoOutReprojectionRate = PlayerSettings.PS4.videoOutReprojectionRate;
+					int videoOutInitialWidth = PlayerSettings.PS4.videoOutInitialWidth;
+					int result;
+					if (videoOutReprojectionRate != 60)
+					{
+						if (videoOutReprojectionRate != 90)
+						{
+							if (videoOutReprojectionRate != 120)
+							{
+								if (videoOutInitialWidth != 1280)
+								{
+									if (videoOutInitialWidth != 1440)
+									{
+										if (videoOutInitialWidth != 1600)
+										{
+											if (videoOutInitialWidth != 1760)
+											{
+												if (videoOutInitialWidth != 1920)
+												{
+												}
+												result = 4;
+											}
+											else
+											{
+												result = 3;
+											}
+										}
+										else
+										{
+											result = 2;
+										}
+									}
+									else
+									{
+										result = 1;
+									}
+								}
+								else
+								{
+									result = 0;
+								}
+							}
+							else
+							{
+								result = 7;
+							}
+						}
+						else
+						{
+							result = 6;
+						}
+					}
+					else
+					{
+						result = 5;
+					}
+					return result;
+				}
+				set
+				{
+					int videoOutReprojectionRate = 0;
+					int videoOutInitialWidth = 1920;
+					switch (value)
+					{
+					case 0:
+						videoOutInitialWidth = 1280;
+						break;
+					case 1:
+						videoOutInitialWidth = 1440;
+						break;
+					case 2:
+						videoOutInitialWidth = 1600;
+						break;
+					case 3:
+						videoOutInitialWidth = 1760;
+						break;
+					case 4:
+						videoOutInitialWidth = 1920;
+						break;
+					case 5:
+						videoOutReprojectionRate = 60;
+						break;
+					case 6:
+						videoOutReprojectionRate = 90;
+						break;
+					case 7:
+						videoOutReprojectionRate = 120;
+						break;
+					}
+					PlayerSettings.PS4.videoOutInitialWidth = videoOutInitialWidth;
+					PlayerSettings.PS4.videoOutReprojectionRate = videoOutReprojectionRate;
+				}
+			}
+
+			public static extern int videoOutBaseModeInitialWidth
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern int videoOutReprojectionRate
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern string PronunciationXMLPath
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern string PronunciationSIGPath
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern string BackgroundImagePath
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern string StartupImagePath
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern string startupImagesFolder
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern string iconImagesFolder
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern string SaveDataImagePath
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern string SdkOverride
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern string BGMPath
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern string ShareFilePath
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern string ShareOverlayImagePath
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern string PrivacyGuardImagePath
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern bool patchDayOne
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern string PatchPkgPath
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern string PatchLatestPkgPath
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern string PatchChangeinfoPath
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern string NPtitleDatPath
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern bool pnSessions
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern bool pnPresence
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern bool pnFriends
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern bool pnGameCustomData
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern int downloadDataSize
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern int garlicHeapSize
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern int proGarlicHeapSize
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern bool reprojectionSupport
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern bool useAudio3dBackend
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern int audio3dVirtualSpeakerCount
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern int scriptOptimizationLevel
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern int socialScreenEnabled
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern bool attribUserManagement
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern bool attribMoveSupport
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern bool attrib3DSupport
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern bool attribShareSupport
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern bool attribExclusiveVR
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern bool disableAutoHideSplash
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern int attribCpuUsage
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern bool videoRecordingFeaturesUsed
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern bool contentSearchFeaturesUsed
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern PlayerSettings.PS4.PlayStationVREyeToEyeDistanceSettings attribEyeToEyeDistanceSettingVR
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern string[] includedModules
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern bool enableApplicationExit
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+		}
+
+		public sealed class PSVita
+		{
+			public enum PSVitaPowerMode
+			{
+				ModeA,
+				ModeB,
+				ModeC
+			}
+
+			public enum PSVitaTvBootMode
+			{
+				Default,
+				PSVitaBootablePSVitaTvBootable,
+				PSVitaBootablePSVitaTvNotBootable
+			}
+
+			public enum PSVitaEnterButtonAssignment
+			{
+				Default,
+				CircleButton,
+				CrossButton
+			}
+
+			public enum PSVitaAppCategory
+			{
+				Application,
+				ApplicationPatch
+			}
+
+			public enum PSVitaMemoryExpansionMode
+			{
+				None,
+				ExpandBy29MB,
+				ExpandBy77MB,
+				ExpandBy109MB
+			}
+
+			public enum PSVitaDRMType
+			{
+				PaidFor,
+				Free
+			}
+
+			public static extern string npTrophyPackPath
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern PlayerSettings.PSVita.PSVitaPowerMode powerMode
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern bool acquireBGM
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern bool npSupportGBMorGJP
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern PlayerSettings.PSVita.PSVitaTvBootMode tvBootMode
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern bool tvDisableEmu
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern bool upgradable
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern bool healthWarning
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern bool useLibLocation
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern bool infoBarOnStartup
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern bool infoBarColor
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern int scriptOptimizationLevel
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern PlayerSettings.PSVita.PSVitaEnterButtonAssignment enterButtonAssignment
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern int saveDataQuota
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern int parentalLevel
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern string shortTitle
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern string contentID
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern PlayerSettings.PSVita.PSVitaAppCategory category
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern string masterVersion
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern string appVersion
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			[Obsolete("AllowTwitterDialog has no effect as of SDK 3.570")]
+			public static extern bool AllowTwitterDialog
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern int npAgeRating
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern string npTitleDatPath
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern string npCommunicationsID
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern string npCommsPassphrase
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern string npCommsSig
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern string paramSfxPath
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern string manualPath
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern string liveAreaGatePath
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern string liveAreaBackroundPath
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern string liveAreaPath
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern string liveAreaTrialPath
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern string patchChangeInfoPath
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern string patchOriginalPackage
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern string packagePassword
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern string keystoneFile
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern PlayerSettings.PSVita.PSVitaMemoryExpansionMode memoryExpansionMode
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern PlayerSettings.PSVita.PSVitaDRMType drmType
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern int storageType
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern int mediaCapacity
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+		}
+
+		public enum TizenCapability
+		{
+			Location,
+			DataSharing,
+			NetworkGet,
+			WifiDirect,
+			CallHistoryRead,
+			Power,
+			ContactWrite,
+			MessageWrite,
+			ContentWrite,
+			Push,
+			AccountRead,
+			ExternalStorage,
+			Recorder,
+			PackageManagerInfo,
+			NFCCardEmulation,
+			CalendarWrite,
+			WindowPrioritySet,
+			VolumeSet,
+			CallHistoryWrite,
+			AlarmSet,
+			Call,
+			Email,
+			ContactRead,
+			Shortcut,
+			KeyManager,
+			LED,
+			NetworkProfile,
+			AlarmGet,
+			Display,
+			CalendarRead,
+			NFC,
+			AccountWrite,
+			Bluetooth,
+			Notification,
+			NetworkSet,
+			ExternalStorageAppData,
+			Download,
+			Telephony,
+			MessageRead,
+			MediaStorage,
+			Internet,
+			Camera,
+			Haptic,
+			AppManagerLaunch,
+			SystemSettings
+		}
+
+		public sealed class Tizen
+		{
+			public static extern string productDescription
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern string productURL
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern string signingProfileName
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern string deploymentTarget
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern int deploymentTargetType
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern TizenOSVersion minOSVersion
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern TizenShowActivityIndicatorOnLoading showActivityIndicatorOnLoading
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			private static extern void SetCapability(string name, string value);
+
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			private static extern string GetCapability(string name);
+
+			public static void SetCapability(PlayerSettings.TizenCapability capability, bool value)
+			{
+				PlayerSettings.Tizen.SetCapability(capability.ToString(), value.ToString());
+			}
+
+			public static bool GetCapability(PlayerSettings.TizenCapability capability)
+			{
+				string capability2 = PlayerSettings.Tizen.GetCapability(capability.ToString());
+				bool result;
+				if (string.IsNullOrEmpty(capability2))
+				{
+					result = false;
+				}
+				else
+				{
+					try
+					{
+						result = (bool)TypeDescriptor.GetConverter(typeof(bool)).ConvertFromString(capability2);
+					}
+					catch
+					{
+						Debug.LogError(string.Concat(new string[]
+						{
+							"Failed to parse value  ('",
+							capability.ToString(),
+							",",
+							capability2,
+							"') to bool type."
+						}));
+						result = false;
+					}
+				}
+				return result;
+			}
+		}
+
+		public class tvOS
+		{
+			private static extern int sdkVersionInt
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static tvOSSdkVersion sdkVersion
+			{
+				get
+				{
+					return (tvOSSdkVersion)PlayerSettings.tvOS.sdkVersionInt;
+				}
+				set
+				{
+					PlayerSettings.tvOS.sdkVersionInt = (int)value;
+				}
+			}
+
+			public static string buildNumber
+			{
+				get
+				{
+					return PlayerSettings.GetBuildNumber(BuildTargetGroup.tvOS);
+				}
+				set
+				{
+					PlayerSettings.SetBuildNumber(BuildTargetGroup.tvOS, value);
+				}
+			}
+
+			[Obsolete("targetOSVersion is obsolete. Use targetOSVersionString instead.", false)]
+			public static tvOSTargetOSVersion targetOSVersion
+			{
+				get
+				{
+					string targetOSVersionString = PlayerSettings.tvOS.targetOSVersionString;
+					tvOSTargetOSVersion result;
+					if (targetOSVersionString == "9.0")
+					{
+						result = tvOSTargetOSVersion.tvOS_9_0;
+					}
+					else if (targetOSVersionString == "9.1")
+					{
+						result = tvOSTargetOSVersion.tvOS_9_1;
+					}
+					else
+					{
+						result = tvOSTargetOSVersion.Unknown;
+					}
+					return result;
+				}
+				set
+				{
+					string targetOSVersionString = "";
+					if (value == tvOSTargetOSVersion.tvOS_9_0)
+					{
+						targetOSVersionString = "9.0";
+					}
+					else if (value == tvOSTargetOSVersion.tvOS_9_1)
+					{
+						targetOSVersionString = "9.1";
+					}
+					PlayerSettings.tvOS.targetOSVersionString = targetOSVersionString;
+				}
+			}
+
+			public static extern string targetOSVersionString
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			private static extern Texture2D[] smallIconLayers
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			private static extern Texture2D[] smallIconLayers2x
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			private static extern Texture2D[] largeIconLayers
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			private static extern Texture2D[] largeIconLayers2x
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			private static extern Texture2D[] topShelfImageLayers
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			private static extern Texture2D[] topShelfImageLayers2x
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			private static extern Texture2D[] topShelfImageWideLayers
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			private static extern Texture2D[] topShelfImageWideLayers2x
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern bool requireExtendedGameController
+			{
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			internal static Texture2D[] GetSmallIconLayers()
+			{
+				return PlayerSettings.tvOS.smallIconLayers;
+			}
+
+			internal static void SetSmallIconLayers(Texture2D[] layers)
+			{
+				PlayerSettings.tvOS.smallIconLayers = layers;
+			}
+
+			internal static Texture2D[] GetSmallIconLayers2x()
+			{
+				return PlayerSettings.tvOS.smallIconLayers2x;
+			}
+
+			internal static void SetSmallIconLayers2x(Texture2D[] layers)
+			{
+				PlayerSettings.tvOS.smallIconLayers2x = layers;
+			}
+
+			internal static Texture2D[] GetLargeIconLayers()
+			{
+				return PlayerSettings.tvOS.largeIconLayers;
+			}
+
+			internal static void SetLargeIconLayers(Texture2D[] layers)
+			{
+				PlayerSettings.tvOS.largeIconLayers = layers;
+			}
+
+			internal static Texture2D[] GetLargeIconLayers2x()
+			{
+				return PlayerSettings.tvOS.largeIconLayers2x;
+			}
+
+			internal static void SetLargeIconLayers2x(Texture2D[] layers)
+			{
+				PlayerSettings.tvOS.largeIconLayers2x = layers;
+			}
+
+			internal static Texture2D[] GetTopShelfImageLayers()
+			{
+				return PlayerSettings.tvOS.topShelfImageLayers;
+			}
+
+			internal static void SetTopShelfImageLayers(Texture2D[] layers)
+			{
+				PlayerSettings.tvOS.topShelfImageLayers = layers;
+			}
+
+			internal static Texture2D[] GetTopShelfImageLayers2x()
+			{
+				return PlayerSettings.tvOS.topShelfImageLayers2x;
+			}
+
+			internal static void SetTopShelfImageLayers2x(Texture2D[] layers)
+			{
+				PlayerSettings.tvOS.topShelfImageLayers2x = layers;
+			}
+
+			internal static Texture2D[] GetTopShelfImageWideLayers()
+			{
+				return PlayerSettings.tvOS.topShelfImageWideLayers;
+			}
+
+			internal static void SetTopShelfImageWideLayers(Texture2D[] layers)
+			{
+				PlayerSettings.tvOS.topShelfImageWideLayers = layers;
+			}
+
+			internal static Texture2D[] GetTopShelfImageWideLayers2x()
+			{
+				return PlayerSettings.tvOS.topShelfImageWideLayers2x;
+			}
+
+			internal static void SetTopShelfImageWideLayers2x(Texture2D[] layers)
+			{
+				PlayerSettings.tvOS.topShelfImageWideLayers2x = layers;
+			}
+		}
+
 		private static SerializedObject _serializedObject;
 
 		internal static readonly char[] defineSplits = new char[]
@@ -4962,6 +5060,8 @@ namespace UnityEditor
 			',',
 			' '
 		};
+
+		internal static Dictionary<BuildTargetGroup, IPlatformIconProvider> platformIconProviders = new Dictionary<BuildTargetGroup, IPlatformIconProvider>();
 
 		public static extern string companyName
 		{
@@ -5005,15 +5105,12 @@ namespace UnityEditor
 			set;
 		}
 
+		[Obsolete("cloudProjectId is deprecated, use CloudProjectSettings.projectId instead")]
 		public static string cloudProjectId
 		{
 			get
 			{
 				return PlayerSettings.cloudProjectIdRaw;
-			}
-			internal set
-			{
-				PlayerSettings.cloudProjectIdRaw = value;
 			}
 		}
 
@@ -5102,6 +5199,7 @@ namespace UnityEditor
 			set;
 		}
 
+		[Obsolete("defaultIsFullScreen is deprecated, use fullScreenMode instead")]
 		public static extern bool defaultIsFullScreen
 		{
 			[GeneratedByOldBindingsGenerator]
@@ -5113,6 +5211,16 @@ namespace UnityEditor
 		}
 
 		public static extern bool defaultIsNativeResolution
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public static extern bool macRetinaSupport
 		{
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
@@ -5182,6 +5290,7 @@ namespace UnityEditor
 			set;
 		}
 
+		[Obsolete("macFullscreenMode is deprecated, use fullScreenMode instead")]
 		public static extern MacFullscreenMode macFullscreenMode
 		{
 			[GeneratedByOldBindingsGenerator]
@@ -5192,6 +5301,7 @@ namespace UnityEditor
 			set;
 		}
 
+		[Obsolete("d3d9FullscreenMode is deprecated, use fullScreenMode instead")]
 		public static extern D3D9FullscreenMode d3d9FullscreenMode
 		{
 			[GeneratedByOldBindingsGenerator]
@@ -5202,6 +5312,7 @@ namespace UnityEditor
 			set;
 		}
 
+		[Obsolete("d3d11FullscreenMode is deprecated, use fullScreenMode instead")]
 		public static extern D3D11FullscreenMode d3d11FullscreenMode
 		{
 			[GeneratedByOldBindingsGenerator]
@@ -5210,6 +5321,18 @@ namespace UnityEditor
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
+		}
+
+		public static FullScreenMode fullScreenMode
+		{
+			get
+			{
+				return (FullScreenMode)PlayerSettings.GetFullscreenMode();
+			}
+			set
+			{
+				PlayerSettings.SetFullscreenMode((int)value);
+			}
 		}
 
 		public static extern bool virtualRealitySupported
@@ -5344,16 +5467,6 @@ namespace UnityEditor
 			{
 				PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.iPhone, value);
 			}
-		}
-
-		internal static extern string webPlayerTemplate
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
 		}
 
 		internal static extern string[] templateCustomKeys
@@ -5744,6 +5857,16 @@ namespace UnityEditor
 			set;
 		}
 
+		public static extern bool preserveFramebufferAlpha
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
 		[Obsolete("apiCompatibilityLevel is deprecated. Use PlayerSettings.GetApiCompatibilityLevel()/PlayerSettings.SetApiCompatibilityLevel() instead.")]
 		public static extern ApiCompatibilityLevel apiCompatibilityLevel
 		{
@@ -5826,16 +5949,6 @@ namespace UnityEditor
 			set;
 		}
 
-		public static extern bool mobileMTRendering
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
 		[Obsolete("Use UnityEditor.PlayerSettings.SetGraphicsAPIs/GetGraphicsAPIs instead")]
 		public static extern bool useDirect3D11
 		{
@@ -5886,6 +5999,28 @@ namespace UnityEditor
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
+		}
+
+		internal static extern bool runPlayModeTestAsEditModeTest
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public static bool enable360StereoCapture
+		{
+			get
+			{
+				return PlayerSettings360StereoCapture.enable360StereoCapture;
+			}
+			set
+			{
+				PlayerSettings360StereoCapture.enable360StereoCapture = value;
+			}
 		}
 
 		[Obsolete("The option alwaysDisplayWatermark is deprecated and is always false", true)]
@@ -5984,6 +6119,10 @@ namespace UnityEditor
 			{
 				PlayerSettings.applicationIdentifier = value;
 			}
+		}
+
+		private PlayerSettings()
+		{
 		}
 
 		[GeneratedByOldBindingsGenerator]
@@ -6139,6 +6278,11 @@ namespace UnityEditor
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern void SetDirty();
 
+		internal static void SetCloudProjectId(string projectId)
+		{
+			PlayerSettings.cloudProjectIdRaw = projectId;
+		}
+
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern void SetCloudServiceEnabled(string serviceKey, bool enabled);
@@ -6155,46 +6299,84 @@ namespace UnityEditor
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void SetAspectRatio(AspectRatio aspectRatio, bool enable);
 
-		public static Texture2D[] GetIconsForTargetGroup(BuildTargetGroup platform)
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern int GetFullscreenMode();
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void SetFullscreenMode(int fullscreenMode);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern Texture2D[] GetIconsForPlatform(string platform, IconKind kind);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern Texture2D[] GetAllIconsForPlatform(string platform);
+
+		internal static void SetIconsForPlatform(string platform, Texture2D[] icons)
 		{
-			Texture2D[] iconsForPlatform = PlayerSettings.GetIconsForPlatform(PlayerSettings.GetPlatformName(platform));
-			Texture2D[] result;
-			if (iconsForPlatform.Length == 0)
+			PlayerSettings.SetIconsForPlatform(platform, icons, IconKind.Any);
+		}
+
+		internal static void SetIconsForPlatform(string platform, Texture2D[] icons, IconKind[] kinds)
+		{
+			IconKind[] supportedIconKindsForPlatform = PlayerSettings.GetSupportedIconKindsForPlatform(platform);
+			for (int i = 0; i < supportedIconKindsForPlatform.Length; i++)
 			{
-				result = new Texture2D[PlayerSettings.GetIconSizesForTargetGroup(platform).Length];
+				IconKind iconKind = supportedIconKindsForPlatform[i];
+				List<Texture2D> list = new List<Texture2D>();
+				for (int j = 0; j < icons.Length; j++)
+				{
+					if (kinds[j] == iconKind)
+					{
+						list.Add(icons[j]);
+					}
+				}
+				PlayerSettings.SetIconsForPlatform(platform, list.ToArray(), iconKind);
 			}
-			else
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void SetIconsForPlatform(string platform, Texture2D[] icons, IconKind kind);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern int[] GetIconWidthsForPlatform(string platform, IconKind kind);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern int[] GetIconHeightsForPlatform(string platform, IconKind kind);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern int[] GetIconWidthsOfAllKindsForPlatform(string platform);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern int[] GetIconHeightsOfAllKindsForPlatform(string platform);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern IconKind[] GetIconKindsForPlatform(string platform);
+
+		internal static IconKind[] GetSupportedIconKindsForPlatform(string platform)
+		{
+			List<IconKind> list = new List<IconKind>();
+			IconKind[] iconKindsForPlatform = PlayerSettings.GetIconKindsForPlatform(platform);
+			IconKind[] array = iconKindsForPlatform;
+			for (int i = 0; i < array.Length; i++)
 			{
-				result = iconsForPlatform;
+				IconKind item = array[i];
+				if (!list.Contains(item))
+				{
+					list.Add(item);
+				}
 			}
-			return result;
+			return list.ToArray();
 		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern Texture2D[] GetIconsForPlatform(string platform);
-
-		public static void SetIconsForTargetGroup(BuildTargetGroup platform, Texture2D[] icons)
-		{
-			PlayerSettings.SetIconsForPlatform(PlayerSettings.GetPlatformName(platform), icons);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern void SetIconsForPlatform(string platform, Texture2D[] icons);
-
-		public static int[] GetIconSizesForTargetGroup(BuildTargetGroup platform)
-		{
-			return PlayerSettings.GetIconWidthsForPlatform(PlayerSettings.GetPlatformName(platform));
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern int[] GetIconWidthsForPlatform(string platform);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern int[] GetIconHeightsForPlatform(string platform);
 
 		internal static string GetPlatformName(BuildTargetGroup targetGroup)
 		{
@@ -6204,7 +6386,7 @@ namespace UnityEditor
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern Texture2D GetIconForPlatformAtSize(string platform, int width, int height);
+		internal static extern Texture2D GetIconForPlatformAtSize(string platform, int width, int height, IconKind kind);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -6213,6 +6395,14 @@ namespace UnityEditor
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern void SetBatchingForPlatform(BuildTarget platform, int staticBatching, int dynamicBatching);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern LightmapEncodingQuality GetLightmapEncodingQualityForPlatformGroup(BuildTargetGroup platformGroup);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void SetLightmapEncodingQualityForPlatformGroup(BuildTargetGroup platformGroup, LightmapEncodingQuality encodingQuality);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -6239,6 +6429,20 @@ namespace UnityEditor
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void SetUseDefaultGraphicsAPIs(BuildTarget platform, bool automatic);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern ColorGamut[] GetColorGamuts();
+
+		internal static void SetColorGamuts(ColorGamut[] colorSpaces)
+		{
+			PlayerSettings.SetColorGamutsImpl(colorSpaces);
+			PlayerSettingsEditor.SyncColorGamuts();
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void SetColorGamutsImpl(ColorGamut[] colorSpaces);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -6299,6 +6503,18 @@ namespace UnityEditor
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern ScriptingImplementation GetDefaultScriptingBackend(BuildTargetGroup targetGroup);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern void SetIl2CppCompilerConfiguration(BuildTargetGroup targetGroup, Il2CppCompilerConfiguration configuration);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern Il2CppCompilerConfiguration GetIl2CppCompilerConfiguration(BuildTargetGroup targetGroup);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern bool GetIncrementalIl2CppBuild(BuildTargetGroup targetGroup);
 
 		[GeneratedByOldBindingsGenerator]
@@ -6312,6 +6528,14 @@ namespace UnityEditor
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void SetAdditionalIl2CppArgs(string additionalArgs);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern bool GetPlatformVuforiaEnabled(BuildTargetGroup targetGroup);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern void SetPlatformVuforiaEnabled(BuildTargetGroup targetGroup, bool enabled);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -6331,10 +6555,276 @@ namespace UnityEditor
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern void SetMobileMTRendering(BuildTargetGroup targetGroup, bool enable);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern bool GetMobileMTRendering(BuildTargetGroup targetGroup);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern StackTraceLogType GetStackTraceLogType(LogType logType);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void SetStackTraceLogType(LogType logType, StackTraceLogType stackTraceType);
+
+		public static string[] GetAvailableVirtualRealitySDKs(BuildTargetGroup targetGroup)
+		{
+			return VREditor.GetAvailableVirtualRealitySDKs(targetGroup);
+		}
+
+		public static bool GetVirtualRealitySupported(BuildTargetGroup targetGroup)
+		{
+			return VREditor.GetVREnabledOnTargetGroup(targetGroup);
+		}
+
+		public static void SetVirtualRealitySupported(BuildTargetGroup targetGroup, bool value)
+		{
+			VREditor.SetVREnabledOnTargetGroup(targetGroup, value);
+		}
+
+		public static string[] GetVirtualRealitySDKs(BuildTargetGroup targetGroup)
+		{
+			return VREditor.GetVirtualRealitySDKs(targetGroup);
+		}
+
+		public static void SetVirtualRealitySDKs(BuildTargetGroup targetGroup, string[] sdks)
+		{
+			VREditor.SetVirtualRealitySDKs(targetGroup, sdks);
+		}
+
+		internal static IPlatformIconProvider GetPlatformIconProvider(BuildTargetGroup platform)
+		{
+			IPlatformIconProvider result;
+			if (!PlayerSettings.platformIconProviders.ContainsKey(platform))
+			{
+				result = null;
+			}
+			else
+			{
+				result = PlayerSettings.platformIconProviders[platform];
+			}
+			return result;
+		}
+
+		internal static bool HasPlatformIconProvider(BuildTargetGroup platform)
+		{
+			return PlayerSettings.platformIconProviders.ContainsKey(platform);
+		}
+
+		internal static void RegisterPlatformIconProvider(BuildTargetGroup platform, IPlatformIconProvider platformIconProvider)
+		{
+			if (!PlayerSettings.platformIconProviders.ContainsKey(platform))
+			{
+				PlayerSettings.platformIconProviders[platform] = platformIconProvider;
+			}
+		}
+
+		public static PlatformIcon[] GetPlatformIcons(BuildTargetGroup platform, PlatformIconKind kind)
+		{
+			IPlatformIconProvider platformIconProvider = PlayerSettings.GetPlatformIconProvider(platform);
+			PlatformIcon[] result;
+			if (platformIconProvider == null)
+			{
+				result = new PlatformIcon[0];
+			}
+			else
+			{
+				string platformName = PlayerSettings.GetPlatformName(platform);
+				PlatformIconStruct[] platformIconsInternal = PlayerSettings.GetPlatformIconsInternal(platformName, kind.kind);
+				PlatformIcon[] requiredPlatformIconsByType = PlatformIcon.GetRequiredPlatformIconsByType(platformIconProvider, kind);
+				if (platformIconsInternal.Length <= 0)
+				{
+					PlatformIcon[] array = requiredPlatformIconsByType;
+					for (int i = 0; i < array.Length; i++)
+					{
+						PlatformIcon platformIcon = array[i];
+						platformIcon.SetTextures(null);
+					}
+				}
+				else
+				{
+					PlatformIcon[] array2 = requiredPlatformIconsByType;
+					for (int j = 0; j < array2.Length; j++)
+					{
+						PlatformIcon platformIcon2 = array2[j];
+						PlatformIconStruct[] array3 = platformIconsInternal;
+						for (int k = 0; k < array3.Length; k++)
+						{
+							PlatformIconStruct platformIconStruct = array3[k];
+							int num = (!kind.Equals(PlatformIconKind.Any)) ? kind.kind : platformIconStruct.m_Kind;
+							if (platformIcon2.kind.kind == num && platformIcon2.iconSubKind == platformIconStruct.m_SubKind)
+							{
+								if (platformIcon2.width == platformIconStruct.m_Width && platformIcon2.height == platformIconStruct.m_Height)
+								{
+									Texture2D[] array4 = platformIconStruct.m_Textures.Take(platformIcon2.maxLayerCount).ToArray<Texture2D>();
+									Texture2D[] array5 = new Texture2D[(array4.Length <= platformIcon2.minLayerCount) ? platformIcon2.minLayerCount : array4.Length];
+									for (int l = 0; l < array4.Length; l++)
+									{
+										array5[l] = array4[l];
+									}
+									platformIcon2.SetTextures(array5);
+									break;
+								}
+							}
+						}
+					}
+				}
+				result = requiredPlatformIconsByType;
+			}
+			return result;
+		}
+
+		public static void SetPlatformIcons(BuildTargetGroup platform, PlatformIconKind kind, PlatformIcon[] icons)
+		{
+			string platformName = PlayerSettings.GetPlatformName(platform);
+			IPlatformIconProvider platformIconProvider = PlayerSettings.GetPlatformIconProvider(platform);
+			if (platformIconProvider != null)
+			{
+				int num = PlatformIcon.GetRequiredPlatformIconsByType(platformIconProvider, kind).Length;
+				PlatformIconStruct[] icons2;
+				if (icons == null)
+				{
+					icons2 = new PlatformIconStruct[0];
+				}
+				else
+				{
+					if (num != icons.Length)
+					{
+						throw new InvalidOperationException(string.Format("Attempting to set an incorrect number of icons for {0} {1} kind, it requires {2} icons but trying to assign {3}.", new object[]
+						{
+							platform.ToString(),
+							kind.ToString(),
+							num,
+							icons.Length
+						}));
+					}
+					icons2 = (from i in icons
+					select i.GetPlatformIconStruct()).ToArray<PlatformIconStruct>();
+				}
+				PlayerSettings.SetPlatformIconsInternal(platformName, icons2, kind.kind);
+			}
+		}
+
+		public static PlatformIconKind[] GetSupportedIconKindsForPlatform(BuildTargetGroup platform)
+		{
+			IPlatformIconProvider platformIconProvider = PlayerSettings.GetPlatformIconProvider(platform);
+			PlatformIconKind[] result;
+			if (platformIconProvider == null)
+			{
+				result = new PlatformIconKind[0];
+			}
+			else
+			{
+				result = platformIconProvider.GetRequiredPlatformIcons().Keys.ToArray<PlatformIconKind>();
+			}
+			return result;
+		}
+
+		internal static int GetNonEmptyPlatformIconCount(PlatformIcon[] icons)
+		{
+			return icons.Count((PlatformIcon i) => !i.IsEmpty());
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void SetPlatformIconsInternal(string platform, PlatformIconStruct[] icons, int kind);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern PlatformIconStruct[] GetPlatformIconsInternal(string platform, int kind);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern Texture2D GetPlatformIconAtSize(string platform, int width, int height, int kind, string subKind = "", int layer = 0);
+
+		internal static void ClearSetIconsForPlatform(BuildTargetGroup target)
+		{
+			PlayerSettings.SetPlatformIcons(target, PlatformIconKind.Any, null);
+		}
+
+		public static void SetIconsForTargetGroup(BuildTargetGroup platform, Texture2D[] icons, IconKind kind)
+		{
+			if (platform == BuildTargetGroup.iPhone || platform == BuildTargetGroup.tvOS || platform == BuildTargetGroup.Android)
+			{
+				IPlatformIconProvider platformIconProvider = PlayerSettings.GetPlatformIconProvider(platform);
+				if (platformIconProvider != null)
+				{
+					PlatformIconKind platformIconKindFromEnumValue = platformIconProvider.GetPlatformIconKindFromEnumValue(kind);
+					PlatformIcon[] platformIcons = PlayerSettings.GetPlatformIcons(platform, platformIconKindFromEnumValue);
+					for (int i = 0; i < icons.Length; i++)
+					{
+						platformIcons[i].SetTexture(icons[i], 0);
+					}
+					PlayerSettings.SetPlatformIcons(platform, platformIconKindFromEnumValue, platformIcons);
+				}
+			}
+			else
+			{
+				PlayerSettings.SetIconsForPlatform(PlayerSettings.GetPlatformName(platform), icons, kind);
+			}
+		}
+
+		public static void SetIconsForTargetGroup(BuildTargetGroup platform, Texture2D[] icons)
+		{
+			PlayerSettings.SetIconsForTargetGroup(platform, icons, IconKind.Any);
+		}
+
+		public static Texture2D[] GetIconsForTargetGroup(BuildTargetGroup platform, IconKind kind)
+		{
+			Texture2D[] result;
+			if (platform == BuildTargetGroup.iPhone || platform == BuildTargetGroup.tvOS || platform == BuildTargetGroup.Android)
+			{
+				IPlatformIconProvider platformIconProvider = PlayerSettings.GetPlatformIconProvider(platform);
+				if (platformIconProvider == null)
+				{
+					result = new Texture2D[0];
+				}
+				else
+				{
+					PlatformIconKind platformIconKindFromEnumValue = platformIconProvider.GetPlatformIconKindFromEnumValue(kind);
+					result = (from t in PlayerSettings.GetPlatformIcons(platform, platformIconKindFromEnumValue)
+					select t.GetTexture(0)).ToArray<Texture2D>();
+				}
+			}
+			else
+			{
+				Texture2D[] iconsForPlatform = PlayerSettings.GetIconsForPlatform(PlayerSettings.GetPlatformName(platform), kind);
+				result = iconsForPlatform;
+			}
+			return result;
+		}
+
+		public static Texture2D[] GetIconsForTargetGroup(BuildTargetGroup platform)
+		{
+			return PlayerSettings.GetIconsForTargetGroup(platform, IconKind.Any);
+		}
+
+		public static int[] GetIconSizesForTargetGroup(BuildTargetGroup platform, IconKind kind)
+		{
+			int[] result;
+			if (platform == BuildTargetGroup.iPhone || platform == BuildTargetGroup.tvOS || platform == BuildTargetGroup.Android)
+			{
+				IPlatformIconProvider platformIconProvider = PlayerSettings.GetPlatformIconProvider(platform);
+				if (platformIconProvider == null)
+				{
+					result = new int[0];
+				}
+				else
+				{
+					PlatformIconKind platformIconKindFromEnumValue = platformIconProvider.GetPlatformIconKindFromEnumValue(kind);
+					result = (from s in PlayerSettings.GetPlatformIcons(platform, platformIconKindFromEnumValue)
+					select s.width).ToArray<int>();
+				}
+			}
+			else
+			{
+				result = PlayerSettings.GetIconWidthsForPlatform(PlayerSettings.GetPlatformName(platform), kind);
+			}
+			return result;
+		}
+
+		public static int[] GetIconSizesForTargetGroup(BuildTargetGroup platform)
+		{
+			return PlayerSettings.GetIconSizesForTargetGroup(platform, IconKind.Any);
+		}
 	}
 }

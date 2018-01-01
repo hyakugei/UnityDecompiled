@@ -389,7 +389,7 @@ namespace UnityEditor
 				if (result.error != null)
 				{
 					this.m_Purchasing = AssetStoreInstaBuyWindow.PurchaseStatus.Declined;
-					this.m_Message = "An error occured while completing you purhase.";
+					this.m_Message = "An error occurred while completing you purhase.";
 					base.Close();
 				}
 				string text = null;

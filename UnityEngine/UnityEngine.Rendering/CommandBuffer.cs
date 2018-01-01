@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using UnityEngine.Bindings;
 using UnityEngine.Internal;
 using UnityEngine.Scripting;
 
 namespace UnityEngine.Rendering
 {
-	[UsedByNativeCode]
+	[NativeType("Runtime/Graphics/CommandBuffer/RenderingCommandBuffer.h"), UsedByNativeCode]
 	public sealed class CommandBuffer : IDisposable
 	{
 		internal IntPtr m_Ptr;
@@ -55,6 +56,21 @@ namespace UnityEngine.Rendering
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern void InitBuffer(CommandBuffer buf);
 
+		private IntPtr CreateGPUFence_Internal(SynchronisationStage stage)
+		{
+			IntPtr result;
+			CommandBuffer.INTERNAL_CALL_CreateGPUFence_Internal(this, stage, out result);
+			return result;
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void INTERNAL_CALL_CreateGPUFence_Internal(CommandBuffer self, SynchronisationStage stage, out IntPtr value);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void WaitOnGPUFence_Internal(IntPtr fencePtr, SynchronisationStage stage);
+
 		[GeneratedByOldBindingsGenerator, ThreadAndSerializationSafe]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern void ReleaseBuffer();
@@ -64,53 +80,152 @@ namespace UnityEngine.Rendering
 			this.Dispose();
 		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern void SetComputeFloatParam(ComputeShader computeShader, string name, float val);
+		[ExcludeFromDocs]
+		public GPUFence CreateGPUFence()
+		{
+			SynchronisationStage stage = SynchronisationStage.PixelProcessing;
+			return this.CreateGPUFence(stage);
+		}
+
+		public GPUFence CreateGPUFence([DefaultValue("SynchronisationStage.PixelProcessing")] SynchronisationStage stage)
+		{
+			GPUFence result = default(GPUFence);
+			result.m_Ptr = this.CreateGPUFence_Internal(stage);
+			result.InitPostAllocation();
+			result.Validate();
+			return result;
+		}
+
+		[ExcludeFromDocs]
+		public void WaitOnGPUFence(GPUFence fence)
+		{
+			SynchronisationStage stage = SynchronisationStage.VertexProcessing;
+			this.WaitOnGPUFence(fence, stage);
+		}
+
+		public void WaitOnGPUFence(GPUFence fence, [DefaultValue("SynchronisationStage.VertexProcessing")] SynchronisationStage stage)
+		{
+			fence.Validate();
+			if (fence.IsFencePending())
+			{
+				this.WaitOnGPUFence_Internal(fence.m_Ptr, stage);
+			}
+		}
+
+		public void SetComputeFloatParam(ComputeShader computeShader, string name, float val)
+		{
+			this.SetComputeFloatParam(computeShader, Shader.PropertyToID(name), val);
+		}
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern void SetComputeIntParam(ComputeShader computeShader, string name, int val);
+		public extern void SetComputeFloatParam(ComputeShader computeShader, int nameID, float val);
+
+		public void SetComputeIntParam(ComputeShader computeShader, string name, int val)
+		{
+			this.SetComputeIntParam(computeShader, Shader.PropertyToID(name), val);
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public extern void SetComputeIntParam(ComputeShader computeShader, int nameID, int val);
 
 		public void SetComputeVectorParam(ComputeShader computeShader, string name, Vector4 val)
 		{
-			CommandBuffer.INTERNAL_CALL_SetComputeVectorParam(this, computeShader, name, ref val);
+			this.SetComputeVectorParam(computeShader, Shader.PropertyToID(name), val);
+		}
+
+		public void SetComputeVectorParam(ComputeShader computeShader, int nameID, Vector4 val)
+		{
+			CommandBuffer.INTERNAL_CALL_SetComputeVectorParam(this, computeShader, nameID, ref val);
 		}
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_SetComputeVectorParam(CommandBuffer self, ComputeShader computeShader, string name, ref Vector4 val);
+		private static extern void INTERNAL_CALL_SetComputeVectorParam(CommandBuffer self, ComputeShader computeShader, int nameID, ref Vector4 val);
+
+		public void SetComputeVectorArrayParam(ComputeShader computeShader, string name, Vector4[] values)
+		{
+			this.SetComputeVectorArrayParam(computeShader, Shader.PropertyToID(name), values);
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public extern void SetComputeVectorArrayParam(ComputeShader computeShader, int nameID, Vector4[] values);
+
+		public void SetComputeMatrixParam(ComputeShader computeShader, string name, Matrix4x4 val)
+		{
+			this.SetComputeMatrixParam(computeShader, Shader.PropertyToID(name), val);
+		}
+
+		public void SetComputeMatrixParam(ComputeShader computeShader, int nameID, Matrix4x4 val)
+		{
+			CommandBuffer.INTERNAL_CALL_SetComputeMatrixParam(this, computeShader, nameID, ref val);
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void INTERNAL_CALL_SetComputeMatrixParam(CommandBuffer self, ComputeShader computeShader, int nameID, ref Matrix4x4 val);
+
+		public void SetComputeMatrixArrayParam(ComputeShader computeShader, string name, Matrix4x4[] values)
+		{
+			this.SetComputeMatrixArrayParam(computeShader, Shader.PropertyToID(name), values);
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public extern void SetComputeMatrixArrayParam(ComputeShader computeShader, int nameID, Matrix4x4[] values);
 
 		public void SetComputeFloatParams(ComputeShader computeShader, string name, params float[] values)
 		{
-			this.Internal_SetComputeFloats(computeShader, name, values);
+			this.Internal_SetComputeFloats(computeShader, Shader.PropertyToID(name), values);
+		}
+
+		public void SetComputeFloatParams(ComputeShader computeShader, int nameID, params float[] values)
+		{
+			this.Internal_SetComputeFloats(computeShader, nameID, values);
 		}
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void Internal_SetComputeFloats(ComputeShader computeShader, string name, float[] values);
+		private extern void Internal_SetComputeFloats(ComputeShader computeShader, int nameID, float[] values);
 
 		public void SetComputeIntParams(ComputeShader computeShader, string name, params int[] values)
 		{
-			this.Internal_SetComputeInts(computeShader, name, values);
+			this.Internal_SetComputeInts(computeShader, Shader.PropertyToID(name), values);
+		}
+
+		public void SetComputeIntParams(ComputeShader computeShader, int nameID, params int[] values)
+		{
+			this.Internal_SetComputeInts(computeShader, nameID, values);
 		}
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void Internal_SetComputeInts(ComputeShader computeShader, string name, int[] values);
+		private extern void Internal_SetComputeInts(ComputeShader computeShader, int nameID, int[] values);
 
 		public void SetComputeTextureParam(ComputeShader computeShader, int kernelIndex, string name, RenderTargetIdentifier rt)
 		{
-			this.Internal_SetComputeTextureParam(computeShader, kernelIndex, name, ref rt);
+			this.Internal_SetComputeTextureParam(computeShader, kernelIndex, Shader.PropertyToID(name), ref rt);
+		}
+
+		public void SetComputeTextureParam(ComputeShader computeShader, int kernelIndex, int nameID, RenderTargetIdentifier rt)
+		{
+			this.Internal_SetComputeTextureParam(computeShader, kernelIndex, nameID, ref rt);
 		}
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void Internal_SetComputeTextureParam(ComputeShader computeShader, int kernelIndex, string name, ref RenderTargetIdentifier rt);
+		private extern void Internal_SetComputeTextureParam(ComputeShader computeShader, int kernelIndex, int nameID, ref RenderTargetIdentifier rt);
+
+		public void SetComputeBufferParam(ComputeShader computeShader, int kernelIndex, string name, ComputeBuffer buffer)
+		{
+			this.SetComputeBufferParam(computeShader, kernelIndex, Shader.PropertyToID(name), buffer);
+		}
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern void SetComputeBufferParam(ComputeShader computeShader, int kernelIndex, string name, ComputeBuffer buffer);
+		public extern void SetComputeBufferParam(ComputeShader computeShader, int kernelIndex, int nameID, ComputeBuffer buffer);
 
 		public void DispatchCompute(ComputeShader computeShader, int kernelIndex, int threadGroupsX, int threadGroupsY, int threadGroupsZ)
 		{
@@ -129,6 +244,19 @@ namespace UnityEngine.Rendering
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern void Internal_DispatchComputeIndirect(ComputeShader computeShader, int kernelIndex, ComputeBuffer indirectBuffer, uint argsOffset);
+
+		public void GenerateMips(RenderTexture rt)
+		{
+			if (rt == null)
+			{
+				throw new ArgumentNullException("rt");
+			}
+			this.Internal_GenerateMips(rt);
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void Internal_GenerateMips(RenderTexture rt);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -463,6 +591,35 @@ namespace UnityEngine.Rendering
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern void SetRenderTarget_Multiple(RenderTargetIdentifier[] color, ref RenderTargetIdentifier depth);
 
+		public void SetRandomWriteTarget(int index, RenderTargetIdentifier rt)
+		{
+			this.SetRandomWriteTarget_Texture(index, ref rt);
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void SetRandomWriteTarget_Texture(int index, ref RenderTargetIdentifier rt);
+
+		[ExcludeFromDocs]
+		public void SetRandomWriteTarget(int index, ComputeBuffer buffer)
+		{
+			bool preserveCounterValue = false;
+			this.SetRandomWriteTarget(index, buffer, preserveCounterValue);
+		}
+
+		public void SetRandomWriteTarget(int index, ComputeBuffer buffer, [DefaultValue("false")] bool preserveCounterValue)
+		{
+			this.SetRandomWriteTarget_Buffer(index, buffer, preserveCounterValue);
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void SetRandomWriteTarget_Buffer(int index, ComputeBuffer uav, bool preserveCounterValue);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public extern void ClearRandomWriteTargets();
+
 		public void CopyTexture(RenderTargetIdentifier src, RenderTargetIdentifier dst)
 		{
 			this.CopyTexture_Internal(ref src, -1, -1, -1, -1, -1, -1, ref dst, -1, -1, -1, -1, 1);
@@ -556,68 +713,82 @@ namespace UnityEngine.Rendering
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern void GetTemporaryRT(int nameID, int width, int height, [DefaultValue("0")] int depthBuffer, [DefaultValue("FilterMode.Point")] FilterMode filter, [DefaultValue("RenderTextureFormat.Default")] RenderTextureFormat format, [DefaultValue("RenderTextureReadWrite.Default")] RenderTextureReadWrite readWrite, [DefaultValue("1")] int antiAliasing, [DefaultValue("false")] bool enableRandomWrite, [DefaultValue("RenderTextureMemoryless.None")] RenderTextureMemoryless memorylessMode);
+		public extern void GetTemporaryRT(int nameID, int width, int height, [DefaultValue("0")] int depthBuffer, [DefaultValue("FilterMode.Point")] FilterMode filter, [DefaultValue("RenderTextureFormat.Default")] RenderTextureFormat format, [DefaultValue("RenderTextureReadWrite.Default")] RenderTextureReadWrite readWrite, [DefaultValue("1")] int antiAliasing, [DefaultValue("false")] bool enableRandomWrite, [DefaultValue("RenderTextureMemoryless.None")] RenderTextureMemoryless memorylessMode, [DefaultValue("false")] bool useDynamicScale);
+
+		[ExcludeFromDocs]
+		public void GetTemporaryRT(int nameID, int width, int height, int depthBuffer, FilterMode filter, RenderTextureFormat format, RenderTextureReadWrite readWrite, int antiAliasing, bool enableRandomWrite, RenderTextureMemoryless memorylessMode)
+		{
+			bool useDynamicScale = false;
+			this.GetTemporaryRT(nameID, width, height, depthBuffer, filter, format, readWrite, antiAliasing, enableRandomWrite, memorylessMode, useDynamicScale);
+		}
 
 		[ExcludeFromDocs]
 		public void GetTemporaryRT(int nameID, int width, int height, int depthBuffer, FilterMode filter, RenderTextureFormat format, RenderTextureReadWrite readWrite, int antiAliasing, bool enableRandomWrite)
 		{
+			bool useDynamicScale = false;
 			RenderTextureMemoryless memorylessMode = RenderTextureMemoryless.None;
-			this.GetTemporaryRT(nameID, width, height, depthBuffer, filter, format, readWrite, antiAliasing, enableRandomWrite, memorylessMode);
+			this.GetTemporaryRT(nameID, width, height, depthBuffer, filter, format, readWrite, antiAliasing, enableRandomWrite, memorylessMode, useDynamicScale);
 		}
 
 		[ExcludeFromDocs]
 		public void GetTemporaryRT(int nameID, int width, int height, int depthBuffer, FilterMode filter, RenderTextureFormat format, RenderTextureReadWrite readWrite, int antiAliasing)
 		{
+			bool useDynamicScale = false;
 			RenderTextureMemoryless memorylessMode = RenderTextureMemoryless.None;
 			bool enableRandomWrite = false;
-			this.GetTemporaryRT(nameID, width, height, depthBuffer, filter, format, readWrite, antiAliasing, enableRandomWrite, memorylessMode);
+			this.GetTemporaryRT(nameID, width, height, depthBuffer, filter, format, readWrite, antiAliasing, enableRandomWrite, memorylessMode, useDynamicScale);
 		}
 
 		[ExcludeFromDocs]
 		public void GetTemporaryRT(int nameID, int width, int height, int depthBuffer, FilterMode filter, RenderTextureFormat format, RenderTextureReadWrite readWrite)
 		{
+			bool useDynamicScale = false;
 			RenderTextureMemoryless memorylessMode = RenderTextureMemoryless.None;
 			bool enableRandomWrite = false;
 			int antiAliasing = 1;
-			this.GetTemporaryRT(nameID, width, height, depthBuffer, filter, format, readWrite, antiAliasing, enableRandomWrite, memorylessMode);
+			this.GetTemporaryRT(nameID, width, height, depthBuffer, filter, format, readWrite, antiAliasing, enableRandomWrite, memorylessMode, useDynamicScale);
 		}
 
 		[ExcludeFromDocs]
 		public void GetTemporaryRT(int nameID, int width, int height, int depthBuffer, FilterMode filter, RenderTextureFormat format)
 		{
+			bool useDynamicScale = false;
 			RenderTextureMemoryless memorylessMode = RenderTextureMemoryless.None;
 			bool enableRandomWrite = false;
 			int antiAliasing = 1;
 			RenderTextureReadWrite readWrite = RenderTextureReadWrite.Default;
-			this.GetTemporaryRT(nameID, width, height, depthBuffer, filter, format, readWrite, antiAliasing, enableRandomWrite, memorylessMode);
+			this.GetTemporaryRT(nameID, width, height, depthBuffer, filter, format, readWrite, antiAliasing, enableRandomWrite, memorylessMode, useDynamicScale);
 		}
 
 		[ExcludeFromDocs]
 		public void GetTemporaryRT(int nameID, int width, int height, int depthBuffer, FilterMode filter)
 		{
+			bool useDynamicScale = false;
 			RenderTextureMemoryless memorylessMode = RenderTextureMemoryless.None;
 			bool enableRandomWrite = false;
 			int antiAliasing = 1;
 			RenderTextureReadWrite readWrite = RenderTextureReadWrite.Default;
 			RenderTextureFormat format = RenderTextureFormat.Default;
-			this.GetTemporaryRT(nameID, width, height, depthBuffer, filter, format, readWrite, antiAliasing, enableRandomWrite, memorylessMode);
+			this.GetTemporaryRT(nameID, width, height, depthBuffer, filter, format, readWrite, antiAliasing, enableRandomWrite, memorylessMode, useDynamicScale);
 		}
 
 		[ExcludeFromDocs]
 		public void GetTemporaryRT(int nameID, int width, int height, int depthBuffer)
 		{
+			bool useDynamicScale = false;
 			RenderTextureMemoryless memorylessMode = RenderTextureMemoryless.None;
 			bool enableRandomWrite = false;
 			int antiAliasing = 1;
 			RenderTextureReadWrite readWrite = RenderTextureReadWrite.Default;
 			RenderTextureFormat format = RenderTextureFormat.Default;
 			FilterMode filter = FilterMode.Point;
-			this.GetTemporaryRT(nameID, width, height, depthBuffer, filter, format, readWrite, antiAliasing, enableRandomWrite, memorylessMode);
+			this.GetTemporaryRT(nameID, width, height, depthBuffer, filter, format, readWrite, antiAliasing, enableRandomWrite, memorylessMode, useDynamicScale);
 		}
 
 		[ExcludeFromDocs]
 		public void GetTemporaryRT(int nameID, int width, int height)
 		{
+			bool useDynamicScale = false;
 			RenderTextureMemoryless memorylessMode = RenderTextureMemoryless.None;
 			bool enableRandomWrite = false;
 			int antiAliasing = 1;
@@ -625,7 +796,7 @@ namespace UnityEngine.Rendering
 			RenderTextureFormat format = RenderTextureFormat.Default;
 			FilterMode filter = FilterMode.Point;
 			int depthBuffer = 0;
-			this.GetTemporaryRT(nameID, width, height, depthBuffer, filter, format, readWrite, antiAliasing, enableRandomWrite, memorylessMode);
+			this.GetTemporaryRT(nameID, width, height, depthBuffer, filter, format, readWrite, antiAliasing, enableRandomWrite, memorylessMode, useDynamicScale);
 		}
 
 		public void GetTemporaryRT(int nameID, RenderTextureDescriptor desc, [DefaultValue("FilterMode.Point")] FilterMode filter)
@@ -646,63 +817,76 @@ namespace UnityEngine.Rendering
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern void GetTemporaryRTArray(int nameID, int width, int height, int slices, [DefaultValue("0")] int depthBuffer, [DefaultValue("FilterMode.Point")] FilterMode filter, [DefaultValue("RenderTextureFormat.Default")] RenderTextureFormat format, [DefaultValue("RenderTextureReadWrite.Default")] RenderTextureReadWrite readWrite, [DefaultValue("1")] int antiAliasing, [DefaultValue("false")] bool enableRandomWrite);
+		public extern void GetTemporaryRTArray(int nameID, int width, int height, int slices, [DefaultValue("0")] int depthBuffer, [DefaultValue("FilterMode.Point")] FilterMode filter, [DefaultValue("RenderTextureFormat.Default")] RenderTextureFormat format, [DefaultValue("RenderTextureReadWrite.Default")] RenderTextureReadWrite readWrite, [DefaultValue("1")] int antiAliasing, [DefaultValue("false")] bool enableRandomWrite, [DefaultValue("false")] bool useDynamicScale);
+
+		[ExcludeFromDocs]
+		public void GetTemporaryRTArray(int nameID, int width, int height, int slices, int depthBuffer, FilterMode filter, RenderTextureFormat format, RenderTextureReadWrite readWrite, int antiAliasing, bool enableRandomWrite)
+		{
+			bool useDynamicScale = false;
+			this.GetTemporaryRTArray(nameID, width, height, slices, depthBuffer, filter, format, readWrite, antiAliasing, enableRandomWrite, useDynamicScale);
+		}
 
 		[ExcludeFromDocs]
 		public void GetTemporaryRTArray(int nameID, int width, int height, int slices, int depthBuffer, FilterMode filter, RenderTextureFormat format, RenderTextureReadWrite readWrite, int antiAliasing)
 		{
+			bool useDynamicScale = false;
 			bool enableRandomWrite = false;
-			this.GetTemporaryRTArray(nameID, width, height, slices, depthBuffer, filter, format, readWrite, antiAliasing, enableRandomWrite);
+			this.GetTemporaryRTArray(nameID, width, height, slices, depthBuffer, filter, format, readWrite, antiAliasing, enableRandomWrite, useDynamicScale);
 		}
 
 		[ExcludeFromDocs]
 		public void GetTemporaryRTArray(int nameID, int width, int height, int slices, int depthBuffer, FilterMode filter, RenderTextureFormat format, RenderTextureReadWrite readWrite)
 		{
+			bool useDynamicScale = false;
 			bool enableRandomWrite = false;
 			int antiAliasing = 1;
-			this.GetTemporaryRTArray(nameID, width, height, slices, depthBuffer, filter, format, readWrite, antiAliasing, enableRandomWrite);
+			this.GetTemporaryRTArray(nameID, width, height, slices, depthBuffer, filter, format, readWrite, antiAliasing, enableRandomWrite, useDynamicScale);
 		}
 
 		[ExcludeFromDocs]
 		public void GetTemporaryRTArray(int nameID, int width, int height, int slices, int depthBuffer, FilterMode filter, RenderTextureFormat format)
 		{
+			bool useDynamicScale = false;
 			bool enableRandomWrite = false;
 			int antiAliasing = 1;
 			RenderTextureReadWrite readWrite = RenderTextureReadWrite.Default;
-			this.GetTemporaryRTArray(nameID, width, height, slices, depthBuffer, filter, format, readWrite, antiAliasing, enableRandomWrite);
+			this.GetTemporaryRTArray(nameID, width, height, slices, depthBuffer, filter, format, readWrite, antiAliasing, enableRandomWrite, useDynamicScale);
 		}
 
 		[ExcludeFromDocs]
 		public void GetTemporaryRTArray(int nameID, int width, int height, int slices, int depthBuffer, FilterMode filter)
 		{
+			bool useDynamicScale = false;
 			bool enableRandomWrite = false;
 			int antiAliasing = 1;
 			RenderTextureReadWrite readWrite = RenderTextureReadWrite.Default;
 			RenderTextureFormat format = RenderTextureFormat.Default;
-			this.GetTemporaryRTArray(nameID, width, height, slices, depthBuffer, filter, format, readWrite, antiAliasing, enableRandomWrite);
+			this.GetTemporaryRTArray(nameID, width, height, slices, depthBuffer, filter, format, readWrite, antiAliasing, enableRandomWrite, useDynamicScale);
 		}
 
 		[ExcludeFromDocs]
 		public void GetTemporaryRTArray(int nameID, int width, int height, int slices, int depthBuffer)
 		{
+			bool useDynamicScale = false;
 			bool enableRandomWrite = false;
 			int antiAliasing = 1;
 			RenderTextureReadWrite readWrite = RenderTextureReadWrite.Default;
 			RenderTextureFormat format = RenderTextureFormat.Default;
 			FilterMode filter = FilterMode.Point;
-			this.GetTemporaryRTArray(nameID, width, height, slices, depthBuffer, filter, format, readWrite, antiAliasing, enableRandomWrite);
+			this.GetTemporaryRTArray(nameID, width, height, slices, depthBuffer, filter, format, readWrite, antiAliasing, enableRandomWrite, useDynamicScale);
 		}
 
 		[ExcludeFromDocs]
 		public void GetTemporaryRTArray(int nameID, int width, int height, int slices)
 		{
+			bool useDynamicScale = false;
 			bool enableRandomWrite = false;
 			int antiAliasing = 1;
 			RenderTextureReadWrite readWrite = RenderTextureReadWrite.Default;
 			RenderTextureFormat format = RenderTextureFormat.Default;
 			FilterMode filter = FilterMode.Point;
 			int depthBuffer = 0;
-			this.GetTemporaryRTArray(nameID, width, height, slices, depthBuffer, filter, format, readWrite, antiAliasing, enableRandomWrite);
+			this.GetTemporaryRTArray(nameID, width, height, slices, depthBuffer, filter, format, readWrite, antiAliasing, enableRandomWrite, useDynamicScale);
 		}
 
 		[GeneratedByOldBindingsGenerator]
@@ -733,6 +917,15 @@ namespace UnityEngine.Rendering
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern void SetGlobalFloat(int nameID, float value);
+
+		public void SetGlobalInt(string name, int value)
+		{
+			this.SetGlobalInt(Shader.PropertyToID(name), value);
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public extern void SetGlobalInt(int nameID, int value);
 
 		public void SetGlobalVector(string name, Vector4 value)
 		{
@@ -982,5 +1175,32 @@ namespace UnityEngine.Rendering
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern void IssuePluginCustomBlitInternal(IntPtr callback, uint command, ref RenderTargetIdentifier source, ref RenderTargetIdentifier dest, uint commandParam, uint commandFlags);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void IssuePluginCustomTextureUpdateInternal(IntPtr callback, Texture targetTexture, uint userData);
+
+		public void IssuePluginCustomTextureUpdate(IntPtr callback, Texture targetTexture, uint userData)
+		{
+			this.IssuePluginCustomTextureUpdateInternal(callback, targetTexture, userData);
+		}
+
+		public void ConvertTexture(RenderTargetIdentifier src, RenderTargetIdentifier dst)
+		{
+			this.ConvertTexture_Internal(src, 0, dst, 0);
+		}
+
+		public void ConvertTexture(RenderTargetIdentifier src, int srcElement, RenderTargetIdentifier dst, int dstElement)
+		{
+			this.ConvertTexture_Internal(src, srcElement, dst, dstElement);
+		}
+
+		private void ConvertTexture_Internal(RenderTargetIdentifier src, int srcElement, RenderTargetIdentifier dst, int dstElement)
+		{
+			this.ConvertTexture_Internal_Injected(ref src, srcElement, ref dst, dstElement);
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void ConvertTexture_Internal_Injected(ref RenderTargetIdentifier src, int srcElement, ref RenderTargetIdentifier dst, int dstElement);
 	}
 }

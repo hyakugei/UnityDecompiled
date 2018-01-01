@@ -80,7 +80,6 @@ namespace UnityEditor
 				{
 					CollabToolbarWindow.s_CollabToolbarWindow = ScriptableObject.CreateInstance<CollabToolbarWindow>();
 				}
-				buttonRect = GUIUtility.GUIToScreenRect(buttonRect);
 				Vector2 windowSize = new Vector2(320f, 350f);
 				CollabToolbarWindow.s_CollabToolbarWindow.initialOpenUrl = "file:///" + EditorApplication.userJavascriptPackagesPath + "unityeditor-collab-toolbar/dist/index.html";
 				CollabToolbarWindow.s_CollabToolbarWindow.Init();

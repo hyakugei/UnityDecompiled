@@ -1,17 +1,13 @@
 using System;
-using UnityEngine.Experimental.UIElements.StyleSheets;
+using System.Collections.Generic;
 
 namespace UnityEngine.Experimental.UIElements
 {
-	public class TextField : VisualElement
+	public class TextField : TextInputFieldBase, INotifyValueChanged<string>
 	{
 		private bool m_Multiline;
 
-		private bool m_IsPasswordField;
-
-		internal const int kMaxLengthNone = -1;
-
-		private GUIStyle m_DrawGUIStyle;
+		protected string m_Value;
 
 		public bool multiline
 		{
@@ -24,20 +20,16 @@ namespace UnityEngine.Experimental.UIElements
 				this.m_Multiline = value;
 				if (!value)
 				{
-					base.text = base.text.Replace("\n", "");
+					this.text = this.text.Replace("\n", "");
 				}
 			}
 		}
 
-		public bool isPasswordField
+		public override bool isPasswordField
 		{
-			get
-			{
-				return this.m_IsPasswordField;
-			}
 			set
 			{
-				this.m_IsPasswordField = value;
+				base.isPasswordField = value;
 				if (value)
 				{
 					this.multiline = false;
@@ -45,171 +37,107 @@ namespace UnityEngine.Experimental.UIElements
 			}
 		}
 
-		public char maskChar
-		{
-			get;
-			set;
-		}
-
-		public bool doubleClickSelectsWord
-		{
-			get;
-			set;
-		}
-
-		public bool tripleClickSelectsLine
-		{
-			get;
-			set;
-		}
-
-		public int maxLength
-		{
-			get;
-			set;
-		}
-
-		private bool touchScreenTextField
+		public string value
 		{
 			get
 			{
-				return TouchScreenKeyboard.isSupported;
+				return this.m_Value;
 			}
-		}
-
-		internal GUIStyle style
-		{
-			get
+			set
 			{
-				GUIStyle arg_1C_0;
-				if ((arg_1C_0 = this.m_DrawGUIStyle) == null)
-				{
-					arg_1C_0 = (this.m_DrawGUIStyle = new GUIStyle());
-				}
-				return arg_1C_0;
+				this.m_Value = value;
+				this.text = this.m_Value;
 			}
-		}
-
-		public bool hasFocus
-		{
-			get
-			{
-				return base.elementPanel != null && base.elementPanel.focusedElement == this;
-			}
-		}
-
-		public TextEditor editor
-		{
-			get;
-			protected set;
 		}
 
 		public TextField() : this(-1, false, false, '\0')
 		{
 		}
 
-		public TextField(int maxLength, bool multiline, bool isPasswordField, char maskChar)
+		public TextField(int maxLength, bool multiline, bool isPasswordField, char maskChar) : base(maxLength, maskChar)
 		{
-			this.maxLength = maxLength;
 			this.multiline = multiline;
 			this.isPasswordField = isPasswordField;
-			this.maskChar = maskChar;
-			if (this.touchScreenTextField)
-			{
-				this.editor = new TouchScreenTextEditor(this);
-			}
-			else
-			{
-				this.doubleClickSelectsWord = true;
-				this.tripleClickSelectsLine = true;
-				this.editor = new KeyboardTextEditor(this);
-			}
-			base.AddManipulator(this.editor);
 		}
 
-		public override void OnStylesResolved(ICustomStyles styles)
+		public void SetValueAndNotify(string newValue)
 		{
-			base.OnStylesResolved(styles);
-			this.m_Styles.WriteToGUIStyle(this.style);
+			if (!EqualityComparer<string>.Default.Equals(this.value, newValue))
+			{
+				using (ChangeEvent<string> pooled = ChangeEvent<string>.GetPooled(this.value, newValue))
+				{
+					pooled.target = this;
+					this.value = newValue;
+					UIElementsUtility.eventDispatcher.DispatchEvent(pooled, base.panel);
+				}
+			}
+		}
+
+		public void OnValueChanged(EventCallback<ChangeEvent<string>> callback)
+		{
+			base.RegisterCallback<ChangeEvent<string>>(callback, Capture.NoCapture);
+		}
+
+		public override void OnPersistentDataReady()
+		{
+			base.OnPersistentDataReady();
+			string fullHierarchicalPersistenceKey = base.GetFullHierarchicalPersistenceKey();
+			base.OverwriteFromPersistedData(this, fullHierarchicalPersistenceKey);
+		}
+
+		internal override void SyncTextEngine()
+		{
+			base.editorEngine.multiline = this.multiline;
+			base.editorEngine.isPasswordField = this.isPasswordField;
+			base.SyncTextEngine();
 		}
 
 		internal override void DoRepaint(IStylePainter painter)
 		{
-			if (this.touchScreenTextField)
+			if (this.isPasswordField)
 			{
-				TouchScreenTextEditor touchScreenTextEditor = this.editor as TouchScreenTextEditor;
-				if (touchScreenTextEditor != null && touchScreenTextEditor.keyboardOnScreen != null)
+				string text = "".PadRight(this.text.Length, base.maskChar);
+				if (!base.hasFocus)
 				{
-					base.text = touchScreenTextEditor.keyboardOnScreen.text;
-					if (this.editor.maxLength >= 0 && base.text != null && base.text.Length > this.editor.maxLength)
+					painter.DrawBackground(this);
+					painter.DrawBorder(this);
+					if (!string.IsNullOrEmpty(text) && base.contentRect.width > 0f && base.contentRect.height > 0f)
 					{
-						base.text = base.text.Substring(0, this.editor.maxLength);
+						TextStylePainterParameters defaultTextParameters = painter.GetDefaultTextParameters(this);
+						defaultTextParameters.text = text;
+						painter.DrawText(defaultTextParameters);
 					}
-					if (touchScreenTextEditor.keyboardOnScreen.done)
-					{
-						touchScreenTextEditor.keyboardOnScreen = null;
-						GUI.changed = true;
-					}
-				}
-				string t = base.text;
-				if (touchScreenTextEditor != null && !string.IsNullOrEmpty(touchScreenTextEditor.secureText))
-				{
-					t = "".PadRight(touchScreenTextEditor.secureText.Length, this.maskChar);
-				}
-				this.style.Draw(base.position, GUIContent.Temp(t), 0, false);
-			}
-			else if (this.isPasswordField)
-			{
-				string text = "".PadRight(base.text.Length, this.maskChar);
-				if (!this.hasFocus)
-				{
-					this.style.Draw(base.position, GUIContent.Temp(text), 0, false);
 				}
 				else
 				{
-					this.DrawCursor(text);
+					base.DrawWithTextSelectionAndCursor(painter, text);
 				}
-			}
-			else if (!this.hasFocus)
-			{
-				this.style.Draw(base.position, GUIContent.Temp(base.text), 0, false);
 			}
 			else
 			{
-				this.DrawCursor(base.text);
+				base.DoRepaint(painter);
 			}
 		}
 
-		private void DrawCursor(string newText)
+		protected internal override void ExecuteDefaultActionAtTarget(EventBase evt)
 		{
-			KeyboardTextEditor keyboardTextEditor = this.editor as KeyboardTextEditor;
-			if (keyboardTextEditor != null)
+			base.ExecuteDefaultActionAtTarget(evt);
+			if (evt.GetEventTypeId() == EventBase<KeyDownEvent>.TypeId())
 			{
-				keyboardTextEditor.PreDrawCursor(newText);
-				int cursorIndex = keyboardTextEditor.cursorIndex;
-				int selectIndex = keyboardTextEditor.selectIndex;
-				Rect localPosition = keyboardTextEditor.localPosition;
-				Vector2 scrollOffset = keyboardTextEditor.scrollOffset;
-				Vector2 contentOffset = this.style.contentOffset;
-				this.style.contentOffset -= scrollOffset;
-				this.style.Internal_clipOffset = scrollOffset;
-				Input.compositionCursorPos = keyboardTextEditor.graphicalCursorPos - scrollOffset + new Vector2(localPosition.x, localPosition.y + this.style.lineHeight);
-				GUIContent content = new GUIContent(keyboardTextEditor.text);
-				if (!string.IsNullOrEmpty(Input.compositionString))
+				KeyDownEvent keyDownEvent = evt as KeyDownEvent;
+				if (keyDownEvent.character == '\n')
 				{
-					this.style.DrawWithTextSelection(base.position, content, this.HasCapture(), this.hasFocus, cursorIndex, cursorIndex + Input.compositionString.Length, true);
+					this.SetValueAndNotify(this.text);
 				}
-				else
-				{
-					this.style.DrawWithTextSelection(base.position, content, this.HasCapture(), this.hasFocus, cursorIndex, selectIndex, false);
-				}
-				if (keyboardTextEditor.altCursorPosition != -1)
-				{
-					this.style.DrawCursor(base.position, content, 0, keyboardTextEditor.altCursorPosition);
-				}
-				this.style.contentOffset = contentOffset;
-				this.style.Internal_clipOffset = Vector2.zero;
-				keyboardTextEditor.PostDrawCursor();
+			}
+		}
+
+		protected internal override void ExecuteDefaultAction(EventBase evt)
+		{
+			base.ExecuteDefaultAction(evt);
+			if (evt.GetEventTypeId() == EventBase<BlurEvent>.TypeId())
+			{
+				this.SetValueAndNotify(this.text);
 			}
 		}
 	}

@@ -6,7 +6,7 @@ namespace UnityEngine.Playables
 	{
 		Animation,
 		Audio,
-		Video,
+		Texture,
 		None
 	}
 }

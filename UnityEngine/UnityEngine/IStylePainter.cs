@@ -1,7 +1,12 @@
 using System;
+using UnityEngine.Bindings;
 
 namespace UnityEngine
 {
+	[VisibleToOtherModules(new string[]
+	{
+		"UnityEngine.UIElementsModule"
+	})]
 	internal interface IStylePainter
 	{
 		Rect currentWorldClip
@@ -11,6 +16,12 @@ namespace UnityEngine
 		}
 
 		Vector2 mousePosition
+		{
+			get;
+			set;
+		}
+
+		Matrix4x4 currentTransform
 		{
 			get;
 			set;
@@ -28,14 +39,16 @@ namespace UnityEngine
 			set;
 		}
 
-		void DrawRect(Rect screenRect, Color color, float borderWidth = 0f, float borderRadius = 0f);
+		void DrawRect(RectStylePainterParameters painterParams);
 
-		void DrawTexture(Rect screenRect, Texture texture, Color color, ScaleMode scaleMode = ScaleMode.StretchToFill, float borderWidth = 0f, float borderRadius = 0f, int leftBorder = 0, int rightBorder = 0, int topBorder = 0, int bottomBorder = 0);
+		void DrawTexture(TextureStylePainterParameters painterParams);
 
-		void DrawText(Rect screenRect, string text, Font font, int fontSize, FontStyle fontStyle, Color fontColor, TextAnchor anchor, bool wordWrap, float wordWrapWidth, bool richText, TextClipping clipping);
+		void DrawText(TextStylePainterParameters painterParams);
 
-		float ComputeTextWidth(string text, Font font, int fontSize, FontStyle fontStyle, TextAnchor anchor, bool richText);
+		Vector2 GetCursorPosition(CursorPositionStylePainterParameters painterParams);
 
-		float ComputeTextHeight(string text, float width, bool wordWrap, Font font, int fontSize, FontStyle fontStyle, TextAnchor anchor, bool richText);
+		float ComputeTextWidth(TextStylePainterParameters painterParams);
+
+		float ComputeTextHeight(TextStylePainterParameters painterParams);
 	}
 }

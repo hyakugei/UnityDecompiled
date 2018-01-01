@@ -1,143 +1,131 @@
 using System;
-using System.Runtime.CompilerServices;
-using UnityEngine.Scripting;
 
 namespace UnityEngine.VR
 {
+	[Obsolete("VRSettings has been moved and renamed.  Use UnityEngine.XR.XRSettings instead (UnityUpgradable)", true)]
 	public static class VRSettings
 	{
-		public static extern bool enabled
+		public static bool enabled
 		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
+			get
+			{
+				throw new NotSupportedException("VRSettings has been moved and renamed.  Use UnityEngine.XR.XRSettings instead.");
+			}
+			set
+			{
+				throw new NotSupportedException("VRSettings has been moved and renamed.  Use UnityEngine.XR.XRSettings instead.");
+			}
 		}
 
-		public static extern bool isDeviceActive
+		public static bool isDeviceActive
 		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
+			get
+			{
+				throw new NotSupportedException("VRSettings has been moved and renamed.  Use UnityEngine.XR.XRSettings instead.");
+			}
 		}
 
-		public static extern bool showDeviceView
+		public static bool showDeviceView
 		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
+			get
+			{
+				throw new NotSupportedException("VRSettings has been moved and renamed.  Use UnityEngine.XR.XRSettings instead.");
+			}
+			set
+			{
+				throw new NotSupportedException("VRSettings has been moved and renamed.  Use UnityEngine.XR.XRSettings instead.");
+			}
 		}
 
-		public static extern float renderScale
+		public static float renderScale
 		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
+			get
+			{
+				throw new NotSupportedException("VRSettings.renderScale has been moved and renamed.  Use UnityEngine.XR.XRSettings.eyeTextureResolutionScale instead.");
+			}
+			set
+			{
+				throw new NotSupportedException("VRSettings.renderScale has been moved and renamed.  Use UnityEngine.XR.XRSettings.eyeTextureResolutionScale instead.");
+			}
 		}
 
-		public static extern int eyeTextureWidth
+		public static int eyeTextureWidth
 		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
+			get
+			{
+				throw new NotSupportedException("VRSettings has been moved and renamed.  Use UnityEngine.XR.XRSettings instead.");
+			}
 		}
 
-		public static extern int eyeTextureHeight
+		public static int eyeTextureHeight
 		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
+			get
+			{
+				throw new NotSupportedException("VRSettings has been moved and renamed.  Use UnityEngine.XR.XRSettings instead.");
+			}
 		}
 
 		public static float renderViewportScale
 		{
 			get
 			{
-				return VRSettings.renderViewportScaleInternal;
+				throw new NotSupportedException("VRSettings has been moved and renamed.  Use UnityEngine.XR.XRSettings instead.");
 			}
 			set
 			{
-				if (value < 0f || value > 1f)
-				{
-					throw new ArgumentOutOfRangeException("value", "Render viewport scale should be between 0 and 1.");
-				}
-				VRSettings.renderViewportScaleInternal = value;
+				throw new NotSupportedException("VRSettings has been moved and renamed.  Use UnityEngine.XR.XRSettings instead.");
 			}
 		}
 
-		internal static extern float renderViewportScaleInternal
+		public static float occlusionMaskScale
 		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
+			get
+			{
+				throw new NotSupportedException("VRSettings has been moved and renamed.  Use UnityEngine.XR.XRSettings instead.");
+			}
+			set
+			{
+				throw new NotSupportedException("VRSettings has been moved and renamed.  Use UnityEngine.XR.XRSettings instead.");
+			}
 		}
 
-		public static extern float occlusionMaskScale
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		[Obsolete("loadedDevice is deprecated.  Use loadedDeviceName and LoadDeviceByName instead.")]
+		[Obsolete("loadedDevice is deprecated.  Use loadedDeviceName and LoadDeviceByName instead.", true)]
 		public static VRDeviceType loadedDevice
 		{
 			get
 			{
-				VRDeviceType result = VRDeviceType.Unknown;
-				try
-				{
-					result = (VRDeviceType)Enum.Parse(typeof(VRDeviceType), VRSettings.loadedDeviceName, true);
-				}
-				catch (Exception)
-				{
-				}
-				return result;
+				throw new NotSupportedException("VRSettings has been moved and renamed.  Use UnityEngine.XR.XRSettings instead.");
 			}
 			set
 			{
-				VRSettings.LoadDeviceByName(value.ToString());
+				throw new NotSupportedException("VRSettings has been moved and renamed.  Use UnityEngine.XR.XRSettings instead.");
 			}
 		}
 
-		public static extern string loadedDeviceName
+		public static string loadedDeviceName
 		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
+			get
+			{
+				throw new NotSupportedException("VRSettings has been moved and renamed.  Use UnityEngine.XR.XRSettings instead.");
+			}
 		}
 
-		public static extern string[] supportedDevices
+		public static string[] supportedDevices
 		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
+			get
+			{
+				throw new NotSupportedException("VRSettings has been moved and renamed.  Use UnityEngine.XR.XRSettings instead.");
+			}
 		}
 
 		public static void LoadDeviceByName(string deviceName)
 		{
-			VRSettings.LoadDeviceByName(new string[]
-			{
-				deviceName
-			});
+			throw new NotSupportedException("VRSettings has been moved and renamed.  Use UnityEngine.XR.XRSettings instead.");
 		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern void LoadDeviceByName(string[] prioritizedDeviceNameList);
+		public static void LoadDeviceByName(string[] prioritizedDeviceNameList)
+		{
+			throw new NotSupportedException("VRSettings has been moved and renamed.  Use UnityEngine.XR.XRSettings instead.");
+		}
 	}
 }

@@ -4,6 +4,14 @@ using UnityEngine;
 
 namespace UnityEditor
 {
+	[AssetFileNameExtension("curves", new string[]
+	{
+		"curvesNormalized",
+		"particleCurves",
+		"particleCurvesSigned",
+		"particleDoubleCurves",
+		"particleDoubleCurvesSigned"
+	})]
 	internal class CurvePresetLibrary : PresetLibrary
 	{
 		[Serializable]

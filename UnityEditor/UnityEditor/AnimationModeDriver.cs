@@ -4,7 +4,7 @@ using UnityEngine.Scripting;
 
 namespace UnityEditor
 {
-	internal sealed class AnimationModeDriver : ScriptableObject
+	internal class AnimationModeDriver : ScriptableObject
 	{
 		internal delegate bool IsKeyCallback(UnityEngine.Object target, string propertyPath);
 

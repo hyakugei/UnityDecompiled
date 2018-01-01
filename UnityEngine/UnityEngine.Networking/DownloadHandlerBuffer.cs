@@ -1,7 +1,6 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using UnityEngine.Scripting;
 
 namespace UnityEngine.Networking
 {
@@ -10,7 +9,15 @@ namespace UnityEngine.Networking
 	{
 		public DownloadHandlerBuffer()
 		{
-			base.InternalCreateBuffer();
+			this.InternalCreateBuffer();
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern IntPtr Create(DownloadHandlerBuffer obj);
+
+		private void InternalCreateBuffer()
+		{
+			this.m_Ptr = DownloadHandlerBuffer.Create(this);
 		}
 
 		protected override byte[] GetData()
@@ -18,9 +25,10 @@ namespace UnityEngine.Networking
 			return this.InternalGetData();
 		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern byte[] InternalGetData();
+		private byte[] InternalGetData()
+		{
+			return DownloadHandler.InternalGetByteArray(this);
+		}
 
 		public static string GetContent(UnityWebRequest www)
 		{

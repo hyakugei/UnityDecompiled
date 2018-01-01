@@ -124,14 +124,31 @@ namespace UnityEngine.Networking
 			return result;
 		}
 
+		public static void Init(GlobalConfig config)
+		{
+			if (config.NetworkEventAvailable != null)
+			{
+				NetworkTransport.SetNetworkEventAvailableCallback(config.NetworkEventAvailable);
+			}
+			if (config.ConnectionReadyForSend != null)
+			{
+				NetworkTransport.SetConnectionReadyForSendCallback(config.ConnectionReadyForSend);
+			}
+			NetworkTransport.InitWithParameters(new GlobalConfigInternal(config));
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void SetNetworkEventAvailableCallback(Action<int> callback);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void SetConnectionReadyForSendCallback(Action<int, int> callback);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern bool NotifyWhenConnectionReadyForSend(int hostId, int connectionId, int notificationLevel, out byte error);
+
 		public static void Init()
 		{
 			NetworkTransport.InitWithNoParameters();
-		}
-
-		public static void Init(GlobalConfig config)
-		{
-			NetworkTransport.InitWithParameters(new GlobalConfigInternal(config));
 		}
 
 		[GeneratedByOldBindingsGenerator]
@@ -146,7 +163,7 @@ namespace UnityEngine.Networking
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void Shutdown();
 
-		[GeneratedByOldBindingsGenerator]
+		[Obsolete("This function has been deprecated. Use AssetDatabase utilities instead."), GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern string GetAssetId(GameObject go);
 
@@ -526,10 +543,6 @@ namespace UnityEngine.Networking
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern bool QueueMessageForSendingWrapper(int hostId, int connectionId, int channelId, byte[] buffer, int size, out byte error);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern bool NotifyConnectionSendable(int hostId, int connectionId, out byte error);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]

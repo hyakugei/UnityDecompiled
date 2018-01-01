@@ -27,11 +27,19 @@ namespace UnityEngine.Playables
 		{
 		}
 
+		public virtual void OnBehaviourDelay(Playable playable, FrameData info)
+		{
+		}
+
 		public virtual void OnBehaviourPlay(Playable playable, FrameData info)
 		{
 		}
 
 		public virtual void OnBehaviourPause(Playable playable, FrameData info)
+		{
+		}
+
+		public virtual void PrepareData(Playable playable, FrameData info)
 		{
 		}
 

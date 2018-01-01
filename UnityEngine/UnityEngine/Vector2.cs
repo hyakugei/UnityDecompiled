@@ -1,9 +1,10 @@
 using System;
+using UnityEngine.Internal;
 using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
-	[UsedByNativeCode]
+	[GenerateManagedProxy("Vector2f"), UsedByNativeCode]
 	public struct Vector2
 	{
 		public float x;
@@ -260,6 +261,11 @@ namespace UnityEngine
 			return -2f * Vector2.Dot(inNormal, inDirection) * inNormal + inDirection;
 		}
 
+		public static Vector2 Perpendicular(Vector2 inDirection)
+		{
+			return new Vector2(-inDirection.y, inDirection.x);
+		}
+
 		public static float Dot(Vector2 lhs, Vector2 rhs)
 		{
 			return lhs.x * rhs.x + lhs.y * rhs.y;
@@ -318,7 +324,22 @@ namespace UnityEngine
 			return new Vector2(Mathf.Max(lhs.x, rhs.x), Mathf.Max(lhs.y, rhs.y));
 		}
 
-		public static Vector2 SmoothDamp(Vector2 current, Vector2 target, ref Vector2 currentVelocity, float smoothTime, float maxSpeed, float deltaTime)
+		[ExcludeFromDocs]
+		public static Vector2 SmoothDamp(Vector2 current, Vector2 target, ref Vector2 currentVelocity, float smoothTime, float maxSpeed)
+		{
+			float deltaTime = Time.deltaTime;
+			return Vector2.SmoothDamp(current, target, ref currentVelocity, smoothTime, maxSpeed, deltaTime);
+		}
+
+		[ExcludeFromDocs]
+		public static Vector2 SmoothDamp(Vector2 current, Vector2 target, ref Vector2 currentVelocity, float smoothTime)
+		{
+			float deltaTime = Time.deltaTime;
+			float maxSpeed = float.PositiveInfinity;
+			return Vector2.SmoothDamp(current, target, ref currentVelocity, smoothTime, maxSpeed, deltaTime);
+		}
+
+		public static Vector2 SmoothDamp(Vector2 current, Vector2 target, ref Vector2 currentVelocity, float smoothTime, [DefaultValue("Mathf.Infinity")] float maxSpeed, [DefaultValue("Time.deltaTime")] float deltaTime)
 		{
 			smoothTime = Mathf.Max(0.0001f, smoothTime);
 			float num = 2f / smoothTime;
@@ -348,6 +369,16 @@ namespace UnityEngine
 		public static Vector2 operator -(Vector2 a, Vector2 b)
 		{
 			return new Vector2(a.x - b.x, a.y - b.y);
+		}
+
+		public static Vector2 operator *(Vector2 a, Vector2 b)
+		{
+			return new Vector2(a.x * b.x, a.y * b.y);
+		}
+
+		public static Vector2 operator /(Vector2 a, Vector2 b)
+		{
+			return new Vector2(a.x / b.x, a.y / b.y);
 		}
 
 		public static Vector2 operator -(Vector2 a)

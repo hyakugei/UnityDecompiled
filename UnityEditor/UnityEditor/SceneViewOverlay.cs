@@ -9,12 +9,14 @@ namespace UnityEditor
 		public enum Ordering
 		{
 			Camera = -100,
-			Cloth = 0,
-			OcclusionCulling = 100,
-			Lightmapping = 200,
-			NavMesh = 300,
-			PhysicsDebug = 350,
-			ParticleEffect = 400
+			ClothConstraints = 0,
+			ClothSelfAndInterCollision = 100,
+			OcclusionCulling = 200,
+			Lightmapping = 300,
+			NavMesh = 400,
+			PhysicsDebug = 450,
+			TilemapRenderer = 500,
+			ParticleEffect = 600
 		}
 
 		public enum WindowDisplayOption

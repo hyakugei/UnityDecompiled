@@ -7,6 +7,7 @@ namespace UnityEngine.Rendering
 		Normal,
 		Vertex,
 		VertexLM,
+		[Obsolete("VertexLMRGBM PassType is obsolete. Please use VertexLM PassType together with DecodeLightmap shader function.")]
 		VertexLMRGBM,
 		ForwardBase,
 		ForwardAdd,

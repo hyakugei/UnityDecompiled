@@ -161,9 +161,6 @@ namespace UnityEditorInternal
 		[SerializeField]
 		private AnimationClip m_CandidateClip;
 
-		[NonSerialized]
-		private List<UndoPropertyModification> m_Candidates;
-
 		[SerializeField]
 		private AnimationModeDriver m_Driver;
 
@@ -243,10 +240,6 @@ namespace UnityEditorInternal
 		{
 			this.StopPreview();
 			this.StopPlayback();
-			if (AnimationMode.InAnimationMode(this.GetAnimationModeDriver()))
-			{
-				AnimationMode.StopAnimationMode(this.GetAnimationModeDriver());
-			}
 		}
 
 		public override void OnSelectionChanged()
@@ -532,26 +525,16 @@ namespace UnityEditorInternal
 				{
 					if (this.canPreview)
 					{
-						bool flag = false;
-						AnimationMode.BeginSampling();
-						AnimationWindowSelectionItem[] array = this.state.selection.ToArray();
-						for (int i = 0; i < array.Length; i++)
+						if (this.state.activeAnimationClip != null)
 						{
-							AnimationWindowSelectionItem animationWindowSelectionItem = array[i];
-							if (animationWindowSelectionItem.animationClip != null)
+							AnimationMode.BeginSampling();
+							Undo.FlushUndoRecordObjects();
+							AnimationMode.SampleAnimationClip(this.state.activeRootGameObject, this.state.activeAnimationClip, this.time.time);
+							if (this.m_CandidateClip != null)
 							{
-								Undo.FlushUndoRecordObjects();
-								AnimationMode.SampleAnimationClip(animationWindowSelectionItem.rootGameObject, animationWindowSelectionItem.animationClip, this.time.time - animationWindowSelectionItem.timeOffset);
-								if (this.m_CandidateClip != null)
-								{
-									AnimationMode.SampleCandidateClip(animationWindowSelectionItem.rootGameObject, this.m_CandidateClip, 0f);
-								}
-								flag = true;
+								AnimationMode.SampleCandidateClip(this.state.activeRootGameObject, this.m_CandidateClip, 0f);
 							}
-						}
-						AnimationMode.EndSampling();
-						if (flag)
-						{
+							AnimationMode.EndSampling();
 							SceneView.RepaintAll();
 							InspectorWindow.RepaintAllInspectors();
 							ParticleSystemWindow instance = ParticleSystemWindow.GetInstance();
@@ -760,26 +743,22 @@ namespace UnityEditorInternal
 			}
 			else
 			{
-				AnimationWindowSelectionItem selectedItem = this.state.selectedItem;
-				if (selectedItem != null)
+				GameObject gameObject = null;
+				if (targetObject is Component)
 				{
-					GameObject gameObject = null;
-					if (targetObject is Component)
+					gameObject = ((Component)targetObject).gameObject;
+				}
+				else if (targetObject is GameObject)
+				{
+					gameObject = (GameObject)targetObject;
+				}
+				if (gameObject != null)
+				{
+					Component closestAnimationPlayerComponentInParents = AnimationWindowUtility.GetClosestAnimationPlayerComponentInParents(gameObject.transform);
+					if (this.state.selection.animationPlayer == closestAnimationPlayerComponentInParents)
 					{
-						gameObject = ((Component)targetObject).gameObject;
-					}
-					else if (targetObject is GameObject)
-					{
-						gameObject = (GameObject)targetObject;
-					}
-					if (gameObject != null)
-					{
-						Component closestAnimationPlayerComponentInParents = AnimationWindowUtility.GetClosestAnimationPlayerComponentInParents(gameObject.transform);
-						if (selectedItem.animationPlayer == closestAnimationPlayerComponentInParents)
-						{
-							result = selectedItem.animationIsEditable;
-							return result;
-						}
+						result = this.state.selection.animationIsEditable;
+						return result;
 					}
 				}
 				result = false;

@@ -1,47 +1,29 @@
 using System;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
+using UnityEngine.Bindings;
 using UnityEngine.Scripting;
 
 namespace UnityEditor.Experimental.Build.AssetBundle
 {
-	[UsedByNativeCode]
+	[NativeType(CodegenOptions = CodegenOptions.Custom), UsedByNativeCode]
 	[Serializable]
-	public struct BuildCommandSet
+	[StructLayout(LayoutKind.Sequential)]
+	public class BuildCommandSet
 	{
-		[UsedByNativeCode]
-		[Serializable]
-		public struct AssetLoadInfo
+		[NativeName("commands")]
+		internal List<WriteCommand> m_Commands;
+
+		public List<WriteCommand> commands
 		{
-			public GUID asset;
-
-			public string address;
-
-			public ObjectIdentifier[] includedObjects;
-
-			public ObjectIdentifier[] referencedObjects;
+			get
+			{
+				return this.m_Commands;
+			}
+			set
+			{
+				this.m_Commands = value;
+			}
 		}
-
-		[UsedByNativeCode]
-		[Serializable]
-		public struct SerializationInfo
-		{
-			public ObjectIdentifier serializationObject;
-
-			public long serializationIndex;
-		}
-
-		[UsedByNativeCode]
-		[Serializable]
-		public struct Command
-		{
-			public string assetBundleName;
-
-			public BuildCommandSet.AssetLoadInfo[] explicitAssets;
-
-			public BuildCommandSet.SerializationInfo[] assetBundleObjects;
-
-			public string[] assetBundleDependencies;
-		}
-
-		public BuildCommandSet.Command[] commands;
 	}
 }

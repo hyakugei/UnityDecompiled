@@ -1,6 +1,6 @@
 using System;
 using UnityEditor;
-using UnityEditor.BuildReporting;
+using UnityEditor.Build.Reporting;
 using UnityEditor.Scripting.Compilers;
 
 namespace UnityEditorInternal
@@ -53,6 +53,11 @@ namespace UnityEditorInternal
 		}
 
 		bool supportsEngineStripping
+		{
+			get;
+		}
+
+		bool enableDebugger
 		{
 			get;
 		}

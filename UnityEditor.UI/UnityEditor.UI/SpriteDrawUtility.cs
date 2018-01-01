@@ -147,9 +147,7 @@ namespace UnityEditor.UI
 			Rect position2 = new Rect(position.x + position.width * padding.x, position.y + position.height * padding.w, position.width - position.width * (padding.z + padding.x), position.height - position.height * (padding.w + padding.y));
 			if (mat == null)
 			{
-				GL.sRGBWrite = (QualitySettings.activeColorSpace == ColorSpace.Linear);
 				GUI.DrawTextureWithTexCoords(position2, tex, uv, true);
-				GL.sRGBWrite = false;
 			}
 			else
 			{

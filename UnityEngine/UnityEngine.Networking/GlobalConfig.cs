@@ -44,6 +44,12 @@ namespace UnityEngine.Networking
 		[SerializeField]
 		private uint m_MaxNetSimulatorTimeout;
 
+		[SerializeField]
+		private Action<int, int> m_ConnectionReadyForSend;
+
+		[SerializeField]
+		private Action<int> m_NetworkEventAvailable;
+
 		public uint ThreadAwakeTimeout
 		{
 			get
@@ -220,6 +226,30 @@ namespace UnityEngine.Networking
 			}
 		}
 
+		public Action<int> NetworkEventAvailable
+		{
+			get
+			{
+				return this.m_NetworkEventAvailable;
+			}
+			set
+			{
+				this.m_NetworkEventAvailable = value;
+			}
+		}
+
+		public Action<int, int> ConnectionReadyForSend
+		{
+			get
+			{
+				return this.m_ConnectionReadyForSend;
+			}
+			set
+			{
+				this.m_ConnectionReadyForSend = value;
+			}
+		}
+
 		public GlobalConfig()
 		{
 			this.m_ThreadAwakeTimeout = 1u;
@@ -233,6 +263,8 @@ namespace UnityEngine.Networking
 			this.m_MaxTimerTimeout = 12000u;
 			this.m_MinNetSimulatorTimeout = 1u;
 			this.m_MaxNetSimulatorTimeout = 12000u;
+			this.m_ConnectionReadyForSend = null;
+			this.m_NetworkEventAvailable = null;
 		}
 	}
 }

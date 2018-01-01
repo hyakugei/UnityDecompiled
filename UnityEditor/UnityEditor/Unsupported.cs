@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using UnityEditor.Animations;
 using UnityEngine;
@@ -9,22 +10,7 @@ namespace UnityEditor
 {
 	public sealed class Unsupported
 	{
-		private static bool s_FakeNonDeveloperBuild = EditorPrefs.GetBool("FakeNonDeveloperBuild", false);
-
-		internal static bool fakeNonDeveloperBuild
-		{
-			get
-			{
-				return Unsupported.s_FakeNonDeveloperBuild;
-			}
-			set
-			{
-				Unsupported.s_FakeNonDeveloperBuild = value;
-				EditorPrefs.SetBool("FakeNonDeveloperBuild", value);
-			}
-		}
-
-		internal static extern bool useScriptableRenderPipeline
+		public static extern bool useScriptableRenderPipeline
 		{
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
@@ -63,6 +49,10 @@ namespace UnityEditor
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern string[] GetSubmenusLocalized(string menuPath);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern string[] GetSubmenusIncludingSeparators(string menuPath);
 
 		[GeneratedByOldBindingsGenerator]
@@ -71,12 +61,16 @@ namespace UnityEditor
 
 		public static bool IsDeveloperBuild()
 		{
-			return Unsupported.IsDeveloperBuildInternal() && !Unsupported.s_FakeNonDeveloperBuild;
+			return Unsupported.IsSourceBuild();
 		}
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern bool IsDeveloperBuildInternal();
+		public static extern bool IsDeveloperMode();
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern bool IsSourceBuild();
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -110,7 +104,7 @@ namespace UnityEditor
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void SetAllowCursorLock(bool allow);
 
-		internal static bool SetOverrideRenderSettings(Scene scene)
+		public static bool SetOverrideRenderSettings(Scene scene)
 		{
 			return Unsupported.SetOverrideRenderSettingsInternal(scene.handle);
 		}
@@ -121,7 +115,7 @@ namespace UnityEditor
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern void RestoreOverrideRenderSettings();
+		public static extern void RestoreOverrideRenderSettings();
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -163,12 +157,52 @@ namespace UnityEditor
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern bool PasteComponentValuesFromPasteboard(Component component);
 
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern bool HasStateMachineTransitionDataInPasteboard();
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern bool AreAllParametersInDestinationInternal(UnityEngine.Object transition, AnimatorController controller, object missingParameters);
+
+		public static bool AreAllParametersInDestination(UnityEngine.Object transition, AnimatorController controller, List<string> missingParameters)
+		{
+			return Unsupported.AreAllParametersInDestinationInternal(transition, controller, missingParameters);
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern bool DestinationHasCompatibleParameterTypesInternal(UnityEngine.Object transition, AnimatorController controller, object mismatchedParameters);
+
+		public static bool DestinationHasCompatibleParameterTypes(UnityEngine.Object transition, AnimatorController controller, List<string> mismatchedParameters)
+		{
+			return Unsupported.DestinationHasCompatibleParameterTypesInternal(transition, controller, mismatchedParameters);
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern bool CanPasteParametersToTransition(UnityEngine.Object transition, AnimatorController controller);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern void CopyStateMachineTransitionParametersToPasteboard(UnityEngine.Object transition, AnimatorController controller);
+
+		public static void PasteToStateMachineTransitionParametersFromPasteboard(UnityEngine.Object transition, AnimatorController controller, bool conditions, bool parameters)
+		{
+			Undo.RegisterCompleteObjectUndo(transition, "Paste to Transition");
+			Unsupported.PasteToStateMachineTransitionParametersFromPasteboardInternal(transition, controller, conditions, parameters);
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void PasteToStateMachineTransitionParametersFromPasteboardInternal(UnityEngine.Object transition, AnimatorController controller, bool conditions, bool parameters);
+
 		public static void CopyStateMachineDataToPasteboard(UnityEngine.Object stateMachineObject, AnimatorController controller, int layerIndex)
 		{
 			Unsupported.CopyStateMachineDataToPasteboard(new UnityEngine.Object[]
 			{
 				stateMachineObject
-			}, new Vector3[]
+			}, null, new Vector3[]
 			{
 				default(Vector3)
 			}, controller, layerIndex);
@@ -176,7 +210,7 @@ namespace UnityEditor
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern void CopyStateMachineDataToPasteboard(UnityEngine.Object[] stateMachineObjects, Vector3[] monoPositions, AnimatorController controller, int layerIndex);
+		internal static extern void CopyStateMachineDataToPasteboard(UnityEngine.Object[] stateMachineObjects, AnimatorStateMachine context, Vector3[] monoPositions, AnimatorController controller, int layerIndex);
 
 		public static void PasteToStateMachineFromPasteboard(AnimatorStateMachine sm, AnimatorController controller, int layerIndex, Vector3 position)
 		{

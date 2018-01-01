@@ -16,6 +16,12 @@ namespace UnityEngine
 
 		private int m_TangentMode;
 
+		private int m_WeightedMode;
+
+		private float m_InWeight;
+
+		private float m_OutWeight;
+
 		public float time
 		{
 			get
@@ -64,7 +70,56 @@ namespace UnityEngine
 			}
 		}
 
+		public float inWeight
+		{
+			get
+			{
+				return this.m_InWeight;
+			}
+			set
+			{
+				this.m_InWeight = value;
+			}
+		}
+
+		public float outWeight
+		{
+			get
+			{
+				return this.m_OutWeight;
+			}
+			set
+			{
+				this.m_OutWeight = value;
+			}
+		}
+
+		public WeightedMode weightedMode
+		{
+			get
+			{
+				return (WeightedMode)this.m_WeightedMode;
+			}
+			set
+			{
+				this.m_WeightedMode = (int)value;
+			}
+		}
+
+		[Obsolete("Use AnimationUtility.SetLeftTangentMode, AnimationUtility.SetRightTangentMode, AnimationUtility.GetLeftTangentMode or AnimationUtility.GetRightTangentMode instead.")]
 		public int tangentMode
+		{
+			get
+			{
+				return this.tangentModeInternal;
+			}
+			set
+			{
+				this.tangentModeInternal = value;
+			}
+		}
+
+		internal int tangentModeInternal
 		{
 			get
 			{
@@ -82,6 +137,9 @@ namespace UnityEngine
 			this.m_Value = value;
 			this.m_InTangent = 0f;
 			this.m_OutTangent = 0f;
+			this.m_WeightedMode = 0;
+			this.m_InWeight = 0f;
+			this.m_OutWeight = 0f;
 			this.m_TangentMode = 0;
 		}
 
@@ -91,6 +149,21 @@ namespace UnityEngine
 			this.m_Value = value;
 			this.m_InTangent = inTangent;
 			this.m_OutTangent = outTangent;
+			this.m_WeightedMode = 0;
+			this.m_InWeight = 0f;
+			this.m_OutWeight = 0f;
+			this.m_TangentMode = 0;
+		}
+
+		public Keyframe(float time, float value, float inTangent, float outTangent, float inWeight, float outWeight)
+		{
+			this.m_Time = time;
+			this.m_Value = value;
+			this.m_InTangent = inTangent;
+			this.m_OutTangent = outTangent;
+			this.m_WeightedMode = 3;
+			this.m_InWeight = inWeight;
+			this.m_OutWeight = outWeight;
 			this.m_TangentMode = 0;
 		}
 	}

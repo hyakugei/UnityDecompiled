@@ -7,33 +7,33 @@ namespace UnityEditor
 	{
 		private class Texts
 		{
-			public GUIContent separateAxes = EditorGUIUtility.TextContent("Separate Axes|If enabled, you can control the noise separately for each axis.");
+			public GUIContent separateAxes = EditorGUIUtility.TrTextContent("Separate Axes", "If enabled, you can control the noise separately for each axis.", null);
 
-			public GUIContent strength = EditorGUIUtility.TextContent("Strength|How strong the overall noise effect is.");
+			public GUIContent strength = EditorGUIUtility.TrTextContent("Strength", "How strong the overall noise effect is.", null);
 
-			public GUIContent frequency = EditorGUIUtility.TextContent("Frequency|Low values create soft, smooth noise, and high values create rapidly changing noise.");
+			public GUIContent frequency = EditorGUIUtility.TrTextContent("Frequency", "Low values create soft, smooth noise, and high values create rapidly changing noise.", null);
 
-			public GUIContent damping = EditorGUIUtility.TextContent("Damping|If enabled, strength is proportional to frequency.");
+			public GUIContent damping = EditorGUIUtility.TrTextContent("Damping", "If enabled, strength is proportional to frequency.", null);
 
-			public GUIContent octaves = EditorGUIUtility.TextContent("Octaves|Layers of noise that combine to produce final noise (Adding octaves increases the performance cost substantially!)");
+			public GUIContent octaves = EditorGUIUtility.TrTextContent("Octaves", "Layers of noise that combine to produce final noise (Adding octaves increases the performance cost substantially!)", null);
 
-			public GUIContent octaveMultiplier = EditorGUIUtility.TextContent("Octave Multiplier|When combining each octave, scale the intensity by this amount.");
+			public GUIContent octaveMultiplier = EditorGUIUtility.TrTextContent("Octave Multiplier", "When combining each octave, scale the intensity by this amount.", null);
 
-			public GUIContent octaveScale = EditorGUIUtility.TextContent("Octave Scale|When combining each octave, zoom in by this amount.");
+			public GUIContent octaveScale = EditorGUIUtility.TrTextContent("Octave Scale", "When combining each octave, zoom in by this amount.", null);
 
-			public GUIContent quality = EditorGUIUtility.TextContent("Quality|Generate 1D, 2D or 3D noise.");
+			public GUIContent quality = EditorGUIUtility.TrTextContent("Quality", "Generate 1D, 2D or 3D noise.", null);
 
-			public GUIContent scrollSpeed = EditorGUIUtility.TextContent("Scroll Speed|Scroll the noise map over the particle system.");
+			public GUIContent scrollSpeed = EditorGUIUtility.TrTextContent("Scroll Speed", "Scroll the noise map over the particle system.", null);
 
-			public GUIContent remap = EditorGUIUtility.TextContent("Remap|Remap the final noise values into a new range.");
+			public GUIContent remap = EditorGUIUtility.TrTextContent("Remap", "Remap the final noise values into a new range.", null);
 
-			public GUIContent remapCurve = EditorGUIUtility.TextContent("Remap Curve");
+			public GUIContent remapCurve = EditorGUIUtility.TrTextContent("Remap Curve", null, null);
 
-			public GUIContent positionAmount = EditorGUIUtility.TextContent("Position Amount|What proportion of the noise is applied to the particle positions.");
+			public GUIContent positionAmount = EditorGUIUtility.TrTextContent("Position Amount", "What proportion of the noise is applied to the particle positions.", null);
 
-			public GUIContent rotationAmount = EditorGUIUtility.TextContent("Rotation Amount|What proportion of the noise is applied to the particle rotations, in degrees per second.");
+			public GUIContent rotationAmount = EditorGUIUtility.TrTextContent("Rotation Amount", "What proportion of the noise is applied to the particle rotations, in degrees per second.", null);
 
-			public GUIContent sizeAmount = EditorGUIUtility.TextContent("Size Amount|Multiply the size of the particle by a proportion of the noise.");
+			public GUIContent sizeAmount = EditorGUIUtility.TrTextContent("Size Amount", "Multiply the size of the particle by a proportion of the noise.", null);
 
 			public GUIContent x = EditorGUIUtility.TextContent("X");
 
@@ -41,15 +41,15 @@ namespace UnityEditor
 
 			public GUIContent z = EditorGUIUtility.TextContent("Z");
 
-			public GUIContent previewTexture = EditorGUIUtility.TextContent("Preview|Preview the noise as a texture.");
+			public GUIContent previewTexture = EditorGUIUtility.TrTextContent("Preview", "Preview the noise as a texture.", null);
 
-			public GUIContent previewTextureMultiEdit = EditorGUIUtility.TextContent("Preview (Disabled)|Preview is disabled in multi-object editing mode.");
+			public GUIContent previewTextureMultiEdit = EditorGUIUtility.TrTextContent("Preview (Disabled)", "Preview is disabled in multi-object editing mode.", null);
 
-			public string[] qualityDropdown = new string[]
+			public GUIContent[] qualityDropdown = new GUIContent[]
 			{
-				"Low (1D)",
-				"Medium (2D)",
-				"High (3D)"
+				EditorGUIUtility.TrTextContent("Low (1D)", null, null),
+				EditorGUIUtility.TrTextContent("Medium (2D)", null, null),
+				EditorGUIUtility.TrTextContent("High (3D)", null, null)
 			};
 		}
 
@@ -155,10 +155,6 @@ namespace UnityEditor
 
 		public override void OnInspectorGUI(InitialModuleUI initial)
 		{
-			if (NoiseModuleUI.s_Texts == null)
-			{
-				NoiseModuleUI.s_Texts = new NoiseModuleUI.Texts();
-			}
 			if (NoiseModuleUI.s_PreviewTextureDirty)
 			{
 				if (this.m_ParticleSystemUI.multiEdit)
@@ -186,22 +182,12 @@ namespace UnityEditor
 			bool flag = ModuleUI.GUIToggle(NoiseModuleUI.s_Texts.separateAxes, this.m_SeparateAxes, new GUILayoutOption[0]);
 			bool flag2 = EditorGUI.EndChangeCheck();
 			EditorGUI.BeginChangeCheck();
-			if (flag2)
+			if (flag2 && !flag)
 			{
-				if (flag)
-				{
-					this.m_StrengthX.RemoveCurveFromEditor();
-					this.m_RemapX.RemoveCurveFromEditor();
-				}
-				else
-				{
-					this.m_StrengthX.RemoveCurveFromEditor();
-					this.m_StrengthY.RemoveCurveFromEditor();
-					this.m_StrengthZ.RemoveCurveFromEditor();
-					this.m_RemapX.RemoveCurveFromEditor();
-					this.m_RemapY.RemoveCurveFromEditor();
-					this.m_RemapZ.RemoveCurveFromEditor();
-				}
+				this.m_StrengthY.RemoveCurveFromEditor();
+				this.m_StrengthZ.RemoveCurveFromEditor();
+				this.m_RemapY.RemoveCurveFromEditor();
+				this.m_RemapZ.RemoveCurveFromEditor();
 			}
 			if (!this.m_StrengthX.stateHasMultipleDifferentValues)
 			{
@@ -233,7 +219,15 @@ namespace UnityEditor
 				ModuleUI.GUIFloat(NoiseModuleUI.s_Texts.octaveScale, this.m_OctaveScale, new GUILayoutOption[0]);
 			}
 			ModuleUI.GUIPopup(NoiseModuleUI.s_Texts.quality, this.m_Quality, NoiseModuleUI.s_Texts.qualityDropdown, new GUILayoutOption[0]);
+			EditorGUI.BeginChangeCheck();
 			bool flag3 = ModuleUI.GUIToggle(NoiseModuleUI.s_Texts.remap, this.m_RemapEnabled, new GUILayoutOption[0]);
+			bool flag4 = EditorGUI.EndChangeCheck();
+			if (flag4 && !flag3)
+			{
+				this.m_RemapX.RemoveCurveFromEditor();
+				this.m_RemapY.RemoveCurveFromEditor();
+				this.m_RemapZ.RemoveCurveFromEditor();
+			}
 			using (new EditorGUI.DisabledScope(!flag3))
 			{
 				if (flag)

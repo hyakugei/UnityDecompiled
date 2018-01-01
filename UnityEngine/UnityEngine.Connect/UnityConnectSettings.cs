@@ -4,7 +4,7 @@ using UnityEngine.Scripting;
 
 namespace UnityEngine.Connect
 {
-	internal class UnityConnectSettings
+	internal class UnityConnectSettings : UnityEngine.Object
 	{
 		public static extern bool enabled
 		{

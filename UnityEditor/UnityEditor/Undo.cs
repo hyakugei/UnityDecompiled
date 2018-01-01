@@ -139,6 +139,10 @@ namespace UnityEditor
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void CollapseUndoOperations(int groupIndex);
 
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern void ClearAll();
+
 		[Obsolete("Use Undo.RegisterCompleteObjectUndo instead")]
 		public static void RegisterUndo(UnityEngine.Object objectToUndo, string name)
 		{

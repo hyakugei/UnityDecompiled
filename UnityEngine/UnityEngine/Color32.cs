@@ -1,21 +1,31 @@
 using System;
+using System.Runtime.InteropServices;
 using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
-	[IL2CPPStructAlignment(Align = 4), UsedByNativeCode]
+	[UsedByNativeCode]
+	[StructLayout(LayoutKind.Explicit)]
 	public struct Color32
 	{
+		[FieldOffset(0)]
+		private int rgba;
+
+		[FieldOffset(0)]
 		public byte r;
 
+		[FieldOffset(1)]
 		public byte g;
 
+		[FieldOffset(2)]
 		public byte b;
 
+		[FieldOffset(3)]
 		public byte a;
 
 		public Color32(byte r, byte g, byte b, byte a)
 		{
+			this.rgba = 0;
 			this.r = r;
 			this.g = g;
 			this.b = b;

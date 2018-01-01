@@ -12,6 +12,7 @@ namespace UnityEngine
 		PhonePad,
 		NamePhonePad,
 		EmailAddress,
+		[Obsolete("Wii U is no longer supported as of Unity 2018.1.")]
 		NintendoNetworkAccount,
 		Social,
 		Search

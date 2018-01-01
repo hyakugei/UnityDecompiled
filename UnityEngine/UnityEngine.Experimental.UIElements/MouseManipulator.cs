@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace UnityEngine.Experimental.UIElements
 {
-	public class MouseManipulator : Manipulator
+	public abstract class MouseManipulator : Manipulator
 	{
 		private ManipulatorActivationFilter m_currentActivator;
 
@@ -13,30 +13,37 @@ namespace UnityEngine.Experimental.UIElements
 			private set;
 		}
 
-		public MouseManipulator()
+		protected MouseManipulator()
 		{
 			this.activators = new List<ManipulatorActivationFilter>();
 		}
 
-		protected bool CanStartManipulation(Event evt)
+		protected bool CanStartManipulation(IMouseEvent e)
 		{
 			bool result;
-			foreach (ManipulatorActivationFilter current in this.activators)
+			if (MouseCaptureController.IsMouseCaptureTaken())
 			{
-				if (current.Matches(evt))
-				{
-					this.m_currentActivator = current;
-					result = true;
-					return result;
-				}
+				result = false;
 			}
-			result = false;
+			else
+			{
+				foreach (ManipulatorActivationFilter current in this.activators)
+				{
+					if (current.Matches(e))
+					{
+						this.m_currentActivator = current;
+						result = true;
+						return result;
+					}
+				}
+				result = false;
+			}
 			return result;
 		}
 
-		protected bool CanStopManipulation(Event evt)
+		protected bool CanStopManipulation(IMouseEvent e)
 		{
-			return evt.button == (int)this.m_currentActivator.button && this.HasCapture();
+			return e.button == (int)this.m_currentActivator.button && base.target.HasMouseCapture();
 		}
 	}
 }

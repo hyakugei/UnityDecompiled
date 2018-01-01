@@ -35,14 +35,15 @@ namespace UnityEditor.Scripting.Compilers
 
 		public static string PrepareFileName(string input)
 		{
+			input = FileUtil.ResolveSymlinks(input);
 			string result;
-			if (Application.platform == RuntimePlatform.OSXEditor)
+			if (Application.platform == RuntimePlatform.WindowsEditor)
 			{
-				result = CommandLineFormatter.EscapeCharsQuote(input);
+				result = CommandLineFormatter.EscapeCharsWindows(input);
 			}
 			else
 			{
-				result = CommandLineFormatter.EscapeCharsWindows(input);
+				result = CommandLineFormatter.EscapeCharsQuote(input);
 			}
 			return result;
 		}

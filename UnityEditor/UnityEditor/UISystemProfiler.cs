@@ -135,13 +135,13 @@ namespace UnityEditor
 				UISystemProfiler.Styles.background = "OL Box";
 				UISystemProfiler.Styles.header = "OL title";
 				UISystemProfiler.Styles.header.alignment = TextAnchor.MiddleLeft;
-				UISystemProfiler.Styles.noData = EditorGUIUtility.TextContent("No frame data available - UI profiling is only available when profiling in the editor");
-				UISystemProfiler.Styles.contentDetachRender = new GUIContent("Detach");
+				UISystemProfiler.Styles.noData = EditorGUIUtility.TrTextContent("No frame data available - UI profiling is only available when profiling in the editor", null, null);
+				UISystemProfiler.Styles.contentDetachRender = EditorGUIUtility.TrTextContent("Detach", null, null);
 				UISystemProfiler.Styles.backgroundOptions = new GUIContent[]
 				{
-					new GUIContent("Checkerboard"),
-					new GUIContent("Black"),
-					new GUIContent("White")
+					EditorGUIUtility.TrTextContent("Checkerboard", null, null),
+					EditorGUIUtility.TrTextContent("Black", null, null),
+					EditorGUIUtility.TrTextContent("White", null, null)
 				};
 				UISystemProfiler.Styles.backgroundValues = new int[]
 				{
@@ -151,9 +151,9 @@ namespace UnityEditor
 				};
 				UISystemProfiler.Styles.rendermodeOptions = new GUIContent[]
 				{
-					new GUIContent("Standard"),
-					new GUIContent("Overdraw"),
-					new GUIContent("Composite overdraw")
+					EditorGUIUtility.TrTextContent("Standard", null, null),
+					EditorGUIUtility.TrTextContent("Overdraw", null, null),
+					EditorGUIUtility.TrTextContent("Composite overdraw", null, null)
 				};
 				UISystemProfiler.Styles.rendermodeValues = new int[]
 				{
@@ -189,6 +189,8 @@ namespace UnityEditor
 		private ZoomableArea m_ZoomablePreview;
 
 		private UISystemPreviewWindow m_DetachedPreview;
+
+		private int currentFrame = 0;
 
 		private static UISystemProfiler.Styles.RenderMode PreviewRenderMode
 		{
@@ -234,7 +236,7 @@ namespace UnityEditor
 				GUILayout.ExpandHeight(true)
 			});
 			controlRect.yMin -= EditorGUIUtility.standardVerticalSpacing;
-			this.m_TreeViewControl.property = win.CreateProperty(ProfilerColumn.DontSort);
+			this.m_TreeViewControl.property = win.CreateProperty();
 			if (!this.m_TreeViewControl.property.frameDataReady)
 			{
 				this.m_TreeViewControl.property.Cleanup();
@@ -246,6 +248,7 @@ namespace UnityEditor
 				int activeVisibleFrameIndex = win.GetActiveVisibleFrameIndex();
 				if (this.m_UGUIProfilerTreeViewState != null && this.m_UGUIProfilerTreeViewState.lastFrame != activeVisibleFrameIndex)
 				{
+					this.currentFrame = ProfilerDriver.lastFrameIndex - activeVisibleFrameIndex;
 					this.m_TreeViewControl.Reload();
 				}
 				this.m_TreeViewControl.OnGUI(controlRect);
@@ -324,12 +327,12 @@ namespace UnityEditor
 						}
 						if (batchTreeViewItem != null)
 						{
-							texture2D = this.m_RenderService.GetThumbnail(batchTreeViewItem.renderDataIndex, 1, previewRenderMode != UISystemProfiler.Styles.RenderMode.Standard);
+							texture2D = this.m_RenderService.GetThumbnail(this.currentFrame, batchTreeViewItem.renderDataIndex, 1, previewRenderMode != UISystemProfiler.Styles.RenderMode.Standard);
 						}
 						UISystemProfilerTreeView.CanvasTreeViewItem canvasTreeViewItem = current as UISystemProfilerTreeView.CanvasTreeViewItem;
 						if (canvasTreeViewItem != null)
 						{
-							texture2D = this.m_RenderService.GetThumbnail(canvasTreeViewItem.info.renderDataIndex, canvasTreeViewItem.info.renderDataCount, previewRenderMode != UISystemProfiler.Styles.RenderMode.Standard);
+							texture2D = this.m_RenderService.GetThumbnail(this.currentFrame, canvasTreeViewItem.info.renderDataIndex, canvasTreeViewItem.info.renderDataCount, previewRenderMode != UISystemProfiler.Styles.RenderMode.Standard);
 						}
 						if (previewRenderMode == UISystemProfiler.Styles.RenderMode.CompositeOverdraw)
 						{
@@ -401,51 +404,51 @@ namespace UnityEditor
 				{
 					new MultiColumnHeaderState.Column
 					{
-						headerContent = EditorGUIUtility.TextContent("Object"),
+						headerContent = EditorGUIUtility.TrTextContent("Object", null, null),
 						width = 220f,
 						maxWidth = 400f,
 						canSort = true
 					},
 					new MultiColumnHeaderState.Column
 					{
-						headerContent = EditorGUIUtility.TextContent("Self Batch Count"),
+						headerContent = EditorGUIUtility.TrTextContent("Self Batch Count", null, null),
 						width = (float)num,
 						maxWidth = (float)num2
 					},
 					new MultiColumnHeaderState.Column
 					{
-						headerContent = EditorGUIUtility.TextContent("Cumulative Batch Count"),
+						headerContent = EditorGUIUtility.TrTextContent("Cumulative Batch Count", null, null),
 						width = (float)num,
 						maxWidth = (float)num2
 					},
 					new MultiColumnHeaderState.Column
 					{
-						headerContent = EditorGUIUtility.TextContent("Self Vertex Count"),
+						headerContent = EditorGUIUtility.TrTextContent("Self Vertex Count", null, null),
 						width = (float)num,
 						maxWidth = (float)num2
 					},
 					new MultiColumnHeaderState.Column
 					{
-						headerContent = EditorGUIUtility.TextContent("Cumulative Vertex Count"),
+						headerContent = EditorGUIUtility.TrTextContent("Cumulative Vertex Count", null, null),
 						width = (float)num,
 						maxWidth = (float)num2
 					},
 					new MultiColumnHeaderState.Column
 					{
-						headerContent = EditorGUIUtility.TextContent("Batch Breaking Reason"),
+						headerContent = EditorGUIUtility.TrTextContent("Batch Breaking Reason", null, null),
 						width = 220f,
 						maxWidth = 400f,
 						canSort = false
 					},
 					new MultiColumnHeaderState.Column
 					{
-						headerContent = EditorGUIUtility.TextContent("GameObject Count"),
+						headerContent = EditorGUIUtility.TrTextContent("GameObject Count", null, null),
 						width = (float)num,
 						maxWidth = 400f
 					},
 					new MultiColumnHeaderState.Column
 					{
-						headerContent = EditorGUIUtility.TextContent("GameObjects"),
+						headerContent = EditorGUIUtility.TrTextContent("GameObjects", null, null),
 						width = 150f,
 						maxWidth = 400f,
 						canSort = false

@@ -6,8 +6,6 @@ namespace UnityEditorInternal
 {
 	internal static class CurveBindingUtility
 	{
-		private static GameObject s_Root;
-
 		public static object GetCurrentValue(AnimationWindowState state, AnimationWindowCurve curve)
 		{
 			object result;
@@ -17,7 +15,7 @@ namespace UnityEditorInternal
 			}
 			else
 			{
-				result = curve.Evaluate(state.currentTime - curve.timeOffset);
+				result = curve.Evaluate(state.currentTime);
 			}
 			return result;
 		}

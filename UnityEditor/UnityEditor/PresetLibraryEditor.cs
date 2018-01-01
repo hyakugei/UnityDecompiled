@@ -22,9 +22,9 @@ namespace UnityEditor
 
 			public GUIContent plusButtonTextNotCheckedOut = new GUIContent("", "To add presets you need to press the 'Check out' button below");
 
-			public GUIContent header = new GUIContent("Presets");
+			public GUIContent header = EditorGUIUtility.TrTextContent("Presets", null, null);
 
-			public GUIContent newPreset = new GUIContent("New");
+			public GUIContent newPreset = EditorGUIUtility.TrTextContent("New", null, null);
 
 			public Styles()
 			{
@@ -86,10 +86,10 @@ namespace UnityEditor
 			{
 				PresetLibraryEditor<T>.PresetContextMenu.s_Caller = caller;
 				PresetLibraryEditor<T>.PresetContextMenu.s_PresetIndex = presetIndex;
-				GUIContent content = new GUIContent("Replace");
-				GUIContent content2 = new GUIContent("Delete");
-				GUIContent content3 = new GUIContent("Rename");
-				GUIContent content4 = new GUIContent("Move To First");
+				GUIContent content = EditorGUIUtility.TrTextContent("Replace", null, null);
+				GUIContent content2 = EditorGUIUtility.TrTextContent("Delete", null, null);
+				GUIContent content3 = EditorGUIUtility.TrTextContent("Rename", null, null);
+				GUIContent content4 = EditorGUIUtility.TrTextContent("Move To First", null, null);
 				GenericMenu genericMenu = new GenericMenu();
 				if (isOpenForEdit)
 				{
@@ -181,13 +181,13 @@ namespace UnityEditor
 					{
 						new PresetLibraryEditor<T>.SettingsMenu.ViewModeData
 						{
-							text = new GUIContent("Grid"),
+							text = EditorGUIUtility.TrTextContent("Grid", null, null),
 							itemHeight = num,
 							viewmode = PresetLibraryEditorState.ItemViewMode.Grid
 						},
 						new PresetLibraryEditor<T>.SettingsMenu.ViewModeData
 						{
-							text = new GUIContent("List"),
+							text = EditorGUIUtility.TrTextContent("List", null, null),
 							itemHeight = num,
 							viewmode = PresetLibraryEditorState.ItemViewMode.List
 						}
@@ -199,25 +199,25 @@ namespace UnityEditor
 					{
 						new PresetLibraryEditor<T>.SettingsMenu.ViewModeData
 						{
-							text = new GUIContent("Small Grid"),
+							text = EditorGUIUtility.TrTextContent("Small Grid", null, null),
 							itemHeight = num,
 							viewmode = PresetLibraryEditorState.ItemViewMode.Grid
 						},
 						new PresetLibraryEditor<T>.SettingsMenu.ViewModeData
 						{
-							text = new GUIContent("Large Grid"),
+							text = EditorGUIUtility.TrTextContent("Large Grid", null, null),
 							itemHeight = num2,
 							viewmode = PresetLibraryEditorState.ItemViewMode.Grid
 						},
 						new PresetLibraryEditor<T>.SettingsMenu.ViewModeData
 						{
-							text = new GUIContent("Small List"),
+							text = EditorGUIUtility.TrTextContent("Small List", null, null),
 							itemHeight = num,
 							viewmode = PresetLibraryEditorState.ItemViewMode.List
 						},
 						new PresetLibraryEditor<T>.SettingsMenu.ViewModeData
 						{
-							text = new GUIContent("Large List"),
+							text = EditorGUIUtility.TrTextContent("Large List", null, null),
 							itemHeight = num2,
 							viewmode = PresetLibraryEditorState.ItemViewMode.List
 						}
@@ -226,14 +226,14 @@ namespace UnityEditor
 				for (int i = 0; i < list.Count; i++)
 				{
 					bool flag = PresetLibraryEditor<T>.SettingsMenu.s_Owner.itemViewMode == list[i].viewmode && (int)PresetLibraryEditor<T>.SettingsMenu.s_Owner.previewHeight == list[i].itemHeight;
-					GenericMenu arg_1FF_0 = genericMenu;
-					GUIContent arg_1FF_1 = list[i].text;
-					bool arg_1FF_2 = flag;
+					GenericMenu arg_20B_0 = genericMenu;
+					GUIContent arg_20B_1 = list[i].text;
+					bool arg_20B_2 = flag;
 					if (PresetLibraryEditor<T>.SettingsMenu.<>f__mg$cache0 == null)
 					{
 						PresetLibraryEditor<T>.SettingsMenu.<>f__mg$cache0 = new GenericMenu.MenuFunction2(PresetLibraryEditor<T>.SettingsMenu.ViewModeChange);
 					}
-					arg_1FF_0.AddItem(arg_1FF_1, arg_1FF_2, PresetLibraryEditor<T>.SettingsMenu.<>f__mg$cache0, list[i]);
+					arg_20B_0.AddItem(arg_20B_1, arg_20B_2, PresetLibraryEditor<T>.SettingsMenu.<>f__mg$cache0, list[i]);
 				}
 				genericMenu.AddSeparator("");
 				List<string> list2;
@@ -246,57 +246,57 @@ namespace UnityEditor
 				foreach (string current in list2)
 				{
 					string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(current);
-					GenericMenu arg_2C8_0 = genericMenu;
-					GUIContent arg_2C8_1 = new GUIContent(fileNameWithoutExtension);
-					bool arg_2C8_2 = a == current;
+					GenericMenu arg_2D4_0 = genericMenu;
+					GUIContent arg_2D4_1 = new GUIContent(fileNameWithoutExtension);
+					bool arg_2D4_2 = a == current;
 					if (PresetLibraryEditor<T>.SettingsMenu.<>f__mg$cache1 == null)
 					{
 						PresetLibraryEditor<T>.SettingsMenu.<>f__mg$cache1 = new GenericMenu.MenuFunction2(PresetLibraryEditor<T>.SettingsMenu.LibraryModeChange);
 					}
-					arg_2C8_0.AddItem(arg_2C8_1, arg_2C8_2, PresetLibraryEditor<T>.SettingsMenu.<>f__mg$cache1, current);
+					arg_2D4_0.AddItem(arg_2D4_1, arg_2D4_2, PresetLibraryEditor<T>.SettingsMenu.<>f__mg$cache1, current);
 				}
 				foreach (string current2 in list3)
 				{
 					string fileNameWithoutExtension2 = Path.GetFileNameWithoutExtension(current2);
-					GenericMenu arg_346_0 = genericMenu;
-					GUIContent arg_346_1 = new GUIContent(fileNameWithoutExtension2 + str);
-					bool arg_346_2 = a == current2;
+					GenericMenu arg_352_0 = genericMenu;
+					GUIContent arg_352_1 = new GUIContent(fileNameWithoutExtension2 + str);
+					bool arg_352_2 = a == current2;
 					if (PresetLibraryEditor<T>.SettingsMenu.<>f__mg$cache2 == null)
 					{
 						PresetLibraryEditor<T>.SettingsMenu.<>f__mg$cache2 = new GenericMenu.MenuFunction2(PresetLibraryEditor<T>.SettingsMenu.LibraryModeChange);
 					}
-					arg_346_0.AddItem(arg_346_1, arg_346_2, PresetLibraryEditor<T>.SettingsMenu.<>f__mg$cache2, current2);
+					arg_352_0.AddItem(arg_352_1, arg_352_2, PresetLibraryEditor<T>.SettingsMenu.<>f__mg$cache2, current2);
 				}
 				genericMenu.AddSeparator("");
-				GenericMenu arg_3A5_0 = genericMenu;
-				GUIContent arg_3A5_1 = new GUIContent("Create New Library...");
-				bool arg_3A5_2 = false;
+				GenericMenu arg_3B3_0 = genericMenu;
+				GUIContent arg_3B3_1 = EditorGUIUtility.TrTextContent("Create New Library...", null, null);
+				bool arg_3B3_2 = false;
 				if (PresetLibraryEditor<T>.SettingsMenu.<>f__mg$cache3 == null)
 				{
 					PresetLibraryEditor<T>.SettingsMenu.<>f__mg$cache3 = new GenericMenu.MenuFunction2(PresetLibraryEditor<T>.SettingsMenu.CreateLibrary);
 				}
-				arg_3A5_0.AddItem(arg_3A5_1, arg_3A5_2, PresetLibraryEditor<T>.SettingsMenu.<>f__mg$cache3, 0);
+				arg_3B3_0.AddItem(arg_3B3_1, arg_3B3_2, PresetLibraryEditor<T>.SettingsMenu.<>f__mg$cache3, 0);
 				if (PresetLibraryEditor<T>.SettingsMenu.HasDefaultPresets())
 				{
 					genericMenu.AddSeparator("");
-					GenericMenu arg_3EF_0 = genericMenu;
-					GUIContent arg_3EF_1 = new GUIContent("Add Factory Presets To Current Library");
-					bool arg_3EF_2 = false;
+					GenericMenu arg_3FF_0 = genericMenu;
+					GUIContent arg_3FF_1 = EditorGUIUtility.TrTextContent("Add Factory Presets To Current Library", null, null);
+					bool arg_3FF_2 = false;
 					if (PresetLibraryEditor<T>.SettingsMenu.<>f__mg$cache4 == null)
 					{
 						PresetLibraryEditor<T>.SettingsMenu.<>f__mg$cache4 = new GenericMenu.MenuFunction2(PresetLibraryEditor<T>.SettingsMenu.AddDefaultPresetsToCurrentLibrary);
 					}
-					arg_3EF_0.AddItem(arg_3EF_1, arg_3EF_2, PresetLibraryEditor<T>.SettingsMenu.<>f__mg$cache4, 0);
+					arg_3FF_0.AddItem(arg_3FF_1, arg_3FF_2, PresetLibraryEditor<T>.SettingsMenu.<>f__mg$cache4, 0);
 				}
 				genericMenu.AddSeparator("");
-				GenericMenu arg_42F_0 = genericMenu;
-				GUIContent arg_42F_1 = new GUIContent("Reveal Current Library Location");
-				bool arg_42F_2 = false;
+				GenericMenu arg_441_0 = genericMenu;
+				GUIContent arg_441_1 = EditorGUIUtility.TrTextContent("Reveal Current Library Location", null, null);
+				bool arg_441_2 = false;
 				if (PresetLibraryEditor<T>.SettingsMenu.<>f__mg$cache5 == null)
 				{
 					PresetLibraryEditor<T>.SettingsMenu.<>f__mg$cache5 = new GenericMenu.MenuFunction2(PresetLibraryEditor<T>.SettingsMenu.RevealCurrentLibrary);
 				}
-				arg_42F_0.AddItem(arg_42F_1, arg_42F_2, PresetLibraryEditor<T>.SettingsMenu.<>f__mg$cache5, 0);
+				arg_441_0.AddItem(arg_441_1, arg_441_2, PresetLibraryEditor<T>.SettingsMenu.<>f__mg$cache5, 0);
 				genericMenu.DropDown(activatorRect);
 			}
 

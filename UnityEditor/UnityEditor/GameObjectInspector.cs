@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor.SceneManagement;
 using UnityEditor.VersionControl;
 using UnityEditorInternal;
 using UnityEngine;
@@ -22,7 +21,11 @@ namespace UnityEditor
 
 			public GUIContent modelIcon = EditorGUIUtility.IconContent("PrefabModel Icon");
 
-			public GUIContent staticContent = EditorGUIUtility.TextContent("Static");
+			public GUIContent staticContent = EditorGUIUtility.TrTextContent("Static", "Enable the checkbox to mark this GameObject as static for all systems.\n\nDisable the checkbox to mark this GameObject as not static for all systems.\n\nUse the drop-down menu to mark as this GameObject as static or not static for individual systems.", null);
+
+			public GUIContent layerContent = EditorGUIUtility.TrTextContent("Layer", "The layer that this GameObject is in.\n\nChoose Add Layer... to edit the list of available layers.", null);
+
+			public GUIContent tagContent = EditorGUIUtility.TrTextContent("Tag", "The tag that this GameObject has.\n\nChoose Untagged to remove the current tag.\n\nChoose Add Tag... to edit the list of available tags.", null);
 
 			public float tagFieldWidth = EditorStyles.boldLabel.CalcSize(EditorGUIUtility.TempContent("Tag")).x;
 
@@ -36,18 +39,18 @@ namespace UnityEditor
 
 			public GUIStyle instanceManagementInfo = new GUIStyle(EditorStyles.helpBox);
 
-			public GUIContent goTypeLabelMultiple = new GUIContent("Multiple");
+			public GUIContent goTypeLabelMultiple = EditorGUIUtility.TrTextContent("Multiple", null, null);
 
 			public GUIContent[] goTypeLabel = new GUIContent[]
 			{
 				null,
-				EditorGUIUtility.TextContent("Prefab"),
-				EditorGUIUtility.TextContent("Model"),
-				EditorGUIUtility.TextContent("Prefab"),
-				EditorGUIUtility.TextContent("Model"),
-				EditorGUIUtility.TextContent("Missing|The source Prefab or Model has been deleted."),
-				EditorGUIUtility.TextContent("Prefab|You have broken the prefab connection. Changes to the prefab will not be applied to this object before you Apply or Revert."),
-				EditorGUIUtility.TextContent("Model|You have broken the prefab connection. Changes to the model will not be applied to this object before you Revert.")
+				EditorGUIUtility.TrTextContent("Prefab", null, null),
+				EditorGUIUtility.TrTextContent("Model", null, null),
+				EditorGUIUtility.TrTextContent("Prefab", null, null),
+				EditorGUIUtility.TrTextContent("Model", null, null),
+				EditorGUIUtility.TrTextContent("Missing", "The source Prefab or Model has been deleted.", null),
+				EditorGUIUtility.TrTextContent("Prefab", "You have broken the prefab connection. Changes to the prefab will not be applied to this object before you Apply or Revert.", null),
+				EditorGUIUtility.TrTextContent("Model", "You have broken the prefab connection. Changes to the model will not be applied to this object before you Revert.", null)
 			};
 
 			public Styles()
@@ -57,6 +60,47 @@ namespace UnityEditor
 				this.instanceManagementInfo.alignment = gUIStyle.alignment;
 				this.layerPopup.margin.right = 0;
 				this.header.padding.bottom -= 3;
+			}
+		}
+
+		private class PreviewData : IDisposable
+		{
+			private bool m_Disposed;
+
+			private GameObject m_GameObject;
+
+			public readonly PreviewRenderUtility renderUtility;
+
+			public GameObject gameObject
+			{
+				get
+				{
+					return this.m_GameObject;
+				}
+			}
+
+			public PreviewData(UnityEngine.Object targetObject)
+			{
+				this.renderUtility = new PreviewRenderUtility();
+				this.renderUtility.camera.fieldOfView = 30f;
+				this.UpdateGameObject(targetObject);
+			}
+
+			public void UpdateGameObject(UnityEngine.Object targetObject)
+			{
+				UnityEngine.Object.DestroyImmediate(this.gameObject);
+				this.m_GameObject = EditorUtility.InstantiateForAnimatorPreview(targetObject);
+				this.renderUtility.AddManagedGO(this.gameObject);
+			}
+
+			public void Dispose()
+			{
+				if (!this.m_Disposed)
+				{
+					this.renderUtility.Cleanup();
+					UnityEngine.Object.DestroyImmediate(this.gameObject);
+					this.m_Disposed = true;
+				}
 			}
 		}
 
@@ -78,9 +122,7 @@ namespace UnityEditor
 
 		private Vector2 previewDir;
 
-		private PreviewRenderUtility m_PreviewUtility;
-
-		private List<GameObject> m_PreviewInstances;
+		private Dictionary<int, GameObjectInspector.PreviewData> m_PreviewInstances = new Dictionary<int, GameObjectInspector.PreviewData>();
 
 		private bool m_HasInstance = false;
 
@@ -296,49 +338,37 @@ namespace UnityEditor
 								EditorGUIUtility.PingObject(Selection.activeObject);
 							}
 						}
-						if (prefabType == PrefabType.DisconnectedModelPrefabInstance || prefabType == PrefabType.DisconnectedPrefabInstance)
-						{
-							if (GUILayout.Button("Revert", "MiniButtonMid", new GUILayoutOption[0]))
-							{
-								List<UnityEngine.Object> hierarchy = new List<UnityEngine.Object>();
-								this.GetObjectListFromHierarchy(hierarchy, go);
-								Undo.RegisterFullObjectHierarchyUndo(go, "Revert to prefab");
-								PrefabUtility.ReconnectToLastPrefab(go);
-								Undo.RegisterCreatedObjectUndo(PrefabUtility.GetPrefabObject(go), "Revert to prefab");
-								PrefabUtility.RevertPrefabInstance(go);
-								this.CalculatePrefabStatus();
-								List<UnityEngine.Object> list = new List<UnityEngine.Object>();
-								this.GetObjectListFromHierarchy(list, go);
-								this.RegisterNewComponents(list, hierarchy);
-							}
-						}
 						using (new EditorGUI.DisabledScope(AnimationMode.InAnimationMode()))
 						{
-							if (prefabType == PrefabType.ModelPrefabInstance || prefabType == PrefabType.PrefabInstance)
+							if (prefabType != PrefabType.MissingPrefabInstance)
 							{
 								if (GUILayout.Button("Revert", "MiniButtonMid", new GUILayoutOption[0]))
 								{
-									this.RevertAndCheckForNewComponents(go);
-								}
-							}
-							if (prefabType == PrefabType.PrefabInstance || prefabType == PrefabType.DisconnectedPrefabInstance)
-							{
-								GameObject gameObject = PrefabUtility.FindValidUploadPrefabInstanceRoot(go);
-								GUI.enabled = (gameObject != null && !AnimationMode.InAnimationMode());
-								if (GUILayout.Button("Apply", "MiniButtonRight", new GUILayoutOption[0]))
-								{
-									UnityEngine.Object prefabParent = PrefabUtility.GetPrefabParent(gameObject);
-									string assetPath = AssetDatabase.GetAssetPath(prefabParent);
-									bool flag = Provider.PromptAndCheckoutIfNeeded(new string[]
+									PrefabUtility.RevertPrefabInstanceWithUndo(go);
+									if (go != null)
 									{
-										assetPath
-									}, "The version control requires you to check out the prefab before applying changes.");
-									if (flag)
-									{
-										PrefabUtility.ReplacePrefab(gameObject, prefabParent, ReplacePrefabOptions.ConnectToPrefab);
 										this.CalculatePrefabStatus();
-										EditorSceneManager.MarkSceneDirty(gameObject.scene);
-										GUIUtility.ExitGUI();
+									}
+									GUIUtility.ExitGUI();
+								}
+								if (prefabType == PrefabType.PrefabInstance || prefabType == PrefabType.DisconnectedPrefabInstance)
+								{
+									GameObject gameObject = PrefabUtility.FindValidUploadPrefabInstanceRoot(go);
+									GUI.enabled = (gameObject != null && !AnimationMode.InAnimationMode());
+									if (GUILayout.Button("Apply", "MiniButtonRight", new GUILayoutOption[0]))
+									{
+										UnityEngine.Object prefabParent = PrefabUtility.GetPrefabParent(gameObject);
+										string assetPath = AssetDatabase.GetAssetPath(prefabParent);
+										bool flag = Provider.PromptAndCheckoutIfNeeded(new string[]
+										{
+											assetPath
+										}, "The version control requires you to check out the prefab before applying changes.");
+										if (flag)
+										{
+											PrefabUtility.ReplacePrefabWithUndo(gameObject);
+											this.CalculatePrefabStatus();
+											GUIUtility.ExitGUI();
+										}
 									}
 								}
 							}
@@ -357,112 +387,16 @@ namespace UnityEditor
 			}
 		}
 
-		public void RevertAndCheckForNewComponents(GameObject gameObject)
-		{
-			List<UnityEngine.Object> hierarchy = new List<UnityEngine.Object>();
-			this.GetObjectListFromHierarchy(hierarchy, gameObject);
-			Undo.RegisterFullObjectHierarchyUndo(gameObject, "Revert Prefab Instance");
-			PrefabUtility.RevertPrefabInstance(gameObject);
-			this.CalculatePrefabStatus();
-			List<UnityEngine.Object> list = new List<UnityEngine.Object>();
-			this.GetObjectListFromHierarchy(list, gameObject);
-			this.RegisterNewComponents(list, hierarchy);
-		}
-
-		private void GetObjectListFromHierarchy(List<UnityEngine.Object> hierarchy, GameObject gameObject)
-		{
-			Transform transform = null;
-			List<Component> list = new List<Component>();
-			gameObject.GetComponents<Component>(list);
-			foreach (Component current in list)
-			{
-				if (current is Transform)
-				{
-					transform = (current as Transform);
-				}
-				else
-				{
-					hierarchy.Add(current);
-				}
-			}
-			if (transform != null)
-			{
-				int childCount = transform.childCount;
-				for (int i = 0; i < childCount; i++)
-				{
-					this.GetObjectListFromHierarchy(hierarchy, transform.GetChild(i).gameObject);
-				}
-			}
-		}
-
-		private void RegisterNewComponents(List<UnityEngine.Object> newHierarchy, List<UnityEngine.Object> hierarchy)
-		{
-			List<Component> list = new List<Component>();
-			foreach (UnityEngine.Object current in newHierarchy)
-			{
-				bool flag = false;
-				foreach (UnityEngine.Object current2 in hierarchy)
-				{
-					if (current2.GetInstanceID() == current.GetInstanceID())
-					{
-						flag = true;
-						break;
-					}
-				}
-				if (!flag)
-				{
-					list.Add(current as Component);
-				}
-			}
-			HashSet<Type> hashSet = new HashSet<Type>
-			{
-				typeof(Transform)
-			};
-			bool flag2 = false;
-			while (list.Count > 0 && !flag2)
-			{
-				flag2 = true;
-				for (int i = 0; i < list.Count; i++)
-				{
-					Component component = list[i];
-					object[] customAttributes = component.GetType().GetCustomAttributes(typeof(RequireComponent), true);
-					bool flag3 = true;
-					object[] array = customAttributes;
-					for (int j = 0; j < array.Length; j++)
-					{
-						RequireComponent requireComponent = (RequireComponent)array[j];
-						if ((requireComponent.m_Type0 != null && !hashSet.Contains(requireComponent.m_Type0)) || (requireComponent.m_Type1 != null && !hashSet.Contains(requireComponent.m_Type1)) || (requireComponent.m_Type2 != null && !hashSet.Contains(requireComponent.m_Type2)))
-						{
-							flag3 = false;
-							break;
-						}
-					}
-					if (flag3)
-					{
-						Undo.RegisterCreatedObjectUndo(component, "Dangling component");
-						hashSet.Add(component.GetType());
-						list.RemoveAt(i);
-						i--;
-						flag2 = false;
-					}
-				}
-			}
-			foreach (Component current3 in list)
-			{
-				Undo.RegisterCreatedObjectUndo(current3, "Dangling component");
-			}
-		}
-
 		private void DoLayerField(GameObject go)
 		{
 			EditorGUIUtility.labelWidth = GameObjectInspector.s_Styles.layerFieldWidth;
 			Rect rect = GUILayoutUtility.GetRect(GUIContent.none, GameObjectInspector.s_Styles.layerPopup);
 			EditorGUI.BeginProperty(rect, GUIContent.none, this.m_Layer);
 			EditorGUI.BeginChangeCheck();
-			int num = EditorGUI.LayerField(rect, EditorGUIUtility.TempContent("Layer"), go.layer, GameObjectInspector.s_Styles.layerPopup);
+			int num = EditorGUI.LayerField(rect, GameObjectInspector.s_Styles.layerContent, go.layer, GameObjectInspector.s_Styles.layerPopup);
 			if (EditorGUI.EndChangeCheck())
 			{
-				GameObjectUtility.ShouldIncludeChildren shouldIncludeChildren = GameObjectUtility.DisplayUpdateChildrenDialogIfNeeded(base.targets.OfType<GameObject>(), "Change Layer", "Do you want to set layer to " + InternalEditorUtility.GetLayerName(num) + " for all child objects as well?");
+				GameObjectUtility.ShouldIncludeChildren shouldIncludeChildren = GameObjectUtility.DisplayUpdateChildrenDialogIfNeeded(base.targets.OfType<GameObject>(), "Change Layer", string.Format("Do you want to set layer to {0} for all child objects as well?", InternalEditorUtility.GetLayerName(num)));
 				if (shouldIncludeChildren != GameObjectUtility.ShouldIncludeChildren.Cancel)
 				{
 					this.m_Layer.intValue = num;
@@ -488,7 +422,7 @@ namespace UnityEditor
 			Rect rect = GUILayoutUtility.GetRect(GUIContent.none, EditorStyles.popup);
 			EditorGUI.BeginProperty(rect, GUIContent.none, this.m_Tag);
 			EditorGUI.BeginChangeCheck();
-			string text = EditorGUI.TagField(rect, EditorGUIUtility.TempContent("Tag"), tag);
+			string text = EditorGUI.TagField(rect, GameObjectInspector.s_Styles.tagContent, tag);
 			if (EditorGUI.EndChangeCheck())
 			{
 				this.m_Tag.stringValue = text;
@@ -509,15 +443,16 @@ namespace UnityEditor
 			EditorGUI.showMixedValue = this.m_StaticEditorFlags.hasMultipleDifferentValues;
 			int changedFlags;
 			bool flagValue;
-			EditorGUI.EnumMaskField(GUILayoutUtility.GetRect(GUIContent.none, GameObjectInspector.s_Styles.staticDropdown, new GUILayoutOption[]
+			EditorGUI.EnumFlagsField(GUILayoutUtility.GetRect(GUIContent.none, GameObjectInspector.s_Styles.staticDropdown, new GUILayoutOption[]
 			{
 				GUILayout.ExpandWidth(false)
-			}), GameObjectUtility.GetStaticEditorFlags(go), GameObjectInspector.s_Styles.staticDropdown, out changedFlags, out flagValue);
+			}), GUIContent.none, GameObjectUtility.GetStaticEditorFlags(go), out changedFlags, out flagValue, GameObjectInspector.s_Styles.staticDropdown);
 			EditorGUI.showMixedValue = false;
 			if (EditorGUI.EndChangeCheck())
 			{
 				SceneModeUtility.SetStaticFlags(base.targets, changedFlags, flagValue);
 				base.serializedObject.SetIsDifferentCacheDirty();
+				GUIUtility.ExitGUI();
 			}
 		}
 
@@ -548,6 +483,7 @@ namespace UnityEditor
 			{
 				SceneModeUtility.SetStaticFlags(base.targets, -1, flagValue);
 				base.serializedObject.SetIsDifferentCacheDirty();
+				GUIUtility.ExitGUI();
 			}
 			EditorGUI.EndProperty();
 		}
@@ -571,41 +507,35 @@ namespace UnityEditor
 
 		public override void ReloadPreviewInstances()
 		{
-			this.CreatePreviewInstances();
-		}
-
-		private void CreatePreviewInstances()
-		{
-			if (this.m_PreviewInstances == null)
+			foreach (KeyValuePair<int, GameObjectInspector.PreviewData> current in this.m_PreviewInstances)
 			{
-				this.m_PreviewInstances = new List<GameObject>(base.targets.Length);
-			}
-			for (int i = 0; i < base.targets.Length; i++)
-			{
-				GameObject gameObject = EditorUtility.InstantiateForAnimatorPreview(base.targets[i]);
-				this.m_PreviewInstances.Add(gameObject);
-				this.m_PreviewUtility.AddSingleGO(gameObject);
+				int key = current.Key;
+				if (key <= base.targets.Length)
+				{
+					GameObjectInspector.PreviewData value = current.Value;
+					value.UpdateGameObject(base.targets[key]);
+				}
 			}
 		}
 
-		private void InitPreview()
+		private GameObjectInspector.PreviewData GetPreviewData()
 		{
-			if (this.m_PreviewUtility == null)
+			GameObjectInspector.PreviewData previewData;
+			if (!this.m_PreviewInstances.TryGetValue(this.referenceTargetIndex, out previewData))
 			{
-				this.m_PreviewUtility = new PreviewRenderUtility();
-				this.m_PreviewUtility.camera.fieldOfView = 30f;
-				this.CreatePreviewInstances();
+				previewData = new GameObjectInspector.PreviewData(base.target);
+				this.m_PreviewInstances.Add(this.referenceTargetIndex, previewData);
 			}
+			return previewData;
 		}
 
 		public void OnDestroy()
 		{
-			if (this.m_PreviewUtility != null)
+			foreach (GameObjectInspector.PreviewData current in this.m_PreviewInstances.Values)
 			{
-				this.m_PreviewUtility.Cleanup();
-				this.m_PreviewUtility = null;
-				this.m_PreviewInstances.Clear();
+				current.Dispose();
 			}
+			this.m_PreviewInstances.Clear();
 		}
 
 		public static bool HasRenderableParts(GameObject go)
@@ -821,31 +751,28 @@ namespace UnityEditor
 			if (ShaderUtil.hardwareSupportsRectRenderTexture)
 			{
 				GUI.enabled = true;
-				this.InitPreview();
 			}
 		}
 
 		private void DoRenderPreview()
 		{
-			GameObject gameObject = this.m_PreviewInstances[this.referenceTargetIndex];
-			Bounds bounds = new Bounds(gameObject.transform.position, Vector3.zero);
-			GameObjectInspector.GetRenderableBoundsRecurse(ref bounds, gameObject);
+			GameObjectInspector.PreviewData previewData = this.GetPreviewData();
+			Bounds bounds = new Bounds(previewData.gameObject.transform.position, Vector3.zero);
+			GameObjectInspector.GetRenderableBoundsRecurse(ref bounds, previewData.gameObject);
 			float num = Mathf.Max(bounds.extents.magnitude, 0.0001f);
 			float num2 = num * 3.8f;
 			Quaternion quaternion = Quaternion.Euler(-this.previewDir.y, -this.previewDir.x, 0f);
 			Vector3 position = bounds.center - quaternion * (Vector3.forward * num2);
-			this.m_PreviewUtility.camera.transform.position = position;
-			this.m_PreviewUtility.camera.transform.rotation = quaternion;
-			this.m_PreviewUtility.camera.nearClipPlane = num2 - num * 1.1f;
-			this.m_PreviewUtility.camera.farClipPlane = num2 + num * 1.1f;
-			this.m_PreviewUtility.lights[0].intensity = 0.7f;
-			this.m_PreviewUtility.lights[0].transform.rotation = quaternion * Quaternion.Euler(40f, 40f, 0f);
-			this.m_PreviewUtility.lights[1].intensity = 0.7f;
-			this.m_PreviewUtility.lights[1].transform.rotation = quaternion * Quaternion.Euler(340f, 218f, 177f);
-			this.m_PreviewUtility.ambientColor = new Color(0.1f, 0.1f, 0.1f, 0f);
-			PrefabType prefabType = PrefabUtility.GetPrefabType(gameObject);
-			bool allowScriptableRenderPipeline = prefabType != PrefabType.DisconnectedModelPrefabInstance && prefabType != PrefabType.ModelPrefab;
-			this.m_PreviewUtility.Render(allowScriptableRenderPipeline, true);
+			previewData.renderUtility.camera.transform.position = position;
+			previewData.renderUtility.camera.transform.rotation = quaternion;
+			previewData.renderUtility.camera.nearClipPlane = num2 - num * 1.1f;
+			previewData.renderUtility.camera.farClipPlane = num2 + num * 1.1f;
+			previewData.renderUtility.lights[0].intensity = 0.7f;
+			previewData.renderUtility.lights[0].transform.rotation = quaternion * Quaternion.Euler(40f, 40f, 0f);
+			previewData.renderUtility.lights[1].intensity = 0.7f;
+			previewData.renderUtility.lights[1].transform.rotation = quaternion * Quaternion.Euler(340f, 218f, 177f);
+			previewData.renderUtility.ambientColor = new Color(0.1f, 0.1f, 0.1f, 0f);
+			previewData.renderUtility.Render(true, true);
 		}
 
 		public override Texture2D RenderStaticPreview(string assetPath, UnityEngine.Object[] subAssets, int width, int height)
@@ -857,10 +784,10 @@ namespace UnityEditor
 			}
 			else
 			{
-				this.InitPreview();
-				this.m_PreviewUtility.BeginStaticPreview(new Rect(0f, 0f, (float)width, (float)height));
+				PreviewRenderUtility renderUtility = this.GetPreviewData().renderUtility;
+				renderUtility.BeginStaticPreview(new Rect(0f, 0f, (float)width, (float)height));
 				this.DoRenderPreview();
-				result = this.m_PreviewUtility.EndStaticPreview();
+				result = renderUtility.EndStaticPreview();
 			}
 			return result;
 		}
@@ -876,13 +803,13 @@ namespace UnityEditor
 			}
 			else
 			{
-				this.InitPreview();
 				this.previewDir = PreviewGUI.Drag2D(this.previewDir, r);
 				if (Event.current.type == EventType.Repaint)
 				{
-					this.m_PreviewUtility.BeginPreview(r, background);
+					PreviewRenderUtility renderUtility = this.GetPreviewData().renderUtility;
+					renderUtility.BeginPreview(r, background);
 					this.DoRenderPreview();
-					this.m_PreviewUtility.EndAndDrawPreview(r);
+					renderUtility.EndAndDrawPreview(r);
 				}
 			}
 		}
@@ -919,7 +846,10 @@ namespace UnityEditor
 						DragAndDrop.AcceptDrag();
 						Selection.activeObject = GameObjectInspector.dragObject;
 						HandleUtility.ignoreRaySnapObjects = null;
-						EditorWindow.mouseOverWindow.Focus();
+						if (EditorWindow.mouseOverWindow != null)
+						{
+							EditorWindow.mouseOverWindow.Focus();
+						}
 						GameObjectInspector.dragObject.name = uniqueNameForSibling;
 						GameObjectInspector.dragObject = null;
 						current.Use();

@@ -1,14 +1,22 @@
 using System;
+using UnityEngine.Bindings;
 
 namespace UnityEngine.StyleSheets
 {
+	[VisibleToOtherModules(new string[]
+	{
+		"UnityEngine.UIElementsModule"
+	})]
 	[Serializable]
 	internal struct StyleValueHandle
 	{
 		[SerializeField]
 		private StyleValueType m_ValueType;
 
-		[SerializeField]
+		[VisibleToOtherModules(new string[]
+		{
+			"UnityEngine.UIElementsModule"
+		}), SerializeField]
 		internal int valueIndex;
 
 		public StyleValueType valueType

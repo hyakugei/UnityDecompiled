@@ -84,7 +84,7 @@ namespace UnityEditor.Events
 		{
 			if (this.m_Title == null)
 			{
-				this.m_Title = new GUIContent("Intercepted Events");
+				this.m_Title = EditorGUIUtility.TrTextContent("Intercepted Events", null, null);
 			}
 			return this.m_Title;
 		}

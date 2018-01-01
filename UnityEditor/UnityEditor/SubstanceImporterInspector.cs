@@ -10,11 +10,11 @@ namespace UnityEditor
 	{
 		private class SubstanceStyles
 		{
-			public GUIContent iconToolbarPlus = EditorGUIUtility.IconContent("Toolbar Plus", "|Add substance from prototype.");
+			public GUIContent iconToolbarPlus = EditorGUIUtility.TrIconContent("Toolbar Plus", "Add substance from prototype.");
 
-			public GUIContent iconToolbarMinus = EditorGUIUtility.IconContent("Toolbar Minus", "|Remove selected substance.");
+			public GUIContent iconToolbarMinus = EditorGUIUtility.TrIconContent("Toolbar Minus", "Remove selected substance.");
 
-			public GUIContent iconDuplicate = EditorGUIUtility.IconContent("TreeEditor.Duplicate", "|Duplicate selected substance.");
+			public GUIContent iconDuplicate = EditorGUIUtility.TrIconContent("TreeEditor.Duplicate", "Duplicate selected substance.");
 
 			public GUIStyle resultsGridLabel = "ObjectPickerResultsGridLabel";
 

@@ -6,6 +6,7 @@ using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
+	[NativeClass("UI::CanvasRenderer")]
 	public sealed class CanvasRenderer : Component
 	{
 		public delegate void OnRequestRebuild();

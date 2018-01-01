@@ -8,15 +8,11 @@ namespace UnityEditor
 	{
 		private class Styles
 		{
-			public GUIStyle toolbar = "toolbar";
-
 			public GUIStyle toggle = "OL Toggle";
 
 			public GUIStyle listEvenBg = "ObjectPickerResultsOdd";
 
 			public GUIStyle listOddBg = "ObjectPickerResultsEven";
-
-			public GUIStyle listSectionHeaderBg = "ObjectPickerResultsEven";
 
 			public GUIStyle background = "grey_border";
 
@@ -76,8 +72,6 @@ namespace UnityEditor
 
 		private Vector2 m_ScrollPosition;
 
-		private const float k_AnimDuration = 0.4f;
-
 		private bool m_SyncWithState;
 
 		private string m_LastScriptThatHasShownTheIconSelector;
@@ -92,13 +86,13 @@ namespace UnityEditor
 
 		private GUIContent iconSelectContent = new GUIContent("", "Select Icon");
 
-		private GUIContent icon3dGizmoContent = new GUIContent("3D Icons");
+		private GUIContent icon3dGizmoContent = EditorGUIUtility.TrTextContent("3D Icons", null, null);
 
-		private GUIContent showGridContent = new GUIContent("Show Grid");
+		private GUIContent showGridContent = EditorGUIUtility.TrTextContent("Show Grid", null, null);
 
-		private GUIContent showOutlineContent = new GUIContent("Selection Outline");
+		private GUIContent showOutlineContent = EditorGUIUtility.TrTextContent("Selection Outline", null, null);
 
-		private GUIContent showWireframeContent = new GUIContent("Selection Wire");
+		private GUIContent showWireframeContent = EditorGUIUtility.TrTextContent("Selection Wire", null, null);
 
 		private bool m_IsGameView;
 
@@ -242,7 +236,7 @@ namespace UnityEditor
 			float num = 2f + this.GetTopSectionHeight() + this.DrawNormalList(false, 100f, 0f, 10000f);
 			num = Mathf.Min(num, 900f);
 			Vector2 windowSize = new Vector2(270f, num);
-			base.ShowAsDropDown(buttonRect, windowSize);
+			base.ShowAsDropDown(buttonRect, windowSize, null, ShowMode.PopupMenuWithKeyboardFocus);
 		}
 
 		private void IconHasChanged()
@@ -405,7 +399,7 @@ namespace UnityEditor
 			float num3 = num;
 			float num4 = 120f;
 			float num5 = 20f;
-			Rect position = new Rect(num2 - 2f, num3, num4, num5);
+			Rect position = new Rect(num2, num3, num4, num5);
 			AnnotationUtility.use3dGizmos = GUI.Toggle(position, AnnotationUtility.use3dGizmos, this.icon3dGizmoContent);
 			float iconSize = AnnotationUtility.iconSize;
 			if (AnnotationWindow.s_Debug)
@@ -417,7 +411,7 @@ namespace UnityEditor
 			{
 				float num6 = base.position.width - num2 - num4;
 				float num7 = AnnotationWindow.ConvertTexelWorldSizeTo01(iconSize);
-				Rect position3 = new Rect(base.position.width - num2 - num6, num3, num6, num5);
+				Rect position3 = new Rect(num4 + num2, num3, num6 - num2, num5);
 				num7 = GUI.HorizontalSlider(position3, num7, 0f, 1f);
 				if (GUI.changed)
 				{
@@ -428,12 +422,10 @@ namespace UnityEditor
 			num3 += num5;
 			using (new EditorGUI.DisabledScope(this.m_IsGameView))
 			{
-				position = new Rect(num2 - 2f, num3, num4, num5);
+				position = new Rect(num2, num3, num4, num5);
 				AnnotationUtility.showGrid = GUI.Toggle(position, AnnotationUtility.showGrid, this.showGridContent);
-				num3 += num5;
 				position.y += num5;
 				AnnotationUtility.showSelectionOutline = GUI.Toggle(position, AnnotationUtility.showSelectionOutline, this.showOutlineContent);
-				num3 += num5;
 				position.y += num5;
 				AnnotationUtility.showSelectionWire = GUI.Toggle(position, AnnotationUtility.showSelectionWire, this.showWireframeContent);
 			}
@@ -465,9 +457,9 @@ namespace UnityEditor
 			bool flag = true;
 			float y = 0f;
 			bool flag2 = false;
-			y = this.DrawListSection(y, "Recently Changed", this.m_RecentAnnotations, doDraw, listElementWidth, startY, endY, ref flag, true, ref flag2);
-			y = this.DrawListSection(y, "Scripts", this.m_ScriptAnnotations, doDraw, listElementWidth, startY, endY, ref flag, false, ref flag2);
-			return this.DrawListSection(y, "Built-in Components", this.m_BuiltinAnnotations, doDraw, listElementWidth, startY, endY, ref flag, false, ref flag2);
+			y = this.DrawListSection(y, L10n.Tr("Recently Changed"), this.m_RecentAnnotations, doDraw, listElementWidth, startY, endY, ref flag, true, ref flag2);
+			y = this.DrawListSection(y, L10n.Tr("Scripts"), this.m_ScriptAnnotations, doDraw, listElementWidth, startY, endY, ref flag, false, ref flag2);
+			return this.DrawListSection(y, L10n.Tr("Built-in Components"), this.m_BuiltinAnnotations, doDraw, listElementWidth, startY, endY, ref flag, false, ref flag2);
 		}
 
 		private float DrawListSection(float y, string sectionHeader, List<AInfo> listElements, bool doDraw, float listElementWidth, float startY, float endY, ref bool even, bool useSeperator, ref bool headerDrawn)

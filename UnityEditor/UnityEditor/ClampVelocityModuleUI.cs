@@ -13,19 +13,25 @@ namespace UnityEditor
 
 			public GUIContent z = EditorGUIUtility.TextContent("Z");
 
-			public GUIContent dampen = EditorGUIUtility.TextContent("Dampen|Controls how much the velocity that exceeds the velocity limit should be dampened. A value of 0.5 will dampen the exceeding velocity by 50%.");
+			public GUIContent dampen = EditorGUIUtility.TrTextContent("Dampen", "Controls how much the velocity that exceeds the velocity limit should be dampened. A value of 0.5 will dampen the exceeding velocity by 50%.", null);
 
-			public GUIContent magnitude = EditorGUIUtility.TextContent("Speed|The speed limit of particles over the particle lifetime.");
+			public GUIContent magnitude = EditorGUIUtility.TrTextContent("Speed", "The speed limit of particles over the particle lifetime.", null);
 
-			public GUIContent separateAxes = EditorGUIUtility.TextContent("Separate Axes|If enabled, you can control the velocity limit separately for each axis.");
+			public GUIContent separateAxes = EditorGUIUtility.TrTextContent("Separate Axes", "If enabled, you can control the velocity limit separately for each axis.", null);
 
-			public GUIContent space = EditorGUIUtility.TextContent("Space|Specifies if the velocity values are in local space (rotated with the transform) or world space.");
+			public GUIContent space = EditorGUIUtility.TrTextContent("Space", "Specifies if the velocity values are in local space (rotated with the transform) or world space.", null);
 
 			public string[] spaces = new string[]
 			{
 				"Local",
 				"World"
 			};
+
+			public GUIContent drag = EditorGUIUtility.TrTextContent("Drag", "Control the amount of drag applied to each particle during its lifetime.", null);
+
+			public GUIContent multiplyDragByParticleSize = EditorGUIUtility.TrTextContent("Multiply by Size", "Adjust the drag based on the size of the particles.", null);
+
+			public GUIContent multiplyDragByParticleVelocity = EditorGUIUtility.TrTextContent("Multiply by Velocity", "Adjust the drag based on the velocity of the particles.", null);
 		}
 
 		private SerializedMinMaxCurve m_X;
@@ -41,6 +47,12 @@ namespace UnityEditor
 		private SerializedProperty m_InWorldSpace;
 
 		private SerializedProperty m_Dampen;
+
+		private SerializedMinMaxCurve m_Drag;
+
+		private SerializedProperty m_MultiplyDragByParticleSize;
+
+		private SerializedProperty m_MultiplyDragByParticleVelocity;
 
 		private static ClampVelocityModuleUI.Texts s_Texts;
 
@@ -64,6 +76,9 @@ namespace UnityEditor
 				this.m_SeparateAxes = base.GetProperty("separateAxis");
 				this.m_InWorldSpace = base.GetProperty("inWorldSpace");
 				this.m_Dampen = base.GetProperty("dampen");
+				this.m_Drag = new SerializedMinMaxCurve(this, ClampVelocityModuleUI.s_Texts.drag, "drag");
+				this.m_MultiplyDragByParticleSize = base.GetProperty("multiplyDragByParticleSize");
+				this.m_MultiplyDragByParticleVelocity = base.GetProperty("multiplyDragByParticleVelocity");
 			}
 		}
 
@@ -92,13 +107,22 @@ namespace UnityEditor
 			if (flag)
 			{
 				base.GUITripleMinMaxCurve(GUIContent.none, ClampVelocityModuleUI.s_Texts.x, this.m_X, ClampVelocityModuleUI.s_Texts.y, this.m_Y, ClampVelocityModuleUI.s_Texts.z, this.m_Z, null, new GUILayoutOption[0]);
+				EditorGUI.indentLevel++;
 				ModuleUI.GUIBoolAsPopup(ClampVelocityModuleUI.s_Texts.space, this.m_InWorldSpace, ClampVelocityModuleUI.s_Texts.spaces, new GUILayoutOption[0]);
+				EditorGUI.indentLevel--;
 			}
 			else
 			{
 				ModuleUI.GUIMinMaxCurve(ClampVelocityModuleUI.s_Texts.magnitude, this.m_Magnitude, new GUILayoutOption[0]);
 			}
+			EditorGUI.indentLevel++;
 			ModuleUI.GUIFloat(ClampVelocityModuleUI.s_Texts.dampen, this.m_Dampen, new GUILayoutOption[0]);
+			EditorGUI.indentLevel--;
+			ModuleUI.GUIMinMaxCurve(ClampVelocityModuleUI.s_Texts.drag, this.m_Drag, new GUILayoutOption[0]);
+			EditorGUI.indentLevel++;
+			ModuleUI.GUIToggle(ClampVelocityModuleUI.s_Texts.multiplyDragByParticleSize, this.m_MultiplyDragByParticleSize, new GUILayoutOption[0]);
+			ModuleUI.GUIToggle(ClampVelocityModuleUI.s_Texts.multiplyDragByParticleVelocity, this.m_MultiplyDragByParticleVelocity, new GUILayoutOption[0]);
+			EditorGUI.indentLevel--;
 		}
 
 		public override void UpdateCullingSupportedString(ref string text)

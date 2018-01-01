@@ -191,6 +191,14 @@ namespace UnityEngine
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		public extern string GetProceduralString(string inputName);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public extern void SetProceduralString(string inputName, string value);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern bool IsProceduralPropertyCached(string inputName);
 
 		[GeneratedByOldBindingsGenerator]

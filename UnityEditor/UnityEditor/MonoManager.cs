@@ -1,9 +1,14 @@
 using System;
+using UnityEditorInternal;
 using UnityEngine;
 
 namespace UnityEditor
 {
-	internal sealed class MonoManager : UnityEngine.Object
+	[ExcludeFromPreset, NativeClass(null)]
+	internal sealed class MonoManager : ProjectSettingsBase
 	{
+		private MonoManager()
+		{
+		}
 	}
 }

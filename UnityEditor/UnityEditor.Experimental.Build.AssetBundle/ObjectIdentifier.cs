@@ -10,16 +10,16 @@ namespace UnityEditor.Experimental.Build.AssetBundle
 	public struct ObjectIdentifier
 	{
 		[NativeName("guid")]
-		private GUID m_GUID;
+		internal GUID m_GUID;
 
 		[NativeName("localIdentifierInFile")]
-		private long m_LocalIdentifierInFile;
+		internal long m_LocalIdentifierInFile;
 
 		[NativeName("fileType")]
-		private FileType m_FileType;
+		internal FileType m_FileType;
 
 		[NativeName("filePath")]
-		private string m_FilePath;
+		internal string m_FilePath;
 
 		public GUID guid
 		{
@@ -66,10 +66,7 @@ namespace UnityEditor.Experimental.Build.AssetBundle
 
 		public static bool operator ==(ObjectIdentifier a, ObjectIdentifier b)
 		{
-			bool flag = a.m_GUID == b.m_GUID;
-			flag &= (a.m_LocalIdentifierInFile == b.m_LocalIdentifierInFile);
-			flag &= (a.m_FileType == b.m_FileType);
-			return flag & a.m_FilePath == b.m_FilePath;
+			return !(a.m_GUID != b.m_GUID) && a.m_LocalIdentifierInFile == b.m_LocalIdentifierInFile && a.m_FileType == b.m_FileType && !(a.m_FilePath != b.m_FilePath);
 		}
 
 		public static bool operator !=(ObjectIdentifier a, ObjectIdentifier b)
@@ -114,7 +111,12 @@ namespace UnityEditor.Experimental.Build.AssetBundle
 		{
 			int num = this.m_GUID.GetHashCode();
 			num = (num * 397 ^ this.m_LocalIdentifierInFile.GetHashCode());
-			return num * 397 ^ (int)this.m_FileType;
+			num = (num * 397 ^ (int)this.m_FileType);
+			if (!string.IsNullOrEmpty(this.m_FilePath))
+			{
+				num = (num * 397 ^ this.m_FilePath.GetHashCode());
+			}
+			return num;
 		}
 	}
 }

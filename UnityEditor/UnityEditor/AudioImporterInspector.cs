@@ -460,18 +460,14 @@ namespace UnityEditor
 			else
 			{
 				list.Add(AudioCompressionFormat.PCM);
-				if (platform != BuildTargetGroup.PSM && platform != BuildTargetGroup.PSP2)
+				if (platform != BuildTargetGroup.PSP2)
 				{
 					list.Add(AudioCompressionFormat.Vorbis);
 				}
 				list.Add(AudioCompressionFormat.ADPCM);
-				if (platform != BuildTargetGroup.Standalone && platform != BuildTargetGroup.WSA && platform != BuildTargetGroup.WiiU && platform != BuildTargetGroup.XboxOne && platform != BuildTargetGroup.Unknown)
+				if (platform != BuildTargetGroup.Standalone && platform != BuildTargetGroup.WSA && platform != BuildTargetGroup.XboxOne && platform != BuildTargetGroup.Unknown)
 				{
 					list.Add(AudioCompressionFormat.MP3);
-				}
-				if (platform == BuildTargetGroup.PSM)
-				{
-					list.Add(AudioCompressionFormat.VAG);
 				}
 				if (platform == BuildTargetGroup.PSP2)
 				{
@@ -481,10 +477,6 @@ namespace UnityEditor
 				if (platform == BuildTargetGroup.PS4)
 				{
 					list.Add(AudioCompressionFormat.ATRAC9);
-				}
-				if (platform == BuildTargetGroup.WiiU)
-				{
-					list.Add(AudioCompressionFormat.GCADPCM);
 				}
 				if (platform == BuildTargetGroup.XboxOne)
 				{

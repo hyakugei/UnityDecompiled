@@ -1,34 +1,41 @@
 using System;
+using System.Collections.Generic;
 
 namespace UnityEngine.Experimental.UIElements
 {
 	internal abstract class BaseVisualElementPanel : IPanel
 	{
-		public virtual VisualElement focusedElement
-		{
-			get;
-			set;
-		}
-
 		public abstract EventInterests IMGUIEventInterests
 		{
 			get;
 			set;
 		}
 
-		public abstract int instanceID
+		public abstract ScriptableObject ownerObject
 		{
 			get;
 			protected set;
 		}
 
-		public abstract LoadResourceFunction loadResourceFunc
+		public abstract SavePersistentViewData savePersistentViewData
 		{
 			get;
-			protected set;
+			set;
+		}
+
+		public abstract GetViewDataDictionary getViewDataDictionary
+		{
+			get;
+			set;
 		}
 
 		public abstract int IMGUIContainersCount
+		{
+			get;
+			set;
+		}
+
+		public abstract FocusController focusController
 		{
 			get;
 			set;
@@ -40,32 +47,49 @@ namespace UnityEngine.Experimental.UIElements
 			set;
 		}
 
-		public abstract VisualContainer visualTree
+		internal virtual ICursorManager cursorManager
+		{
+			get;
+			set;
+		}
+
+		internal virtual ContextualMenuManager contextualMenuManager
+		{
+			get;
+			set;
+		}
+
+		public abstract VisualElement visualTree
 		{
 			get;
 		}
 
-		public abstract IDispatcher dispatcher
+		public abstract IEventDispatcher dispatcher
 		{
 			get;
 			protected set;
 		}
 
-		public abstract IScheduler scheduler
+		internal abstract IScheduler scheduler
 		{
 			get;
 		}
 
-		public abstract IDataWatchService dataWatch
+		internal abstract IDataWatchService dataWatch
 		{
 			get;
-			protected set;
 		}
 
 		public abstract ContextType contextType
 		{
 			get;
 			protected set;
+		}
+
+		public abstract bool keepPixelCacheOnWorldBoundChange
+		{
+			get;
+			set;
 		}
 
 		public BasePanelDebug panelDebug
@@ -79,5 +103,9 @@ namespace UnityEngine.Experimental.UIElements
 		public abstract void ValidateLayout();
 
 		public abstract VisualElement Pick(Vector2 point);
+
+		public abstract VisualElement PickAll(Vector2 point, List<VisualElement> picked);
+
+		public abstract VisualElement LoadTemplate(string path, Dictionary<string, VisualElement> slots = null);
 	}
 }

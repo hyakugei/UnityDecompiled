@@ -3,12 +3,8 @@ using UnityEngine;
 
 namespace UnityEditorInternal
 {
-	[Obsolete("Transition is obsolete. Use UnityEditor.Animations.AnimatorTransition instead (UnityUpgradable) -> UnityEditor.Animations.AnimatorTransition", true)]
+	[Obsolete("Transition is obsolete. Use UnityEditor.Animations.AnimatorTransition instead (UnityUpgradable) -> UnityEditor.Animations.AnimatorTransition", true), NativeClass(null)]
 	public class Transition : UnityEngine.Object
 	{
-		public GUIContent GetTransitionContentForRect(Rect rect)
-		{
-			return null;
-		}
 	}
 }

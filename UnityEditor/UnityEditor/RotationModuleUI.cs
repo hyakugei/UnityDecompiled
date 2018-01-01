@@ -7,9 +7,9 @@ namespace UnityEditor
 	{
 		private class Texts
 		{
-			public GUIContent rotation = EditorGUIUtility.TextContent("Angular Velocity|Controls the angular velocity of each particle during its lifetime.");
+			public GUIContent rotation = EditorGUIUtility.TrTextContent("Angular Velocity", "Controls the angular velocity of each particle during its lifetime.", null);
 
-			public GUIContent separateAxes = EditorGUIUtility.TextContent("Separate Axes|If enabled, you can control the angular velocity limit separately for each axis.");
+			public GUIContent separateAxes = EditorGUIUtility.TrTextContent("Separate Axes", "If enabled, you can control the angular velocity limit separately for each axis.", null);
 
 			public GUIContent x = EditorGUIUtility.TextContent("X");
 
@@ -53,23 +53,14 @@ namespace UnityEditor
 
 		public override void OnInspectorGUI(InitialModuleUI initial)
 		{
-			if (RotationModuleUI.s_Texts == null)
-			{
-				RotationModuleUI.s_Texts = new RotationModuleUI.Texts();
-			}
 			EditorGUI.BeginChangeCheck();
 			bool flag = ModuleUI.GUIToggle(RotationModuleUI.s_Texts.separateAxes, this.m_SeparateAxes, new GUILayoutOption[0]);
 			if (EditorGUI.EndChangeCheck())
 			{
-				if (flag)
-				{
-					this.m_Z.RemoveCurveFromEditor();
-				}
-				else
+				if (!flag)
 				{
 					this.m_X.RemoveCurveFromEditor();
 					this.m_Y.RemoveCurveFromEditor();
-					this.m_Z.RemoveCurveFromEditor();
 				}
 			}
 			if (!this.m_Z.stateHasMultipleDifferentValues)

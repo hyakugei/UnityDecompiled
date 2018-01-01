@@ -13,15 +13,22 @@ namespace UnityEngine
 
 			private readonly object m_DelagateState;
 
-			public WorkRequest(SendOrPostCallback callback, object state)
+			private readonly ManualResetEvent m_WaitHandle;
+
+			public WorkRequest(SendOrPostCallback callback, object state, ManualResetEvent waitHandle = null)
 			{
 				this.m_DelagateCallback = callback;
 				this.m_DelagateState = state;
+				this.m_WaitHandle = waitHandle;
 			}
 
 			public void Invoke()
 			{
 				this.m_DelagateCallback(this.m_DelagateState);
+				if (this.m_WaitHandle != null)
+				{
+					this.m_WaitHandle.Set();
+				}
 			}
 		}
 
@@ -29,9 +36,26 @@ namespace UnityEngine
 
 		private readonly Queue<UnitySynchronizationContext.WorkRequest> m_AsyncWorkQueue = new Queue<UnitySynchronizationContext.WorkRequest>(20);
 
+		private readonly int m_MainThreadID = Thread.CurrentThread.ManagedThreadId;
+
 		public override void Send(SendOrPostCallback callback, object state)
 		{
-			callback(state);
+			if (this.m_MainThreadID == Thread.CurrentThread.ManagedThreadId)
+			{
+				callback(state);
+			}
+			else
+			{
+				using (ManualResetEvent manualResetEvent = new ManualResetEvent(false))
+				{
+					object asyncWorkQueue = this.m_AsyncWorkQueue;
+					lock (asyncWorkQueue)
+					{
+						this.m_AsyncWorkQueue.Enqueue(new UnitySynchronizationContext.WorkRequest(callback, state, manualResetEvent));
+					}
+					manualResetEvent.WaitOne();
+				}
+			}
 		}
 
 		public override void Post(SendOrPostCallback callback, object state)
@@ -39,7 +63,7 @@ namespace UnityEngine
 			object asyncWorkQueue = this.m_AsyncWorkQueue;
 			lock (asyncWorkQueue)
 			{
-				this.m_AsyncWorkQueue.Enqueue(new UnitySynchronizationContext.WorkRequest(callback, state));
+				this.m_AsyncWorkQueue.Enqueue(new UnitySynchronizationContext.WorkRequest(callback, state, null));
 			}
 		}
 

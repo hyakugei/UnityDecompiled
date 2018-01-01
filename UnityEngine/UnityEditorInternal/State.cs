@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace UnityEditorInternal
 {
-	[Obsolete("State is obsolete. Use UnityEditor.Animations.AnimatorState instead (UnityUpgradable) -> UnityEditor.Animations.AnimatorState", true)]
+	[Obsolete("State is obsolete. Use UnityEditor.Animations.AnimatorState instead (UnityUpgradable) -> UnityEditor.Animations.AnimatorState", true), NativeClass(null)]
 	public class State : UnityEngine.Object
 	{
 		public string uniqueName

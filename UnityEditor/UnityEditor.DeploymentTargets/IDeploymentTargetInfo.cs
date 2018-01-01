@@ -1,5 +1,4 @@
 using System;
-using UnityEditor.BuildReporting;
 
 namespace UnityEditor.DeploymentTargets
 {
@@ -7,6 +6,8 @@ namespace UnityEditor.DeploymentTargets
 	{
 		FlagSet<DeploymentTargetSupportFlags> GetSupportFlags();
 
-		BuildCheckResult CheckBuild(BuildReport buildReport);
+		TargetCheckResult CheckTarget(DeploymentTargetRequirements targetRequirements);
+
+		string GetDisplayName();
 	}
 }

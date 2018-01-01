@@ -4,11 +4,10 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using UnityEngine.Internal;
-using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
-	public sealed class Debug
+	public class Debug
 	{
 		internal static ILogger s_Logger = new Logger(new DebugLogHandler());
 
@@ -22,17 +21,14 @@ namespace UnityEngine
 
 		public static extern bool developerConsoleVisible
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public static extern bool isDebugBuild
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
@@ -46,16 +42,11 @@ namespace UnityEngine
 			}
 		}
 
-		public static void DrawLine(Vector3 start, Vector3 end, [UnityEngine.Internal.DefaultValue("Color.white")] Color color, [UnityEngine.Internal.DefaultValue("0.0f")] float duration, [UnityEngine.Internal.DefaultValue("true")] bool depthTest)
-		{
-			Debug.INTERNAL_CALL_DrawLine(ref start, ref end, ref color, duration, depthTest);
-		}
-
 		[ExcludeFromDocs]
 		public static void DrawLine(Vector3 start, Vector3 end, Color color, float duration)
 		{
 			bool depthTest = true;
-			Debug.INTERNAL_CALL_DrawLine(ref start, ref end, ref color, duration, depthTest);
+			Debug.DrawLine(start, end, color, duration, depthTest);
 		}
 
 		[ExcludeFromDocs]
@@ -63,7 +54,7 @@ namespace UnityEngine
 		{
 			bool depthTest = true;
 			float duration = 0f;
-			Debug.INTERNAL_CALL_DrawLine(ref start, ref end, ref color, duration, depthTest);
+			Debug.DrawLine(start, end, color, duration, depthTest);
 		}
 
 		[ExcludeFromDocs]
@@ -72,12 +63,13 @@ namespace UnityEngine
 			bool depthTest = true;
 			float duration = 0f;
 			Color white = Color.white;
-			Debug.INTERNAL_CALL_DrawLine(ref start, ref end, ref white, duration, depthTest);
+			Debug.DrawLine(start, end, white, duration, depthTest);
 		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_DrawLine(ref Vector3 start, ref Vector3 end, ref Color color, float duration, bool depthTest);
+		public static void DrawLine(Vector3 start, Vector3 end, [UnityEngine.Internal.DefaultValue("Color.white")] Color color, [UnityEngine.Internal.DefaultValue("0.0f")] float duration, [UnityEngine.Internal.DefaultValue("true")] bool depthTest)
+		{
+			Debug.DrawLine_Injected(ref start, ref end, ref color, duration, depthTest);
+		}
 
 		[ExcludeFromDocs]
 		public static void DrawRay(Vector3 start, Vector3 dir, Color color, float duration)
@@ -108,11 +100,9 @@ namespace UnityEngine
 			Debug.DrawLine(start, start + dir, color, duration, depthTest);
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void Break();
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void DebugBreak();
 
@@ -156,7 +146,6 @@ namespace UnityEngine
 			Debug.unityLogger.LogFormat(LogType.Error, context, format, args);
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void ClearDeveloperConsole();
 
@@ -170,7 +159,6 @@ namespace UnityEngine
 			Debug.unityLogger.LogException(exception, context);
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern void LogPlayerBuildError(string message, string file, int line, int column);
 
@@ -290,15 +278,15 @@ namespace UnityEngine
 			Debug.unityLogger.LogFormat(LogType.Assert, context, format, args);
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern void OpenConsoleFile();
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern void GetDiagnosticSwitches(List<DiagnosticSwitch> results);
 
-		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern object GetDiagnosticSwitch(string name);
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern void SetDiagnosticSwitch(string name, object value, bool setPersistent);
 
@@ -310,5 +298,8 @@ namespace UnityEngine
 				Debug.unityLogger.LogFormat(LogType.Assert, format, args);
 			}
 		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void DrawLine_Injected(ref Vector3 start, ref Vector3 end, [UnityEngine.Internal.DefaultValue("Color.white")] ref Color color, [UnityEngine.Internal.DefaultValue("0.0f")] float duration, [UnityEngine.Internal.DefaultValue("true")] bool depthTest);
 	}
 }

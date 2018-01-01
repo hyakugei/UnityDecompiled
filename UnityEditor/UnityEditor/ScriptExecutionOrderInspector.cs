@@ -70,13 +70,13 @@ namespace UnityEditor
 
 		public class Styles
 		{
-			public GUIContent helpText = EditorGUIUtility.TextContent("Add scripts to the custom order and drag them to reorder.\n\nScripts in the custom order can execute before or after the default time and are executed from top to bottom. All other scripts execute at the default time in the order they are loaded.\n\n(Changing the order of a script may modify the meta data for more than one script.)");
+			public GUIContent helpText = EditorGUIUtility.TrTextContent("Add scripts to the custom order and drag them to reorder.\n\nScripts in the custom order can execute before or after the default time and are executed from top to bottom. All other scripts execute at the default time in the order they are loaded.\n\n(Changing the order of a script may modify the meta data for more than one script.)", null, null);
 
-			public GUIContent iconToolbarPlus = EditorGUIUtility.IconContent("Toolbar Plus", "|Add script to custom order");
+			public GUIContent iconToolbarPlus = EditorGUIUtility.TrIconContent("Toolbar Plus", "Add script to custom order");
 
-			public GUIContent iconToolbarMinus = EditorGUIUtility.IconContent("Toolbar Minus", "|Remove script from custom order");
+			public GUIContent iconToolbarMinus = EditorGUIUtility.TrIconContent("Toolbar Minus", "Remove script from custom order");
 
-			public GUIContent defaultTimeContent = EditorGUIUtility.TextContent("Default Time|All scripts not in the custom order are executed at the default time.");
+			public GUIContent defaultTimeContent = EditorGUIUtility.TrTextContent("Default Time", "All scripts not in the custom order are executed at the default time.", null);
 
 			public GUIStyle toolbar = "TE Toolbar";
 
@@ -314,7 +314,7 @@ namespace UnityEditor
 		{
 			get
 			{
-				return "Script Execution Order";
+				return L10n.Tr("Script Execution Order");
 			}
 		}
 
@@ -346,25 +346,30 @@ namespace UnityEditor
 			{
 				ScriptExecutionOrderInspector.m_Instances.Add(this);
 			}
-			EditorApplication.playmodeStateChanged = (EditorApplication.CallbackFunction)Delegate.Combine(EditorApplication.playmodeStateChanged, new EditorApplication.CallbackFunction(this.OnPlayModeChanged));
+			EditorApplication.playModeStateChanged += new Action<PlayModeStateChange>(this.OnPlayModeStateChanged);
 		}
 
 		public void OnDisable()
 		{
-			EditorApplication.playmodeStateChanged = (EditorApplication.CallbackFunction)Delegate.Remove(EditorApplication.playmodeStateChanged, new EditorApplication.CallbackFunction(this.OnPlayModeChanged));
+			EditorApplication.playModeStateChanged -= new Action<PlayModeStateChange>(this.OnPlayModeStateChanged);
 		}
 
-		private void OnPlayModeChanged()
+		private void AskApplyRevertIfNecessary()
 		{
-			if (!EditorApplication.isPlaying && EditorApplication.isPlayingOrWillChangePlaymode)
+			if (this.m_DirtyOrders)
 			{
-				if (this.m_DirtyOrders)
+				if (EditorUtility.DisplayDialog("Unapplied execution order", "Unapplied script execution order", "Apply", "Revert"))
 				{
-					if (EditorUtility.DisplayDialog("Unapplied execution order", "Unapplied script execution order", "Apply", "Revert"))
-					{
-						this.Apply();
-					}
+					this.Apply();
 				}
+			}
+		}
+
+		private void OnPlayModeStateChanged(PlayModeStateChange state)
+		{
+			if (state == PlayModeStateChange.ExitingEditMode)
+			{
+				this.AskApplyRevertIfNecessary();
 			}
 		}
 
@@ -511,13 +516,7 @@ namespace UnityEditor
 			}
 			if (!Application.isPlaying)
 			{
-				if (this.m_DirtyOrders)
-				{
-					if (EditorUtility.DisplayDialog("Unapplied execution order", "Unapplied script execution order", "Apply", "Revert"))
-					{
-						this.Apply();
-					}
-				}
+				this.AskApplyRevertIfNecessary();
 			}
 		}
 

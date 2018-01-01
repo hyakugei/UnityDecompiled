@@ -2,7 +2,7 @@ using System;
 
 namespace UnityEngine.Bindings
 {
-	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Enum)]
+	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Enum), VisibleToOtherModules]
 	internal class NativeTypeAttribute : Attribute, IBindingsHeaderProviderAttribute, IBindingsGenerateMarshallingTypeAttribute, IBindingsAttribute
 	{
 		public string Header

@@ -6,7 +6,7 @@ namespace UnityEditor
 {
 	internal class GradientContextMenu
 	{
-		private SerializedProperty m_Prop1;
+		private readonly SerializedProperty m_Prop1;
 
 		private GradientContextMenu(SerializedProperty prop1)
 		{
@@ -15,8 +15,8 @@ namespace UnityEditor
 
 		internal static void Show(SerializedProperty prop)
 		{
-			GUIContent content = new GUIContent("Copy");
-			GUIContent content2 = new GUIContent("Paste");
+			GUIContent content = EditorGUIUtility.TrTextContent("Copy", null, null);
+			GUIContent content2 = EditorGUIUtility.TrTextContent("Paste", null, null);
 			GenericMenu genericMenu = new GenericMenu();
 			GradientContextMenu @object = new GradientContextMenu(prop);
 			genericMenu.AddItem(content, false, new GenericMenu.MenuFunction(@object.Copy));

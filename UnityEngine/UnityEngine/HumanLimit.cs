@@ -1,7 +1,9 @@
 using System;
+using UnityEngine.Bindings;
 
 namespace UnityEngine
 {
+	[NativeType(CodegenOptions.Custom, "MonoHumanLimit")]
 	public struct HumanLimit
 	{
 		private Vector3 m_Min;

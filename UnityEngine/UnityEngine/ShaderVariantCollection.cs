@@ -1,7 +1,6 @@
 using System;
 using System.Runtime.CompilerServices;
 using UnityEngine.Rendering;
-using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
@@ -20,31 +19,31 @@ namespace UnityEngine
 				this.shader = shader;
 				this.passType = passType;
 				this.keywords = keywords;
-				ShaderVariantCollection.ShaderVariant.Internal_CheckVariant(shader, passType, keywords);
+				string text = ShaderVariantCollection.ShaderVariant.CheckShaderVariant(shader, passType, keywords);
+				if (!string.IsNullOrEmpty(text))
+				{
+					throw new ArgumentException(text);
+				}
 			}
 
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
-			private static extern void Internal_CheckVariant(Shader shader, PassType passType, string[] keywords);
+			private static extern string CheckShaderVariant(Shader shader, PassType passType, string[] keywords);
 		}
 
 		public extern int shaderCount
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
 
 		public extern int variantCount
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
 
 		public extern bool isWarmedUp
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
@@ -54,43 +53,37 @@ namespace UnityEngine
 			ShaderVariantCollection.Internal_Create(this);
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void Internal_Create([Writable] ShaderVariantCollection mono);
+		private extern bool AddVariant(Shader shader, PassType passType, string[] keywords);
 
-		public bool Add(ShaderVariantCollection.ShaderVariant variant)
-		{
-			return this.AddInternal(variant.shader, variant.passType, variant.keywords);
-		}
-
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern bool AddInternal(Shader shader, PassType passType, string[] keywords);
+		private extern bool RemoveVariant(Shader shader, PassType passType, string[] keywords);
 
-		public bool Remove(ShaderVariantCollection.ShaderVariant variant)
-		{
-			return this.RemoveInternal(variant.shader, variant.passType, variant.keywords);
-		}
-
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern bool RemoveInternal(Shader shader, PassType passType, string[] keywords);
+		private extern bool ContainsVariant(Shader shader, PassType passType, string[] keywords);
 
-		public bool Contains(ShaderVariantCollection.ShaderVariant variant)
-		{
-			return this.ContainsInternal(variant.shader, variant.passType, variant.keywords);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern bool ContainsInternal(Shader shader, PassType passType, string[] keywords);
-
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern void Clear();
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern void WarmUp();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void Internal_Create([Writable] ShaderVariantCollection svc);
+
+		public bool Add(ShaderVariantCollection.ShaderVariant variant)
+		{
+			return this.AddVariant(variant.shader, variant.passType, variant.keywords);
+		}
+
+		public bool Remove(ShaderVariantCollection.ShaderVariant variant)
+		{
+			return this.RemoveVariant(variant.shader, variant.passType, variant.keywords);
+		}
+
+		public bool Contains(ShaderVariantCollection.ShaderVariant variant)
+		{
+			return this.ContainsVariant(variant.shader, variant.passType, variant.keywords);
+		}
 	}
 }

@@ -1,4 +1,5 @@
 using System;
+using UnityEngine.Bindings;
 using UnityEngine.Scripting;
 
 namespace UnityEngine.Playables
@@ -18,6 +19,7 @@ namespace UnityEngine.Playables
 			}
 		}
 
+		[VisibleToOtherModules]
 		internal PlayableOutput(PlayableOutputHandle handle)
 		{
 			this.m_Handle = handle;
@@ -35,7 +37,7 @@ namespace UnityEngine.Playables
 
 		public Type GetPlayableOutputType()
 		{
-			return PlayableOutputHandle.GetPlayableOutputTypeOf(ref this.m_Handle);
+			return this.GetHandle().GetPlayableOutputType();
 		}
 
 		public bool Equals(PlayableOutput other)

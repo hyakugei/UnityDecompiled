@@ -1,13 +1,25 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
+using UnityEditor.Scripting.Compilers;
 
 namespace UnityEditor.Scripting.ScriptCompilation
 {
 	internal class ScriptAssembly
 	{
+		public AssemblyFlags Flags
+		{
+			get;
+			set;
+		}
+
 		public BuildTarget BuildTarget
+		{
+			get;
+			set;
+		}
+
+		public SupportedLanguage Language
 		{
 			get;
 			set;
@@ -43,6 +55,12 @@ namespace UnityEditor.Scripting.ScriptCompilation
 			set;
 		}
 
+		public string[] AdditionalReferences
+		{
+			get;
+			set;
+		}
+
 		public string[] Defines
 		{
 			get;
@@ -65,23 +83,24 @@ namespace UnityEditor.Scripting.ScriptCompilation
 		{
 			get
 			{
-				return Path.Combine(this.OutputDirectory, this.Filename);
+				return AssetPath.Combine(this.OutputDirectory, this.Filename);
 			}
 		}
 
-		public string GetExtensionOfSourceFiles()
+		public string[] GetAllReferences()
 		{
-			return (this.Files.Length <= 0) ? "NA" : Path.GetExtension(this.Files[0]).ToLower().Substring(1);
+			return this.References.Concat(from a in this.ScriptAssemblyReferences
+			select a.FullPath).ToArray<string>();
 		}
 
-		public MonoIsland ToMonoIsland(BuildFlags buildFlags, string buildOutputDirectory)
+		public MonoIsland ToMonoIsland(EditorScriptCompilationOptions options, string buildOutputDirectory)
 		{
-			bool editor = (buildFlags & BuildFlags.BuildingForEditor) == BuildFlags.BuildingForEditor;
-			bool development_player = (buildFlags & BuildFlags.BuildingDevelopmentBuild) == BuildFlags.BuildingDevelopmentBuild;
+			bool editor = (options & EditorScriptCompilationOptions.BuildingForEditor) == EditorScriptCompilationOptions.BuildingForEditor;
+			bool development_player = (options & EditorScriptCompilationOptions.BuildingDevelopmentBuild) == EditorScriptCompilationOptions.BuildingDevelopmentBuild;
 			IEnumerable<string> first = from a in this.ScriptAssemblyReferences
-			select Path.Combine(a.OutputDirectory, a.Filename);
+			select AssetPath.Combine(a.OutputDirectory, a.Filename);
 			string[] references = first.Concat(this.References).ToArray<string>();
-			string output = Path.Combine(buildOutputDirectory, this.Filename);
+			string output = AssetPath.Combine(buildOutputDirectory, this.Filename);
 			return new MonoIsland(this.BuildTarget, editor, development_player, this.ApiCompatibilityLevel, this.Files, references, this.Defines, output);
 		}
 	}

@@ -1,11 +1,12 @@
 using System;
 using System.Runtime.CompilerServices;
+using UnityEngine.Bindings;
 using UnityEngine.Internal;
 using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
-	[UsedByNativeCode]
+	[NativeType(Header = "Runtime/Math/Vector3.h"), UsedByNativeCode, ThreadAndSerializationSafe]
 	public struct Vector3
 	{
 		public const float kEpsilon = 1E-05f;
@@ -203,72 +204,41 @@ namespace UnityEngine
 			this.z = 0f;
 		}
 
-		[ThreadAndSerializationSafe]
 		public static Vector3 Slerp(Vector3 a, Vector3 b, float t)
 		{
 			Vector3 result;
-			Vector3.INTERNAL_CALL_Slerp(ref a, ref b, t, out result);
+			Vector3.Slerp_Injected(ref a, ref b, t, out result);
 			return result;
 		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_Slerp(ref Vector3 a, ref Vector3 b, float t, out Vector3 value);
 
 		public static Vector3 SlerpUnclamped(Vector3 a, Vector3 b, float t)
 		{
 			Vector3 result;
-			Vector3.INTERNAL_CALL_SlerpUnclamped(ref a, ref b, t, out result);
+			Vector3.SlerpUnclamped_Injected(ref a, ref b, t, out result);
 			return result;
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_SlerpUnclamped(ref Vector3 a, ref Vector3 b, float t, out Vector3 value);
-
-		private static void Internal_OrthoNormalize2(ref Vector3 a, ref Vector3 b)
-		{
-			Vector3.INTERNAL_CALL_Internal_OrthoNormalize2(ref a, ref b);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_Internal_OrthoNormalize2(ref Vector3 a, ref Vector3 b);
-
-		private static void Internal_OrthoNormalize3(ref Vector3 a, ref Vector3 b, ref Vector3 c)
-		{
-			Vector3.INTERNAL_CALL_Internal_OrthoNormalize3(ref a, ref b, ref c);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_Internal_OrthoNormalize3(ref Vector3 a, ref Vector3 b, ref Vector3 c);
+		private static extern void OrthoNormalize2(ref Vector3 a, ref Vector3 b);
 
 		public static void OrthoNormalize(ref Vector3 normal, ref Vector3 tangent)
 		{
-			Vector3.Internal_OrthoNormalize2(ref normal, ref tangent);
+			Vector3.OrthoNormalize2(ref normal, ref tangent);
 		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void OrthoNormalize3(ref Vector3 a, ref Vector3 b, ref Vector3 c);
 
 		public static void OrthoNormalize(ref Vector3 normal, ref Vector3 tangent, ref Vector3 binormal)
 		{
-			Vector3.Internal_OrthoNormalize3(ref normal, ref tangent, ref binormal);
+			Vector3.OrthoNormalize3(ref normal, ref tangent, ref binormal);
 		}
 
 		public static Vector3 RotateTowards(Vector3 current, Vector3 target, float maxRadiansDelta, float maxMagnitudeDelta)
 		{
 			Vector3 result;
-			Vector3.INTERNAL_CALL_RotateTowards(ref current, ref target, maxRadiansDelta, maxMagnitudeDelta, out result);
+			Vector3.RotateTowards_Injected(ref current, ref target, maxRadiansDelta, maxMagnitudeDelta, out result);
 			return result;
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_RotateTowards(ref Vector3 current, ref Vector3 target, float maxRadiansDelta, float maxMagnitudeDelta, out Vector3 value);
-
-		[Obsolete("Use Vector3.ProjectOnPlane instead.")]
-		public static Vector3 Exclude(Vector3 excludeThis, Vector3 fromThat)
-		{
-			return fromThat - Vector3.Project(fromThat, excludeThis);
 		}
 
 		public static Vector3 Lerp(Vector3 a, Vector3 b, float t)
@@ -556,5 +526,20 @@ namespace UnityEngine
 		{
 			return Mathf.Acos(Mathf.Clamp(Vector3.Dot(from.normalized, to.normalized), -1f, 1f));
 		}
+
+		[Obsolete("Use Vector3.ProjectOnPlane instead.")]
+		public static Vector3 Exclude(Vector3 excludeThis, Vector3 fromThat)
+		{
+			return Vector3.ProjectOnPlane(fromThat, excludeThis);
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void Slerp_Injected(ref Vector3 a, ref Vector3 b, float t, out Vector3 ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void SlerpUnclamped_Injected(ref Vector3 a, ref Vector3 b, float t, out Vector3 ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void RotateTowards_Injected(ref Vector3 current, ref Vector3 target, float maxRadiansDelta, float maxMagnitudeDelta, out Vector3 ret);
 	}
 }

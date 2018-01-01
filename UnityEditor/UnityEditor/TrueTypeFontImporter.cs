@@ -158,6 +158,16 @@ namespace UnityEditor
 			set;
 		}
 
+		public extern bool shouldRoundAdvanceValue
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern Font[] LookupFallbackFontReferences(string[] _names);

@@ -32,6 +32,8 @@ namespace UnityEngine.AI
 
 		private int m_AccuratePlacement;
 
+		private NavMeshBuildDebugSettings m_Debug;
+
 		public int agentTypeID
 		{
 			get
@@ -149,6 +151,18 @@ namespace UnityEngine.AI
 			set
 			{
 				this.m_TileSize = value;
+			}
+		}
+
+		public NavMeshBuildDebugSettings debug
+		{
+			get
+			{
+				return this.m_Debug;
+			}
+			set
+			{
+				this.m_Debug = value;
 			}
 		}
 

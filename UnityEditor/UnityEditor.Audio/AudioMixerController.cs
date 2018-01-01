@@ -9,6 +9,7 @@ using UnityEngine.Scripting;
 
 namespace UnityEditor.Audio
 {
+	[ExcludeFromPreset]
 	internal sealed class AudioMixerController : AudioMixer
 	{
 		public class ConnectionNode
@@ -727,7 +728,7 @@ namespace UnityEditor.Audio
 			return audioMixerEffectController;
 		}
 
-		private AudioMixerGroupController DuplicateGroupRecurse(AudioMixerGroupController sourceGroup)
+		private AudioMixerGroupController DuplicateGroupRecurse(AudioMixerGroupController sourceGroup, bool recordUndo)
 		{
 			AudioMixerGroupController audioMixerGroupController = new AudioMixerGroupController(this);
 			List<AudioMixerEffectController> list = new List<AudioMixerEffectController>();
@@ -742,7 +743,7 @@ namespace UnityEditor.Audio
 			for (int j = 0; j < children.Length; j++)
 			{
 				AudioMixerGroupController sourceGroup2 = children[j];
-				list2.Add(this.DuplicateGroupRecurse(sourceGroup2));
+				list2.Add(this.DuplicateGroupRecurse(sourceGroup2, recordUndo));
 			}
 			audioMixerGroupController.name = sourceGroup.name + " - Copy";
 			audioMixerGroupController.PreallocateGUIDs();
@@ -766,6 +767,10 @@ namespace UnityEditor.Audio
 				}
 			}
 			AssetDatabase.AddObjectToAsset(audioMixerGroupController, this);
+			if (recordUndo)
+			{
+				Undo.RegisterCreatedObjectUndo(audioMixerGroupController, audioMixerGroupController.name);
+			}
 			if (this.CurrentViewContainsGroup(sourceGroup.groupID))
 			{
 				audioMixerGroupController.controller.AddGroupToCurrentView(audioMixerGroupController);
@@ -773,7 +778,7 @@ namespace UnityEditor.Audio
 			return audioMixerGroupController;
 		}
 
-		public List<AudioMixerGroupController> DuplicateGroups(AudioMixerGroupController[] sourceGroups)
+		public List<AudioMixerGroupController> DuplicateGroups(AudioMixerGroupController[] sourceGroups, bool recordUndo)
 		{
 			List<AudioMixerGroupController> list = sourceGroups.ToList<AudioMixerGroupController>();
 			this.RemoveAncestorGroups(list);
@@ -783,7 +788,7 @@ namespace UnityEditor.Audio
 				AudioMixerGroupController audioMixerGroupController = this.FindParentGroup(this.masterGroup, current);
 				if (audioMixerGroupController != null && current != null)
 				{
-					AudioMixerGroupController item = this.DuplicateGroupRecurse(current);
+					AudioMixerGroupController item = this.DuplicateGroupRecurse(current, recordUndo);
 					audioMixerGroupController.children = new List<AudioMixerGroupController>(audioMixerGroupController.children)
 					{
 						item

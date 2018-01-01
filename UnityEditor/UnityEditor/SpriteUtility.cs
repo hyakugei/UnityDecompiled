@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using UnityEditor.U2D.Interface;
+using UnityEditor.Experimental.U2D;
 using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.U2D.Interface;
@@ -12,6 +12,21 @@ namespace UnityEditor
 {
 	internal static class SpriteUtility
 	{
+		private static class SpriteUtilityStrings
+		{
+			public static readonly GUIContent saveAnimDialogMessage = EditorGUIUtility.TrTextContent("Create a new animation for the game object '{0}':", null, null);
+
+			public static readonly GUIContent saveAnimDialogTitle = EditorGUIUtility.TrTextContent("Create New Animation", null, null);
+
+			public static readonly GUIContent saveAnimDialogName = EditorGUIUtility.TrTextContent("New Animation", null, null);
+
+			public static readonly GUIContent unableToFindSpriteRendererWarning = EditorGUIUtility.TrTextContent("There should be a SpriteRenderer in dragged object", null, null);
+
+			public static readonly GUIContent unableToAddSpriteRendererWarning = EditorGUIUtility.TrTextContent("Unable to add SpriteRenderer into Gameobject.", null, null);
+
+			public static readonly GUIContent failedToCreateAnimationError = EditorGUIUtility.TrTextContent("Failed to create animation for dragged object", null, null);
+		}
+
 		private enum DragType
 		{
 			NotInitialized,
@@ -20,6 +35,8 @@ namespace UnityEditor
 		}
 
 		public delegate string ShowFileDialogDelegate(string title, string defaultName, string extension, string message, string defaultPath);
+
+		private static Material s_PreviewSpriteDefaultMaterial;
 
 		private static List<UnityEngine.Object> s_SceneDragObjects;
 
@@ -30,6 +47,19 @@ namespace UnityEditor
 
 		[CompilerGenerated]
 		private static SpriteUtility.ShowFileDialogDelegate <>f__mg$cache1;
+
+		internal static Material previewSpriteDefaultMaterial
+		{
+			get
+			{
+				if (SpriteUtility.s_PreviewSpriteDefaultMaterial == null)
+				{
+					Shader shader = Shader.Find("Sprites/Default");
+					SpriteUtility.s_PreviewSpriteDefaultMaterial = new Material(shader);
+				}
+				return SpriteUtility.s_PreviewSpriteDefaultMaterial;
+			}
+		}
 
 		public static void OnSceneDrag(SceneView sceneView)
 		{
@@ -47,101 +77,110 @@ namespace UnityEditor
 		{
 			if (evt.type == EventType.DragUpdated || evt.type == EventType.DragPerform || evt.type == EventType.DragExited)
 			{
-				if (objectReferences.Length == 1 && objectReferences[0] as UnityEngine.Texture2D != null)
+				if (!objectReferences.Any((UnityEngine.Object obj) => obj == null))
 				{
-					GameObject gameObject = HandleUtility.PickGameObject(evt.mousePosition, true);
-					if (gameObject != null)
+					if (objectReferences.Length == 1 && objectReferences[0] as UnityEngine.Texture2D != null)
 					{
-						Renderer component = gameObject.GetComponent<Renderer>();
-						if (component != null && !(component is SpriteRenderer))
+						GameObject gameObject = HandleUtility.PickGameObject(evt.mousePosition, true);
+						if (gameObject != null)
 						{
-							SpriteUtility.CleanUp(true);
-							return;
-						}
-					}
-				}
-				EventType type = evt.type;
-				if (type != EventType.DragUpdated)
-				{
-					if (type != EventType.DragPerform)
-					{
-						if (type == EventType.DragExited)
-						{
-							if (SpriteUtility.s_SceneDragObjects != null)
+							Renderer component = gameObject.GetComponent<Renderer>();
+							if (component != null && !(component is SpriteRenderer))
 							{
 								SpriteUtility.CleanUp(true);
+								return;
+							}
+						}
+					}
+					EventType type = evt.type;
+					if (type != EventType.DragUpdated)
+					{
+						if (type != EventType.DragPerform)
+						{
+							if (type == EventType.DragExited)
+							{
+								if (SpriteUtility.s_SceneDragObjects != null)
+								{
+									SpriteUtility.CleanUp(true);
+									evt.Use();
+								}
+							}
+						}
+						else
+						{
+							List<Sprite> spriteFromPathsOrObjects = SpriteUtility.GetSpriteFromPathsOrObjects(objectReferences, paths, evt.type);
+							if (spriteFromPathsOrObjects.Count > 0 && SpriteUtility.s_SceneDragObjects != null)
+							{
+								int currentGroup = Undo.GetCurrentGroup();
+								if (SpriteUtility.s_SceneDragObjects.Count == 0)
+								{
+									SpriteUtility.CreateSceneDragObjects(spriteFromPathsOrObjects);
+									SpriteUtility.PositionSceneDragObjects(SpriteUtility.s_SceneDragObjects, sceneView, evt.mousePosition);
+								}
+								using (List<UnityEngine.Object>.Enumerator enumerator = SpriteUtility.s_SceneDragObjects.GetEnumerator())
+								{
+									while (enumerator.MoveNext())
+									{
+										GameObject gameObject2 = (GameObject)enumerator.Current;
+										gameObject2.hideFlags = HideFlags.None;
+										Undo.RegisterCreatedObjectUndo(gameObject2, "Create Sprite");
+										EditorUtility.SetDirty(gameObject2);
+									}
+								}
+								bool flag = true;
+								if (SpriteUtility.s_DragType == SpriteUtility.DragType.SpriteAnimation && spriteFromPathsOrObjects.Count > 1)
+								{
+									UsabilityAnalytics.Event("Sprite Drag and Drop", "Drop multiple sprites to scene", "null", 1);
+									flag = SpriteUtility.AddAnimationToGO((GameObject)SpriteUtility.s_SceneDragObjects[0], spriteFromPathsOrObjects.ToArray(), saveFileDialog);
+								}
+								else
+								{
+									UsabilityAnalytics.Event("Sprite Drag and Drop", "Drop single sprite to scene", "null", 1);
+								}
+								if (flag)
+								{
+									Selection.objects = SpriteUtility.s_SceneDragObjects.ToArray();
+								}
+								else
+								{
+									Undo.RevertAllDownToGroup(currentGroup);
+								}
+								SpriteUtility.CleanUp(!flag);
 								evt.Use();
 							}
 						}
 					}
 					else
 					{
-						List<Sprite> spriteFromPathsOrObjects = SpriteUtility.GetSpriteFromPathsOrObjects(objectReferences, paths, evt.type);
-						if (spriteFromPathsOrObjects.Count > 0 && SpriteUtility.s_SceneDragObjects != null)
+						SpriteUtility.DragType dragType = (!evt.alt) ? SpriteUtility.DragType.SpriteAnimation : SpriteUtility.DragType.CreateMultiple;
+						if (SpriteUtility.s_DragType != dragType || SpriteUtility.s_SceneDragObjects == null)
 						{
-							if (SpriteUtility.s_SceneDragObjects.Count == 0)
+							if (!SpriteUtility.ExistingAssets(objectReferences) && SpriteUtility.PathsAreValidTextures(paths))
 							{
-								SpriteUtility.CreateSceneDragObjects(spriteFromPathsOrObjects);
-								SpriteUtility.PositionSceneDragObjects(SpriteUtility.s_SceneDragObjects, sceneView, evt.mousePosition);
-							}
-							bool flag = true;
-							if (SpriteUtility.s_DragType == SpriteUtility.DragType.SpriteAnimation && spriteFromPathsOrObjects.Count > 1)
-							{
-								UsabilityAnalytics.Event("Sprite Drag and Drop", "Drop multiple sprites to scene", "null", 1);
-								flag = SpriteUtility.AddAnimationToGO((GameObject)SpriteUtility.s_SceneDragObjects[0], spriteFromPathsOrObjects.ToArray(), saveFileDialog);
+								DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
+								SpriteUtility.s_SceneDragObjects = new List<UnityEngine.Object>();
+								SpriteUtility.s_DragType = dragType;
 							}
 							else
 							{
-								UsabilityAnalytics.Event("Sprite Drag and Drop", "Drop single sprite to scene", "null", 1);
-							}
-							if (flag)
-							{
-								using (List<UnityEngine.Object>.Enumerator enumerator = SpriteUtility.s_SceneDragObjects.GetEnumerator())
+								List<Sprite> spriteFromPathsOrObjects2 = SpriteUtility.GetSpriteFromPathsOrObjects(objectReferences, paths, evt.type);
+								if (spriteFromPathsOrObjects2.Count == 0)
 								{
-									while (enumerator.MoveNext())
-									{
-										GameObject gameObject2 = (GameObject)enumerator.Current;
-										Undo.RegisterCreatedObjectUndo(gameObject2, "Create Sprite");
-										gameObject2.hideFlags = HideFlags.None;
-									}
+									return;
 								}
-								Selection.objects = SpriteUtility.s_SceneDragObjects.ToArray();
+								if (SpriteUtility.s_DragType != SpriteUtility.DragType.NotInitialized)
+								{
+									SpriteUtility.CleanUp(true);
+								}
+								SpriteUtility.s_DragType = dragType;
+								SpriteUtility.CreateSceneDragObjects(spriteFromPathsOrObjects2);
+								SpriteUtility.IgnoreForRaycasts(SpriteUtility.s_SceneDragObjects);
 							}
-							SpriteUtility.CleanUp(!flag);
-							evt.Use();
 						}
+						SpriteUtility.PositionSceneDragObjects(SpriteUtility.s_SceneDragObjects, sceneView, evt.mousePosition);
+						DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
+						evt.Use();
 					}
-				}
-				else
-				{
-					SpriteUtility.DragType dragType = (!evt.alt) ? SpriteUtility.DragType.SpriteAnimation : SpriteUtility.DragType.CreateMultiple;
-					if (SpriteUtility.s_DragType != dragType || SpriteUtility.s_SceneDragObjects == null)
-					{
-						if (!SpriteUtility.ExistingAssets(objectReferences) && SpriteUtility.PathsAreValidTextures(paths))
-						{
-							DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
-							SpriteUtility.s_SceneDragObjects = new List<UnityEngine.Object>();
-							SpriteUtility.s_DragType = dragType;
-						}
-						else
-						{
-							List<Sprite> spriteFromPathsOrObjects2 = SpriteUtility.GetSpriteFromPathsOrObjects(objectReferences, paths, evt.type);
-							if (spriteFromPathsOrObjects2.Count == 0)
-							{
-								return;
-							}
-							if (SpriteUtility.s_DragType != SpriteUtility.DragType.NotInitialized)
-							{
-								SpriteUtility.CleanUp(true);
-							}
-							SpriteUtility.s_DragType = dragType;
-							SpriteUtility.CreateSceneDragObjects(spriteFromPathsOrObjects2);
-							SpriteUtility.IgnoreForRaycasts(SpriteUtility.s_SceneDragObjects);
-						}
-					}
-					SpriteUtility.PositionSceneDragObjects(SpriteUtility.s_SceneDragObjects, sceneView, evt.mousePosition);
-					DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
-					evt.Use();
 				}
 			}
 		}
@@ -162,11 +201,11 @@ namespace UnityEditor
 
 		private static void PositionSceneDragObjects(List<UnityEngine.Object> objects, SceneView sceneView, Vector2 mousePosition)
 		{
-			Vector3 position = Vector3.zero;
-			position = HandleUtility.GUIPointToWorldRay(mousePosition).GetPoint(10f);
+			Vector3 vector = Vector3.zero;
+			vector = HandleUtility.GUIPointToWorldRay(mousePosition).GetPoint(10f);
 			if (sceneView.in2DMode)
 			{
-				position.z = 0f;
+				vector.z = 0f;
 			}
 			else
 			{
@@ -174,7 +213,16 @@ namespace UnityEditor
 				object obj = HandleUtility.RaySnap(HandleUtility.GUIPointToWorldRay(mousePosition));
 				if (obj != null)
 				{
-					position = ((RaycastHit)obj).point;
+					vector = ((RaycastHit)obj).point;
+				}
+			}
+			if (Selection.activeGameObject != null)
+			{
+				Grid componentInParent = Selection.activeGameObject.GetComponentInParent<Grid>();
+				if (componentInParent != null)
+				{
+					Vector3Int position = componentInParent.WorldToCell(vector);
+					vector = componentInParent.GetCellCenterWorld(position);
 				}
 			}
 			using (List<UnityEngine.Object>.Enumerator enumerator = objects.GetEnumerator())
@@ -182,7 +230,7 @@ namespace UnityEditor
 				while (enumerator.MoveNext())
 				{
 					GameObject gameObject = (GameObject)enumerator.Current;
-					gameObject.transform.position = position;
+					gameObject.transform.position = vector;
 				}
 			}
 		}
@@ -246,9 +294,9 @@ namespace UnityEditor
 			bool result;
 			if (animator != null)
 			{
-				string message = string.Format("Create a new animation for the game object '{0}':", gameObject.name);
+				string message = string.Format(SpriteUtility.SpriteUtilityStrings.saveAnimDialogMessage.text, gameObject.name);
 				string activeFolderPath = ProjectWindowUtil.GetActiveFolderPath();
-				string text = saveFileDialog("Create New Animation", "New Animation", "anim", message, activeFolderPath);
+				string text = saveFileDialog(SpriteUtility.SpriteUtilityStrings.saveAnimDialogTitle.text, SpriteUtility.SpriteUtilityStrings.saveAnimDialogName.text, "anim", message, activeFolderPath);
 				if (string.IsNullOrEmpty(text))
 				{
 					UnityEngine.Object.DestroyImmediate(animator);
@@ -264,7 +312,7 @@ namespace UnityEditor
 			}
 			if (!flag)
 			{
-				Debug.LogError("Failed to create animation for dragged object");
+				Debug.LogError(SpriteUtility.SpriteUtilityStrings.failedToCreateAnimationError.text);
 			}
 			result = flag;
 			return result;
@@ -408,15 +456,7 @@ namespace UnityEditor
 					AssetDatabase.WriteImportSettingsIfDirty(assetPath);
 					SpriteUtility.ForcedImportFor(assetPath);
 				}
-				UnityEngine.Object @object = null;
-				try
-				{
-					@object = AssetDatabase.LoadAllAssetsAtPath(assetPath).First((UnityEngine.Object t) => t is Sprite);
-				}
-				catch (Exception)
-				{
-					Debug.LogWarning("Texture being dragged has no Sprites.");
-				}
+				UnityEngine.Object @object = AssetDatabase.LoadAllAssetsAtPath(assetPath).FirstOrDefault((UnityEngine.Object t) => t is Sprite);
 				result = (@object as Sprite);
 			}
 			return result;
@@ -430,7 +470,7 @@ namespace UnityEditor
 			SpriteRenderer spriteRenderer = gameObject.AddComponent<SpriteRenderer>();
 			spriteRenderer.sprite = frame;
 			gameObject.transform.position = position;
-			gameObject.hideFlags = HideFlags.HideInHierarchy;
+			gameObject.hideFlags = HideFlags.HideAndDontSave;
 			return gameObject;
 		}
 
@@ -440,11 +480,11 @@ namespace UnityEditor
 			bool result;
 			if (spriteRenderer == null)
 			{
-				Debug.LogWarning("There should be a SpriteRenderer in dragged object");
+				Debug.LogWarning(SpriteUtility.SpriteUtilityStrings.unableToFindSpriteRendererWarning.text);
 				spriteRenderer = go.AddComponent<SpriteRenderer>();
 				if (spriteRenderer == null)
 				{
-					Debug.LogWarning("Unable to add SpriteRenderer into Gameobject.");
+					Debug.LogWarning(SpriteUtility.SpriteUtilityStrings.unableToAddSpriteRendererWarning.text);
 					result = false;
 					return result;
 				}
@@ -539,6 +579,68 @@ namespace UnityEditor
 			return a == "jpg" || a == "jpeg" || a == "tif" || a == "tiff" || a == "tga" || a == "gif" || a == "png" || a == "psd" || a == "bmp" || a == "iff" || a == "pict" || a == "pic" || a == "pct" || a == "exr" || a == "hdr";
 		}
 
+		public static UnityEngine.Texture2D RenderStaticPreview(Sprite sprite, Color color, int width, int height)
+		{
+			return SpriteUtility.RenderStaticPreview(sprite, color, width, height, Matrix4x4.identity);
+		}
+
+		public static UnityEngine.Texture2D RenderStaticPreview(Sprite sprite, Color color, int width, int height, Matrix4x4 transform)
+		{
+			UnityEngine.Texture2D result;
+			if (sprite == null)
+			{
+				result = null;
+			}
+			else
+			{
+				PreviewHelpers.AdjustWidthAndHeightForStaticPreview((int)sprite.rect.width, (int)sprite.rect.height, ref width, ref height);
+				SavedRenderTargetState savedRenderTargetState = new SavedRenderTargetState();
+				RenderTexture temporary = RenderTexture.GetTemporary(width, height, 0, RenderTextureFormat.Default, RenderTextureReadWrite.Default);
+				RenderTexture.active = temporary;
+				GL.Clear(true, true, new Color(0f, 0f, 0f, 0.1f));
+				SpriteUtility.previewSpriteDefaultMaterial.mainTexture = sprite.texture;
+				SpriteUtility.previewSpriteDefaultMaterial.SetPass(0);
+				SpriteUtility.RenderSpriteImmediate(sprite, color, transform);
+				UnityEngine.Texture2D texture2D = new UnityEngine.Texture2D(width, height, TextureFormat.ARGB32, false);
+				texture2D.hideFlags = HideFlags.HideAndDontSave;
+				texture2D.ReadPixels(new Rect(0f, 0f, (float)width, (float)height), 0, 0);
+				texture2D.Apply();
+				RenderTexture.ReleaseTemporary(temporary);
+				savedRenderTargetState.Restore();
+				result = texture2D;
+			}
+			return result;
+		}
+
+		internal static void RenderSpriteImmediate(Sprite sprite, Color color, Matrix4x4 transform)
+		{
+			float width = sprite.rect.width;
+			float height = sprite.rect.height;
+			float num = sprite.rect.width / sprite.bounds.size.x;
+			Vector2[] vertices = sprite.vertices;
+			Vector2[] uv = sprite.uv;
+			ushort[] triangles = sprite.triangles;
+			Vector2 pivot = sprite.pivot;
+			GL.PushMatrix();
+			GL.LoadOrtho();
+			GL.Begin(4);
+			for (int i = 0; i < sprite.triangles.Length; i++)
+			{
+				ushort num2 = triangles[i];
+				Vector2 vector = vertices[(int)num2];
+				Vector2 vector2 = uv[(int)num2];
+				Vector3 point = new Vector3(vector.x, vector.y, 0f);
+				point = transform.MultiplyPoint(point);
+				point.x = (point.x * num + pivot.x) / width;
+				point.y = (point.y * num + pivot.y) / height;
+				GL.Color(color);
+				GL.TexCoord(new Vector3(vector2.x, vector2.y, 0f));
+				GL.Vertex3(point.x, point.y, point.z);
+			}
+			GL.End();
+			GL.PopMatrix();
+		}
+
 		public static UnityEngine.Texture2D CreateTemporaryDuplicate(UnityEngine.Texture2D original, int width, int height)
 		{
 			UnityEngine.Texture2D result;
@@ -550,14 +652,11 @@ namespace UnityEditor
 			{
 				RenderTexture active = RenderTexture.active;
 				Rect rawViewportRect = ShaderUtil.rawViewportRect;
-				bool flag = !TextureUtil.GetLinearSampled(original);
-				RenderTexture temporary = RenderTexture.GetTemporary(width, height, 0, RenderTextureFormat.Default, (!flag) ? RenderTextureReadWrite.Linear : RenderTextureReadWrite.sRGB);
-				GL.sRGBWrite = (flag && QualitySettings.activeColorSpace == ColorSpace.Linear);
-				Graphics.Blit(original, temporary);
-				GL.sRGBWrite = false;
+				RenderTexture temporary = RenderTexture.GetTemporary(width, height, 0, RenderTextureFormat.Default, RenderTextureReadWrite.sRGB);
+				Graphics.Blit(original, temporary, EditorGUIUtility.GUITextureBlit2SRGBMaterial);
 				RenderTexture.active = temporary;
-				bool flag2 = width >= SystemInfo.maxTextureSize || height >= SystemInfo.maxTextureSize;
-				UnityEngine.Texture2D texture2D = new UnityEngine.Texture2D(width, height, TextureFormat.RGBA32, original.mipmapCount > 1 || flag2);
+				bool flag = width >= SystemInfo.maxTextureSize || height >= SystemInfo.maxTextureSize;
+				UnityEngine.Texture2D texture2D = new UnityEngine.Texture2D(width, height, TextureFormat.RGBA32, original.mipmapCount > 1 || flag);
 				texture2D.ReadPixels(new Rect(0f, 0f, (float)width, (float)height), 0, 0);
 				texture2D.Apply();
 				RenderTexture.ReleaseTemporary(temporary);
@@ -569,20 +668,9 @@ namespace UnityEditor
 			return result;
 		}
 
-		public static SpriteImportMode GetSpriteImportMode(IAssetDatabase assetDatabase, ITexture2D texture)
+		public static SpriteImportMode GetSpriteImportMode(ISpriteEditorDataProvider dataProvider)
 		{
-			string assetPath = assetDatabase.GetAssetPath(texture);
-			SpriteImportMode result;
-			if (string.IsNullOrEmpty(assetPath))
-			{
-				result = SpriteImportMode.None;
-			}
-			else
-			{
-				ITextureImporter assetImporterFromPath = assetDatabase.GetAssetImporterFromPath(assetPath);
-				result = ((!(assetImporterFromPath == null)) ? assetImporterFromPath.spriteImportMode : SpriteImportMode.None);
-			}
-			return result;
+			return (dataProvider != null) ? dataProvider.spriteImportMode : SpriteImportMode.None;
 		}
 	}
 }

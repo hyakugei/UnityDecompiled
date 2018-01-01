@@ -1,6 +1,5 @@
 using System;
 using System.Runtime.CompilerServices;
-using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
@@ -11,31 +10,27 @@ namespace UnityEngine
 			get
 			{
 				Vector2 result;
-				this.INTERNAL_get_size(out result);
+				this.get_size_Injected(out result);
 				return result;
 			}
 			set
 			{
-				this.INTERNAL_set_size(ref value);
+				this.set_size_Injected(ref value);
 			}
 		}
 
 		public extern CapsuleDirection2D direction
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void INTERNAL_get_size(out Vector2 value);
+		private extern void get_size_Injected(out Vector2 ret);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void INTERNAL_set_size(ref Vector2 value);
+		private extern void set_size_Injected(ref Vector2 value);
 	}
 }

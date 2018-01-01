@@ -1,18 +1,17 @@
 using System;
 using System.Runtime.CompilerServices;
-using UnityEngine.Scripting;
+using UnityEngine;
 
 namespace UnityEditor.Animations
 {
-	public sealed class AnimatorTransition : AnimatorTransitionBase
+	public class AnimatorTransition : AnimatorTransitionBase
 	{
 		public AnimatorTransition()
 		{
-			AnimatorTransition.Internal_Create(this);
+			AnimatorTransition.Internal_CreateAnimatorTransition(this);
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void Internal_Create(AnimatorTransition mono);
+		private static extern void Internal_CreateAnimatorTransition([Writable] AnimatorTransition mono);
 	}
 }

@@ -1,7 +1,6 @@
 using System;
 using System.Runtime.CompilerServices;
 using UnityEngine;
-using UnityEngine.Scripting;
 
 namespace UnityEditor.Advertisements
 {
@@ -9,56 +8,61 @@ namespace UnityEditor.Advertisements
 	{
 		public static extern bool enabled
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public static extern bool testMode
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public static extern bool initializeOnStartup
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern bool IsPlatformEnabled(RuntimePlatform platform);
+		internal static extern bool enabledForPlatform
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern void SetPlatformEnabled(RuntimePlatform platform, bool value);
-
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern string GetGameId(RuntimePlatform platform);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void SetGameId(RuntimePlatform platform, string gameId);
 
-		[GeneratedByOldBindingsGenerator]
+		[Obsolete("No longer supported and will always return true")]
+		public static bool IsPlatformEnabled(RuntimePlatform platform)
+		{
+			return true;
+		}
+
+		[Obsolete("No longer supported and will do nothing")]
+		public static void SetPlatformEnabled(RuntimePlatform platform, bool value)
+		{
+		}
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern string GetPlatformGameId(string platformName);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void SetPlatformGameId(string platformName, string gameId);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void SetEnabledServiceWindow(bool enabled);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void ApplyEnableSettings(BuildTarget target);
 	}
 }

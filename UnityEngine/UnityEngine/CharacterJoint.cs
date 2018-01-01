@@ -4,6 +4,7 @@ using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
+	[NativeClass("Unity::CharacterJoint")]
 	public sealed class CharacterJoint : Joint
 	{
 		[Obsolete("TargetRotation not in use for Unity 5 and assumed disabled.", true)]

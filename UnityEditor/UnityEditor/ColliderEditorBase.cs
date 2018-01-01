@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace UnityEditor
 {
-	internal class ColliderEditorBase : Editor
+	internal abstract class ColliderEditorBase : Editor
 	{
 		public bool editingCollider
 		{
@@ -32,50 +32,50 @@ namespace UnityEditor
 
 		public virtual void OnEnable()
 		{
-			EditMode.onEditModeStartDelegate = (EditMode.OnEditModeStartFunc)Delegate.Combine(EditMode.onEditModeStartDelegate, new EditMode.OnEditModeStartFunc(this.OnEditModeStart));
-			EditMode.onEditModeEndDelegate = (EditMode.OnEditModeStopFunc)Delegate.Combine(EditMode.onEditModeEndDelegate, new EditMode.OnEditModeStopFunc(this.OnEditModeEnd));
+			EditMode.editModeStarted += new Action<IToolModeOwner, EditMode.SceneViewEditMode>(this.OnEditModeStart);
+			EditMode.editModeEnded += new Action<IToolModeOwner>(this.OnEditModeEnd);
 		}
 
 		public virtual void OnDisable()
 		{
-			EditMode.onEditModeStartDelegate = (EditMode.OnEditModeStartFunc)Delegate.Remove(EditMode.onEditModeStartDelegate, new EditMode.OnEditModeStartFunc(this.OnEditModeStart));
-			EditMode.onEditModeEndDelegate = (EditMode.OnEditModeStopFunc)Delegate.Remove(EditMode.onEditModeEndDelegate, new EditMode.OnEditModeStopFunc(this.OnEditModeEnd));
+			EditMode.editModeStarted -= new Action<IToolModeOwner, EditMode.SceneViewEditMode>(this.OnEditModeStart);
+			EditMode.editModeEnded -= new Action<IToolModeOwner>(this.OnEditModeEnd);
 		}
 
 		protected void InspectorEditButtonGUI()
 		{
-			EditMode.DoEditModeInspectorModeButton(EditMode.SceneViewEditMode.Collider, "Edit Collider", this.editModeButton, ColliderEditorBase.GetColliderBounds(base.target), this);
+			EditMode.DoEditModeInspectorModeButton(EditMode.SceneViewEditMode.Collider, "Edit Collider", this.editModeButton, this);
 		}
 
-		private static Bounds GetColliderBounds(UnityEngine.Object collider)
+		internal override Bounds GetWorldBoundsOfTarget(UnityEngine.Object targetObject)
 		{
 			Bounds result;
-			if (collider is Collider2D)
+			if (targetObject is Collider2D)
 			{
-				result = (collider as Collider2D).bounds;
+				result = ((Collider2D)targetObject).bounds;
 			}
-			else if (collider is Collider)
+			else if (targetObject is Collider)
 			{
-				result = (collider as Collider).bounds;
+				result = ((Collider)targetObject).bounds;
 			}
 			else
 			{
-				result = default(Bounds);
+				result = base.GetWorldBoundsOfTarget(targetObject);
 			}
 			return result;
 		}
 
-		protected void OnEditModeStart(Editor editor, EditMode.SceneViewEditMode mode)
+		protected void OnEditModeStart(IToolModeOwner owner, EditMode.SceneViewEditMode mode)
 		{
-			if (mode == EditMode.SceneViewEditMode.Collider && editor == this)
+			if (mode == EditMode.SceneViewEditMode.Collider && owner == this)
 			{
 				this.OnEditStart();
 			}
 		}
 
-		protected void OnEditModeEnd(Editor editor)
+		protected void OnEditModeEnd(IToolModeOwner owner)
 		{
-			if (editor == this)
+			if (owner == this)
 			{
 				this.OnEditEnd();
 			}

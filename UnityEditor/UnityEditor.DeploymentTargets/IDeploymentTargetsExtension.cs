@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using UnityEditor.BuildReporting;
 
 namespace UnityEditor.DeploymentTargets
 {
@@ -10,6 +9,6 @@ namespace UnityEditor.DeploymentTargets
 
 		IDeploymentTargetInfo GetTargetInfo(DeploymentTargetId targetId, ProgressHandler progressHandler = null);
 
-		void LaunchBuildOnTarget(BuildReport buildReport, DeploymentTargetId targetId, ProgressHandler progressHandler = null);
+		void LaunchBuildOnTarget(BuildProperties buildProperties, DeploymentTargetId targetId, ProgressHandler progressHandler = null);
 	}
 }

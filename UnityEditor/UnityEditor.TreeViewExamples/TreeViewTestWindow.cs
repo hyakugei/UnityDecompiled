@@ -25,7 +25,7 @@ namespace UnityEditor.TreeViewExamples
 
 		public TreeViewTestWindow()
 		{
-			base.titleContent = new GUIContent("TreeView Test");
+			base.titleContent = EditorGUIUtility.TrTextContent("TreeView Test", null, null);
 		}
 
 		private void OnEnable()
@@ -83,11 +83,11 @@ namespace UnityEditor.TreeViewExamples
 
 		public virtual void AddItemsToMenu(GenericMenu menu)
 		{
-			menu.AddItem(new GUIContent("Large TreeView"), this.m_TestType == TreeViewTestWindow.TestType.LargeTreesWithStandardGUI, delegate
+			menu.AddItem(EditorGUIUtility.TrTextContent("Large TreeView", null, null), this.m_TestType == TreeViewTestWindow.TestType.LargeTreesWithStandardGUI, delegate
 			{
 				this.m_TestType = TreeViewTestWindow.TestType.LargeTreesWithStandardGUI;
 			});
-			menu.AddItem(new GUIContent("Custom Item Height TreeView"), this.m_TestType == TreeViewTestWindow.TestType.TreeWithCustomItemHeight, delegate
+			menu.AddItem(EditorGUIUtility.TrTextContent("Custom Item Height TreeView", null, null), this.m_TestType == TreeViewTestWindow.TestType.TreeWithCustomItemHeight, delegate
 			{
 				this.m_TestType = TreeViewTestWindow.TestType.TreeWithCustomItemHeight;
 			});

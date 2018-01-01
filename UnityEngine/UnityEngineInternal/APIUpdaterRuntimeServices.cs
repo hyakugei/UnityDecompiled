@@ -33,7 +33,7 @@ namespace UnityEngineInternal
 			Type result;
 			if (type != null)
 			{
-				Debug.LogWarningFormat("[{1}] Type '{0}' found in UnityEngine, consider replacing with go.AddComponent<{0}>();", new object[]
+				Debug.LogWarningFormat("[{1}] Component type '{0}' found in UnityEngine, consider replacing with go.AddComponent<{0}>()", new object[]
 				{
 					name,
 					sourceInfo
@@ -45,22 +45,22 @@ namespace UnityEngineInternal
 				Type type2 = callingAssembly.GetType(name);
 				if (type2 != null)
 				{
-					Debug.LogWarningFormat("[{1}] Component type '{0}' found on caller assembly. Consider replacing the call method call with: AddComponent<{0}>()", new object[]
+					Debug.LogWarningFormat("[{1}] Component type '{0}' found on caller assembly, consider replacing with go.AddComponent<{0}>()", new object[]
 					{
-						type2.FullName,
+						name,
 						sourceInfo
 					});
 					result = type2;
 				}
 				else
 				{
-					type2 = AppDomain.CurrentDomain.GetAssemblies().SelectMany((Assembly a) => a.GetTypes()).SingleOrDefault((Type t) => t.Name == name && typeof(Component).IsAssignableFrom(t));
+					type2 = AppDomain.CurrentDomain.GetAssemblies().SelectMany((Assembly a) => a.GetTypes()).SingleOrDefault((Type t) => (t.Name == name || t.FullName == name) && typeof(Component).IsAssignableFrom(t));
 					if (type2 != null)
 					{
-						Debug.LogWarningFormat("[{2}] Component type '{0}' found on assembly {1}. Consider replacing the call method with: AddComponent<{0}>()", new object[]
+						Debug.LogWarningFormat("[{2}] Component type '{0}' found on assembly {1}, consider replacing with go.AddComponent<{0}>()", new object[]
 						{
-							type2.FullName,
-							type2.Assembly.Location,
+							name,
+							new AssemblyName(type2.Assembly.FullName).Name,
 							sourceInfo
 						});
 						result = type2;

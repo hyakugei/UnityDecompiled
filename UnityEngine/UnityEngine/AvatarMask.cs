@@ -1,16 +1,17 @@
 using System;
 using System.Runtime.CompilerServices;
+using UnityEngine.Bindings;
 using UnityEngine.Internal;
 using UnityEngine.Scripting;
 using UnityEngine.Scripting.APIUpdating;
 
 namespace UnityEngine
 {
-	[MovedFrom("UnityEditor.Animations", true)]
+	[MovedFrom("UnityEditor.Animations", true), UsedByNativeCode]
 	public sealed class AvatarMask : Object
 	{
-		[Obsolete("AvatarMask.humanoidBodyPartCount is deprecated. Use AvatarMaskBodyPart.LastBodyPart instead.")]
-		private int humanoidBodyPartCount
+		[Obsolete("AvatarMask.humanoidBodyPartCount is deprecated, use AvatarMaskBodyPart.LastBodyPart instead.")]
+		public int humanoidBodyPartCount
 		{
 			get
 			{
@@ -20,93 +21,69 @@ namespace UnityEngine
 
 		public extern int transformCount
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		internal extern bool hasFeetIK
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
 
 		public AvatarMask()
 		{
-			AvatarMask.Internal_CreateAvatarMask(this);
+			AvatarMask.Internal_Create(this);
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void Internal_CreateAvatarMask([Writable] AvatarMask mono);
+		private static extern void Internal_Create([Writable] AvatarMask self);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern bool GetHumanoidBodyPartActive(AvatarMaskBodyPart index);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern void SetHumanoidBodyPartActive(AvatarMaskBodyPart index, bool value);
 
-		[ExcludeFromDocs]
 		public void AddTransformPath(Transform transform)
 		{
-			bool recursive = true;
-			this.AddTransformPath(transform, recursive);
+			this.AddTransformPath(transform, true);
 		}
 
-		public void AddTransformPath(Transform transform, [DefaultValue("true")] bool recursive)
-		{
-			if (transform == null)
-			{
-				throw new ArgumentNullException("transform");
-			}
-			this.Internal_AddTransformPath(transform, recursive);
-		}
-
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void Internal_AddTransformPath(Transform transform, bool recursive);
+		public extern void AddTransformPath([NotNull] Transform transform, [DefaultValue("true")] bool recursive);
 
-		[ExcludeFromDocs]
 		public void RemoveTransformPath(Transform transform)
 		{
-			bool recursive = true;
-			this.RemoveTransformPath(transform, recursive);
+			this.RemoveTransformPath(transform, true);
 		}
 
-		public void RemoveTransformPath(Transform transform, [DefaultValue("true")] bool recursive)
-		{
-			if (transform == null)
-			{
-				throw new ArgumentNullException("transform");
-			}
-			this.Internal_RemoveTransformPath(transform, recursive);
-		}
-
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void Internal_RemoveTransformPath(Transform transform, bool recursive);
+		public extern void RemoveTransformPath([NotNull] Transform transform, [DefaultValue("true")] bool recursive);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern string GetTransformPath(int index);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern void SetTransformPath(int index, string path);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern bool GetTransformActive(int index);
+		private extern float GetTransformWeight(int index);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern void SetTransformActive(int index, bool value);
+		private extern void SetTransformWeight(int index, float weight);
+
+		public bool GetTransformActive(int index)
+		{
+			return this.GetTransformWeight(index) > 0.5f;
+		}
+
+		public void SetTransformActive(int index, bool value)
+		{
+			this.SetTransformWeight(index, (!value) ? 0f : 1f);
+		}
 
 		internal void Copy(AvatarMask other)
 		{

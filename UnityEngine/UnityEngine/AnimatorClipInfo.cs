@@ -15,7 +15,7 @@ namespace UnityEngine
 		{
 			get
 			{
-				return (this.m_ClipInstanceID == 0) ? null : AnimatorClipInfo.ClipInstanceToScriptingObject(this.m_ClipInstanceID);
+				return (this.m_ClipInstanceID == 0) ? null : AnimatorClipInfo.InstanceIDToAnimationClipPPtr(this.m_ClipInstanceID);
 			}
 		}
 
@@ -27,8 +27,7 @@ namespace UnityEngine
 			}
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern AnimationClip ClipInstanceToScriptingObject(int instanceID);
+		private static extern AnimationClip InstanceIDToAnimationClipPPtr(int instanceID);
 	}
 }

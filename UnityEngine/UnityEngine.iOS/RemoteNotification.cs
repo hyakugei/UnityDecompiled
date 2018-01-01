@@ -8,39 +8,34 @@ namespace UnityEngine.iOS
 	[RequiredByNativeCode]
 	public sealed class RemoteNotification
 	{
-		private IntPtr notificationWrapper;
+		private IntPtr m_Ptr;
 
 		public extern string alertBody
 		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-		}
-
-		public extern bool hasAction
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-		}
-
-		public extern int applicationIconBadgeNumber
-		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
 
 		public extern string soundName
 		{
-			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+		}
+
+		public extern int applicationIconBadgeNumber
+		{
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
 
 		public extern IDictionary userInfo
 		{
-			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+		}
+
+		public extern bool hasAction
+		{
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
@@ -49,13 +44,9 @@ namespace UnityEngine.iOS
 		{
 		}
 
-		[GeneratedByOldBindingsGenerator, ThreadAndSerializationSafe]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void Destroy();
-
 		~RemoteNotification()
 		{
-			this.Destroy();
+			NotificationHelper.DestroyRemote(this.m_Ptr);
 		}
 	}
 }

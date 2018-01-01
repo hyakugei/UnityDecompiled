@@ -2,13 +2,14 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security;
+using UnityEngine.Bindings;
 using UnityEngine.Internal;
 using UnityEngine.Scripting;
 using UnityEngineInternal;
 
 namespace UnityEngine
 {
-	[RequiredByNativeCode]
+	[GenerateManagedProxy, RequiredByNativeCode]
 	[StructLayout(LayoutKind.Sequential)]
 	public class Object
 	{
@@ -22,120 +23,19 @@ namespace UnityEngine
 
 		public extern string name
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern HideFlags hideFlags
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern Object Internal_CloneSingle(Object data);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern Object Internal_CloneSingleWithParent(Object data, Transform parent, bool worldPositionStays);
-
-		private static Object Internal_InstantiateSingle(Object data, Vector3 pos, Quaternion rot)
-		{
-			return Object.INTERNAL_CALL_Internal_InstantiateSingle(data, ref pos, ref rot);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern Object INTERNAL_CALL_Internal_InstantiateSingle(Object data, ref Vector3 pos, ref Quaternion rot);
-
-		private static Object Internal_InstantiateSingleWithParent(Object data, Transform parent, Vector3 pos, Quaternion rot)
-		{
-			return Object.INTERNAL_CALL_Internal_InstantiateSingleWithParent(data, parent, ref pos, ref rot);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern Object INTERNAL_CALL_Internal_InstantiateSingleWithParent(Object data, Transform parent, ref Vector3 pos, ref Quaternion rot);
-
-		[GeneratedByOldBindingsGenerator, ThreadAndSerializationSafe]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern int GetOffsetOfInstanceIDInCPlusPlusObject();
-
-		[GeneratedByOldBindingsGenerator, ThreadAndSerializationSafe]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void EnsureRunningOnMainThread();
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern void Destroy(Object obj, [DefaultValue("0.0F")] float t);
-
-		[ExcludeFromDocs]
-		public static void Destroy(Object obj)
-		{
-			float t = 0f;
-			Object.Destroy(obj, t);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern void DestroyImmediate(Object obj, [DefaultValue("false")] bool allowDestroyingAssets);
-
-		[ExcludeFromDocs]
-		public static void DestroyImmediate(Object obj)
-		{
-			bool allowDestroyingAssets = false;
-			Object.DestroyImmediate(obj, allowDestroyingAssets);
-		}
-
-		[GeneratedByOldBindingsGenerator, TypeInferenceRule(TypeInferenceRules.ArrayOfTypeReferencedByFirstArgument)]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern Object[] FindObjectsOfType(Type type);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern void DontDestroyOnLoad(Object target);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern void DestroyObject(Object obj, [DefaultValue("0.0F")] float t);
-
-		[ExcludeFromDocs]
-		public static void DestroyObject(Object obj)
-		{
-			float t = 0f;
-			Object.DestroyObject(obj, t);
-		}
-
-		[Obsolete("use Object.FindObjectsOfType instead."), GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern Object[] FindSceneObjectsOfType(Type type);
-
-		[Obsolete("use Resources.FindObjectsOfTypeAll instead."), GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern Object[] FindObjectsOfTypeIncludingAssets(Type type);
-
-		[Obsolete("Please use Resources.FindObjectsOfTypeAll instead")]
-		public static Object[] FindObjectsOfTypeAll(Type type)
-		{
-			return Resources.FindObjectsOfTypeAll(type);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public override extern string ToString();
-
-		[GeneratedByOldBindingsGenerator, ThreadAndSerializationSafe]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern bool DoesObjectWithInstanceIDExist(int instanceID);
 
 		[SecuritySafeCritical]
 		public int GetInstanceID()
@@ -182,6 +82,14 @@ namespace UnityEngine
 				result = (lhs.m_InstanceID == rhs.m_InstanceID);
 			}
 			return result;
+		}
+
+		private void EnsureRunningOnMainThread()
+		{
+			if (!Object.CurrentThreadIsMainThread())
+			{
+				throw new InvalidOperationException("EnsureRunningOnMainThread can only be called from the main thread");
+			}
 		}
 
 		private static bool IsNativeObjectAlive(Object o)
@@ -276,6 +184,52 @@ namespace UnityEngine
 			return (T)((object)Object.Instantiate(original, parent, worldPositionStays));
 		}
 
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern void Destroy(Object obj, [DefaultValue("0.0F")] float t);
+
+		[ExcludeFromDocs]
+		public static void Destroy(Object obj)
+		{
+			float t = 0f;
+			Object.Destroy(obj, t);
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern void DestroyImmediate(Object obj, [DefaultValue("false")] bool allowDestroyingAssets);
+
+		[ExcludeFromDocs]
+		public static void DestroyImmediate(Object obj)
+		{
+			bool allowDestroyingAssets = false;
+			Object.DestroyImmediate(obj, allowDestroyingAssets);
+		}
+
+		[TypeInferenceRule(TypeInferenceRules.ArrayOfTypeReferencedByFirstArgument)]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern Object[] FindObjectsOfType(Type type);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern void DontDestroyOnLoad(Object target);
+
+		[Obsolete("use Object.Destroy instead.")]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern void DestroyObject(Object obj, [DefaultValue("0.0F")] float t);
+
+		[Obsolete("use Object.Destroy instead."), ExcludeFromDocs]
+		public static void DestroyObject(Object obj)
+		{
+			float t = 0f;
+			Object.DestroyObject(obj, t);
+		}
+
+		[Obsolete("warning use Object.FindObjectsOfType instead.")]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern Object[] FindSceneObjectsOfType(Type type);
+
+		[Obsolete("use Resources.FindObjectsOfTypeAll instead.")]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern Object[] FindObjectsOfTypeIncludingAssets(Type type);
+
 		public static T[] FindObjectsOfType<T>() where T : Object
 		{
 			return Resources.ConvertObjects<T>(Object.FindObjectsOfType(typeof(T)));
@@ -284,6 +238,12 @@ namespace UnityEngine
 		public static T FindObjectOfType<T>() where T : Object
 		{
 			return (T)((object)Object.FindObjectOfType(typeof(T)));
+		}
+
+		[Obsolete("Please use Resources.FindObjectsOfTypeAll instead")]
+		public static Object[] FindObjectsOfTypeAll(Type type)
+		{
+			return Resources.FindObjectsOfTypeAll(type);
 		}
 
 		private static void CheckNullArgument(object arg, string message)
@@ -310,6 +270,11 @@ namespace UnityEngine
 			return result;
 		}
 
+		public override string ToString()
+		{
+			return Object.ToString(this);
+		}
+
 		public static bool operator ==(Object x, Object y)
 		{
 			return Object.CompareBaseObjects(x, y);
@@ -319,5 +284,43 @@ namespace UnityEngine
 		{
 			return !Object.CompareBaseObjects(x, y);
 		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern int GetOffsetOfInstanceIDInCPlusPlusObject();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern bool CurrentThreadIsMainThread();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern Object Internal_CloneSingle(Object data);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern Object Internal_CloneSingleWithParent(Object data, Transform parent, bool worldPositionStays);
+
+		private static Object Internal_InstantiateSingle(Object data, Vector3 pos, Quaternion rot)
+		{
+			return Object.Internal_InstantiateSingle_Injected(data, ref pos, ref rot);
+		}
+
+		private static Object Internal_InstantiateSingleWithParent(Object data, Transform parent, Vector3 pos, Quaternion rot)
+		{
+			return Object.Internal_InstantiateSingleWithParent_Injected(data, parent, ref pos, ref rot);
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern string ToString(Object obj);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern bool DoesObjectWithInstanceIDExist(int instanceID);
+
+		[VisibleToOtherModules]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern Object FindObjectFromInstanceID(int instanceID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern Object Internal_InstantiateSingle_Injected(Object data, ref Vector3 pos, ref Quaternion rot);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern Object Internal_InstantiateSingleWithParent_Injected(Object data, Transform parent, ref Vector3 pos, ref Quaternion rot);
 	}
 }

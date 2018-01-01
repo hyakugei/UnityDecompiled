@@ -19,14 +19,39 @@ namespace UnityEngine.Playables
 			return playable.GetHandle().GetGraph();
 		}
 
+		[Obsolete("SetPlayState() has been deprecated. Use Play(), Pause() or SetDelay() instead", false)]
 		public static void SetPlayState<U>(this U playable, PlayState value) where U : struct, IPlayable
 		{
-			playable.GetHandle().SetPlayState(value);
+			if (value == PlayState.Delayed)
+			{
+				throw new ArgumentException("Can't set Delayed: use SetDelay() instead");
+			}
+			if (value != PlayState.Playing)
+			{
+				if (value == PlayState.Paused)
+				{
+					playable.GetHandle().Pause();
+				}
+			}
+			else
+			{
+				playable.GetHandle().Play();
+			}
 		}
 
 		public static PlayState GetPlayState<U>(this U playable) where U : struct, IPlayable
 		{
 			return playable.GetHandle().GetPlayState();
+		}
+
+		public static void Play<U>(this U playable) where U : struct, IPlayable
+		{
+			playable.GetHandle().Play();
+		}
+
+		public static void Pause<U>(this U playable) where U : struct, IPlayable
+		{
+			playable.GetHandle().Pause();
 		}
 
 		public static void SetSpeed<U>(this U playable, double value) where U : struct, IPlayable
@@ -57,6 +82,11 @@ namespace UnityEngine.Playables
 		public static double GetTime<U>(this U playable) where U : struct, IPlayable
 		{
 			return playable.GetHandle().GetTime();
+		}
+
+		public static double GetPreviousTime<U>(this U playable) where U : struct, IPlayable
+		{
+			return playable.GetHandle().GetPreviousTime();
 		}
 
 		public static void SetDone<U>(this U playable, bool value) where U : struct, IPlayable
@@ -141,14 +171,46 @@ namespace UnityEngine.Playables
 
 		public static void ConnectInput<U, V>(this U playable, int inputIndex, V sourcePlayable, int sourceOutputIndex) where U : struct, IPlayable where V : struct, IPlayable
 		{
-			playable.GetGraph<U>().Connect<V, U>(sourcePlayable, sourceOutputIndex, playable, inputIndex);
+			playable.ConnectInput(inputIndex, sourcePlayable, sourceOutputIndex, 0f);
 		}
 
-		public static void AddInput<U, V>(this U playable, V sourcePlayable, int sourceOutputIndex) where U : struct, IPlayable where V : struct, IPlayable
+		public static void ConnectInput<U, V>(this U playable, int inputIndex, V sourcePlayable, int sourceOutputIndex, float weight) where U : struct, IPlayable where V : struct, IPlayable
+		{
+			playable.GetGraph<U>().Connect<V, U>(sourcePlayable, sourceOutputIndex, playable, inputIndex);
+			playable.SetInputWeight(inputIndex, weight);
+		}
+
+		public static int AddInput<U, V>(this U playable, V sourcePlayable, int sourceOutputIndex, float weight = 0f) where U : struct, IPlayable where V : struct, IPlayable
 		{
 			int inputCount = playable.GetInputCount<U>();
 			playable.SetInputCount(inputCount + 1);
-			playable.ConnectInput(inputCount, sourcePlayable, sourceOutputIndex);
+			playable.ConnectInput(inputCount, sourcePlayable, sourceOutputIndex, weight);
+			return inputCount;
+		}
+
+		public static void SetDelay<U>(this U playable, double delay) where U : struct, IPlayable
+		{
+			playable.GetHandle().SetDelay(delay);
+		}
+
+		public static double GetDelay<U>(this U playable) where U : struct, IPlayable
+		{
+			return playable.GetHandle().GetDelay();
+		}
+
+		public static bool IsDelayed<U>(this U playable) where U : struct, IPlayable
+		{
+			return playable.GetHandle().IsDelayed();
+		}
+
+		public static void SetLeadTime<U>(this U playable, float value) where U : struct, IPlayable
+		{
+			playable.GetHandle().SetLeadTime(value);
+		}
+
+		public static float GetLeadTime<U>(this U playable) where U : struct, IPlayable
+		{
+			return playable.GetHandle().GetLeadTime();
 		}
 	}
 }

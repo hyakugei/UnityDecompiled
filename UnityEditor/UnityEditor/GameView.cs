@@ -42,19 +42,19 @@ namespace UnityEditor
 
 			static Styles()
 			{
-				GameView.Styles.gizmosContent = EditorGUIUtility.TextContent("Gizmos");
-				GameView.Styles.zoomSliderContent = EditorGUIUtility.TextContent("Scale|Size of the game view on the screen.");
-				GameView.Styles.maximizeOnPlayContent = EditorGUIUtility.TextContent("Maximize On Play");
-				GameView.Styles.muteContent = EditorGUIUtility.TextContent("Mute Audio");
-				GameView.Styles.statsContent = EditorGUIUtility.TextContent("Stats");
-				GameView.Styles.frameDebuggerOnContent = EditorGUIUtility.TextContent("Frame Debugger On");
-				GameView.Styles.loadRenderDocContent = EditorGUIUtility.TextContent("Load RenderDoc");
-				GameView.Styles.noCameraWarningContextMenuContent = EditorGUIUtility.TextContent("Warn if No Cameras Rendering");
-				GameView.Styles.clearEveryFrameContextMenuContent = EditorGUIUtility.TextContent("Clear Every Frame in Edit Mode");
-				GameView.Styles.lowResAspectRatiosContextMenuContent = EditorGUIUtility.TextContent("Low Resolution Aspect Ratios");
+				GameView.Styles.gizmosContent = EditorGUIUtility.TrTextContent("Gizmos", null, null);
+				GameView.Styles.zoomSliderContent = EditorGUIUtility.TrTextContent("Scale", "Size of the game view on the screen.", null);
+				GameView.Styles.maximizeOnPlayContent = EditorGUIUtility.TrTextContent("Maximize On Play", null, null);
+				GameView.Styles.muteContent = EditorGUIUtility.TrTextContent("Mute Audio", null, null);
+				GameView.Styles.statsContent = EditorGUIUtility.TrTextContent("Stats", null, null);
+				GameView.Styles.frameDebuggerOnContent = EditorGUIUtility.TrTextContent("Frame Debugger On", null, null);
+				GameView.Styles.loadRenderDocContent = EditorGUIUtility.TrTextContent("Load RenderDoc", null, null);
+				GameView.Styles.noCameraWarningContextMenuContent = EditorGUIUtility.TrTextContent("Warn if No Cameras Rendering", null, null);
+				GameView.Styles.clearEveryFrameContextMenuContent = EditorGUIUtility.TrTextContent("Clear Every Frame in Edit Mode", null, null);
+				GameView.Styles.lowResAspectRatiosContextMenuContent = EditorGUIUtility.TrTextContent("Low Resolution Aspect Ratios", null, null);
 				GameView.Styles.gameViewBackgroundStyle = "GameViewBackground";
 				GameView.Styles.gizmoButtonStyle = "GV Gizmo DropDown";
-				GameView.Styles.renderdocContent = EditorGUIUtility.IconContent("renderdoc", "Capture|Capture the current view and open in RenderDoc.");
+				GameView.Styles.renderdocContent = EditorGUIUtility.TrIconContent("renderdoc", "Capture the current view and open in RenderDoc.");
 			}
 		}
 
@@ -120,8 +120,6 @@ namespace UnityEditor
 		private bool[] m_LowResolutionForAspectRatios = new bool[0];
 
 		private int m_SizeChangeID = -2147483648;
-
-		private static GUIStyle s_ResolutionWarningStyle;
 
 		private static List<GameView> s_GameViews = new List<GameView>();
 
@@ -696,11 +694,10 @@ namespace UnityEditor
 			if (!this.m_TargetTexture)
 			{
 				this.m_CurrentColorSpace = QualitySettings.activeColorSpace;
-				this.m_TargetTexture = new RenderTexture(0, 0, 24, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default);
+				this.m_TargetTexture = new RenderTexture(0, 0, 24, RenderTextureFormat.ARGB32, RenderTextureReadWrite.sRGB);
 				this.m_TargetTexture.name = "GameView RT";
 				this.m_TargetTexture.filterMode = FilterMode.Point;
 				this.m_TargetTexture.hideFlags = HideFlags.HideAndDontSave;
-				EditorGUIUtility.SetGUITextureBlitColorspaceSettings(EditorGUIUtility.GUITextureBlitColorspaceMaterial);
 			}
 			if (this.m_TargetTexture.width != width || this.m_TargetTexture.height != height)
 			{
@@ -797,7 +794,7 @@ namespace UnityEditor
 			}
 			else if (type == EventType.KeyDown && Event.current.keyCode == KeyCode.Escape)
 			{
-				Unsupported.SetAllowCursorLock(false);
+				this.AllowCursorLockAndHide(false);
 			}
 			bool flag = EditorApplication.isPlaying && !EditorApplication.isPaused;
 			this.m_ZoomArea.hSlider = (!flag && this.m_ZoomArea.shownArea.width < this.targetInContent.width);
@@ -835,9 +832,7 @@ namespace UnityEditor
 					savedGUIState.ApplyAndForget();
 					GUIUtility.s_EditorScreenPointOffset = s_EditorScreenPointOffset;
 					GUI.BeginGroup(this.m_ZoomArea.drawRect);
-					GL.sRGBWrite = (this.m_CurrentColorSpace == ColorSpace.Linear);
-					Graphics.DrawTexture(this.deviceFlippedTargetInView, this.m_TargetTexture, new Rect(0f, 0f, 1f, 1f), 0, 0, 0, 0, GUI.color, EditorGUIUtility.GUITextureBlitColorspaceMaterial);
-					GL.sRGBWrite = false;
+					Graphics.DrawTexture(this.deviceFlippedTargetInView, this.m_TargetTexture, new Rect(0f, 0f, 1f, 1f), 0, 0, 0, 0, GUI.color, GUI.blitMaterial);
 					GUI.EndGroup();
 				}
 			}

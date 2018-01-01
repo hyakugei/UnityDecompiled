@@ -1,11 +1,12 @@
 using System;
 using System.Runtime.CompilerServices;
+using UnityEngine.Bindings;
 using UnityEngine.Internal;
 using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
-	[UsedByNativeCode]
+	[NativeType(Header = "Runtime/Math/Quaternion.h"), UsedByNativeCode, ThreadAndSerializationSafe]
 	public struct Quaternion
 	{
 		public float x;
@@ -19,18 +20,6 @@ namespace UnityEngine
 		private static readonly Quaternion identityQuaternion = new Quaternion(0f, 0f, 0f, 1f);
 
 		public const float kEpsilon = 1E-06f;
-
-		public Vector3 eulerAngles
-		{
-			get
-			{
-				return Quaternion.Internal_MakePositive(Quaternion.Internal_ToEulerRad(this) * 57.29578f);
-			}
-			set
-			{
-				this = Quaternion.Internal_FromEulerRad(value * 0.0174532924f);
-			}
-		}
 
 		public float this[int index]
 		{
@@ -86,6 +75,18 @@ namespace UnityEngine
 			}
 		}
 
+		public Vector3 eulerAngles
+		{
+			get
+			{
+				return Quaternion.Internal_MakePositive(Quaternion.Internal_ToEulerRad(this) * 57.29578f);
+			}
+			set
+			{
+				this = Quaternion.Internal_FromEulerRad(value * 0.0174532924f);
+			}
+		}
+
 		public Quaternion(float x, float y, float z, float w)
 		{
 			this.x = x;
@@ -94,260 +95,85 @@ namespace UnityEngine
 			this.w = w;
 		}
 
-		[ThreadAndSerializationSafe]
-		public static Quaternion AngleAxis(float angle, Vector3 axis)
-		{
-			Quaternion result;
-			Quaternion.INTERNAL_CALL_AngleAxis(angle, ref axis, out result);
-			return result;
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_AngleAxis(float angle, ref Vector3 axis, out Quaternion value);
-
-		public void ToAngleAxis(out float angle, out Vector3 axis)
-		{
-			Quaternion.Internal_ToAxisAngleRad(this, out axis, out angle);
-			angle *= 57.29578f;
-		}
-
 		public static Quaternion FromToRotation(Vector3 fromDirection, Vector3 toDirection)
 		{
 			Quaternion result;
-			Quaternion.INTERNAL_CALL_FromToRotation(ref fromDirection, ref toDirection, out result);
-			return result;
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_FromToRotation(ref Vector3 fromDirection, ref Vector3 toDirection, out Quaternion value);
-
-		public void SetFromToRotation(Vector3 fromDirection, Vector3 toDirection)
-		{
-			this = Quaternion.FromToRotation(fromDirection, toDirection);
-		}
-
-		public static Quaternion LookRotation(Vector3 forward, [DefaultValue("Vector3.up")] Vector3 upwards)
-		{
-			Quaternion result;
-			Quaternion.INTERNAL_CALL_LookRotation(ref forward, ref upwards, out result);
-			return result;
-		}
-
-		[ExcludeFromDocs]
-		public static Quaternion LookRotation(Vector3 forward)
-		{
-			Vector3 up = Vector3.up;
-			Quaternion result;
-			Quaternion.INTERNAL_CALL_LookRotation(ref forward, ref up, out result);
-			return result;
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_LookRotation(ref Vector3 forward, ref Vector3 upwards, out Quaternion value);
-
-		public static Quaternion Slerp(Quaternion a, Quaternion b, float t)
-		{
-			Quaternion result;
-			Quaternion.INTERNAL_CALL_Slerp(ref a, ref b, t, out result);
-			return result;
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_Slerp(ref Quaternion a, ref Quaternion b, float t, out Quaternion value);
-
-		public static Quaternion SlerpUnclamped(Quaternion a, Quaternion b, float t)
-		{
-			Quaternion result;
-			Quaternion.INTERNAL_CALL_SlerpUnclamped(ref a, ref b, t, out result);
-			return result;
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_SlerpUnclamped(ref Quaternion a, ref Quaternion b, float t, out Quaternion value);
-
-		public static Quaternion Lerp(Quaternion a, Quaternion b, float t)
-		{
-			Quaternion result;
-			Quaternion.INTERNAL_CALL_Lerp(ref a, ref b, t, out result);
-			return result;
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_Lerp(ref Quaternion a, ref Quaternion b, float t, out Quaternion value);
-
-		public static Quaternion LerpUnclamped(Quaternion a, Quaternion b, float t)
-		{
-			Quaternion result;
-			Quaternion.INTERNAL_CALL_LerpUnclamped(ref a, ref b, t, out result);
-			return result;
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_LerpUnclamped(ref Quaternion a, ref Quaternion b, float t, out Quaternion value);
-
-		public static Quaternion RotateTowards(Quaternion from, Quaternion to, float maxDegreesDelta)
-		{
-			float num = Quaternion.Angle(from, to);
-			Quaternion result;
-			if (num == 0f)
-			{
-				result = to;
-			}
-			else
-			{
-				float t = Mathf.Min(1f, maxDegreesDelta / num);
-				result = Quaternion.SlerpUnclamped(from, to, t);
-			}
+			Quaternion.FromToRotation_Injected(ref fromDirection, ref toDirection, out result);
 			return result;
 		}
 
 		public static Quaternion Inverse(Quaternion rotation)
 		{
 			Quaternion result;
-			Quaternion.INTERNAL_CALL_Inverse(ref rotation, out result);
+			Quaternion.Inverse_Injected(ref rotation, out result);
 			return result;
 		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_Inverse(ref Quaternion rotation, out Quaternion value);
-
-		public static Quaternion Euler(float x, float y, float z)
+		public static Quaternion Slerp(Quaternion a, Quaternion b, float t)
 		{
-			return Quaternion.Internal_FromEulerRad(new Vector3(x, y, z) * 0.0174532924f);
+			Quaternion result;
+			Quaternion.Slerp_Injected(ref a, ref b, t, out result);
+			return result;
 		}
 
-		public static Quaternion Euler(Vector3 euler)
+		public static Quaternion SlerpUnclamped(Quaternion a, Quaternion b, float t)
 		{
-			return Quaternion.Internal_FromEulerRad(euler * 0.0174532924f);
+			Quaternion result;
+			Quaternion.SlerpUnclamped_Injected(ref a, ref b, t, out result);
+			return result;
+		}
+
+		public static Quaternion Lerp(Quaternion a, Quaternion b, float t)
+		{
+			Quaternion result;
+			Quaternion.Lerp_Injected(ref a, ref b, t, out result);
+			return result;
+		}
+
+		public static Quaternion LerpUnclamped(Quaternion a, Quaternion b, float t)
+		{
+			Quaternion result;
+			Quaternion.LerpUnclamped_Injected(ref a, ref b, t, out result);
+			return result;
+		}
+
+		private static Quaternion Internal_FromEulerRad(Vector3 euler)
+		{
+			Quaternion result;
+			Quaternion.Internal_FromEulerRad_Injected(ref euler, out result);
+			return result;
 		}
 
 		private static Vector3 Internal_ToEulerRad(Quaternion rotation)
 		{
 			Vector3 result;
-			Quaternion.INTERNAL_CALL_Internal_ToEulerRad(ref rotation, out result);
+			Quaternion.Internal_ToEulerRad_Injected(ref rotation, out result);
 			return result;
 		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_Internal_ToEulerRad(ref Quaternion rotation, out Vector3 value);
-
-		private static Quaternion Internal_FromEulerRad(Vector3 euler)
-		{
-			Quaternion result;
-			Quaternion.INTERNAL_CALL_Internal_FromEulerRad(ref euler, out result);
-			return result;
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_Internal_FromEulerRad(ref Vector3 euler, out Quaternion value);
 
 		private static void Internal_ToAxisAngleRad(Quaternion q, out Vector3 axis, out float angle)
 		{
-			Quaternion.INTERNAL_CALL_Internal_ToAxisAngleRad(ref q, out axis, out angle);
+			Quaternion.Internal_ToAxisAngleRad_Injected(ref q, out axis, out angle);
 		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_Internal_ToAxisAngleRad(ref Quaternion q, out Vector3 axis, out float angle);
-
-		[Obsolete("Use Quaternion.Euler instead. This function was deprecated because it uses radians instead of degrees")]
-		public static Quaternion EulerRotation(float x, float y, float z)
-		{
-			return Quaternion.Internal_FromEulerRad(new Vector3(x, y, z));
-		}
-
-		[Obsolete("Use Quaternion.Euler instead. This function was deprecated because it uses radians instead of degrees")]
-		public static Quaternion EulerRotation(Vector3 euler)
-		{
-			return Quaternion.Internal_FromEulerRad(euler);
-		}
-
-		[Obsolete("Use Quaternion.Euler instead. This function was deprecated because it uses radians instead of degrees")]
-		public void SetEulerRotation(float x, float y, float z)
-		{
-			this = Quaternion.Internal_FromEulerRad(new Vector3(x, y, z));
-		}
-
-		[Obsolete("Use Quaternion.Euler instead. This function was deprecated because it uses radians instead of degrees")]
-		public void SetEulerRotation(Vector3 euler)
-		{
-			this = Quaternion.Internal_FromEulerRad(euler);
-		}
-
-		[Obsolete("Use Quaternion.eulerAngles instead. This function was deprecated because it uses radians instead of degrees")]
-		public Vector3 ToEuler()
-		{
-			return Quaternion.Internal_ToEulerRad(this);
-		}
-
-		[Obsolete("Use Quaternion.Euler instead. This function was deprecated because it uses radians instead of degrees")]
-		public static Quaternion EulerAngles(float x, float y, float z)
-		{
-			return Quaternion.Internal_FromEulerRad(new Vector3(x, y, z));
-		}
-
-		[Obsolete("Use Quaternion.Euler instead. This function was deprecated because it uses radians instead of degrees")]
-		public static Quaternion EulerAngles(Vector3 euler)
-		{
-			return Quaternion.Internal_FromEulerRad(euler);
-		}
-
-		[Obsolete("Use Quaternion.ToAngleAxis instead. This function was deprecated because it uses radians instead of degrees")]
-		public void ToAxisAngle(out Vector3 axis, out float angle)
-		{
-			Quaternion.Internal_ToAxisAngleRad(this, out axis, out angle);
-		}
-
-		[Obsolete("Use Quaternion.Euler instead. This function was deprecated because it uses radians instead of degrees")]
-		public void SetEulerAngles(float x, float y, float z)
-		{
-			this.SetEulerRotation(new Vector3(x, y, z));
-		}
-
-		[Obsolete("Use Quaternion.Euler instead. This function was deprecated because it uses radians instead of degrees")]
-		public void SetEulerAngles(Vector3 euler)
-		{
-			this = Quaternion.EulerRotation(euler);
-		}
-
-		[Obsolete("Use Quaternion.eulerAngles instead. This function was deprecated because it uses radians instead of degrees")]
-		public static Vector3 ToEulerAngles(Quaternion rotation)
-		{
-			return Quaternion.Internal_ToEulerRad(rotation);
-		}
-
-		[Obsolete("Use Quaternion.eulerAngles instead. This function was deprecated because it uses radians instead of degrees")]
-		public Vector3 ToEulerAngles()
-		{
-			return Quaternion.Internal_ToEulerRad(this);
-		}
-
-		[Obsolete("Use Quaternion.AngleAxis instead. This function was deprecated because it uses radians instead of degrees")]
-		public static Quaternion AxisAngle(Vector3 axis, float angle)
+		public static Quaternion AngleAxis(float angle, Vector3 axis)
 		{
 			Quaternion result;
-			Quaternion.INTERNAL_CALL_AxisAngle(ref axis, angle, out result);
+			Quaternion.AngleAxis_Injected(angle, ref axis, out result);
 			return result;
 		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_AxisAngle(ref Vector3 axis, float angle, out Quaternion value);
-
-		[Obsolete("Use Quaternion.AngleAxis instead. This function was deprecated because it uses radians instead of degrees")]
-		public void SetAxisAngle(Vector3 axis, float angle)
+		public static Quaternion LookRotation(Vector3 forward, [DefaultValue("Vector3.up")] Vector3 upwards)
 		{
-			this = Quaternion.AxisAngle(axis, angle);
+			Quaternion result;
+			Quaternion.LookRotation_Injected(ref forward, ref upwards, out result);
+			return result;
+		}
+
+		[ExcludeFromDocs]
+		public static Quaternion LookRotation(Vector3 forward)
+		{
+			return Quaternion.LookRotation(forward, Vector3.up);
 		}
 
 		public void Set(float newX, float newY, float newZ, float newW)
@@ -384,9 +210,14 @@ namespace UnityEngine
 			return result;
 		}
 
+		private static bool IsEqualUsingDot(float dot)
+		{
+			return dot > 0.999999f;
+		}
+
 		public static bool operator ==(Quaternion lhs, Quaternion rhs)
 		{
-			return Quaternion.Dot(lhs, rhs) > 0.999999f;
+			return Quaternion.IsEqualUsingDot(Quaternion.Dot(lhs, rhs));
 		}
 
 		public static bool operator !=(Quaternion lhs, Quaternion rhs)
@@ -413,8 +244,8 @@ namespace UnityEngine
 
 		public static float Angle(Quaternion a, Quaternion b)
 		{
-			float f = Quaternion.Dot(a, b);
-			return Mathf.Acos(Mathf.Min(Mathf.Abs(f), 1f)) * 2f * 57.29578f;
+			float num = Quaternion.Dot(a, b);
+			return (!Quaternion.IsEqualUsingDot(num)) ? (Mathf.Acos(Mathf.Min(Mathf.Abs(num), 1f)) * 2f * 57.29578f) : 0f;
 		}
 
 		private static Vector3 Internal_MakePositive(Vector3 euler)
@@ -446,6 +277,42 @@ namespace UnityEngine
 				euler.z -= 360f;
 			}
 			return euler;
+		}
+
+		public static Quaternion Euler(float x, float y, float z)
+		{
+			return Quaternion.Internal_FromEulerRad(new Vector3(x, y, z) * 0.0174532924f);
+		}
+
+		public static Quaternion Euler(Vector3 euler)
+		{
+			return Quaternion.Internal_FromEulerRad(euler * 0.0174532924f);
+		}
+
+		public void ToAngleAxis(out float angle, out Vector3 axis)
+		{
+			Quaternion.Internal_ToAxisAngleRad(this, out axis, out angle);
+			angle *= 57.29578f;
+		}
+
+		public void SetFromToRotation(Vector3 fromDirection, Vector3 toDirection)
+		{
+			this = Quaternion.FromToRotation(fromDirection, toDirection);
+		}
+
+		public static Quaternion RotateTowards(Quaternion from, Quaternion to, float maxDegreesDelta)
+		{
+			float num = Quaternion.Angle(from, to);
+			Quaternion result;
+			if (num == 0f)
+			{
+				result = to;
+			}
+			else
+			{
+				result = Quaternion.SlerpUnclamped(from, to, Mathf.Min(1f, maxDegreesDelta / num));
+			}
+			return result;
 		}
 
 		public override int GetHashCode()
@@ -489,5 +356,122 @@ namespace UnityEngine
 				this.w.ToString(format)
 			});
 		}
+
+		[Obsolete("Use Quaternion.Euler instead. This function was deprecated because it uses radians instead of degrees.")]
+		public static Quaternion EulerRotation(float x, float y, float z)
+		{
+			return Quaternion.Internal_FromEulerRad(new Vector3(x, y, z));
+		}
+
+		[Obsolete("Use Quaternion.Euler instead. This function was deprecated because it uses radians instead of degrees.")]
+		public static Quaternion EulerRotation(Vector3 euler)
+		{
+			return Quaternion.Internal_FromEulerRad(euler);
+		}
+
+		[Obsolete("Use Quaternion.Euler instead. This function was deprecated because it uses radians instead of degrees.")]
+		public void SetEulerRotation(float x, float y, float z)
+		{
+			this = Quaternion.Internal_FromEulerRad(new Vector3(x, y, z));
+		}
+
+		[Obsolete("Use Quaternion.Euler instead. This function was deprecated because it uses radians instead of degrees.")]
+		public void SetEulerRotation(Vector3 euler)
+		{
+			this = Quaternion.Internal_FromEulerRad(euler);
+		}
+
+		[Obsolete("Use Quaternion.eulerAngles instead. This function was deprecated because it uses radians instead of degrees.")]
+		public Vector3 ToEuler()
+		{
+			return Quaternion.Internal_ToEulerRad(this);
+		}
+
+		[Obsolete("Use Quaternion.Euler instead. This function was deprecated because it uses radians instead of degrees.")]
+		public static Quaternion EulerAngles(float x, float y, float z)
+		{
+			return Quaternion.Internal_FromEulerRad(new Vector3(x, y, z));
+		}
+
+		[Obsolete("Use Quaternion.Euler instead. This function was deprecated because it uses radians instead of degrees.")]
+		public static Quaternion EulerAngles(Vector3 euler)
+		{
+			return Quaternion.Internal_FromEulerRad(euler);
+		}
+
+		[Obsolete("Use Quaternion.ToAngleAxis instead. This function was deprecated because it uses radians instead of degrees.")]
+		public void ToAxisAngle(out Vector3 axis, out float angle)
+		{
+			Quaternion.Internal_ToAxisAngleRad(this, out axis, out angle);
+		}
+
+		[Obsolete("Use Quaternion.Euler instead. This function was deprecated because it uses radians instead of degrees.")]
+		public void SetEulerAngles(float x, float y, float z)
+		{
+			this.SetEulerRotation(new Vector3(x, y, z));
+		}
+
+		[Obsolete("Use Quaternion.Euler instead. This function was deprecated because it uses radians instead of degrees.")]
+		public void SetEulerAngles(Vector3 euler)
+		{
+			this = Quaternion.EulerRotation(euler);
+		}
+
+		[Obsolete("Use Quaternion.eulerAngles instead. This function was deprecated because it uses radians instead of degrees.")]
+		public static Vector3 ToEulerAngles(Quaternion rotation)
+		{
+			return Quaternion.Internal_ToEulerRad(rotation);
+		}
+
+		[Obsolete("Use Quaternion.eulerAngles instead. This function was deprecated because it uses radians instead of degrees.")]
+		public Vector3 ToEulerAngles()
+		{
+			return Quaternion.Internal_ToEulerRad(this);
+		}
+
+		[Obsolete("Use Quaternion.AngleAxis instead. This function was deprecated because it uses radians instead of degrees.")]
+		public void SetAxisAngle(Vector3 axis, float angle)
+		{
+			this = Quaternion.AxisAngle(axis, angle);
+		}
+
+		[Obsolete("Use Quaternion.AngleAxis instead. This function was deprecated because it uses radians instead of degrees")]
+		public static Quaternion AxisAngle(Vector3 axis, float angle)
+		{
+			return Quaternion.AngleAxis(57.29578f * angle, axis);
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void FromToRotation_Injected(ref Vector3 fromDirection, ref Vector3 toDirection, out Quaternion ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void Inverse_Injected(ref Quaternion rotation, out Quaternion ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void Slerp_Injected(ref Quaternion a, ref Quaternion b, float t, out Quaternion ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void SlerpUnclamped_Injected(ref Quaternion a, ref Quaternion b, float t, out Quaternion ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void Lerp_Injected(ref Quaternion a, ref Quaternion b, float t, out Quaternion ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void LerpUnclamped_Injected(ref Quaternion a, ref Quaternion b, float t, out Quaternion ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void Internal_FromEulerRad_Injected(ref Vector3 euler, out Quaternion ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void Internal_ToEulerRad_Injected(ref Quaternion rotation, out Vector3 ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void Internal_ToAxisAngleRad_Injected(ref Quaternion q, out Vector3 axis, out float angle);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void AngleAxis_Injected(float angle, ref Vector3 axis, out Quaternion ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void LookRotation_Injected(ref Vector3 forward, [DefaultValue("Vector3.up")] ref Vector3 upwards, out Quaternion ret);
 	}
 }

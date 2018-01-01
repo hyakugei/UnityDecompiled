@@ -1,9 +1,12 @@
 using System;
 using System.Runtime.InteropServices;
 using UnityEngine;
+using UnityEngine.Bindings;
+using UnityEngine.Scripting;
 
 namespace UnityEditor
 {
+	[NativeType(CodegenOptions = CodegenOptions.Custom, IntermediateScriptingStructName = "MonoClipAnimationInfo"), UsedByNativeCode]
 	[Serializable]
 	[StructLayout(LayoutKind.Sequential)]
 	public sealed class ModelImporterClipAnimation

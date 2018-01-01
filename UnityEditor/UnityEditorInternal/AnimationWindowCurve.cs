@@ -38,6 +38,14 @@ namespace UnityEditorInternal
 			}
 		}
 
+		public bool isDiscreteCurve
+		{
+			get
+			{
+				return this.m_Binding.isDiscreteCurve;
+			}
+		}
+
 		public bool isPhantom
 		{
 			get
@@ -121,14 +129,6 @@ namespace UnityEditorInternal
 			}
 		}
 
-		public float timeOffset
-		{
-			get
-			{
-				return (!(this.m_SelectionBinding != null)) ? 0f : this.m_SelectionBinding.timeOffset;
-			}
-		}
-
 		public bool clipIsEditable
 		{
 			get
@@ -175,27 +175,34 @@ namespace UnityEditorInternal
 			this.LoadKeyframes(clip);
 		}
 
+		public void LoadKeyframes(AnimationCurve curve)
+		{
+			if (curve != null)
+			{
+				for (int i = 0; i < curve.length; i++)
+				{
+					this.m_Keyframes.Add(new AnimationWindowKeyframe(this, curve[i]));
+				}
+			}
+		}
+
 		public void LoadKeyframes(AnimationClip clip)
 		{
 			this.m_Keyframes = new List<AnimationWindowKeyframe>();
 			if (!this.m_Binding.isPPtrCurve)
 			{
 				AnimationCurve editorCurve = AnimationUtility.GetEditorCurve(clip, this.binding);
-				int num = 0;
-				while (editorCurve != null && num < editorCurve.length)
-				{
-					this.m_Keyframes.Add(new AnimationWindowKeyframe(this, editorCurve[num]));
-					num++;
-				}
+				this.LoadKeyframes(editorCurve);
 			}
 			else
 			{
 				ObjectReferenceKeyframe[] objectReferenceCurve = AnimationUtility.GetObjectReferenceCurve(clip, this.binding);
-				int num2 = 0;
-				while (objectReferenceCurve != null && num2 < objectReferenceCurve.Length)
+				if (objectReferenceCurve != null)
 				{
-					this.m_Keyframes.Add(new AnimationWindowKeyframe(this, objectReferenceCurve[num2]));
-					num2++;
+					for (int i = 0; i < objectReferenceCurve.Length; i++)
+					{
+						this.m_Keyframes.Add(new AnimationWindowKeyframe(this, objectReferenceCurve[i]));
+					}
 				}
 			}
 		}
@@ -310,10 +317,8 @@ namespace UnityEditorInternal
 			{
 				if (Mathf.Abs(this.m_Keyframes[i].time - num) > 1E-05f)
 				{
-					list.Add(new Keyframe(this.m_Keyframes[i].time, (float)this.m_Keyframes[i].value, this.m_Keyframes[i].m_InTangent, this.m_Keyframes[i].m_OutTangent)
-					{
-						tangentMode = this.m_Keyframes[i].m_TangentMode
-					});
+					Keyframe item = this.m_Keyframes[i].ToKeyframe();
+					list.Add(item);
 					num = this.m_Keyframes[i].time;
 				}
 			}
@@ -330,9 +335,7 @@ namespace UnityEditorInternal
 			{
 				if (Mathf.Abs(this.m_Keyframes[i].time - num) > 1E-05f)
 				{
-					ObjectReferenceKeyframe item = default(ObjectReferenceKeyframe);
-					item.time = this.m_Keyframes[i].time;
-					item.value = (UnityEngine.Object)this.m_Keyframes[i].value;
+					ObjectReferenceKeyframe item = this.m_Keyframes[i].ToObjectReferenceKeyframe();
 					num = item.time;
 					list.Add(item);
 				}
@@ -360,7 +363,7 @@ namespace UnityEditorInternal
 			object result;
 			if (this.m_Keyframes.Count == 0)
 			{
-				result = null;
+				result = ((!this.isPPtrCurve) ? 0f : null);
 			}
 			else
 			{
@@ -390,8 +393,8 @@ namespace UnityEditorInternal
 									result = animationWindowKeyframe3.value;
 									return result;
 								}
-								Keyframe keyframe = new Keyframe(animationWindowKeyframe3.time, (float)animationWindowKeyframe3.value, animationWindowKeyframe3.m_InTangent, animationWindowKeyframe3.m_OutTangent);
-								Keyframe keyframe2 = new Keyframe(animationWindowKeyframe4.time, (float)animationWindowKeyframe4.value, animationWindowKeyframe4.m_InTangent, animationWindowKeyframe4.m_OutTangent);
+								Keyframe keyframe = animationWindowKeyframe3.ToKeyframe();
+								Keyframe keyframe2 = animationWindowKeyframe4.ToKeyframe();
 								result = new AnimationCurve
 								{
 									keys = new Keyframe[]
@@ -408,7 +411,7 @@ namespace UnityEditorInternal
 								i++;
 							}
 						}
-						result = null;
+						result = ((!this.isPPtrCurve) ? 0f : null);
 					}
 				}
 			}
@@ -462,6 +465,11 @@ namespace UnityEditorInternal
 					this.m_Keyframes.RemoveAt(i);
 				}
 			}
+		}
+
+		public void Clear()
+		{
+			this.m_Keyframes.Clear();
 		}
 	}
 }

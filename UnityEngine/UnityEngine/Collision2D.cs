@@ -1,10 +1,11 @@
 using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
-	[RequiredByNativeCode]
+	[UsedByNativeCode]
 	[StructLayout(LayoutKind.Sequential)]
 	public class Collision2D
 	{
@@ -26,7 +27,7 @@ namespace UnityEngine
 		{
 			get
 			{
-				return Physics2D.GetColliderFromInstanceID(this.m_Collider);
+				return Object.FindObjectFromInstanceID(this.m_Collider) as Collider2D;
 			}
 		}
 
@@ -34,7 +35,7 @@ namespace UnityEngine
 		{
 			get
 			{
-				return Physics2D.GetColliderFromInstanceID(this.m_OtherCollider);
+				return Object.FindObjectFromInstanceID(this.m_OtherCollider) as Collider2D;
 			}
 		}
 
@@ -42,7 +43,7 @@ namespace UnityEngine
 		{
 			get
 			{
-				return Physics2D.GetRigidbodyFromInstanceID(this.m_Rigidbody);
+				return Object.FindObjectFromInstanceID(this.m_Rigidbody) as Rigidbody2D;
 			}
 		}
 
@@ -50,7 +51,7 @@ namespace UnityEngine
 		{
 			get
 			{
-				return Physics2D.GetRigidbodyFromInstanceID(this.m_OtherRigidbody);
+				return Object.FindObjectFromInstanceID(this.m_OtherRigidbody) as Rigidbody2D;
 			}
 		}
 
@@ -74,6 +75,10 @@ namespace UnityEngine
 		{
 			get
 			{
+				if (this.m_Contacts == null)
+				{
+					this.m_Contacts = Collision2D.CreateCollisionContacts_Internal(this.collider, this.otherCollider, this.rigidbody, this.otherRigidbody, this.enabled);
+				}
 				return this.m_Contacts;
 			}
 		}
@@ -92,6 +97,14 @@ namespace UnityEngine
 			{
 				return this.m_Enabled == 1;
 			}
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern ContactPoint2D[] CreateCollisionContacts_Internal(Collider2D collider, Collider2D otherCollider, Rigidbody2D rigidbody, Rigidbody2D otherRigidbody, bool enabled);
+
+		public int GetContacts(ContactPoint2D[] contacts)
+		{
+			return Physics2D.GetContacts(this.collider, this.otherCollider, default(ContactFilter2D).NoFilter(), contacts);
 		}
 	}
 }

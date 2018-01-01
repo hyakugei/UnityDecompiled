@@ -11,6 +11,8 @@ namespace UnityEngine
 		EyeTexture = 8,
 		EnableRandomWrite = 16,
 		CreatedFromScript = 32,
-		AllowVerticalFlip = 128
+		AllowVerticalFlip = 128,
+		NoResolvedColorSurface = 256,
+		DynamicallyScalable = 1024
 	}
 }

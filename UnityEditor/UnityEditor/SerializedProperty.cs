@@ -16,6 +16,8 @@ namespace UnityEditor
 
 		internal SerializedObject m_SerializedObject;
 
+		internal string m_CachedLocalizedDisplayName = "";
+
 		public extern bool hasMultipleDifferentValues
 		{
 			[GeneratedByOldBindingsGenerator]
@@ -290,7 +292,7 @@ namespace UnityEditor
 			get;
 		}
 
-		internal extern string layerMaskStringValue
+		internal extern uint layerMaskBits
 		{
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
@@ -363,6 +365,34 @@ namespace UnityEditor
 			}
 		}
 
+		public Vector2Int vector2IntValue
+		{
+			get
+			{
+				Vector2Int result;
+				this.INTERNAL_get_vector2IntValue(out result);
+				return result;
+			}
+			set
+			{
+				this.INTERNAL_set_vector2IntValue(ref value);
+			}
+		}
+
+		public Vector3Int vector3IntValue
+		{
+			get
+			{
+				Vector3Int result;
+				this.INTERNAL_get_vector3IntValue(out result);
+				return result;
+			}
+			set
+			{
+				this.INTERNAL_set_vector3IntValue(ref value);
+			}
+		}
+
 		public Quaternion quaternionValue
 		{
 			get
@@ -391,6 +421,20 @@ namespace UnityEditor
 			}
 		}
 
+		public RectInt rectIntValue
+		{
+			get
+			{
+				RectInt result;
+				this.INTERNAL_get_rectIntValue(out result);
+				return result;
+			}
+			set
+			{
+				this.INTERNAL_set_rectIntValue(ref value);
+			}
+		}
+
 		public Bounds boundsValue
 		{
 			get
@@ -402,6 +446,20 @@ namespace UnityEditor
 			set
 			{
 				this.INTERNAL_set_boundsValue(ref value);
+			}
+		}
+
+		public BoundsInt boundsIntValue
+		{
+			get
+			{
+				BoundsInt result;
+				this.INTERNAL_get_boundsIntValue(out result);
+				return result;
+			}
+			set
+			{
+				this.INTERNAL_set_boundsIntValue(ref value);
 			}
 		}
 
@@ -434,6 +492,16 @@ namespace UnityEditor
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
+		}
+
+		internal extern bool isValidDisplayNameCache
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
 		}
 
 		public SerializedObject serializedObject
@@ -516,6 +584,50 @@ namespace UnityEditor
 			}
 		}
 
+		private bool isUnityAssembly
+		{
+			get
+			{
+				return EditorUtility.IsUnityAssembly(this.m_SerializedObject.targetObject);
+			}
+		}
+
+		internal string localizedDisplayName
+		{
+			get
+			{
+				if (!this.isValidDisplayNameCache)
+				{
+					this.isValidDisplayNameCache = true;
+					this.m_CachedLocalizedDisplayName = ((!this.isUnityAssembly) ? this.displayName : L10n.Tr(this.displayName));
+				}
+				return this.m_CachedLocalizedDisplayName;
+			}
+		}
+
+		internal string[] enumLocalizedDisplayNames
+		{
+			get
+			{
+				string[] enumDisplayNames = this.enumDisplayNames;
+				string[] result;
+				if (!this.isUnityAssembly)
+				{
+					result = enumDisplayNames;
+				}
+				else
+				{
+					string[] array = new string[enumDisplayNames.Length];
+					for (int i = 0; i < array.Length; i++)
+					{
+						array[i] = L10n.Tr(enumDisplayNames[i]);
+					}
+					result = array;
+				}
+				return result;
+			}
+		}
+
 		internal SerializedProperty()
 		{
 		}
@@ -554,6 +666,10 @@ namespace UnityEditor
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern string GetLayerMaskStringValue(uint layers);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern void INTERNAL_get_vector2Value(out Vector2 value);
 
 		[GeneratedByOldBindingsGenerator]
@@ -578,6 +694,22 @@ namespace UnityEditor
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void INTERNAL_get_vector2IntValue(out Vector2Int value);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void INTERNAL_set_vector2IntValue(ref Vector2Int value);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void INTERNAL_get_vector3IntValue(out Vector3Int value);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void INTERNAL_set_vector3IntValue(ref Vector3Int value);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern void INTERNAL_get_quaternionValue(out Quaternion value);
 
 		[GeneratedByOldBindingsGenerator]
@@ -594,11 +726,27 @@ namespace UnityEditor
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void INTERNAL_get_rectIntValue(out RectInt value);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void INTERNAL_set_rectIntValue(ref RectInt value);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern void INTERNAL_get_boundsValue(out Bounds value);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern void INTERNAL_set_boundsValue(ref Bounds value);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void INTERNAL_get_boundsIntValue(out BoundsInt value);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void INTERNAL_set_boundsIntValue(ref BoundsInt value);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -663,11 +811,15 @@ namespace UnityEditor
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern int[] GetLayerMaskSelectedIndex();
+		internal static extern int[] GetLayerMaskSelectedIndex(uint layers);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern string[] GetLayerMaskNames();
+		internal static extern string[] GetLayerMaskNames(uint layers);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern uint ToggleLayerMask(uint layers, int index);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -826,6 +978,18 @@ namespace UnityEditor
 					break;
 				case SerializedPropertyType.ExposedReference:
 					this.exposedReferenceValue = serializedProperty.exposedReferenceValue;
+					break;
+				case SerializedPropertyType.Vector2Int:
+					this.vector2IntValue = serializedProperty.vector2IntValue;
+					break;
+				case SerializedPropertyType.Vector3Int:
+					this.vector3IntValue = serializedProperty.vector3IntValue;
+					break;
+				case SerializedPropertyType.RectInt:
+					this.rectIntValue = serializedProperty.rectIntValue;
+					break;
+				case SerializedPropertyType.BoundsInt:
+					this.boundsIntValue = serializedProperty.boundsIntValue;
 					break;
 				}
 			}

@@ -32,7 +32,7 @@ namespace UnityEngine
 			}
 		}
 
-		[Obsolete("Use AnimatorStateInfo.fullPathHash instead.")]
+		[Obsolete("AnimatorStateInfo.nameHash has been deprecated. Use AnimatorStateInfo.fullPathHash instead.")]
 		public int nameHash
 		{
 			get

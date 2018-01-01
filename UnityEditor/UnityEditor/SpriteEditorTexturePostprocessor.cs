@@ -1,5 +1,4 @@
 using System;
-using UnityEngine;
 
 namespace UnityEditor
 {
@@ -10,22 +9,12 @@ namespace UnityEditor
 			return 1;
 		}
 
-		public void OnPostprocessTexture(Texture2D tex)
+		private static void OnPostprocessAllAssets(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths)
 		{
-			if (SpriteEditorWindow.s_Instance != null)
+			for (int i = 0; i < importedAssets.Length; i++)
 			{
-				if (base.assetPath.Equals(SpriteEditorWindow.s_Instance.m_SelectedAssetPath))
-				{
-					if (!SpriteEditorWindow.s_Instance.m_IgnoreNextPostprocessEvent)
-					{
-						SpriteEditorWindow.s_Instance.m_ResetOnNextRepaint = true;
-					}
-					else
-					{
-						SpriteEditorWindow.s_Instance.m_IgnoreNextPostprocessEvent = false;
-					}
-					SpriteEditorWindow.s_Instance.Repaint();
-				}
+				string path = importedAssets[i];
+				SpriteEditorWindow.OnTextureReimport(path);
 			}
 		}
 	}

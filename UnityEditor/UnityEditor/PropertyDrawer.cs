@@ -51,5 +51,18 @@ namespace UnityEditor
 		{
 			return 16f;
 		}
+
+		internal bool CanCacheInspectorGUISafe(SerializedProperty property)
+		{
+			ScriptAttributeUtility.s_DrawerStack.Push(this);
+			bool result = this.CanCacheInspectorGUI(property);
+			ScriptAttributeUtility.s_DrawerStack.Pop();
+			return result;
+		}
+
+		public virtual bool CanCacheInspectorGUI(SerializedProperty property)
+		{
+			return true;
+		}
 	}
 }

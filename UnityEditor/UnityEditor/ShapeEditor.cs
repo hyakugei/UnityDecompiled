@@ -521,6 +521,23 @@ namespace UnityEditor
 
 		private float GetMouseClosestEdgeDistance()
 		{
+			Vector3 point = this.ScreenToLocal(this.eventSystem.current.mousePosition);
+			int num = this.GetPointsCount();
+			if (this.m_MouseClosestEdge == -1 && num > 0)
+			{
+				this.PrepareEdgePointList();
+				this.m_MouseClosestEdgeDist = 3.40282347E+38f;
+				int num2 = (!this.OpenEnded()) ? num : (num - 1);
+				for (int i = 0; i < num2; i++)
+				{
+					float num3 = this.DistancePointEdge(point, this.m_EdgePoints[i]);
+					if (num3 < this.m_MouseClosestEdgeDist)
+					{
+						this.m_MouseClosestEdge = i;
+						this.m_MouseClosestEdgeDist = num3;
+					}
+				}
+			}
 			float result;
 			if (this.guiUtility.hotControl == this.k_CreatorID || this.guiUtility.hotControl == this.k_EdgeID)
 			{
@@ -528,23 +545,6 @@ namespace UnityEditor
 			}
 			else
 			{
-				Vector3 point = this.ScreenToLocal(this.eventSystem.current.mousePosition);
-				int num = this.GetPointsCount();
-				if (this.m_MouseClosestEdge == -1 && num > 0)
-				{
-					this.PrepareEdgePointList();
-					this.m_MouseClosestEdgeDist = 3.40282347E+38f;
-					int num2 = (!this.OpenEnded()) ? num : (num - 1);
-					for (int i = 0; i < num2; i++)
-					{
-						float num3 = this.DistancePointEdge(point, this.m_EdgePoints[i]);
-						if (num3 < this.m_MouseClosestEdgeDist)
-						{
-							this.m_MouseClosestEdge = i;
-							this.m_MouseClosestEdgeDist = num3;
-						}
-					}
-				}
 				result = this.m_MouseClosestEdgeDist;
 			}
 			return result;
@@ -752,12 +752,15 @@ namespace UnityEditor
 				{
 					if (type == EventType.MouseUp)
 					{
-						this.m_ActiveEdge = -1;
-						GUIUtility.hotControl = 0;
-						this.currentEvent.Use();
+						if (GUIUtility.hotControl == this.k_EdgeID)
+						{
+							this.m_ActiveEdge = -1;
+							GUIUtility.hotControl = 0;
+							this.currentEvent.Use();
+						}
 					}
 				}
-				else
+				else if (GUIUtility.hotControl == this.k_EdgeID)
 				{
 					this.RecordUndo();
 					Vector3 a = this.ScreenToLocal(this.currentEvent.mousePosition);
@@ -1157,7 +1160,7 @@ namespace UnityEditor
 
 		private bool EdgeDragModifiersActive()
 		{
-			return this.currentEvent.modifiers == EventModifiers.Control || this.currentEvent.modifiers == EventModifiers.Command;
+			return this.currentEvent.modifiers == EventModifiers.Control;
 		}
 
 		private static Vector3 DoSlider(int id, Vector3 position, Vector3 slide1, Vector3 slide2, float s, Handles.CapFunction cap)

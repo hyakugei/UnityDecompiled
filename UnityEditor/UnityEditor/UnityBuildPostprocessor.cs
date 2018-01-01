@@ -1,5 +1,6 @@
 using System;
 using UnityEditor.Build;
+using UnityEditor.Build.Reporting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -15,7 +16,7 @@ namespace UnityEditor
 			}
 		}
 
-		public void OnProcessScene(Scene scene)
+		public void OnProcessScene(Scene scene, BuildReport report)
 		{
 			int num;
 			int num2;

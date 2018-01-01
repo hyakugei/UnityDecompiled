@@ -72,22 +72,10 @@ namespace UnityEngine.Audio
 			AudioPlayableOutput.InternalSetTarget(ref this.m_Handle, value);
 		}
 
-		private static AudioSource InternalGetTarget(ref PlayableOutputHandle output)
-		{
-			return AudioPlayableOutput.INTERNAL_CALL_InternalGetTarget(ref output);
-		}
-
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern AudioSource INTERNAL_CALL_InternalGetTarget(ref PlayableOutputHandle output);
+		private static extern AudioSource InternalGetTarget(ref PlayableOutputHandle output);
 
-		private static void InternalSetTarget(ref PlayableOutputHandle output, AudioSource target)
-		{
-			AudioPlayableOutput.INTERNAL_CALL_InternalSetTarget(ref output, target);
-		}
-
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_InternalSetTarget(ref PlayableOutputHandle output, AudioSource target);
+		private static extern void InternalSetTarget(ref PlayableOutputHandle output, AudioSource target);
 	}
 }

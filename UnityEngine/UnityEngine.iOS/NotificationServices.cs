@@ -1,6 +1,5 @@
 using System;
 using System.Runtime.CompilerServices;
-using UnityEngine.Scripting;
 
 namespace UnityEngine.iOS
 {
@@ -8,7 +7,30 @@ namespace UnityEngine.iOS
 	{
 		public static extern int localNotificationCount
 		{
-			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+		}
+
+		public static extern int remoteNotificationCount
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+		}
+
+		public static extern NotificationType enabledNotificationTypes
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+		}
+
+		public static extern string registrationError
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+		}
+
+		public static extern byte[] deviceToken
+		{
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
@@ -21,24 +43,10 @@ namespace UnityEngine.iOS
 				LocalNotification[] array = new LocalNotification[localNotificationCount];
 				for (int i = 0; i < localNotificationCount; i++)
 				{
-					array[i] = NotificationServices.GetLocalNotification(i);
+					array[i] = NotificationServices.GetLocalNotificationImpl(i);
 				}
 				return array;
 			}
-		}
-
-		public static extern LocalNotification[] scheduledLocalNotifications
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-		}
-
-		public static extern int remoteNotificationCount
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
 		}
 
 		public static RemoteNotification[] remoteNotifications
@@ -49,66 +57,24 @@ namespace UnityEngine.iOS
 				RemoteNotification[] array = new RemoteNotification[remoteNotificationCount];
 				for (int i = 0; i < remoteNotificationCount; i++)
 				{
-					array[i] = NotificationServices.GetRemoteNotification(i);
+					array[i] = NotificationServices.GetRemoteNotificationImpl(i);
 				}
 				return array;
 			}
 		}
 
-		public static extern NotificationType enabledNotificationTypes
+		public static extern LocalNotification[] scheduledLocalNotifications
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
 
-		public static extern byte[] deviceToken
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-		}
-
-		public static extern string registrationError
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern LocalNotification GetLocalNotification(int index);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern void ScheduleLocalNotification(LocalNotification notification);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern void PresentLocalNotificationNow(LocalNotification notification);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern void CancelLocalNotification(LocalNotification notification);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern void CancelAllLocalNotifications();
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern RemoteNotification GetRemoteNotification(int index);
-
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void ClearLocalNotifications();
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void ClearRemoteNotifications();
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern void Internal_RegisterImpl(NotificationType notificationTypes, bool registerForRemote);
 
@@ -122,8 +88,49 @@ namespace UnityEngine.iOS
 			NotificationServices.Internal_RegisterImpl(notificationTypes, registerForRemote);
 		}
 
-		[GeneratedByOldBindingsGenerator]
+		public static void ScheduleLocalNotification(LocalNotification notification)
+		{
+			notification.Schedule();
+		}
+
+		public static void PresentLocalNotificationNow(LocalNotification notification)
+		{
+			notification.PresentNow();
+		}
+
+		public static void CancelLocalNotification(LocalNotification notification)
+		{
+			notification.Cancel();
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern void CancelAllLocalNotifications();
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void UnregisterForRemoteNotifications();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern LocalNotification GetLocalNotificationImpl(int index);
+
+		public static LocalNotification GetLocalNotification(int index)
+		{
+			if (index < 0 || index >= NotificationServices.localNotificationCount)
+			{
+				throw new ArgumentOutOfRangeException("index", "Index out of bounds.");
+			}
+			return NotificationServices.GetLocalNotificationImpl(index);
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern RemoteNotification GetRemoteNotificationImpl(int index);
+
+		public static RemoteNotification GetRemoteNotification(int index)
+		{
+			if (index < 0 || index >= NotificationServices.remoteNotificationCount)
+			{
+				throw new ArgumentOutOfRangeException("index", "Index out of bounds.");
+			}
+			return NotificationServices.GetRemoteNotificationImpl(index);
+		}
 	}
 }

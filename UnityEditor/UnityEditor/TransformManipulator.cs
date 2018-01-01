@@ -212,6 +212,10 @@ namespace UnityEditor
 
 		private static Vector3 s_StartHandlePosition = Vector3.zero;
 
+		private static Vector3 s_PreviousHandlePosition = Vector3.zero;
+
+		private static Quaternion s_StartHandleRotation = Quaternion.identity;
+
 		private static Vector3 s_StartLocalHandleOffset = Vector3.zero;
 
 		private static int s_HotControl = 0;
@@ -223,6 +227,18 @@ namespace UnityEditor
 			get
 			{
 				return TransformManipulator.s_StartHandlePosition;
+			}
+		}
+
+		public static Quaternion mouseDownHandleRotation
+		{
+			get
+			{
+				return TransformManipulator.s_StartHandleRotation;
+			}
+			set
+			{
+				TransformManipulator.s_StartHandleRotation = value;
 			}
 		}
 
@@ -244,7 +260,12 @@ namespace UnityEditor
 
 		private static void BeginEventCheck()
 		{
+			EventType eventType = TransformManipulator.s_EventTypeBefore;
 			TransformManipulator.s_EventTypeBefore = Event.current.GetTypeForControl(TransformManipulator.s_HotControl);
+			if (!TransformManipulator.active || (eventType != EventType.MouseDown && TransformManipulator.s_EventTypeBefore == EventType.MouseDown))
+			{
+				TransformManipulator.s_StartHandleRotation = Tools.handleRotation;
+			}
 		}
 
 		private static EventType EndEventCheck()
@@ -275,6 +296,7 @@ namespace UnityEditor
 			{
 				TransformManipulator.RecordMouseDownState(Selection.transforms);
 				TransformManipulator.s_StartHandlePosition = Tools.handlePosition;
+				TransformManipulator.s_PreviousHandlePosition = TransformManipulator.s_StartHandlePosition;
 				TransformManipulator.s_StartLocalHandleOffset = Tools.localHandleOffset;
 				if (TransformManipulator.s_LockHandle)
 				{
@@ -284,6 +306,7 @@ namespace UnityEditor
 			}
 			else if (TransformManipulator.s_MouseDownState != null && (eventType == EventType.MouseUp || GUIUtility.hotControl != TransformManipulator.s_HotControl))
 			{
+				TransformManipulator.s_StartHandleRotation = Tools.handleRotation;
 				TransformManipulator.s_MouseDownState = null;
 				if (TransformManipulator.s_LockHandle)
 				{
@@ -372,28 +395,32 @@ namespace UnityEditor
 			}
 		}
 
-		public static void SetPositionDelta(Vector3 positionDelta)
+		public static void SetPositionDelta(Vector3 newPosition, Vector3 oldPosition)
 		{
 			if (TransformManipulator.s_MouseDownState != null)
 			{
-				if (positionDelta.magnitude != 0f)
+				TransformManipulator.s_PreviousHandlePosition = newPosition;
+				Vector3 positionDelta = newPosition - oldPosition;
+				for (int i = 0; i < TransformManipulator.s_MouseDownState.Length; i++)
 				{
-					for (int i = 0; i < TransformManipulator.s_MouseDownState.Length; i++)
+					TransformManipulator.TransformData transformData = TransformManipulator.s_MouseDownState[i];
+					Undo.RecordObject((!(transformData.rectTransform != null)) ? transformData.transform : transformData.rectTransform, "Move");
+				}
+				if (TransformManipulator.s_MouseDownState.Length > 0)
+				{
+					TransformManipulator.s_MouseDownState[0].SetPositionDelta(positionDelta, true);
+					Vector3 positionDelta2 = TransformManipulator.s_MouseDownState[0].transform.position - TransformManipulator.s_MouseDownState[0].position;
+					for (int j = 1; j < TransformManipulator.s_MouseDownState.Length; j++)
 					{
-						TransformManipulator.TransformData transformData = TransformManipulator.s_MouseDownState[i];
-						Undo.RecordObject((!(transformData.rectTransform != null)) ? transformData.transform : transformData.rectTransform, "Move");
-					}
-					if (TransformManipulator.s_MouseDownState.Length > 0)
-					{
-						TransformManipulator.s_MouseDownState[0].SetPositionDelta(positionDelta, true);
-						Vector3 positionDelta2 = TransformManipulator.s_MouseDownState[0].transform.position - TransformManipulator.s_MouseDownState[0].position;
-						for (int j = 1; j < TransformManipulator.s_MouseDownState.Length; j++)
-						{
-							TransformManipulator.s_MouseDownState[j].SetPositionDelta(positionDelta2, false);
-						}
+						TransformManipulator.s_MouseDownState[j].SetPositionDelta(positionDelta2, false);
 					}
 				}
 			}
+		}
+
+		public static bool HandleHasMoved(Vector3 position)
+		{
+			return position != TransformManipulator.s_PreviousHandlePosition;
 		}
 
 		public static void DebugAlignment(Quaternion targetRotation)

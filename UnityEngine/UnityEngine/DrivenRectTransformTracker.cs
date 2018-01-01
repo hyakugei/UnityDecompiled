@@ -28,6 +28,12 @@ namespace UnityEngine
 			this.m_Tracked.Add(rectTransform);
 		}
 
+		[Obsolete("revertValues parameter is ignored. Please use Clear() instead.")]
+		public void Clear(bool revertValues)
+		{
+			this.Clear();
+		}
+
 		public void Clear()
 		{
 			if (this.m_Tracked != null)

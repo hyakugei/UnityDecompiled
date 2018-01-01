@@ -65,10 +65,16 @@ namespace UnityEditor.Utils
 
 		public static string CreateTempDirectory()
 		{
-			string tempFileName = Path.GetTempFileName();
-			File.Delete(tempFileName);
-			Directory.CreateDirectory(tempFileName);
-			return tempFileName;
+			for (int i = 0; i < 32; i++)
+			{
+				string text = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+				if (!File.Exists(text) && !Directory.Exists(text))
+				{
+					Directory.CreateDirectory(text);
+					return text;
+				}
+			}
+			throw new IOException("CreateTempDirectory failed");
 		}
 
 		public static string NormalizePath(this string path)
@@ -85,9 +91,28 @@ namespace UnityEditor.Utils
 			return result;
 		}
 
+		public static string ConvertSeparatorsToWindows(this string path)
+		{
+			return path.Replace('/', '\\');
+		}
+
 		public static string ConvertSeparatorsToUnity(this string path)
 		{
 			return path.Replace('\\', '/');
+		}
+
+		public static string SkipPathPrefix(string path, string prefix)
+		{
+			string result;
+			if (path.StartsWith(prefix))
+			{
+				result = path.Substring(prefix.Length + 1);
+			}
+			else
+			{
+				result = path;
+			}
+			return result;
 		}
 
 		public static string UnifyDirectorySeparator(string path)
@@ -98,6 +123,29 @@ namespace UnityEditor.Utils
 		public static bool AreEqual(string pathA, string pathB, bool ignoreCase)
 		{
 			return (pathA == "" && pathB == "") || (!string.IsNullOrEmpty(pathA) && !string.IsNullOrEmpty(pathB) && string.Compare(Path.GetFullPath(pathA), Path.GetFullPath(pathB), (!ignoreCase) ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase) == 0);
+		}
+
+		public static bool CheckValidAssetPathAndThatDirectoryExists(string assetFilePath, string requiredExtensionWithDot)
+		{
+			bool result;
+			if (!Paths.IsValidAssetPathWithErrorLogging(assetFilePath, requiredExtensionWithDot))
+			{
+				result = false;
+			}
+			else
+			{
+				string directoryName = Path.GetDirectoryName(assetFilePath);
+				if (!string.IsNullOrEmpty(directoryName) && !Directory.Exists(directoryName))
+				{
+					Debug.LogError("Parent directory must exist before creating asset at: " + assetFilePath);
+					result = false;
+				}
+				else
+				{
+					result = true;
+				}
+			}
+			return result;
 		}
 
 		public static bool IsValidAssetPathWithErrorLogging(string assetPath, string requiredExtensionWithDot)
@@ -148,6 +196,15 @@ namespace UnityEditor.Utils
 					return result;
 				}
 				string fileName = Path.GetFileName(assetPath);
+				if (fileName.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
+				{
+					if (errorMsg != null)
+					{
+						Paths.SetFullErrorMessage("Filename contains invalid characters", assetPath, ref errorMsg);
+					}
+					result = false;
+					return result;
+				}
 				if (fileName.StartsWith("."))
 				{
 					if (errorMsg != null)

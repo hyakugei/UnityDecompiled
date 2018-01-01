@@ -64,15 +64,15 @@ namespace UnityEditor
 
 			public GUIStyle subAssetExpandButton = ObjectListArea.Styles.GetStyle("ProjectBrowserSubAssetExpandBtn");
 
-			public GUIContent m_AssetStoreNotAvailableText = new GUIContent("The Asset Store is not available");
+			public GUIContent m_AssetStoreNotAvailableText = EditorGUIUtility.TrTextContent("The Asset Store is not available", null, null);
 
 			public Styles()
 			{
 				this.resultsFocusMarker = new GUIStyle(this.resultsGridLabel);
-				GUIStyle arg_1D5_0 = this.resultsFocusMarker;
+				GUIStyle arg_1D7_0 = this.resultsFocusMarker;
 				float num = 0f;
 				this.resultsFocusMarker.fixedWidth = num;
-				arg_1D5_0.fixedHeight = num;
+				arg_1D7_0.fixedHeight = num;
 				this.miniRenameField.font = EditorStyles.miniLabel.font;
 				this.miniRenameField.alignment = TextAnchor.LowerCenter;
 				this.ping.fixedHeight = 16f;
@@ -173,7 +173,7 @@ namespace UnityEditor
 				this.m_Assets = new List<AssetStoreAsset>();
 				this.m_Name = groupName;
 				this.m_ListMode = false;
-				this.m_ShowMoreDims = EditorStyles.miniButton.CalcSize(new GUIContent("Show more"));
+				this.m_ShowMoreDims = EditorStyles.miniButton.CalcSize(EditorGUIUtility.TrTextContent("Show more", null, null));
 				this.m_Owner.UpdateGroupSizes(this);
 				this.ItemsWantedShown = 3 * this.m_Grid.columns;
 			}
@@ -551,7 +551,7 @@ namespace UnityEditor
 				return scrollPos.y + scrollViewHeight >= yOffset && yOffset + this.Height >= scrollPos.y;
 			}
 
-			public void Draw(float yOffset, Vector2 scrollPos)
+			public void Draw(float yOffset, Vector2 scrollPos, ref int rowsInUse)
 			{
 				this.NeedsRepaint = false;
 				bool flag = Event.current.type == EventType.Repaint || Event.current.type == EventType.Layout;
@@ -566,12 +566,23 @@ namespace UnityEditor
 					int itemCount = this.ItemCount;
 					if (num2 >= 0 && num2 < itemCount)
 					{
-						int num3 = num2;
-						int num4 = Math.Min(itemCount, this.m_Grid.rows * this.m_Grid.columns);
-						float num5 = this.m_Grid.itemSize.y + this.m_Grid.verticalSpacing;
-						int num6 = (int)Math.Ceiling((double)(this.m_Owner.m_VisibleRect.height / num5));
-						num4 = Math.Min(num4, num3 + num6 * this.m_Grid.columns + this.m_Grid.columns);
-						this.DrawInternal(num3, num4, yOffset);
+						int itemIdx = num2;
+						int num3 = Math.Min(itemCount, this.m_Grid.rows * this.m_Grid.columns);
+						float num4 = this.m_Grid.itemSize.y + this.m_Grid.verticalSpacing;
+						int num5 = (int)Math.Ceiling((double)(this.m_Owner.m_VisibleRect.height / num4));
+						num5++;
+						int num6 = num5 - rowsInUse;
+						if (num6 < 0)
+						{
+							num6 = 0;
+						}
+						rowsInUse = Math.Min(num5, Mathf.CeilToInt((float)(num3 - num2) / (float)this.m_Grid.columns));
+						num3 = num6 * this.m_Grid.columns + num2;
+						if (num3 > itemCount)
+						{
+							num3 = itemCount;
+						}
+						this.DrawInternal(itemIdx, num3, yOffset);
 					}
 					if (flag)
 					{
@@ -1030,7 +1041,14 @@ namespace UnityEditor
 				{
 					Event current = Event.current;
 					EventType type = current.type;
-					if (type == EventType.DragUpdated || type == EventType.DragPerform)
+					if (type != EventType.DragUpdated && type != EventType.DragPerform)
+					{
+						if (type == EventType.DragExited)
+						{
+							this.m_DragSelection.Clear();
+						}
+					}
+					else
 					{
 						Rect rect = new Rect(0f, yOffset, this.m_Owner.m_TotalRect.width, (this.m_Owner.m_TotalRect.height <= base.Height) ? base.Height : this.m_Owner.m_TotalRect.height);
 						if (rect.Contains(current.mousePosition))
@@ -1153,11 +1171,6 @@ namespace UnityEditor
 						{
 							this.m_DragSelection.Clear();
 						}
-						return;
-					}
-					if (typeForControl == EventType.DragExited)
-					{
-						this.m_DragSelection.Clear();
 						return;
 					}
 					if (typeForControl != EventType.ContextClick)
@@ -2953,22 +2966,14 @@ namespace UnityEditor
 			else
 			{
 				int num = this.m_State.m_SelectedInstanceIDs[0];
-				if (AssetDatabase.IsSubAsset(num))
-				{
-					result = false;
-				}
-				else if (this.m_LocalAssets.IsBuiltinAsset(num))
-				{
-					result = false;
-				}
-				else if (!AssetDatabase.Contains(num))
+				if (!InternalEditorUtility.CanRenameAsset(num))
 				{
 					result = false;
 				}
 				else
 				{
 					string nameOfLocalAsset = this.m_LocalAssets.GetNameOfLocalAsset(num);
-					result = (nameOfLocalAsset != null && this.GetRenameOverlay().BeginRename(nameOfLocalAsset, num, delay));
+					result = this.GetRenameOverlay().BeginRename(nameOfLocalAsset, num, delay);
 				}
 			}
 			return result;
@@ -3160,12 +3165,6 @@ namespace UnityEditor
 								num = -1;
 							}
 							break;
-						case KeyCode.Home:
-							num = -2147483648;
-							break;
-						case KeyCode.End:
-							num = 2147483647;
-							break;
 						case KeyCode.PageUp:
 							num = -2147483647;
 							break;
@@ -3181,8 +3180,6 @@ namespace UnityEditor
 						{
 						case KeyCode.UpArrow:
 						case KeyCode.DownArrow:
-						case KeyCode.Home:
-						case KeyCode.End:
 						case KeyCode.PageUp:
 						case KeyCode.PageDown:
 							flag = true;
@@ -3597,11 +3594,12 @@ namespace UnityEditor
 				this.LastScrollTime = timeSinceStartup;
 			}
 			float num2 = 0f;
+			int num3 = 0;
 			foreach (ObjectListArea.Group current2 in this.m_Groups)
 			{
 				if (!this.SkipGroup(current2))
 				{
-					current2.Draw(num2, scrollPosition);
+					current2.Draw(num2, scrollPosition, ref num3);
 					flag2 = (flag2 || current2.NeedsRepaint);
 					num2 += current2.Height;
 					if (this.m_LocalAssets.ShowNone)

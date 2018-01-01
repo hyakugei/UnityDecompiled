@@ -13,27 +13,32 @@ namespace UnityEditor
 			Birth,
 			Collision,
 			Death,
+			Trigger,
+			Manual,
 			TypesMax
 		}
 
 		private class Texts
 		{
-			public GUIContent create = EditorGUIUtility.TextContent("|Create and assign a Particle System as sub emitter");
+			public GUIContent create = EditorGUIUtility.TrTextContent("", "Create and assign a Particle System as sub emitter", null);
 
-			public GUIContent inherit = EditorGUIUtility.TextContent("Inherit");
+			public GUIContent inherit = EditorGUIUtility.TrTextContent("Inherit", null, null);
 
-			public string[] subEmitterTypeTexts = new string[]
+			public GUIContent[] subEmitterTypes = new GUIContent[]
 			{
-				"Birth",
-				"Collision",
-				"Death"
+				EditorGUIUtility.TrTextContent("Birth", null, null),
+				EditorGUIUtility.TrTextContent("Collision", null, null),
+				EditorGUIUtility.TrTextContent("Death", null, null),
+				EditorGUIUtility.TrTextContent("Trigger", null, null),
+				EditorGUIUtility.TrTextContent("Manual", null, null)
 			};
 
-			public string[] propertyStrings = new string[]
+			public string[] propertyTypes = new string[]
 			{
 				"Color",
 				"Size",
-				"Rotation"
+				"Rotation",
+				"Lifetime"
 			};
 		}
 
@@ -45,7 +50,7 @@ namespace UnityEditor
 
 		public SubModuleUI(ParticleSystemUI owner, SerializedObject o, string displayName) : base(owner, o, "SubModule", displayName)
 		{
-			this.m_ToolTip = "Sub emission of particles. This allows each particle to emit particles in another system.";
+			this.m_ToolTip = L10n.Tr("Sub emission of particles. This allows each particle to emit particles in another system.");
 			this.Init();
 		}
 
@@ -53,6 +58,10 @@ namespace UnityEditor
 		{
 			if (this.m_SubEmitters == null)
 			{
+				if (SubModuleUI.s_Texts == null)
+				{
+					SubModuleUI.s_Texts = new SubModuleUI.Texts();
+				}
 				this.m_SubEmitters = base.GetProperty("subEmitters");
 			}
 		}
@@ -79,7 +88,7 @@ namespace UnityEditor
 						bool flag = true;
 						if (this.ValidateSubemitter(particleSystem))
 						{
-							string text = ParticleSystemEditorUtils.CheckCircularReferences(particleSystem);
+							string text = ParticleSystemEffectUtils.CheckCircularReferences(particleSystem);
 							if (text.Length == 0)
 							{
 								if (!this.CheckIfChild(objectReferenceValue))
@@ -138,13 +147,13 @@ namespace UnityEditor
 				ParticleSystem root = ParticleSystemEditorUtils.GetRoot(this.m_ParticleSystemUI.m_ParticleSystems[0]);
 				if (root.gameObject.activeInHierarchy && !subEmitter.gameObject.activeInHierarchy)
 				{
-					string message = string.Format("The assigned sub emitter is part of a prefab and can therefore not be assigned.", new object[0]);
+					string message = "The assigned sub emitter is part of a prefab and can therefore not be assigned.";
 					EditorUtility.DisplayDialog("Invalid Sub Emitter", message, "Ok");
 					result = false;
 				}
 				else if (!root.gameObject.activeInHierarchy && subEmitter.gameObject.activeInHierarchy)
 				{
-					string message2 = string.Format("The assigned sub emitter is part of a scene object and can therefore not be assigned to a prefab.", new object[0]);
+					string message2 = "The assigned sub emitter is part of a scene object and can therefore not be assigned to a prefab.";
 					EditorUtility.DisplayDialog("Invalid Sub Emitter", message2, "Ok");
 					result = false;
 				}
@@ -159,8 +168,9 @@ namespace UnityEditor
 		private bool CheckIfChild(UnityEngine.Object subEmitter)
 		{
 			ParticleSystem root = ParticleSystemEditorUtils.GetRoot(this.m_ParticleSystemUI.m_ParticleSystems[0]);
+			ParticleSystem particleSystem = subEmitter as ParticleSystem;
 			bool result;
-			if (SubModuleUI.IsChild(subEmitter as ParticleSystem, root))
+			if (SubModuleUI.IsChild(particleSystem, root))
 			{
 				result = true;
 			}
@@ -179,18 +189,18 @@ namespace UnityEditor
 							gameObject.transform.localRotation = Quaternion.identity;
 						}
 					}
-					else
+					else if (particleSystem != null)
 					{
-						ParticleSystem particleSystem = subEmitter as ParticleSystem;
-						if (particleSystem)
-						{
-							Undo.SetTransformParent(particleSystem.gameObject.transform.transform, this.m_ParticleSystemUI.m_ParticleSystems[0].transform, "Reparent sub emitter");
-						}
+						Undo.SetTransformParent(particleSystem.gameObject.transform.transform, this.m_ParticleSystemUI.m_ParticleSystems[0].transform, "Reparent sub emitter");
 					}
 					result = true;
 				}
 				else
 				{
+					if (particleSystem != null)
+					{
+						particleSystem.Clear(true);
+					}
 					result = false;
 				}
 			}
@@ -211,10 +221,6 @@ namespace UnityEditor
 
 		public override void OnInspectorGUI(InitialModuleUI initial)
 		{
-			if (SubModuleUI.s_Texts == null)
-			{
-				SubModuleUI.s_Texts = new SubModuleUI.Texts();
-			}
 			if (this.m_ParticleSystemUI.multiEdit)
 			{
 				EditorGUILayout.HelpBox("Sub Emitter editing is only available when editing a single Particle System", MessageType.Info, true);
@@ -249,6 +255,11 @@ namespace UnityEditor
 							EditorApplication.update = (EditorApplication.CallbackFunction)Delegate.Combine(EditorApplication.update, new EditorApplication.CallbackFunction(this.Update));
 						}
 						this.m_CheckObjectIndex = j;
+						ParticleSystem particleSystem = subEmitterProperties[j] as ParticleSystem;
+						if (particleSystem)
+						{
+							particleSystem.Clear(true);
+						}
 					}
 				}
 			}
@@ -264,7 +275,7 @@ namespace UnityEditor
 			SerializedProperty serializedProperty = arrayElementAtIndex.FindPropertyRelative("emitter");
 			SerializedProperty serializedProperty2 = arrayElementAtIndex.FindPropertyRelative("type");
 			SerializedProperty intProp = arrayElementAtIndex.FindPropertyRelative("properties");
-			ModuleUI.GUIPopup(GUIContent.none, serializedProperty2, SubModuleUI.s_Texts.subEmitterTypeTexts, new GUILayoutOption[]
+			ModuleUI.GUIPopup(GUIContent.none, serializedProperty2, SubModuleUI.s_Texts.subEmitterTypes, new GUILayoutOption[]
 			{
 				GUILayout.MaxWidth(80f)
 			});
@@ -300,7 +311,7 @@ namespace UnityEditor
 					GUILayout.Width(24f)
 				});
 			}
-			ModuleUI.GUIMask(GUIContent.none, intProp, SubModuleUI.s_Texts.propertyStrings, new GUILayoutOption[]
+			ModuleUI.GUIMask(GUIContent.none, intProp, SubModuleUI.s_Texts.propertyTypes, new GUILayoutOption[]
 			{
 				GUILayout.Width(100f)
 			});

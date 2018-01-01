@@ -24,7 +24,7 @@ namespace UnityEditor
 
 		public PragmaFixingWindow()
 		{
-			base.titleContent = new GUIContent("Unity - #pragma fixing");
+			base.titleContent = EditorGUIUtility.TrTextContent("Unity - #pragma fixing", null, null);
 		}
 
 		public static void ShowWindow(string[] paths)

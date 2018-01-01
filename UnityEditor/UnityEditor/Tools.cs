@@ -45,8 +45,6 @@ namespace UnityEditor
 
 		private ViewTool m_ViewTool = ViewTool.Pan;
 
-		private static int originalTool;
-
 		private static PrefKey kViewKey = new PrefKey("Tools/View", "q");
 
 		private static PrefKey kMoveKey = new PrefKey("Tools/Move", "w");
@@ -56,6 +54,8 @@ namespace UnityEditor
 		private static PrefKey kScaleKey = new PrefKey("Tools/Scale", "r");
 
 		private static PrefKey kRectKey = new PrefKey("Tools/Rect Handles", "t");
+
+		private static PrefKey kTransformKey = new PrefKey("Tools/Transform Handles", "y");
 
 		private static PrefKey kPivotMode = new PrefKey("Tools/Pivot Mode", "z");
 
@@ -571,6 +571,20 @@ namespace UnityEditor
 			if (Tools.kRectKey.activated)
 			{
 				Tools.current = Tool.Rect;
+				Tools.ResetGlobalHandleRotation();
+				current.Use();
+				if (Toolbar.get)
+				{
+					Toolbar.get.Repaint();
+				}
+				else
+				{
+					Debug.LogError("Press Play twice for sceneview keyboard shortcuts to work");
+				}
+			}
+			if (Tools.kTransformKey.activated)
+			{
+				Tools.current = Tool.Transform;
 				Tools.ResetGlobalHandleRotation();
 				current.Use();
 				if (Toolbar.get)

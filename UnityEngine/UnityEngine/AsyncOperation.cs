@@ -11,6 +11,27 @@ namespace UnityEngine
 	{
 		internal IntPtr m_Ptr;
 
+		private Action<AsyncOperation> m_completeCallback;
+
+		public event Action<AsyncOperation> completed
+		{
+			add
+			{
+				if (this.isDone)
+				{
+					value(this);
+				}
+				else
+				{
+					this.m_completeCallback = (Action<AsyncOperation>)Delegate.Combine(this.m_completeCallback, value);
+				}
+			}
+			remove
+			{
+				this.m_completeCallback = (Action<AsyncOperation>)Delegate.Remove(this.m_completeCallback, value);
+			}
+		}
+
 		public extern bool isDone
 		{
 			[GeneratedByOldBindingsGenerator]
@@ -52,6 +73,16 @@ namespace UnityEngine
 		~AsyncOperation()
 		{
 			this.InternalDestroy();
+		}
+
+		[RequiredByNativeCode]
+		internal void InvokeCompletionEvent()
+		{
+			if (this.m_completeCallback != null)
+			{
+				this.m_completeCallback(this);
+				this.m_completeCallback = null;
+			}
 		}
 	}
 }

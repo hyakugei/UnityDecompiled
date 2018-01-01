@@ -1,148 +1,138 @@
 using System;
 using UnityEngine;
+using UnityEngine.Accessibility;
 
 namespace UnityEditor
 {
 	internal class ColorPicker : EditorWindow
 	{
-		internal enum TonemappingType
-		{
-			Linear,
-			Photographic
-		}
-
-		[Serializable]
-		private class HDRValues
-		{
-			[NonSerialized]
-			public ColorPicker.TonemappingType m_TonemappingType = ColorPicker.TonemappingType.Photographic;
-
-			[SerializeField]
-			public float m_HDRScaleFactor;
-
-			[SerializeField]
-			public float m_ExposureAdjustment = 1.5f;
-		}
-
 		private enum ColorBoxMode
 		{
-			SV_H,
-			HV_S,
-			HS_V,
-			BG_R,
-			BR_G,
-			RG_B,
+			HSV,
 			EyeDropper
 		}
 
 		private enum SliderMode
 		{
 			RGB,
+			RGBFloat,
 			HSV
 		}
 
-		private enum LabelLocation
+		private static class Styles
 		{
-			Top,
-			Bottom,
-			Left,
-			Right
-		}
+			public const float fixedWindowWidth = 233f;
 
-		private class Styles
-		{
-			public GUIStyle pickerBox = "ColorPickerBox";
+			public const float hexFieldWidth = 72f;
 
-			public GUIStyle thumb2D = "ColorPicker2DThumb";
+			public const float sliderModeFieldWidth = 72f;
 
-			public GUIStyle thumbHoriz = "ColorPickerHorizThumb";
+			public const float channelSliderLabelWidth = 14f;
 
-			public GUIStyle thumbVert = "ColorPickerVertThumb";
+			public const float sliderTextFieldWidth = 45f;
 
-			public GUIStyle headerLine = "IN Title";
+			public const float extraVerticalSpacing = 6f;
 
-			public GUIStyle colorPickerBox = "ColorPickerBox";
+			public const float highLuminanceThreshold = 0.5f;
 
-			public GUIStyle background = new GUIStyle("ColorPickerBackground");
+			public static readonly float hueDialThumbSize;
 
-			public GUIStyle label = new GUIStyle(EditorStyles.miniLabel);
+			public static readonly RectOffset colorBoxPadding;
 
-			public GUIStyle axisLabelNumberField = new GUIStyle(EditorStyles.miniTextField);
+			public static readonly Color lowLuminanceContentColor;
 
-			public GUIStyle foldout = new GUIStyle(EditorStyles.foldout);
+			public static readonly Color highLuminanceContentColor;
 
-			public GUIStyle toggle = new GUIStyle(EditorStyles.toggle);
+			public static readonly GUIStyle originalColorSwatch;
 
-			public GUIContent eyeDropper = EditorGUIUtility.IconContent("EyeDropper.Large", "|Pick a color from the screen.");
+			public static readonly GUIStyle currentColorSwatch;
 
-			public GUIContent colorCycle = EditorGUIUtility.IconContent("ColorPicker.CycleColor");
+			public static readonly GUIStyle colorBoxThumb;
 
-			public GUIContent colorToggle = EditorGUIUtility.TextContent("Colors");
+			public static readonly GUIStyle hueDialBackground;
 
-			public GUIContent tonemappingToggle = new GUIContent("Tonemapped Preview", "When enabled preview colors are tonemapped using Photographic Tonemapping");
+			public static readonly GUIStyle hueDialThumb;
 
-			public GUIContent sliderToggle = EditorGUIUtility.TextContent("Sliders|The RGB or HSV color sliders.");
+			public static readonly GUIStyle sliderBackground;
 
-			public GUIContent presetsToggle = new GUIContent("Presets");
+			public static readonly GUIStyle sliderThumb;
 
-			public GUIContent sliderCycle = EditorGUIUtility.IconContent("ColorPicker.CycleSlider");
+			public static readonly GUIStyle background;
 
-			public Styles()
+			public static readonly GUIStyle exposureSwatch;
+
+			public static readonly GUIStyle selectedExposureSwatchStroke;
+
+			public static readonly GUIContent eyeDropper;
+
+			public static readonly GUIContent exposureValue;
+
+			public static readonly GUIContent hexLabel;
+
+			public static readonly GUIContent presetsToggle;
+
+			public static readonly ScalableGUIContent originalColorSwatchFill;
+
+			public static readonly ScalableGUIContent currentColorSwatchFill;
+
+			public static readonly ScalableGUIContent hueDialThumbFill;
+
+			public static readonly Texture2D alphaSliderCheckerBackground;
+
+			public static readonly GUIContent[] sliderModeLabels;
+
+			public static readonly int[] sliderModeValues;
+
+			static Styles()
 			{
-				this.axisLabelNumberField.alignment = TextAnchor.UpperRight;
-				this.axisLabelNumberField.normal.background = null;
-				this.label.alignment = TextAnchor.LowerCenter;
+				ColorPicker.Styles.colorBoxPadding = new RectOffset(6, 6, 6, 6);
+				ColorPicker.Styles.lowLuminanceContentColor = Color.white;
+				ColorPicker.Styles.highLuminanceContentColor = Color.black;
+				ColorPicker.Styles.originalColorSwatch = "ColorPickerOriginalColor";
+				ColorPicker.Styles.currentColorSwatch = "ColorPickerCurrentColor";
+				ColorPicker.Styles.colorBoxThumb = "ColorPicker2DThumb";
+				ColorPicker.Styles.hueDialBackground = "ColorPickerHueRing";
+				ColorPicker.Styles.hueDialThumb = "ColorPickerHueRingThumb";
+				ColorPicker.Styles.sliderBackground = "ColorPickerSliderBackground";
+				ColorPicker.Styles.sliderThumb = "ColorPickerHorizThumb";
+				ColorPicker.Styles.background = new GUIStyle("ColorPickerBackground");
+				ColorPicker.Styles.exposureSwatch = "ColorPickerExposureSwatch";
+				ColorPicker.Styles.selectedExposureSwatchStroke = "ColorPickerCurrentExposureSwatchBorder";
+				ColorPicker.Styles.eyeDropper = EditorGUIUtility.TrIconContent("EyeDropper.Large", "Pick a color from the screen.");
+				ColorPicker.Styles.exposureValue = EditorGUIUtility.TrTextContent("Intensity", "Number of stops to over- or under-expose the color.", null);
+				ColorPicker.Styles.hexLabel = EditorGUIUtility.TrTextContent("Hexadecimal", null, null);
+				ColorPicker.Styles.presetsToggle = EditorGUIUtility.TrTextContent("Swatches", null, null);
+				ColorPicker.Styles.originalColorSwatchFill = new ScalableGUIContent(string.Empty, "The original color. Click this swatch to reset the color picker to this value.", "ColorPicker-OriginalColor");
+				ColorPicker.Styles.currentColorSwatchFill = new ScalableGUIContent(string.Empty, "The new color.", "ColorPicker-CurrentColor");
+				ColorPicker.Styles.hueDialThumbFill = new ScalableGUIContent("ColorPicker-HueRing-Thumb-Fill");
+				ColorPicker.Styles.alphaSliderCheckerBackground = (EditorGUIUtility.LoadRequired("Previews/Textures/textureChecker.png") as Texture2D);
+				ColorPicker.Styles.sliderModeLabels = new GUIContent[]
+				{
+					EditorGUIUtility.TrTextContent("RGB 0-255", null, null),
+					EditorGUIUtility.TrTextContent("RGB 0-1.0", null, null),
+					EditorGUIUtility.TrTextContent("HSV", null, null)
+				};
+				ColorPicker.Styles.sliderModeValues = new int[]
+				{
+					0,
+					1,
+					2
+				};
+				Vector2 vector = ColorPicker.Styles.hueDialThumb.CalcSize(ColorPicker.Styles.hueDialThumbFill);
+				ColorPicker.Styles.hueDialThumbSize = Mathf.Max(vector.x, vector.y);
 			}
 		}
 
-		private static ColorPicker s_SharedColorPicker;
-
-		private static readonly ColorPickerHDRConfig m_DefaultHDRConfig = new ColorPickerHDRConfig(0f, 99f, 0.01010101f, 3f);
+		private const float k_DefaultExposureSliderMax = 10f;
 
 		[SerializeField]
 		private bool m_HDR;
 
 		[SerializeField]
-		private ColorPickerHDRConfig m_HDRConfig;
-
-		[SerializeField]
-		private ColorPicker.HDRValues m_HDRValues = new ColorPicker.HDRValues();
-
-		[SerializeField]
-		private Color m_Color = Color.black;
-
-		[SerializeField]
-		private Color m_OriginalColor;
-
-		[SerializeField]
-		private float m_R;
-
-		[SerializeField]
-		private float m_G;
-
-		[SerializeField]
-		private float m_B;
-
-		[SerializeField]
-		private float m_H;
-
-		[SerializeField]
-		private float m_S;
-
-		[SerializeField]
-		private float m_V;
-
-		[SerializeField]
-		private float m_A = 1f;
-
-		[SerializeField]
-		private float m_ColorSliderSize = 4f;
+		private ColorMutator m_Color;
 
 		[SerializeField]
 		private Texture2D m_ColorSlider;
-
-		[SerializeField]
-		private float m_SliderValue;
 
 		[SerializeField]
 		private Color[] m_Colors;
@@ -160,29 +150,26 @@ namespace UnityEditor
 		private bool m_ShowPresets = true;
 
 		[SerializeField]
-		private bool m_UseTonemappingPreview = false;
-
-		[SerializeField]
 		private bool m_IsOSColorPicker = false;
-
-		[SerializeField]
-		private bool m_resetKeyboardControl = false;
 
 		[SerializeField]
 		private bool m_ShowAlpha = true;
 
+		[SerializeField]
 		private Texture2D m_RTexture;
 
 		private float m_RTextureG = -1f;
 
 		private float m_RTextureB = -1f;
 
+		[SerializeField]
 		private Texture2D m_GTexture;
 
 		private float m_GTextureR = -1f;
 
 		private float m_GTextureB = -1f;
 
+		[SerializeField]
 		private Texture2D m_BTexture;
 
 		private float m_BTextureR = -1f;
@@ -210,12 +197,6 @@ namespace UnityEditor
 
 		private float m_ValTextureS = -1f;
 
-		[SerializeField]
-		private int m_TextureColorSliderMode = -1;
-
-		[SerializeField]
-		private Vector2 m_LastConstantValues = new Vector2(-1f, -1f);
-
 		[NonSerialized]
 		private int m_TextureColorBoxMode = -1;
 
@@ -225,53 +206,8 @@ namespace UnityEditor
 		[NonSerialized]
 		private bool m_ColorSpaceBoxDirty;
 
-		[NonSerialized]
-		private bool m_ColorSliderDirty;
-
-		[NonSerialized]
-		private bool m_RGBHSVSlidersDirty;
-
 		[SerializeField]
-		private ContainerWindow m_TrackingWindow;
-
-		private string[] m_ColorBoxXAxisLabels = new string[]
-		{
-			"Saturation",
-			"Hue",
-			"Hue",
-			"Blue",
-			"Blue",
-			"Red",
-			""
-		};
-
-		private string[] m_ColorBoxYAxisLabels = new string[]
-		{
-			"Brightness",
-			"Brightness",
-			"Saturation",
-			"Green",
-			"Red",
-			"Green",
-			""
-		};
-
-		private string[] m_ColorBoxZAxisLabels = new string[]
-		{
-			"Hue",
-			"Saturation",
-			"Brightness",
-			"Red",
-			"Green",
-			"Blue",
-			""
-		};
-
-		[SerializeField]
-		private ColorPicker.ColorBoxMode m_ColorBoxMode = ColorPicker.ColorBoxMode.BG_R;
-
-		[SerializeField]
-		private ColorPicker.ColorBoxMode m_OldColorBoxMode;
+		private ColorPicker.ColorBoxMode m_ColorBoxMode = ColorPicker.ColorBoxMode.HSV;
 
 		[SerializeField]
 		private ColorPicker.SliderMode m_SliderMode = ColorPicker.SliderMode.HSV;
@@ -284,28 +220,22 @@ namespace UnityEditor
 		[SerializeField]
 		private GUIView m_DelegateView;
 
+		private Action<Color> m_ColorChangedCallback;
+
 		[SerializeField]
 		private int m_ModalUndoGroup = -1;
+
+		private float m_FloatSliderMaxOnMouseDown;
+
+		private bool m_DraggingFloatSlider;
+
+		private float m_ExposureSliderMax = 10f;
 
 		private PresetLibraryEditor<ColorPresetLibrary> m_ColorLibraryEditor;
 
 		private PresetLibraryEditorState m_ColorLibraryEditorState;
 
-		private const int kEyeDropperHeight = 95;
-
-		private const int kSlidersHeight = 82;
-
-		private const int kColorBoxHeight = 162;
-
-		private const int kPresetsHeight = 300;
-
-		private const float kFixedWindowWidth = 233f;
-
-		private const float kHDRFieldWidth = 40f;
-
-		private const float kLDRFieldWidth = 30f;
-
-		private static ColorPicker.Styles styles;
+		private static ColorPicker s_Instance;
 
 		private static Texture2D s_LeftGradientTexture;
 
@@ -319,25 +249,16 @@ namespace UnityEditor
 			}
 		}
 
-		public static ColorPickerHDRConfig defaultHDRConfig
+		public static Color color
 		{
 			get
 			{
-				return ColorPicker.m_DefaultHDRConfig;
+				return ColorPicker.instance.m_Color.exposureAdjustedColor;
 			}
-		}
-
-		private bool colorChanged
-		{
-			get;
-			set;
-		}
-
-		private float fieldWidth
-		{
-			get
+			set
 			{
-				return (!this.m_HDR) ? 30f : 40f;
+				ColorPicker.instance.SetColor(value);
+				ColorPicker.instance.Repaint();
 			}
 		}
 
@@ -345,83 +266,49 @@ namespace UnityEditor
 		{
 			get
 			{
-				return ColorPicker.s_SharedColorPicker != null;
+				return ColorPicker.s_Instance != null;
 			}
 		}
 
-		public static Color color
+		public static ColorPicker instance
 		{
 			get
 			{
-				Color result;
-				if (ColorPicker.get.m_HDRValues.m_HDRScaleFactor > 1f)
-				{
-					result = ColorPicker.get.m_Color.RGBMultiplied(ColorPicker.get.m_HDRValues.m_HDRScaleFactor);
-				}
-				else
-				{
-					result = ColorPicker.get.m_Color;
-				}
-				return result;
-			}
-			set
-			{
-				ColorPicker.get.SetColor(value);
-			}
-		}
-
-		public static ColorPicker get
-		{
-			get
-			{
-				if (!ColorPicker.s_SharedColorPicker)
+				if (!ColorPicker.s_Instance)
 				{
 					UnityEngine.Object[] array = Resources.FindObjectsOfTypeAll(typeof(ColorPicker));
 					if (array != null && array.Length > 0)
 					{
-						ColorPicker.s_SharedColorPicker = (ColorPicker)array[0];
+						ColorPicker.s_Instance = (ColorPicker)array[0];
 					}
-					if (!ColorPicker.s_SharedColorPicker)
+					if (!ColorPicker.s_Instance)
 					{
-						ColorPicker.s_SharedColorPicker = ScriptableObject.CreateInstance<ColorPicker>();
-						ColorPicker.s_SharedColorPicker.wantsMouseMove = true;
+						ColorPicker.s_Instance = ScriptableObject.CreateInstance<ColorPicker>();
+						ColorPicker.s_Instance.wantsMouseMove = true;
 					}
 				}
-				return ColorPicker.s_SharedColorPicker;
+				return ColorPicker.s_Instance;
 			}
+		}
+
+		public static int originalKeyboardControl
+		{
+			get;
+			private set;
 		}
 
 		public string currentPresetLibrary
 		{
 			get
 			{
-				this.InitIfNeeded();
+				this.InitializePresetsLibraryIfNeeded();
 				return this.m_ColorLibraryEditor.currentLibraryWithoutExtension;
 			}
 			set
 			{
-				this.InitIfNeeded();
+				this.InitializePresetsLibraryIfNeeded();
 				this.m_ColorLibraryEditor.currentLibraryWithoutExtension = value;
 			}
-		}
-
-		private void OnSelectionChange()
-		{
-			this.m_resetKeyboardControl = true;
-			base.Repaint();
-		}
-
-		private void RGBToHSV()
-		{
-			Color.RGBToHSV(new Color(this.m_R, this.m_G, this.m_B, 1f), out this.m_H, out this.m_S, out this.m_V);
-		}
-
-		private void HSVToRGB()
-		{
-			Color color = Color.HSVToRGB(this.m_H, this.m_S, this.m_V);
-			this.m_R = color.r;
-			this.m_G = color.g;
-			this.m_B = color.b;
 		}
 
 		private static void swap(ref float f1, ref float f2)
@@ -453,10 +340,6 @@ namespace UnityEditor
 				{
 					ColorPicker.swap(ref maxvalue.y, ref minvalue.y);
 				}
-				float num = (thumbStyle.fixedHeight != 0f) ? thumbStyle.fixedHeight : ((float)thumbStyle.padding.vertical);
-				float num2 = (thumbStyle.fixedWidth != 0f) ? thumbStyle.fixedWidth : ((float)thumbStyle.padding.horizontal);
-				Vector2 vector = new Vector2((rect.width - (float)(backStyle.padding.right + backStyle.padding.left) - num2 * 2f) / (maxvalue.x - minvalue.x), (rect.height - (float)(backStyle.padding.top + backStyle.padding.bottom) - num * 2f) / (maxvalue.y - minvalue.y));
-				Rect position = new Rect(rect.x + value.x * vector.x + num2 / 2f + (float)backStyle.padding.left - minvalue.x * vector.x, rect.y + value.y * vector.y + num / 2f + (float)backStyle.padding.top - minvalue.y * vector.y, num2, num);
 				Event current = Event.current;
 				switch (current.GetTypeForControl(controlID))
 				{
@@ -465,8 +348,8 @@ namespace UnityEditor
 					{
 						GUIUtility.hotControl = controlID;
 						GUIUtility.keyboardControl = 0;
-						value.x = (current.mousePosition.x - rect.x - num2 - (float)backStyle.padding.left) / vector.x + minvalue.x;
-						value.y = (current.mousePosition.y - rect.y - num - (float)backStyle.padding.top) / vector.y + minvalue.y;
+						value.x = (current.mousePosition.x - rect.x) / rect.width * (maxvalue.x - minvalue.x);
+						value.y = (current.mousePosition.y - rect.y) / rect.height * (maxvalue.y - minvalue.y);
 						GUI.changed = true;
 						Event.current.Use();
 					}
@@ -481,8 +364,8 @@ namespace UnityEditor
 				case EventType.MouseDrag:
 					if (GUIUtility.hotControl == controlID)
 					{
-						value.x = (current.mousePosition.x - rect.x - num2 - (float)backStyle.padding.left) / vector.x + minvalue.x;
-						value.y = (current.mousePosition.y - rect.y - num - (float)backStyle.padding.top) / vector.y + minvalue.y;
+						value.x = (current.mousePosition.x - rect.x) / rect.width * (maxvalue.x - minvalue.x);
+						value.y = (current.mousePosition.y - rect.y) / rect.height * (maxvalue.y - minvalue.y);
 						value.x = Mathf.Clamp(value.x, minvalue.x, maxvalue.x);
 						value.y = Mathf.Clamp(value.y, minvalue.y, maxvalue.y);
 						GUI.changed = true;
@@ -493,16 +376,14 @@ namespace UnityEditor
 				{
 					backStyle.Draw(rect, GUIContent.none, controlID);
 					Color color = GUI.color;
-					bool flag = ColorPicker.color.grayscale > 0.5f;
-					if (flag)
+					GUI.color = ((VisionUtility.ComputePerceivedLuminance(ColorPicker.color) <= 0.5f) ? ColorPicker.Styles.lowLuminanceContentColor : ColorPicker.Styles.highLuminanceContentColor);
+					Rect position = new Rect
 					{
-						GUI.color = Color.black;
-					}
+						size = thumbStyle.CalcSize(GUIContent.none),
+						center = new Vector2(value.x / (maxvalue.x - minvalue.x) * rect.width + rect.x, value.y / (maxvalue.y - minvalue.y) * rect.height + rect.y)
+					};
 					thumbStyle.Draw(position, GUIContent.none, controlID);
-					if (flag)
-					{
-						GUI.color = color;
-					}
+					GUI.color = color;
 					break;
 				}
 				}
@@ -511,74 +392,105 @@ namespace UnityEditor
 			return result;
 		}
 
-		private void OnFloatFieldChanged(float value)
-		{
-			if (this.m_HDR && value > this.m_HDRValues.m_HDRScaleFactor)
-			{
-				this.SetHDRScaleFactor(value);
-			}
-		}
-
 		private void RGBSliders()
 		{
-			EditorGUI.BeginChangeCheck();
-			float tonemappingExposureAdjusment = this.GetTonemappingExposureAdjusment();
-			float colorScale = this.GetColorScale();
-			this.m_RTexture = ColorPicker.Update1DSlider(this.m_RTexture, 32, this.m_G, this.m_B, ref this.m_RTextureG, ref this.m_RTextureB, 0, false, colorScale, tonemappingExposureAdjusment, this.m_RGBHSVSlidersDirty, this.m_HDRValues.m_TonemappingType);
-			this.m_GTexture = ColorPicker.Update1DSlider(this.m_GTexture, 32, this.m_R, this.m_B, ref this.m_GTextureR, ref this.m_GTextureB, 1, false, colorScale, tonemappingExposureAdjusment, this.m_RGBHSVSlidersDirty, this.m_HDRValues.m_TonemappingType);
-			this.m_BTexture = ColorPicker.Update1DSlider(this.m_BTexture, 32, this.m_R, this.m_G, ref this.m_BTextureR, ref this.m_BTextureG, 2, false, colorScale, tonemappingExposureAdjusment, this.m_RGBHSVSlidersDirty, this.m_HDRValues.m_TonemappingType);
-			this.m_RGBHSVSlidersDirty = false;
-			float displayScale = (!this.m_HDR) ? 255f : colorScale;
-			string formatString = (!this.m_HDR) ? EditorGUI.kIntFieldFormatString : EditorGUI.kFloatFieldFormatString;
-			this.m_R = this.TexturedSlider(this.m_RTexture, "R", this.m_R, 0f, 1f, displayScale, formatString, new Action<float>(this.OnFloatFieldChanged));
-			this.m_G = this.TexturedSlider(this.m_GTexture, "G", this.m_G, 0f, 1f, displayScale, formatString, new Action<float>(this.OnFloatFieldChanged));
-			this.m_B = this.TexturedSlider(this.m_BTexture, "B", this.m_B, 0f, 1f, displayScale, formatString, new Action<float>(this.OnFloatFieldChanged));
-			if (EditorGUI.EndChangeCheck())
+			float colorChannelNormalized = this.m_Color.GetColorChannelNormalized(RgbaChannel.R);
+			float colorChannelNormalized2 = this.m_Color.GetColorChannelNormalized(RgbaChannel.G);
+			float colorChannelNormalized3 = this.m_Color.GetColorChannelNormalized(RgbaChannel.B);
+			this.m_RTexture = this.Update1DSlider(this.m_RTexture, 32, colorChannelNormalized2, colorChannelNormalized3, ref this.m_RTextureG, ref this.m_RTextureB, 0, false);
+			this.m_GTexture = this.Update1DSlider(this.m_GTexture, 32, colorChannelNormalized, colorChannelNormalized3, ref this.m_GTextureR, ref this.m_GTextureB, 1, false);
+			this.m_BTexture = this.Update1DSlider(this.m_BTexture, 32, colorChannelNormalized, colorChannelNormalized2, ref this.m_BTextureR, ref this.m_BTextureG, 2, false);
+			this.RGBSlider("R", RgbaChannel.R, this.m_RTexture);
+			GUILayout.Space(6f);
+			this.RGBSlider("G", RgbaChannel.G, this.m_GTexture);
+			GUILayout.Space(6f);
+			this.RGBSlider("B", RgbaChannel.B, this.m_BTexture);
+			GUILayout.Space(6f);
+		}
+
+		private void RGBSlider(string label, RgbaChannel channel, Texture2D sliderBackground)
+		{
+			ColorPicker.SliderMode sliderMode = this.m_SliderMode;
+			if (sliderMode != ColorPicker.SliderMode.RGB)
 			{
-				this.RGBToHSV();
+				if (sliderMode == ColorPicker.SliderMode.RGBFloat)
+				{
+					float num = this.m_Color.GetColorChannelHdr(channel);
+					float maxColorComponent = this.m_Color.color.maxColorComponent;
+					EventType type = Event.current.type;
+					float num2 = (!this.m_HDR || this.m_Color.exposureAdjustedColor.maxColorComponent <= 1f) ? 1f : (this.m_Color.exposureAdjustedColor.maxColorComponent / maxColorComponent);
+					float textFieldMax = (!this.m_HDR) ? 1f : 3.40282347E+38f;
+					EditorGUI.BeginChangeCheck();
+					num = EditorGUILayout.SliderWithTexture(GUIContent.Temp(label), num, 0f, (!this.m_DraggingFloatSlider) ? num2 : this.m_FloatSliderMaxOnMouseDown, EditorGUI.kFloatFieldFormatString, 0f, textFieldMax, sliderBackground, new GUILayoutOption[0]);
+					if (type != EventType.MouseDown)
+					{
+						if (type == EventType.MouseUp)
+						{
+							this.m_DraggingFloatSlider = false;
+						}
+					}
+					else
+					{
+						this.m_FloatSliderMaxOnMouseDown = num2;
+						this.m_DraggingFloatSlider = true;
+					}
+					if (EditorGUI.EndChangeCheck())
+					{
+						this.m_Color.SetColorChannelHdr(channel, num);
+						this.OnColorChanged(true);
+					}
+				}
+			}
+			else
+			{
+				float num = (float)this.m_Color.GetColorChannel(channel);
+				EditorGUI.BeginChangeCheck();
+				num = EditorGUILayout.SliderWithTexture(GUIContent.Temp(label), num, 0f, 255f, EditorGUI.kIntFieldFormatString, 0f, 255f, sliderBackground, new GUILayoutOption[0]);
+				if (EditorGUI.EndChangeCheck())
+				{
+					this.m_Color.SetColorChannel(channel, num / 255f);
+					this.OnColorChanged(true);
+				}
+				this.m_DraggingFloatSlider = false;
 			}
 		}
 
-		private static Texture2D Update1DSlider(Texture2D tex, int xSize, float const1, float const2, ref float oldConst1, ref float oldConst2, int idx, bool hsvSpace, float scale, float exposureValue, bool forceUpdate, ColorPicker.TonemappingType tonemappingType)
+		private Texture2D Update1DSlider(Texture2D tex, int xSize, float const1, float const2, ref float oldConst1, ref float oldConst2, int idx, bool hsvSpace)
 		{
-			if (!tex || const1 != oldConst1 || const2 != oldConst2 || forceUpdate)
+			if (!tex || const1 != oldConst1 || const2 != oldConst2)
 			{
 				if (!tex)
 				{
 					tex = ColorPicker.MakeTexture(xSize, 2);
 				}
 				Color[] array = new Color[xSize * 2];
+				Color topLeftColor = Color.black;
 				Color black = Color.black;
-				Color black2 = Color.black;
 				switch (idx)
 				{
 				case 0:
-					black = new Color(0f, const1, const2, 1f);
-					black2 = new Color(1f, 0f, 0f, 0f);
+					topLeftColor = new Color(0f, const1, const2, 1f);
+					black = new Color(1f, 0f, 0f, 0f);
 					break;
 				case 1:
-					black = new Color(const1, 0f, const2, 1f);
-					black2 = new Color(0f, 1f, 0f, 0f);
+					topLeftColor = new Color(const1, 0f, const2, 1f);
+					black = new Color(0f, 1f, 0f, 0f);
 					break;
 				case 2:
-					black = new Color(const1, const2, 0f, 1f);
-					black2 = new Color(0f, 0f, 1f, 0f);
+					topLeftColor = new Color(const1, const2, 0f, 1f);
+					black = new Color(0f, 0f, 1f, 0f);
 					break;
 				case 3:
+					topLeftColor = this.m_Color.color;
+					topLeftColor.a = 0f;
 					black = new Color(0f, 0f, 0f, 1f);
-					black2 = new Color(1f, 1f, 1f, 0f);
 					break;
 				}
-				ColorPicker.FillArea(xSize, 2, array, black, black2, new Color(0f, 0f, 0f, 0f));
+				ColorPicker.FillArea(xSize, 2, array, topLeftColor, black, new Color(0f, 0f, 0f, 0f));
 				if (hsvSpace)
 				{
-					ColorPicker.HSVToRGBArray(array, scale);
+					ColorPicker.HSVToRGBArray(array);
 				}
-				else
-				{
-					ColorPicker.ScaleColors(array, scale);
-				}
-				ColorPicker.DoTonemapping(array, exposureValue, tonemappingType);
 				oldConst1 = const1;
 				oldConst2 = const2;
 				tex.SetPixels(array);
@@ -587,59 +499,38 @@ namespace UnityEditor
 			return tex;
 		}
 
-		private float TexturedSlider(Texture2D background, string text, float val, float min, float max, float displayScale, string formatString, Action<float> onFloatFieldChanged)
-		{
-			Rect rect = GUILayoutUtility.GetRect(16f, 16f, GUI.skin.label);
-			GUI.Label(new Rect(rect.x, rect.y, 20f, 16f), text);
-			rect.x += 14f;
-			rect.width -= 20f + this.fieldWidth;
-			if (Event.current.type == EventType.Repaint)
-			{
-				Rect screenRect = new Rect(rect.x + 1f, rect.y + 2f, rect.width - 2f, rect.height - 4f);
-				Graphics.DrawTexture(screenRect, background, new Rect(0.5f / (float)background.width, 0.5f / (float)background.height, 1f - 1f / (float)background.width, 1f - 1f / (float)background.height), 0, 0, 0, 0, Color.grey);
-			}
-			int controlID = GUIUtility.GetControlID(869045, FocusType.Keyboard, base.position);
-			EditorGUI.BeginChangeCheck();
-			val = GUI.HorizontalSlider(new Rect(rect.x, rect.y + 1f, rect.width, rect.height - 2f), val, min, max, ColorPicker.styles.pickerBox, ColorPicker.styles.thumbHoriz);
-			if (EditorGUI.EndChangeCheck())
-			{
-				if (EditorGUI.s_RecycledEditor.IsEditingControl(controlID))
-				{
-					EditorGUI.s_RecycledEditor.EndEditing();
-				}
-				val = (float)Math.Round((double)val, 3);
-				GUIUtility.keyboardControl = 0;
-			}
-			Rect position = new Rect(rect.xMax + 6f, rect.y, this.fieldWidth, 16f);
-			EditorGUI.BeginChangeCheck();
-			val = EditorGUI.DoFloatField(EditorGUI.s_RecycledEditor, position, new Rect(0f, 0f, 0f, 0f), controlID, val * displayScale, formatString, EditorStyles.numberField, false);
-			if (EditorGUI.EndChangeCheck() && onFloatFieldChanged != null)
-			{
-				onFloatFieldChanged(val);
-			}
-			val = Mathf.Clamp(val / displayScale, min, max);
-			GUILayout.Space(3f);
-			return val;
-		}
-
 		private void HSVSliders()
 		{
+			float num = this.m_Color.GetColorChannel(HsvChannel.H);
+			float num2 = this.m_Color.GetColorChannel(HsvChannel.S);
+			float num3 = this.m_Color.GetColorChannel(HsvChannel.V);
+			this.m_HueTexture = this.Update1DSlider(this.m_HueTexture, 64, 1f, 1f, ref this.m_HueTextureS, ref this.m_HueTextureV, 0, true);
+			this.m_SatTexture = this.Update1DSlider(this.m_SatTexture, 32, num, Mathf.Max(num3, 0.2f), ref this.m_SatTextureH, ref this.m_SatTextureV, 1, true);
+			this.m_ValTexture = this.Update1DSlider(this.m_ValTexture, 32, num, num2, ref this.m_ValTextureH, ref this.m_ValTextureS, 2, true);
 			EditorGUI.BeginChangeCheck();
-			float tonemappingExposureAdjusment = this.GetTonemappingExposureAdjusment();
-			float colorScale = this.GetColorScale();
-			this.m_HueTexture = ColorPicker.Update1DSlider(this.m_HueTexture, 64, 1f, 1f, ref this.m_HueTextureS, ref this.m_HueTextureV, 0, true, 1f, -1f, this.m_RGBHSVSlidersDirty, this.m_HDRValues.m_TonemappingType);
-			this.m_SatTexture = ColorPicker.Update1DSlider(this.m_SatTexture, 32, this.m_H, Mathf.Max(this.m_V, 0.2f), ref this.m_SatTextureH, ref this.m_SatTextureV, 1, true, colorScale, tonemappingExposureAdjusment, this.m_RGBHSVSlidersDirty, this.m_HDRValues.m_TonemappingType);
-			this.m_ValTexture = ColorPicker.Update1DSlider(this.m_ValTexture, 32, this.m_H, this.m_S, ref this.m_ValTextureH, ref this.m_ValTextureS, 2, true, colorScale, tonemappingExposureAdjusment, this.m_RGBHSVSlidersDirty, this.m_HDRValues.m_TonemappingType);
-			this.m_RGBHSVSlidersDirty = false;
-			float displayScale = (!this.m_HDR) ? 255f : colorScale;
-			string formatString = (!this.m_HDR) ? EditorGUI.kIntFieldFormatString : EditorGUI.kFloatFieldFormatString;
-			this.m_H = this.TexturedSlider(this.m_HueTexture, "H", this.m_H, 0f, 1f, 359f, EditorGUI.kIntFieldFormatString, null);
-			this.m_S = this.TexturedSlider(this.m_SatTexture, "S", this.m_S, 0f, 1f, (!this.m_HDR) ? 255f : 1f, formatString, null);
-			this.m_V = this.TexturedSlider(this.m_ValTexture, "V", this.m_V, 0f, 1f, displayScale, formatString, null);
+			num = EditorGUILayout.SliderWithTexture(GUIContent.Temp("H"), num * 360f, 0f, 360f, EditorGUI.kIntFieldFormatString, this.m_HueTexture, new GUILayoutOption[0]);
 			if (EditorGUI.EndChangeCheck())
 			{
-				this.HSVToRGB();
+				this.m_Color.SetColorChannel(HsvChannel.H, num / 360f);
+				this.OnColorChanged(true);
 			}
+			GUILayout.Space(6f);
+			EditorGUI.BeginChangeCheck();
+			num2 = EditorGUILayout.SliderWithTexture(GUIContent.Temp("S"), num2 * 100f, 0f, 100f, EditorGUI.kIntFieldFormatString, this.m_SatTexture, new GUILayoutOption[0]);
+			if (EditorGUI.EndChangeCheck())
+			{
+				this.m_Color.SetColorChannel(HsvChannel.S, num2 / 100f);
+				this.OnColorChanged(true);
+			}
+			GUILayout.Space(6f);
+			EditorGUI.BeginChangeCheck();
+			num3 = EditorGUILayout.SliderWithTexture(GUIContent.Temp("V"), num3 * 100f, 0f, 100f, EditorGUI.kIntFieldFormatString, this.m_ValTexture, new GUILayoutOption[0]);
+			if (EditorGUI.EndChangeCheck())
+			{
+				this.m_Color.SetColorChannel(HsvChannel.V, num3 / 100f);
+				this.OnColorChanged(true);
+			}
+			GUILayout.Space(6f);
 		}
 
 		private static void FillArea(int xSize, int ySize, Color[] retval, Color topLeftColor, Color rightGradient, Color downGradient)
@@ -668,136 +559,24 @@ namespace UnityEditor
 			}
 		}
 
-		private static void ScaleColors(Color[] colors, float scale)
-		{
-			int num = colors.Length;
-			for (int i = 0; i < num; i++)
-			{
-				colors[i] = colors[i].RGBMultiplied(scale);
-			}
-		}
-
-		private static void HSVToRGBArray(Color[] colors, float scale)
+		private static void HSVToRGBArray(Color[] colors)
 		{
 			int num = colors.Length;
 			for (int i = 0; i < num; i++)
 			{
 				Color color = colors[i];
-				Color color2 = Color.HSVToRGB(color.r, color.g, color.b).RGBMultiplied(scale);
+				Color color2 = Color.HSVToRGB(color.r, color.g, color.b);
 				color2.a = color.a;
 				colors[i] = color2;
 			}
 		}
 
-		private static void LinearToGammaArray(Color[] colors)
-		{
-			int num = colors.Length;
-			for (int i = 0; i < num; i++)
-			{
-				Color color = colors[i];
-				Color gamma = color.gamma;
-				gamma.a = color.a;
-				colors[i] = gamma;
-			}
-		}
-
-		private float GetTonemappingExposureAdjusment()
-		{
-			return (!this.m_HDR || !this.m_UseTonemappingPreview) ? -1f : this.m_HDRValues.m_ExposureAdjustment;
-		}
-
-		private float GetColorScale()
-		{
-			float result;
-			if (this.m_HDR)
-			{
-				result = Mathf.Max(1f, this.m_HDRValues.m_HDRScaleFactor);
-			}
-			else
-			{
-				result = 1f;
-			}
-			return result;
-		}
-
-		private void DrawColorSlider(Rect colorSliderRect, Vector2 constantValues)
-		{
-			if (Event.current.type == EventType.Repaint)
-			{
-				if (this.m_ColorBoxMode != (ColorPicker.ColorBoxMode)this.m_TextureColorSliderMode)
-				{
-					int num = (int)this.m_ColorSliderSize;
-					int num2;
-					if (this.m_ColorBoxMode == ColorPicker.ColorBoxMode.SV_H)
-					{
-						num2 = 64;
-					}
-					else
-					{
-						num2 = (int)this.m_ColorSliderSize;
-					}
-					if (this.m_ColorSlider == null)
-					{
-						this.m_ColorSlider = ColorPicker.MakeTexture(num, num2);
-					}
-					if (this.m_ColorSlider.width != num || this.m_ColorSlider.height != num2)
-					{
-						this.m_ColorSlider.Resize(num, num2);
-					}
-				}
-				if (this.m_ColorBoxMode != (ColorPicker.ColorBoxMode)this.m_TextureColorSliderMode || constantValues != this.m_LastConstantValues || this.m_ColorSliderDirty)
-				{
-					float tonemappingExposureAdjusment = this.GetTonemappingExposureAdjusment();
-					float colorScale = this.GetColorScale();
-					Color[] pixels = this.m_ColorSlider.GetPixels(0);
-					int width = this.m_ColorSlider.width;
-					int height = this.m_ColorSlider.height;
-					switch (this.m_ColorBoxMode)
-					{
-					case ColorPicker.ColorBoxMode.SV_H:
-						ColorPicker.FillArea(width, height, pixels, new Color(0f, 1f, 1f, 1f), new Color(0f, 0f, 0f, 0f), new Color(1f, 0f, 0f, 0f));
-						ColorPicker.HSVToRGBArray(pixels, 1f);
-						break;
-					case ColorPicker.ColorBoxMode.HV_S:
-						ColorPicker.FillArea(width, height, pixels, new Color(this.m_H, 0f, Mathf.Max(this.m_V, 0.3f), 1f), new Color(0f, 0f, 0f, 0f), new Color(0f, 1f, 0f, 0f));
-						ColorPicker.HSVToRGBArray(pixels, colorScale);
-						break;
-					case ColorPicker.ColorBoxMode.HS_V:
-						ColorPicker.FillArea(width, height, pixels, new Color(this.m_H, this.m_S, 0f, 1f), new Color(0f, 0f, 0f, 0f), new Color(0f, 0f, 1f, 0f));
-						ColorPicker.HSVToRGBArray(pixels, colorScale);
-						break;
-					case ColorPicker.ColorBoxMode.BG_R:
-						ColorPicker.FillArea(width, height, pixels, new Color(0f, this.m_G * colorScale, this.m_B * colorScale, 1f), new Color(0f, 0f, 0f, 0f), new Color(colorScale, 0f, 0f, 0f));
-						break;
-					case ColorPicker.ColorBoxMode.BR_G:
-						ColorPicker.FillArea(width, height, pixels, new Color(this.m_R * colorScale, 0f, this.m_B * colorScale, 1f), new Color(0f, 0f, 0f, 0f), new Color(0f, colorScale, 0f, 0f));
-						break;
-					case ColorPicker.ColorBoxMode.RG_B:
-						ColorPicker.FillArea(width, height, pixels, new Color(this.m_R * colorScale, this.m_G * colorScale, 0f, 1f), new Color(0f, 0f, 0f, 0f), new Color(0f, 0f, colorScale, 0f));
-						break;
-					}
-					if (QualitySettings.activeColorSpace == ColorSpace.Linear)
-					{
-						ColorPicker.LinearToGammaArray(pixels);
-					}
-					if (this.m_ColorBoxMode != ColorPicker.ColorBoxMode.SV_H)
-					{
-						ColorPicker.DoTonemapping(pixels, tonemappingExposureAdjusment, this.m_HDRValues.m_TonemappingType);
-					}
-					this.m_ColorSlider.SetPixels(pixels, 0);
-					this.m_ColorSlider.Apply(true);
-				}
-				Graphics.DrawTexture(colorSliderRect, this.m_ColorSlider, new Rect(0.5f / (float)this.m_ColorSlider.width, 0.5f / (float)this.m_ColorSlider.height, 1f - 1f / (float)this.m_ColorSlider.width, 1f - 1f / (float)this.m_ColorSlider.height), 0, 0, 0, 0, Color.grey);
-			}
-		}
-
 		public static Texture2D MakeTexture(int width, int height)
 		{
-			return new Texture2D(width, height, TextureFormat.RGBA32, false)
+			return new Texture2D(width, height, TextureFormat.RGBA32, false, true)
 			{
 				hideFlags = HideFlags.HideAndDontSave,
-				wrapMode = TextureWrapMode.Clamp,
-				hideFlags = HideFlags.HideAndDontSave
+				wrapMode = TextureWrapMode.Clamp
 			};
 		}
 
@@ -808,115 +587,34 @@ namespace UnityEditor
 				if (this.m_ColorBoxMode != (ColorPicker.ColorBoxMode)this.m_TextureColorBoxMode)
 				{
 					int num = 32;
-					int num2;
-					if (this.m_ColorBoxMode == ColorPicker.ColorBoxMode.HV_S || this.m_ColorBoxMode == ColorPicker.ColorBoxMode.HS_V)
-					{
-						num2 = 64;
-					}
-					else
-					{
-						num2 = 32;
-					}
+					int num2 = 32;
 					if (this.m_ColorBox == null)
 					{
-						this.m_ColorBox = ColorPicker.MakeTexture(num2, num);
+						this.m_ColorBox = ColorPicker.MakeTexture(num, num2);
 					}
-					if (this.m_ColorBox.width != num2 || this.m_ColorBox.height != num)
+					if (this.m_ColorBox.width != num || this.m_ColorBox.height != num2)
 					{
-						this.m_ColorBox.Resize(num2, num);
+						this.m_ColorBox.Resize(num, num2);
 					}
 				}
 				if (this.m_ColorBoxMode != (ColorPicker.ColorBoxMode)this.m_TextureColorBoxMode || this.m_LastConstant != constantValue || this.m_ColorSpaceBoxDirty)
 				{
-					float tonemappingExposureAdjusment = this.GetTonemappingExposureAdjusment();
-					float colorScale = this.GetColorScale();
 					this.m_Colors = this.m_ColorBox.GetPixels(0);
 					int width = this.m_ColorBox.width;
 					int height = this.m_ColorBox.height;
-					switch (this.m_ColorBoxMode)
-					{
-					case ColorPicker.ColorBoxMode.SV_H:
-						ColorPicker.FillArea(width, height, this.m_Colors, new Color(this.m_H, 0f, 0f, 1f), new Color(0f, 1f, 0f, 0f), new Color(0f, 0f, 1f, 0f));
-						ColorPicker.HSVToRGBArray(this.m_Colors, colorScale);
-						break;
-					case ColorPicker.ColorBoxMode.HV_S:
-						ColorPicker.FillArea(width, height, this.m_Colors, new Color(0f, this.m_S, 0f, 1f), new Color(1f, 0f, 0f, 0f), new Color(0f, 0f, 1f, 0f));
-						ColorPicker.HSVToRGBArray(this.m_Colors, colorScale);
-						break;
-					case ColorPicker.ColorBoxMode.HS_V:
-						ColorPicker.FillArea(width, height, this.m_Colors, new Color(0f, 0f, this.m_V * colorScale, 1f), new Color(1f, 0f, 0f, 0f), new Color(0f, 1f, 0f, 0f));
-						ColorPicker.HSVToRGBArray(this.m_Colors, 1f);
-						break;
-					case ColorPicker.ColorBoxMode.BG_R:
-						ColorPicker.FillArea(width, height, this.m_Colors, new Color(this.m_R * colorScale, 0f, 0f, 1f), new Color(0f, 0f, colorScale, 0f), new Color(0f, colorScale, 0f, 0f));
-						break;
-					case ColorPicker.ColorBoxMode.BR_G:
-						ColorPicker.FillArea(width, height, this.m_Colors, new Color(0f, this.m_G * colorScale, 0f, 1f), new Color(0f, 0f, colorScale, 0f), new Color(colorScale, 0f, 0f, 0f));
-						break;
-					case ColorPicker.ColorBoxMode.RG_B:
-						ColorPicker.FillArea(width, height, this.m_Colors, new Color(0f, 0f, this.m_B * colorScale, 1f), new Color(colorScale, 0f, 0f, 0f), new Color(0f, colorScale, 0f, 0f));
-						break;
-					}
-					if (QualitySettings.activeColorSpace == ColorSpace.Linear)
-					{
-						ColorPicker.LinearToGammaArray(this.m_Colors);
-					}
-					ColorPicker.DoTonemapping(this.m_Colors, tonemappingExposureAdjusment, this.m_HDRValues.m_TonemappingType);
+					ColorPicker.FillArea(width, height, this.m_Colors, new Color(this.m_Color.GetColorChannel(HsvChannel.H), 0f, 0f, 1f), new Color(0f, 1f, 0f, 0f), new Color(0f, 0f, 1f, 0f));
+					ColorPicker.HSVToRGBArray(this.m_Colors);
 					this.m_ColorBox.SetPixels(this.m_Colors, 0);
 					this.m_ColorBox.Apply(true);
 					this.m_LastConstant = constantValue;
 					this.m_TextureColorBoxMode = (int)this.m_ColorBoxMode;
 				}
 				Graphics.DrawTexture(colorBoxRect, this.m_ColorBox, new Rect(0.5f / (float)this.m_ColorBox.width, 0.5f / (float)this.m_ColorBox.height, 1f - 1f / (float)this.m_ColorBox.width, 1f - 1f / (float)this.m_ColorBox.height), 0, 0, 0, 0, Color.grey);
-				ColorPicker.DrawLabelOutsideRect(colorBoxRect, this.GetXAxisLabel(this.m_ColorBoxMode), ColorPicker.LabelLocation.Bottom);
-				ColorPicker.DrawLabelOutsideRect(colorBoxRect, this.GetYAxisLabel(this.m_ColorBoxMode), ColorPicker.LabelLocation.Left);
 			}
 		}
 
-		private string GetXAxisLabel(ColorPicker.ColorBoxMode colorBoxMode)
+		private void InitializePresetsLibraryIfNeeded()
 		{
-			return this.m_ColorBoxXAxisLabels[(int)colorBoxMode];
-		}
-
-		private string GetYAxisLabel(ColorPicker.ColorBoxMode colorBoxMode)
-		{
-			return this.m_ColorBoxYAxisLabels[(int)colorBoxMode];
-		}
-
-		private string GetZAxisLabel(ColorPicker.ColorBoxMode colorBoxMode)
-		{
-			return this.m_ColorBoxZAxisLabels[(int)colorBoxMode];
-		}
-
-		private static void DrawLabelOutsideRect(Rect position, string label, ColorPicker.LabelLocation labelLocation)
-		{
-			Matrix4x4 matrix = GUI.matrix;
-			Rect position2 = new Rect(position.x, position.y - 18f, position.width, 16f);
-			switch (labelLocation)
-			{
-			case ColorPicker.LabelLocation.Bottom:
-				position2 = new Rect(position.x, position.yMax, position.width, 16f);
-				break;
-			case ColorPicker.LabelLocation.Left:
-				GUIUtility.RotateAroundPivot(-90f, position.center);
-				break;
-			case ColorPicker.LabelLocation.Right:
-				GUIUtility.RotateAroundPivot(90f, position.center);
-				break;
-			}
-			using (new EditorGUI.DisabledScope(true))
-			{
-				GUI.Label(position2, label, ColorPicker.styles.label);
-			}
-			GUI.matrix = matrix;
-		}
-
-		private void InitIfNeeded()
-		{
-			if (ColorPicker.styles == null)
-			{
-				ColorPicker.styles = new ColorPicker.Styles();
-			}
 			if (this.m_ColorLibraryEditorState == null)
 			{
 				this.m_ColorLibraryEditorState = new PresetLibraryEditorState(ColorPicker.presetsEditorPrefID);
@@ -925,7 +623,7 @@ namespace UnityEditor
 			if (this.m_ColorLibraryEditor == null)
 			{
 				ScriptableObjectSaveLoadHelper<ColorPresetLibrary> helper = new ScriptableObjectSaveLoadHelper<ColorPresetLibrary>("colors", SaveType.Text);
-				this.m_ColorLibraryEditor = new PresetLibraryEditor<ColorPresetLibrary>(helper, this.m_ColorLibraryEditorState, new Action<int, object>(this.PresetClickedCallback));
+				this.m_ColorLibraryEditor = new PresetLibraryEditor<ColorPresetLibrary>(helper, this.m_ColorLibraryEditorState, new Action<int, object>(this.OnClickedPresetSwatch));
 				this.m_ColorLibraryEditor.previewAspect = 1f;
 				this.m_ColorLibraryEditor.minMaxPreviewHeight = new Vector2(14f, 14f);
 				this.m_ColorLibraryEditor.settingsMenuRightMargin = 2f;
@@ -933,214 +631,137 @@ namespace UnityEditor
 				this.m_ColorLibraryEditor.alwaysShowScrollAreaHorizontalLines = false;
 				this.m_ColorLibraryEditor.marginsForGrid = new RectOffset(0, 0, 0, 0);
 				this.m_ColorLibraryEditor.marginsForList = new RectOffset(0, 5, 2, 2);
-				this.m_ColorLibraryEditor.InitializeGrid(233f - (float)(ColorPicker.styles.background.padding.left + ColorPicker.styles.background.padding.right));
+				this.m_ColorLibraryEditor.InitializeGrid(233f - (float)(ColorPicker.Styles.background.padding.left + ColorPicker.Styles.background.padding.right));
 			}
 		}
 
-		private void PresetClickedCallback(int clickCount, object presetObject)
+		private void OnClickedPresetSwatch(int clickCount, object presetObject)
 		{
 			Color color = (Color)presetObject;
 			if (!this.m_HDR && color.maxColorComponent > 1f)
 			{
-				color = color.RGBMultiplied(1f / color.maxColorComponent);
+				color = new ColorMutator(color).color;
 			}
 			this.SetColor(color);
-			this.colorChanged = true;
 		}
 
 		private void DoColorSwatchAndEyedropper()
 		{
 			GUILayout.BeginHorizontal(new GUILayoutOption[0]);
-			if (GUILayout.Button(ColorPicker.styles.eyeDropper, GUIStyle.none, new GUILayoutOption[]
+			if (GUILayout.Button(ColorPicker.Styles.eyeDropper, GUIStyle.none, new GUILayoutOption[]
 			{
 				GUILayout.Width(40f),
 				GUILayout.ExpandWidth(false)
 			}))
 			{
-				EyeDropper.Start(this.m_Parent);
+				GUIUtility.keyboardControl = 0;
+				EyeDropper.Start(this.m_Parent, false);
 				this.m_ColorBoxMode = ColorPicker.ColorBoxMode.EyeDropper;
 				GUIUtility.ExitGUI();
 			}
-			Color color = new Color(this.m_R, this.m_G, this.m_B, this.m_A);
-			if (this.m_HDR)
-			{
-				color = ColorPicker.color;
-			}
-			Rect rect = GUILayoutUtility.GetRect(20f, 20f, 20f, 20f, ColorPicker.styles.colorPickerBox, new GUILayoutOption[]
+			Color exposureAdjustedColor = this.m_Color.exposureAdjustedColor;
+			Rect rect = GUILayoutUtility.GetRect(ColorPicker.Styles.currentColorSwatchFill, ColorPicker.Styles.currentColorSwatch, new GUILayoutOption[]
 			{
 				GUILayout.ExpandWidth(true)
 			});
-			EditorGUIUtility.DrawColorSwatch(rect, color, this.m_ShowAlpha, this.m_HDR);
+			Vector2 size = ColorPicker.Styles.currentColorSwatch.CalcSize(ColorPicker.Styles.currentColorSwatchFill);
+			Rect position = new Rect
+			{
+				size = size,
+				y = rect.y,
+				x = rect.xMax - size.x
+			};
+			Color backgroundColor = GUI.backgroundColor;
+			Color contentColor = GUI.contentColor;
+			int controlID = GUIUtility.GetControlID(FocusType.Passive);
 			if (Event.current.type == EventType.Repaint)
 			{
-				ColorPicker.styles.pickerBox.Draw(rect, GUIContent.none, false, false, false, false);
+				GUI.backgroundColor = ((this.m_Color.exposureAdjustedColor.a != 1f) ? Color.white : Color.clear);
+				GUI.contentColor = this.m_Color.exposureAdjustedColor;
+				ColorPicker.Styles.currentColorSwatch.Draw(position, ColorPicker.Styles.currentColorSwatchFill, controlID);
 			}
+			position.x -= position.width;
+			GUI.backgroundColor = ((this.m_Color.originalColor.a != 1f) ? Color.white : Color.clear);
+			GUI.contentColor = this.m_Color.originalColor;
+			if (GUI.Button(position, ColorPicker.Styles.originalColorSwatchFill, ColorPicker.Styles.originalColorSwatch))
+			{
+				this.m_Color.Reset();
+				Event.current.Use();
+				this.OnColorChanged(true);
+			}
+			GUI.backgroundColor = backgroundColor;
+			GUI.contentColor = contentColor;
 			GUILayout.EndHorizontal();
 		}
 
 		private void DoColorSpaceGUI()
 		{
-			GUILayout.BeginHorizontal(new GUILayoutOption[0]);
-			GUILayout.FlexibleSpace();
-			if (GUILayout.Button(ColorPicker.styles.colorCycle, GUIStyle.none, new GUILayoutOption[]
+			Vector2 vector = ColorPicker.Styles.hueDialBackground.CalcSize(GUIContent.none);
+			Rect rect = GUILayoutUtility.GetRect(vector.x, vector.y);
+			ColorPicker.ColorBoxMode colorBoxMode = this.m_ColorBoxMode;
+			if (colorBoxMode != ColorPicker.ColorBoxMode.HSV)
 			{
-				GUILayout.ExpandWidth(false)
-			}))
-			{
-				this.m_OldColorBoxMode = (this.m_ColorBoxMode = (this.m_ColorBoxMode + 1) % ColorPicker.ColorBoxMode.EyeDropper);
+				if (colorBoxMode == ColorPicker.ColorBoxMode.EyeDropper)
+				{
+					EyeDropper.DrawPreview(rect);
+				}
 			}
-			GUILayout.EndHorizontal();
-			GUILayout.BeginHorizontal(new GUILayoutOption[0]);
-			GUILayout.Space(20f);
-			GUILayout.BeginVertical(new GUILayoutOption[0]);
-			GUILayout.Space(7f);
-			bool changed = GUI.changed;
-			GUILayout.BeginHorizontal(new GUILayoutOption[]
+			else
 			{
-				GUILayout.ExpandHeight(false)
-			});
-			Rect aspectRect = GUILayoutUtility.GetAspectRect(1f, ColorPicker.styles.pickerBox, new GUILayoutOption[]
-			{
-				GUILayout.MinWidth(64f),
-				GUILayout.MinHeight(64f),
-				GUILayout.MaxWidth(256f),
-				GUILayout.MaxHeight(256f)
-			});
-			EditorGUILayout.Space();
-			Rect rect = GUILayoutUtility.GetRect(8f, 32f, 64f, 128f, ColorPicker.styles.pickerBox);
-			rect.height = aspectRect.height;
-			GUILayout.EndHorizontal();
-			GUI.changed = false;
-			switch (this.m_ColorBoxMode)
-			{
-			case ColorPicker.ColorBoxMode.SV_H:
-				this.Slider3D(aspectRect, rect, ref this.m_S, ref this.m_V, ref this.m_H, ColorPicker.styles.pickerBox, ColorPicker.styles.thumb2D, ColorPicker.styles.thumbVert);
-				if (GUI.changed)
-				{
-					this.HSVToRGB();
-				}
-				break;
-			case ColorPicker.ColorBoxMode.HV_S:
-				this.Slider3D(aspectRect, rect, ref this.m_H, ref this.m_V, ref this.m_S, ColorPicker.styles.pickerBox, ColorPicker.styles.thumb2D, ColorPicker.styles.thumbVert);
-				if (GUI.changed)
-				{
-					this.HSVToRGB();
-				}
-				break;
-			case ColorPicker.ColorBoxMode.HS_V:
-				this.Slider3D(aspectRect, rect, ref this.m_H, ref this.m_S, ref this.m_V, ColorPicker.styles.pickerBox, ColorPicker.styles.thumb2D, ColorPicker.styles.thumbVert);
-				if (GUI.changed)
-				{
-					this.HSVToRGB();
-				}
-				break;
-			case ColorPicker.ColorBoxMode.BG_R:
-				this.Slider3D(aspectRect, rect, ref this.m_B, ref this.m_G, ref this.m_R, ColorPicker.styles.pickerBox, ColorPicker.styles.thumb2D, ColorPicker.styles.thumbVert);
-				if (GUI.changed)
-				{
-					this.RGBToHSV();
-				}
-				break;
-			case ColorPicker.ColorBoxMode.BR_G:
-				this.Slider3D(aspectRect, rect, ref this.m_B, ref this.m_R, ref this.m_G, ColorPicker.styles.pickerBox, ColorPicker.styles.thumb2D, ColorPicker.styles.thumbVert);
-				if (GUI.changed)
-				{
-					this.RGBToHSV();
-				}
-				break;
-			case ColorPicker.ColorBoxMode.RG_B:
-				this.Slider3D(aspectRect, rect, ref this.m_R, ref this.m_G, ref this.m_B, ColorPicker.styles.pickerBox, ColorPicker.styles.thumb2D, ColorPicker.styles.thumbVert);
-				if (GUI.changed)
-				{
-					this.RGBToHSV();
-				}
-				break;
-			case ColorPicker.ColorBoxMode.EyeDropper:
-				EyeDropper.DrawPreview(Rect.MinMaxRect(aspectRect.x, aspectRect.y, rect.xMax, aspectRect.yMax));
-				break;
-			}
-			GUI.changed |= changed;
-			GUILayout.Space(5f);
-			GUILayout.EndVertical();
-			GUILayout.Space(20f);
-			GUILayout.EndHorizontal();
-		}
-
-		private void SetHDRScaleFactor(float value)
-		{
-			if (!this.m_HDR)
-			{
-				Debug.LogError("HDR scale is being set in LDR mode!");
-			}
-			if (value < 1f)
-			{
-				Debug.LogError("SetHDRScaleFactor is below 1, should be >= 1!");
-			}
-			this.m_HDRValues.m_HDRScaleFactor = Mathf.Clamp(value, 0f, this.m_HDRConfig.maxBrightness);
-			this.m_ColorSliderDirty = true;
-			this.m_ColorSpaceBoxDirty = true;
-			this.m_RGBHSVSlidersDirty = true;
-		}
-
-		private void BrightnessField(float availableWidth)
-		{
-			if (this.m_HDR)
-			{
-				float labelWidth = EditorGUIUtility.labelWidth;
+				rect.x += (rect.width - rect.height) * 0.5f;
+				rect.width = rect.height;
+				float num = this.m_Color.GetColorChannel(HsvChannel.H);
+				Color contentColor = GUI.contentColor;
+				GUI.contentColor = Color.HSVToRGB(num, 1f, 1f);
 				EditorGUI.BeginChangeCheck();
-				EditorGUI.indentLevel++;
-				EditorGUIUtility.labelWidth = availableWidth - 40f - EditorGUI.indent;
-				Color color = EditorGUILayout.ColorBrightnessField(GUIContent.Temp("Current Brightness"), ColorPicker.color, this.m_HDRConfig.minBrightness, this.m_HDRConfig.maxBrightness, new GUILayoutOption[0]);
-				EditorGUI.indentLevel--;
+				num = EditorGUI.AngularDial(rect, GUIContent.none, num * 360f, ColorPicker.Styles.hueDialThumbFill.image, ColorPicker.Styles.hueDialBackground, ColorPicker.Styles.hueDialThumb);
 				if (EditorGUI.EndChangeCheck())
 				{
-					float maxColorComponent = color.maxColorComponent;
-					if (maxColorComponent > this.m_HDRValues.m_HDRScaleFactor)
-					{
-						this.SetHDRScaleFactor(maxColorComponent);
-					}
-					this.SetNormalizedColor(color.RGBMultiplied(1f / this.m_HDRValues.m_HDRScaleFactor));
+					num = Mathf.Repeat(num, 360f) / 360f;
+					this.m_Color.SetColorChannel(HsvChannel.H, num);
+					this.OnColorChanged(true);
 				}
-				EditorGUIUtility.labelWidth = labelWidth;
-			}
-		}
-
-		private void SetMaxDisplayBrightness(float brightness)
-		{
-			brightness = Mathf.Clamp(brightness, 1f, this.m_HDRConfig.maxBrightness);
-			if (brightness != this.m_HDRValues.m_HDRScaleFactor)
-			{
-				Color normalizedColor = ColorPicker.color.RGBMultiplied(1f / brightness);
-				float maxColorComponent = normalizedColor.maxColorComponent;
-				if (maxColorComponent <= 1f)
+				GUI.contentColor = contentColor;
+				float num2 = rect.width * 0.5f - ColorPicker.Styles.hueDialThumbSize;
+				int num3 = Mathf.FloorToInt(Mathf.Sqrt(2f) * num2);
+				if ((num3 & 1) == 1)
 				{
-					this.SetNormalizedColor(normalizedColor);
-					this.SetHDRScaleFactor(brightness);
-					base.Repaint();
+					num3++;
+				}
+				Rect rect2 = new Rect
+				{
+					size = Vector2.one * (float)num3,
+					center = rect.center
+				};
+				rect2 = ColorPicker.Styles.colorBoxPadding.Remove(rect2);
+				this.DrawColorSpaceBox(rect2, this.m_Color.GetColorChannel(HsvChannel.H));
+				EditorGUI.BeginChangeCheck();
+				Vector2 value = new Vector2(this.m_Color.GetColorChannel(HsvChannel.S), 1f - this.m_Color.GetColorChannel(HsvChannel.V));
+				value = this.Slider2D(rect2, value, Vector2.zero, Vector2.one, GUIStyle.none, ColorPicker.Styles.colorBoxThumb);
+				if (EditorGUI.EndChangeCheck())
+				{
+					this.m_Color.SetColorChannel(HsvChannel.S, value.x);
+					this.m_Color.SetColorChannel(HsvChannel.V, 1f - value.y);
+					this.OnColorChanged(true);
 				}
 			}
 		}
 
-		private void DoColorSliders()
+		private void DoColorSliders(float availableWidth)
 		{
-			GUILayout.BeginHorizontal(new GUILayoutOption[0]);
-			GUILayout.FlexibleSpace();
-			if (GUILayout.Button(ColorPicker.styles.sliderCycle, GUIStyle.none, new GUILayoutOption[]
-			{
-				GUILayout.ExpandWidth(false)
-			}))
-			{
-				this.m_SliderMode = (this.m_SliderMode + 1) % (ColorPicker.SliderMode)2;
-			}
-			GUILayout.EndHorizontal();
-			GUILayout.Space(7f);
+			float labelWidth = EditorGUIUtility.labelWidth;
+			float fieldWidth = EditorGUIUtility.fieldWidth;
+			EditorGUIUtility.labelWidth = availableWidth - 72f;
+			EditorGUIUtility.fieldWidth = 72f;
+			this.m_SliderMode = (ColorPicker.SliderMode)EditorGUILayout.IntPopup(GUIContent.Temp(" "), (int)this.m_SliderMode, ColorPicker.Styles.sliderModeLabels, ColorPicker.Styles.sliderModeValues, new GUILayoutOption[0]);
+			GUILayout.Space(6f);
+			EditorGUIUtility.labelWidth = labelWidth;
+			EditorGUIUtility.fieldWidth = fieldWidth;
+			EditorGUIUtility.labelWidth = 14f;
 			ColorPicker.SliderMode sliderMode = this.m_SliderMode;
 			if (sliderMode != ColorPicker.SliderMode.HSV)
 			{
-				if (sliderMode == ColorPicker.SliderMode.RGB)
-				{
-					this.RGBSliders();
-				}
+				this.RGBSliders();
 			}
 			else
 			{
@@ -1148,57 +769,141 @@ namespace UnityEditor
 			}
 			if (this.m_ShowAlpha)
 			{
-				this.m_AlphaTexture = ColorPicker.Update1DSlider(this.m_AlphaTexture, 32, 0f, 0f, ref this.m_OldAlpha, ref this.m_OldAlpha, 3, false, 1f, -1f, false, this.m_HDRValues.m_TonemappingType);
-				float displayScale = (!this.m_HDR) ? 255f : 1f;
-				string formatString = (!this.m_HDR) ? EditorGUI.kIntFieldFormatString : EditorGUI.kFloatFieldFormatString;
-				this.m_A = this.TexturedSlider(this.m_AlphaTexture, "A", this.m_A, 0f, 1f, displayScale, formatString, null);
+				this.m_AlphaTexture = this.Update1DSlider(this.m_AlphaTexture, 32, 0f, 0f, ref this.m_OldAlpha, ref this.m_OldAlpha, 3, false);
+				float num = 1f;
+				string formatString = EditorGUI.kFloatFieldFormatString;
+				ColorPicker.SliderMode sliderMode2 = this.m_SliderMode;
+				if (sliderMode2 != ColorPicker.SliderMode.HSV)
+				{
+					if (sliderMode2 == ColorPicker.SliderMode.RGB)
+					{
+						num = 255f;
+						formatString = EditorGUI.kIntFieldFormatString;
+					}
+				}
+				else
+				{
+					num = 100f;
+					formatString = EditorGUI.kIntFieldFormatString;
+				}
+				Rect controlRect = EditorGUILayout.GetControlRect(true, new GUILayoutOption[0]);
+				if (Event.current.type == EventType.Repaint)
+				{
+					Rect rect = controlRect;
+					rect.xMin += EditorGUIUtility.labelWidth;
+					rect.xMax -= EditorGUIUtility.fieldWidth + 5f;
+					rect = ColorPicker.Styles.sliderBackground.padding.Remove(rect);
+					Rect sourceRect = new Rect
+					{
+						x = 0f,
+						y = 0f,
+						width = rect.width / rect.height,
+						height = 1f
+					};
+					Graphics.DrawTexture(rect, ColorPicker.Styles.alphaSliderCheckerBackground, sourceRect, 0, 0, 0, 0);
+				}
+				EditorGUI.BeginChangeCheck();
+				float num2 = this.m_Color.GetColorChannelNormalized(RgbaChannel.A) * num;
+				num2 = EditorGUI.SliderWithTexture(controlRect, GUIContent.Temp("A"), num2, 0f, num, formatString, this.m_AlphaTexture, new GUILayoutOption[0]);
+				if (EditorGUI.EndChangeCheck())
+				{
+					this.m_Color.SetColorChannel(RgbaChannel.A, num2 / num);
+					this.OnColorChanged(true);
+				}
+				GUILayout.Space(6f);
 			}
+			EditorGUIUtility.labelWidth = labelWidth;
 		}
 
 		private void DoHexField(float availableWidth)
 		{
 			float labelWidth = EditorGUIUtility.labelWidth;
 			float fieldWidth = EditorGUIUtility.fieldWidth;
-			EditorGUIUtility.labelWidth = availableWidth - 85f;
-			EditorGUIUtility.fieldWidth = 85f;
-			EditorGUI.indentLevel++;
+			EditorGUIUtility.labelWidth = availableWidth - 72f;
+			EditorGUIUtility.fieldWidth = 72f;
 			EditorGUI.BeginChangeCheck();
-			Color normalizedColor = EditorGUILayout.HexColorTextField(GUIContent.Temp("Hex Color"), ColorPicker.color, this.m_ShowAlpha, new GUILayoutOption[0]);
+			Color32 color = EditorGUILayout.HexColorTextField(ColorPicker.Styles.hexLabel, this.m_Color.color, false, new GUILayoutOption[0]);
 			if (EditorGUI.EndChangeCheck())
 			{
-				this.SetNormalizedColor(normalizedColor);
-				if (this.m_HDR)
-				{
-					this.SetHDRScaleFactor(1f);
-				}
+				this.m_Color.SetColorChannel(RgbaChannel.R, color.r);
+				this.m_Color.SetColorChannel(RgbaChannel.G, color.g);
+				this.m_Color.SetColorChannel(RgbaChannel.B, color.b);
+				this.OnColorChanged(true);
 			}
-			EditorGUI.indentLevel--;
 			EditorGUIUtility.labelWidth = labelWidth;
 			EditorGUIUtility.fieldWidth = fieldWidth;
 		}
 
+		private void DoExposureSlider()
+		{
+			float labelWidth = EditorGUIUtility.labelWidth;
+			EditorGUIUtility.labelWidth = EditorStyles.label.CalcSize(ColorPicker.Styles.exposureValue).x + (float)EditorStyles.label.margin.right;
+			Rect rect = GUILayoutUtility.GetRect(0f, EditorGUIUtility.singleLineHeight);
+			EditorGUI.BeginChangeCheck();
+			float exposureValue = EditorGUI.Slider(rect, ColorPicker.Styles.exposureValue, this.m_Color.exposureValue, -this.m_ExposureSliderMax, this.m_ExposureSliderMax, -3.40282347E+38f, 3.40282347E+38f);
+			if (EditorGUI.EndChangeCheck())
+			{
+				this.m_Color.exposureValue = exposureValue;
+				this.OnColorChanged(true);
+			}
+			EditorGUIUtility.labelWidth = labelWidth;
+		}
+
+		private void DoExposureSwatches()
+		{
+			Rect rect = GUILayoutUtility.GetRect(GUIContent.none, ColorPicker.Styles.exposureSwatch, new GUILayoutOption[]
+			{
+				GUILayout.ExpandWidth(true)
+			});
+			int num = 5;
+			Rect position = new Rect
+			{
+				x = rect.x + (rect.width - (float)num * ColorPicker.Styles.exposureSwatch.fixedWidth) * 0.5f,
+				y = rect.y,
+				width = ColorPicker.Styles.exposureSwatch.fixedWidth,
+				height = ColorPicker.Styles.exposureSwatch.fixedHeight
+			};
+			Color backgroundColor = GUI.backgroundColor;
+			Color contentColor = GUI.contentColor;
+			for (int i = 0; i < num; i++)
+			{
+				int num2 = i - num / 2;
+				Color color = this.m_Color.exposureAdjustedColor * Mathf.Pow(2f, (float)num2);
+				color.a = 1f;
+				GUI.backgroundColor = color;
+				GUI.contentColor = ((VisionUtility.ComputePerceivedLuminance(color) >= 0.5f) ? ColorPicker.Styles.highLuminanceContentColor : ColorPicker.Styles.lowLuminanceContentColor);
+				if (GUI.Button(position, GUIContent.Temp((num2 != 0) ? ((num2 >= 0) ? string.Format("+{0}", num2) : num2.ToString()) : null), ColorPicker.Styles.exposureSwatch))
+				{
+					this.m_Color.exposureValue = Mathf.Clamp(this.m_Color.exposureValue + (float)num2, -this.m_ExposureSliderMax, this.m_ExposureSliderMax);
+					this.OnColorChanged(true);
+				}
+				if (num2 == 0 && Event.current.type == EventType.Repaint)
+				{
+					GUI.backgroundColor = GUI.contentColor;
+					ColorPicker.Styles.selectedExposureSwatchStroke.Draw(position, false, false, false, false);
+				}
+				position.x += position.width;
+			}
+			GUI.backgroundColor = backgroundColor;
+			GUI.contentColor = contentColor;
+		}
+
 		private void DoPresetsGUI()
 		{
-			GUILayout.BeginHorizontal(new GUILayoutOption[0]);
-			this.m_ShowPresets = GUILayout.Toggle(this.m_ShowPresets, ColorPicker.styles.presetsToggle, ColorPicker.styles.foldout, new GUILayoutOption[0]);
-			GUILayout.Space(17f);
-			GUILayout.EndHorizontal();
+			Rect rect = GUILayoutUtility.GetRect(ColorPicker.Styles.presetsToggle, EditorStyles.foldout);
+			rect.xMax -= 17f;
+			this.m_ShowPresets = EditorGUI.Foldout(rect, this.m_ShowPresets, ColorPicker.Styles.presetsToggle);
 			if (this.m_ShowPresets)
 			{
-				GUILayout.Space(-18f);
-				Rect rect = GUILayoutUtility.GetRect(0f, Mathf.Clamp(this.m_ColorLibraryEditor.contentHeight, 20f, 250f));
-				this.m_ColorLibraryEditor.OnGUI(rect, ColorPicker.color);
+				GUILayout.Space(-(EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing));
+				Rect rect2 = GUILayoutUtility.GetRect(0f, Mathf.Clamp(this.m_ColorLibraryEditor.contentHeight, 20f, 250f));
+				this.m_ColorLibraryEditor.OnGUI(rect2, ColorPicker.color);
 			}
 		}
 
 		private void OnGUI()
 		{
-			this.InitIfNeeded();
-			if (this.m_resetKeyboardControl)
-			{
-				GUIUtility.keyboardControl = 0;
-				this.m_resetKeyboardControl = false;
-			}
+			this.InitializePresetsLibraryIfNeeded();
 			EventType type = Event.current.type;
 			if (type == EventType.ExecuteCommand)
 			{
@@ -1211,20 +916,18 @@ namespace UnityEditor
 						{
 							if (commandName == "EyeDropperCancelled")
 							{
-								base.Repaint();
-								this.m_ColorBoxMode = this.m_OldColorBoxMode;
+								this.OnEyedropperCancelled();
 							}
 						}
 						else
 						{
+							this.m_ColorBoxMode = ColorPicker.ColorBoxMode.HSV;
 							Color lastPickedColor = EyeDropper.GetLastPickedColor();
-							this.m_R = lastPickedColor.r;
-							this.m_G = lastPickedColor.g;
-							this.m_B = lastPickedColor.b;
-							this.RGBToHSV();
-							this.m_ColorBoxMode = this.m_OldColorBoxMode;
-							this.m_Color = new Color(this.m_R, this.m_G, this.m_B, this.m_A);
-							this.SendEvent(true);
+							this.m_Color.SetColorChannelHdr(RgbaChannel.R, lastPickedColor.r);
+							this.m_Color.SetColorChannelHdr(RgbaChannel.G, lastPickedColor.g);
+							this.m_Color.SetColorChannelHdr(RgbaChannel.B, lastPickedColor.b);
+							this.m_Color.SetColorChannelHdr(RgbaChannel.A, lastPickedColor.a);
+							this.OnColorChanged(true);
 						}
 					}
 					else
@@ -1233,43 +936,27 @@ namespace UnityEditor
 					}
 				}
 			}
-			Rect rect = EditorGUILayout.BeginVertical(ColorPicker.styles.background, new GUILayoutOption[0]);
+			Rect rect = EditorGUILayout.BeginVertical(ColorPicker.Styles.background, new GUILayoutOption[0]);
 			float width = EditorGUILayout.GetControlRect(false, 1f, EditorStyles.numberField, new GUILayoutOption[0]).width;
-			EditorGUIUtility.labelWidth = width - this.fieldWidth;
-			EditorGUIUtility.fieldWidth = this.fieldWidth;
-			EditorGUI.BeginChangeCheck();
+			EditorGUIUtility.labelWidth = width - 45f;
+			EditorGUIUtility.fieldWidth = 45f;
 			GUILayout.Space(10f);
 			this.DoColorSwatchAndEyedropper();
 			GUILayout.Space(10f);
-			if (this.m_HDR)
-			{
-				this.TonemappingControls();
-				GUILayout.Space(10f);
-			}
 			this.DoColorSpaceGUI();
 			GUILayout.Space(10f);
+			this.DoColorSliders(width);
+			this.DoHexField(width);
+			GUILayout.Space(6f);
 			if (this.m_HDR)
 			{
-				GUILayout.Space(5f);
-				this.BrightnessField(width);
-				GUILayout.Space(10f);
-			}
-			this.DoColorSliders();
-			GUILayout.Space(5f);
-			this.DoHexField(width);
-			GUILayout.Space(10f);
-			if (EditorGUI.EndChangeCheck())
-			{
-				this.colorChanged = true;
+				this.DoExposureSlider();
+				GUILayout.Space(6f);
+				this.DoExposureSwatches();
+				GUILayout.Space(6f);
 			}
 			this.DoPresetsGUI();
 			this.HandleCopyPasteEvents();
-			if (this.colorChanged)
-			{
-				this.colorChanged = false;
-				this.m_Color = new Color(this.m_R, this.m_G, this.m_B, this.m_A);
-				this.SendEvent(true);
-			}
 			EditorGUILayout.EndVertical();
 			if (rect.height > 0f && Event.current.type == EventType.Repaint)
 			{
@@ -1285,11 +972,16 @@ namespace UnityEditor
 						base.Close();
 					}
 				}
+				else if (this.m_ColorBoxMode == ColorPicker.ColorBoxMode.EyeDropper)
+				{
+					EyeDropper.End();
+					this.OnEyedropperCancelled();
+				}
 				else
 				{
 					Undo.RevertAllDownToGroup(this.m_ModalUndoGroup);
-					this.m_Color = this.m_OriginalColor;
-					this.SendEvent(false);
+					this.m_Color.Reset();
+					this.OnColorChanged(false);
 					base.Close();
 					GUIUtility.ExitGUI();
 				}
@@ -1299,6 +991,12 @@ namespace UnityEditor
 				GUIUtility.keyboardControl = 0;
 				base.Repaint();
 			}
+		}
+
+		private void OnEyedropperCancelled()
+		{
+			base.Repaint();
+			this.m_ColorBoxMode = ColorPicker.ColorBoxMode.HSV;
 		}
 
 		private void SetHeight(float newHeight)
@@ -1330,10 +1028,9 @@ namespace UnityEditor
 								{
 									if (!this.m_ShowAlpha)
 									{
-										color.a = this.m_A;
+										color.a = this.m_Color.GetColorChannelNormalized(RgbaChannel.A);
 									}
 									this.SetColor(color);
-									this.colorChanged = true;
 									GUI.changed = true;
 									current.Use();
 								}
@@ -1360,54 +1057,6 @@ namespace UnityEditor
 			}
 		}
 
-		private float GetScrollWheelDeltaInRect(Rect rect)
-		{
-			Event current = Event.current;
-			float result;
-			if (current.type == EventType.ScrollWheel)
-			{
-				if (rect.Contains(current.mousePosition))
-				{
-					result = current.delta.y;
-					return result;
-				}
-			}
-			result = 0f;
-			return result;
-		}
-
-		private void Slider3D(Rect boxPos, Rect sliderPos, ref float x, ref float y, ref float z, GUIStyle box, GUIStyle thumb2D, GUIStyle thumbHoriz)
-		{
-			Rect colorBoxRect = boxPos;
-			colorBoxRect.x += 1f;
-			colorBoxRect.y += 1f;
-			colorBoxRect.width -= 2f;
-			colorBoxRect.height -= 2f;
-			this.DrawColorSpaceBox(colorBoxRect, z);
-			Vector2 value = new Vector2(x, 1f - y);
-			value = this.Slider2D(boxPos, value, new Vector2(0f, 0f), new Vector2(1f, 1f), box, thumb2D);
-			x = value.x;
-			y = 1f - value.y;
-			if (this.m_HDR)
-			{
-				this.SpecialHDRBrightnessHandling(boxPos, sliderPos);
-			}
-			Rect colorSliderRect = new Rect(sliderPos.x + 1f, sliderPos.y + 1f, sliderPos.width - 2f, sliderPos.height - 2f);
-			this.DrawColorSlider(colorSliderRect, new Vector2(x, y));
-			if (Event.current.type == EventType.MouseDown && sliderPos.Contains(Event.current.mousePosition))
-			{
-				this.RemoveFocusFromActiveTextField();
-			}
-			z = GUI.VerticalSlider(sliderPos, z, 1f, 0f, box, thumbHoriz);
-			ColorPicker.DrawLabelOutsideRect(new Rect(sliderPos.xMax - sliderPos.height, sliderPos.y, sliderPos.height + 1f, sliderPos.height + 1f), this.GetZAxisLabel(this.m_ColorBoxMode), ColorPicker.LabelLocation.Right);
-		}
-
-		private void RemoveFocusFromActiveTextField()
-		{
-			EditorGUI.EndEditingActiveTextField();
-			GUIUtility.keyboardControl = 0;
-		}
-
 		public static Texture2D GetGradientTextureWithAlpha1To0()
 		{
 			Texture2D arg_51_0;
@@ -1430,7 +1079,7 @@ namespace UnityEditor
 
 		private static Texture2D CreateGradientTexture(string name, int width, int height, Color leftColor, Color rightColor)
 		{
-			Texture2D texture2D = new Texture2D(width, height, TextureFormat.RGBA32, false);
+			Texture2D texture2D = new Texture2D(width, height, TextureFormat.RGBA32, false, true);
 			texture2D.name = name;
 			texture2D.hideFlags = HideFlags.HideAndDontSave;
 			Color[] array = new Color[width * height];
@@ -1448,124 +1097,12 @@ namespace UnityEditor
 			return texture2D;
 		}
 
-		private void TonemappingControls()
+		private void OnColorChanged(bool exitGUI = true)
 		{
-			bool flag = false;
-			EditorGUI.BeginChangeCheck();
-			this.m_UseTonemappingPreview = GUILayout.Toggle(this.m_UseTonemappingPreview, ColorPicker.styles.tonemappingToggle, ColorPicker.styles.toggle, new GUILayoutOption[0]);
-			if (EditorGUI.EndChangeCheck())
-			{
-				flag = true;
-			}
-			if (this.m_UseTonemappingPreview)
-			{
-				EditorGUI.indentLevel++;
-				EditorGUI.BeginChangeCheck();
-				float power = (QualitySettings.activeColorSpace != ColorSpace.Linear) ? 2f : 1f;
-				this.m_HDRValues.m_ExposureAdjustment = EditorGUILayout.PowerSlider("", this.m_HDRValues.m_ExposureAdjustment, this.m_HDRConfig.minExposureValue, this.m_HDRConfig.maxExposureValue, power, new GUILayoutOption[0]);
-				if (Event.current.type == EventType.Repaint)
-				{
-					GUI.Label(EditorGUILayout.s_LastRect, GUIContent.Temp("", "Exposure value"));
-				}
-				if (EditorGUI.EndChangeCheck())
-				{
-					flag = true;
-				}
-				Rect controlRect = EditorGUILayout.GetControlRect(true, 16f, EditorStyles.numberField, new GUILayoutOption[0]);
-				EditorGUI.LabelField(controlRect, GUIContent.Temp("Tonemapped Color"));
-				Rect position = new Rect(controlRect.xMax - this.fieldWidth, controlRect.y, this.fieldWidth, controlRect.height);
-				EditorGUIUtility.DrawColorSwatch(position, ColorPicker.DoTonemapping(ColorPicker.color, this.m_HDRValues.m_ExposureAdjustment), false, false);
-				GUI.Label(position, GUIContent.none, ColorPicker.styles.colorPickerBox);
-				EditorGUI.indentLevel--;
-			}
-			if (flag)
-			{
-				this.m_RGBHSVSlidersDirty = true;
-				this.m_ColorSpaceBoxDirty = true;
-				this.m_ColorSliderDirty = true;
-			}
-		}
-
-		private static float PhotographicTonemapping(float value, float exposureAdjustment)
-		{
-			return 1f - Mathf.Pow(2f, -exposureAdjustment * value);
-		}
-
-		private static Color DoTonemapping(Color col, float exposureAdjustment)
-		{
-			col.r = ColorPicker.PhotographicTonemapping(col.r, exposureAdjustment);
-			col.g = ColorPicker.PhotographicTonemapping(col.g, exposureAdjustment);
-			col.b = ColorPicker.PhotographicTonemapping(col.b, exposureAdjustment);
-			return col;
-		}
-
-		private static void DoTonemapping(Color[] colors, float exposureAdjustment, ColorPicker.TonemappingType tonemappingType)
-		{
-			if (exposureAdjustment >= 0f)
-			{
-				if (tonemappingType == ColorPicker.TonemappingType.Linear)
-				{
-					for (int i = 0; i < colors.Length; i++)
-					{
-						colors[i] = colors[i].RGBMultiplied(exposureAdjustment);
-					}
-				}
-				else
-				{
-					for (int j = 0; j < colors.Length; j++)
-					{
-						colors[j] = ColorPicker.DoTonemapping(colors[j], exposureAdjustment);
-					}
-				}
-			}
-		}
-
-		private void SpecialHDRBrightnessHandling(Rect boxPos, Rect sliderPos)
-		{
-			if (this.m_ColorBoxMode == ColorPicker.ColorBoxMode.SV_H || this.m_ColorBoxMode == ColorPicker.ColorBoxMode.HV_S)
-			{
-				float scrollWheelDeltaInRect = this.GetScrollWheelDeltaInRect(boxPos);
-				if (scrollWheelDeltaInRect != 0f)
-				{
-					this.SetMaxDisplayBrightness(this.m_HDRValues.m_HDRScaleFactor - scrollWheelDeltaInRect * 0.05f);
-				}
-				Rect rect = new Rect(0f, boxPos.y - 7f, boxPos.x - 2f, 14f);
-				Rect dragRect = rect;
-				dragRect.y += rect.height;
-				EditorGUI.BeginChangeCheck();
-				float maxDisplayBrightness = ColorPicker.EditableAxisLabel(rect, dragRect, this.m_HDRValues.m_HDRScaleFactor, 1f, this.m_HDRConfig.maxBrightness, ColorPicker.styles.axisLabelNumberField);
-				if (EditorGUI.EndChangeCheck())
-				{
-					this.SetMaxDisplayBrightness(maxDisplayBrightness);
-				}
-			}
-			if (this.m_ColorBoxMode == ColorPicker.ColorBoxMode.HS_V)
-			{
-				Rect rect2 = new Rect(sliderPos.xMax + 2f, sliderPos.y - 7f, base.position.width - sliderPos.xMax - 2f, 14f);
-				Rect dragRect2 = rect2;
-				dragRect2.y += rect2.height;
-				EditorGUI.BeginChangeCheck();
-				float maxDisplayBrightness2 = ColorPicker.EditableAxisLabel(rect2, dragRect2, this.m_HDRValues.m_HDRScaleFactor, 1f, this.m_HDRConfig.maxBrightness, ColorPicker.styles.axisLabelNumberField);
-				if (EditorGUI.EndChangeCheck())
-				{
-					this.SetMaxDisplayBrightness(maxDisplayBrightness2);
-				}
-			}
-		}
-
-		private static float EditableAxisLabel(Rect rect, Rect dragRect, float value, float minValue, float maxValue, GUIStyle style)
-		{
-			int controlID = GUIUtility.GetControlID(162594855, FocusType.Keyboard, rect);
-			string kFloatFieldFormatString = EditorGUI.kFloatFieldFormatString;
-			EditorGUI.kFloatFieldFormatString = ((value >= 10f) ? "n0" : "n1");
-			float value2 = EditorGUI.DoFloatField(EditorGUI.s_RecycledEditor, rect, dragRect, controlID, value, EditorGUI.kFloatFieldFormatString, style, true);
-			EditorGUI.kFloatFieldFormatString = kFloatFieldFormatString;
-			return Mathf.Clamp(value2, minValue, maxValue);
-		}
-
-		private void SendEvent(bool exitGUI)
-		{
-			if (this.m_DelegateView)
+			this.m_OldAlpha = -1f;
+			this.m_ColorSpaceBoxDirty = true;
+			this.m_ExposureSliderMax = Mathf.Max(this.m_ExposureSliderMax, this.m_Color.exposureValue);
+			if (this.m_DelegateView != null)
 			{
 				Event e = EditorGUIUtility.CommandEvent("ColorPickerChanged");
 				if (!this.m_IsOSColorPicker)
@@ -1578,20 +1115,10 @@ namespace UnityEditor
 					GUIUtility.ExitGUI();
 				}
 			}
-		}
-
-		private void SetNormalizedColor(Color c)
-		{
-			if (c.maxColorComponent > 1f)
+			if (this.m_ColorChangedCallback != null)
 			{
-				Debug.LogError("Setting normalized color with a non-normalized color: " + c);
+				this.m_ColorChangedCallback(ColorPicker.color);
 			}
-			this.m_Color = c;
-			this.m_R = c.r;
-			this.m_G = c.g;
-			this.m_B = c.b;
-			this.RGBToHSV();
-			this.m_A = c.a;
 		}
 
 		private void SetColor(Color c)
@@ -1602,60 +1129,52 @@ namespace UnityEditor
 			}
 			else
 			{
-				float hDRScaleFactor = this.m_HDRValues.m_HDRScaleFactor;
-				if (this.m_HDR)
-				{
-					float maxColorComponent = c.maxColorComponent;
-					if (maxColorComponent > 1f)
-					{
-						c = c.RGBMultiplied(1f / maxColorComponent);
-					}
-					this.SetHDRScaleFactor(Mathf.Max(1f, maxColorComponent));
-				}
-				if (this.m_Color.r != c.r || this.m_Color.g != c.g || this.m_Color.b != c.b || this.m_Color.a != c.a || hDRScaleFactor != this.m_HDRValues.m_HDRScaleFactor)
-				{
-					if (c.r > 1f || c.g > 1f || c.b > 1f)
-					{
-						Debug.LogError(string.Format("Invalid normalized color: {0}, normalize value: {1}", c, this.m_HDRValues.m_HDRScaleFactor));
-					}
-					this.m_resetKeyboardControl = true;
-					this.SetNormalizedColor(c);
-					base.Repaint();
-				}
+				this.m_Color.SetColorChannelHdr(RgbaChannel.R, c.r);
+				this.m_Color.SetColorChannelHdr(RgbaChannel.G, c.g);
+				this.m_Color.SetColorChannelHdr(RgbaChannel.B, c.b);
+				this.m_Color.SetColorChannelHdr(RgbaChannel.A, c.a);
+				this.OnColorChanged(true);
+				base.Repaint();
 			}
 		}
 
-		public static void Show(GUIView viewToUpdate, Color col)
+		public static void Show(GUIView viewToUpdate, Color col, bool showAlpha = true, bool hdr = false)
 		{
-			ColorPicker.Show(viewToUpdate, col, true, false, null);
+			ColorPicker.Show(viewToUpdate, null, col, showAlpha, hdr);
 		}
 
-		public static void Show(GUIView viewToUpdate, Color col, bool showAlpha, bool hdr, ColorPickerHDRConfig hdrConfig)
+		public static void Show(Action<Color> colorChangedCallback, Color col, bool showAlpha = true, bool hdr = false)
 		{
-			ColorPicker get = ColorPicker.get;
-			get.m_HDR = hdr;
-			get.m_HDRConfig = new ColorPickerHDRConfig(hdrConfig ?? ColorPicker.defaultHDRConfig);
-			get.m_DelegateView = viewToUpdate;
-			get.SetColor(col);
-			get.m_OriginalColor = ColorPicker.get.m_Color;
-			get.m_ShowAlpha = showAlpha;
-			get.m_ModalUndoGroup = Undo.GetCurrentGroup();
-			if (get.m_HDR)
+			ColorPicker.Show(null, colorChangedCallback, col, showAlpha, hdr);
+		}
+
+		private static void Show(GUIView viewToUpdate, Action<Color> colorChangedCallback, Color col, bool showAlpha, bool hdr)
+		{
+			ColorPicker instance = ColorPicker.instance;
+			instance.m_HDR = hdr;
+			instance.m_Color = new ColorMutator(col);
+			instance.m_ShowAlpha = showAlpha;
+			instance.m_DelegateView = viewToUpdate;
+			instance.m_ColorChangedCallback = colorChangedCallback;
+			instance.m_ModalUndoGroup = Undo.GetCurrentGroup();
+			instance.m_ExposureSliderMax = Mathf.Max(instance.m_ExposureSliderMax, instance.m_Color.exposureValue);
+			ColorPicker.originalKeyboardControl = GUIUtility.keyboardControl;
+			if (instance.m_HDR)
 			{
-				get.m_IsOSColorPicker = false;
+				instance.m_IsOSColorPicker = false;
 			}
-			if (get.m_IsOSColorPicker)
+			if (instance.m_IsOSColorPicker)
 			{
 				OSColorPicker.Show(showAlpha);
 			}
 			else
 			{
-				get.titleContent = ((!hdr) ? EditorGUIUtility.TextContent("Color") : EditorGUIUtility.TextContent("HDR Color"));
-				float y = (float)EditorPrefs.GetInt("CPickerHeight", (int)get.position.height);
-				get.minSize = new Vector2(233f, y);
-				get.maxSize = new Vector2(233f, y);
-				get.InitIfNeeded();
-				get.ShowAuxWindow();
+				instance.titleContent = ((!hdr) ? EditorGUIUtility.TrTextContent("Color", null, null) : EditorGUIUtility.TrTextContent("HDR Color", null, null));
+				float y = (float)EditorPrefs.GetInt("CPickerHeight", (int)instance.position.height);
+				instance.minSize = new Vector2(233f, y);
+				instance.maxSize = new Vector2(233f, y);
+				instance.InitializePresetsLibraryIfNeeded();
+				instance.ShowAuxWindow();
 			}
 		}
 
@@ -1670,10 +1189,13 @@ namespace UnityEditor
 				else
 				{
 					Color color = OSColorPicker.color;
-					if (this.m_Color != color)
+					if (this.m_Color.color != color)
 					{
-						this.m_Color = color;
-						this.SendEvent(true);
+						this.m_Color.SetColorChannel(RgbaChannel.R, color.r);
+						this.m_Color.SetColorChannel(RgbaChannel.G, color.g);
+						this.m_Color.SetColorChannel(RgbaChannel.B, color.b);
+						this.m_Color.SetColorChannel(RgbaChannel.A, color.a);
+						this.OnColorChanged(true);
 					}
 				}
 			}
@@ -1686,17 +1208,12 @@ namespace UnityEditor
 			base.hideFlags = HideFlags.DontSave;
 			EditorApplication.update = (EditorApplication.CallbackFunction)Delegate.Combine(EditorApplication.update, new EditorApplication.CallbackFunction(this.PollOSColorPicker));
 			EditorGUIUtility.editingTextField = true;
-			this.m_HDRValues.m_ExposureAdjustment = EditorPrefs.GetFloat("CPickerExposure", 1f);
-			this.m_UseTonemappingPreview = (EditorPrefs.GetInt("CPTonePreview", 0) != 0);
 			this.m_SliderMode = (ColorPicker.SliderMode)EditorPrefs.GetInt("CPSliderMode", 0);
-			this.m_ColorBoxMode = (ColorPicker.ColorBoxMode)EditorPrefs.GetInt("CPColorMode", 0);
 			this.m_ShowPresets = (EditorPrefs.GetInt("CPPresetsShow", 1) != 0);
 		}
 
 		private void OnDisable()
 		{
-			EditorPrefs.SetFloat("CPickerExposure", this.m_HDRValues.m_ExposureAdjustment);
-			EditorPrefs.SetInt("CPTonePreview", (!this.m_UseTonemappingPreview) ? 0 : 1);
 			EditorPrefs.SetInt("CPSliderMode", (int)this.m_SliderMode);
 			EditorPrefs.SetInt("CPColorMode", (int)this.m_ColorBoxMode);
 			EditorPrefs.SetInt("CPPresetsShow", (!this.m_ShowPresets) ? 0 : 1);
@@ -1742,7 +1259,7 @@ namespace UnityEditor
 			{
 				UnityEngine.Object.DestroyImmediate(this.m_AlphaTexture);
 			}
-			ColorPicker.s_SharedColorPicker = null;
+			ColorPicker.s_Instance = null;
 			if (this.m_IsOSColorPicker)
 			{
 				OSColorPicker.Close();
@@ -1756,10 +1273,7 @@ namespace UnityEditor
 			{
 				this.m_ColorLibraryEditor.UnloadUsedLibraries();
 			}
-			if (this.m_ColorBoxMode == ColorPicker.ColorBoxMode.EyeDropper)
-			{
-				EditorPrefs.SetInt("CPColorMode", (int)this.m_OldColorBoxMode);
-			}
+			GUIUtility.keyboardControl = ColorPicker.originalKeyboardControl;
 		}
 	}
 }

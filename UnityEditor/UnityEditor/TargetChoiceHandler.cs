@@ -58,20 +58,13 @@ namespace UnityEditor
 			for (int i = 0; i < array.Length; i++)
 			{
 				UnityEngine.Object @object = array[i];
-				string text = "Set to Value of " + @object.name;
+				string text = string.Format("Set to Value of {0}", @object.name);
 				if (list.Contains(text))
 				{
 					int num = 1;
 					while (true)
 					{
-						text = string.Concat(new object[]
-						{
-							"Set to Value of ",
-							@object.name,
-							" (",
-							num,
-							")"
-						});
+						text = string.Format("Set to Value of {0}({1})", @object.name, num);
 						if (!list.Contains(text))
 						{
 							break;
@@ -80,13 +73,13 @@ namespace UnityEditor
 					}
 				}
 				list.Add(text);
-				GUIContent arg_EE_1 = EditorGUIUtility.TextContent(text);
-				bool arg_EE_2 = false;
+				GUIContent arg_CF_1 = EditorGUIUtility.TextContent(text);
+				bool arg_CF_2 = false;
 				if (TargetChoiceHandler.<>f__mg$cache0 == null)
 				{
 					TargetChoiceHandler.<>f__mg$cache0 = new GenericMenu.MenuFunction2(TargetChoiceHandler.TargetChoiceForwardFunction);
 				}
-				menu.AddItem(arg_EE_1, arg_EE_2, TargetChoiceHandler.<>f__mg$cache0, new PropertyAndTargetHandler(property2, @object, func));
+				menu.AddItem(arg_CF_1, arg_CF_2, TargetChoiceHandler.<>f__mg$cache0, new PropertyAndTargetHandler(property2, @object, func));
 			}
 		}
 	}

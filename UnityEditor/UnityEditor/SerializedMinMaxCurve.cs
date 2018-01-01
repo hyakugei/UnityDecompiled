@@ -6,6 +6,8 @@ namespace UnityEditor
 {
 	internal class SerializedMinMaxCurve
 	{
+		public SerializedProperty rootProperty;
+
 		public SerializedProperty scalar;
 
 		public SerializedProperty minScalar;
@@ -33,8 +35,6 @@ namespace UnityEditor
 		public bool m_AllowRandom;
 
 		public bool m_AllowCurves;
-
-		public float m_MaxAllowedScalar = float.PositiveInfinity;
 
 		public MinMaxCurveState state
 		{
@@ -72,7 +72,6 @@ namespace UnityEditor
 			}
 			set
 			{
-				value = this.ClampValueToMaxAllowed(value);
 				if (!this.signedRange)
 				{
 					value = Mathf.Max(value, 0f);
@@ -89,7 +88,6 @@ namespace UnityEditor
 			}
 			set
 			{
-				value = this.ClampValueToMaxAllowed(value);
 				if (!this.signedRange)
 				{
 					value = Mathf.Max(value, 0f);
@@ -139,6 +137,7 @@ namespace UnityEditor
 			this.m_AllowConstant = true;
 			this.m_AllowRandom = true;
 			this.m_AllowCurves = true;
+			this.rootProperty = ((!useProp0) ? m.GetProperty(this.m_Name) : m.GetProperty0(this.m_Name));
 			this.scalar = ((!useProp0) ? m.GetProperty(this.m_Name, "scalar") : m.GetProperty0(this.m_Name, "scalar"));
 			this.minScalar = ((!useProp0) ? m.GetProperty(this.m_Name, "minScalar") : m.GetProperty0(this.m_Name, "minScalar"));
 			this.maxCurve = ((!useProp0) ? m.GetProperty(this.m_Name, "maxCurve") : m.GetProperty0(this.m_Name, "maxCurve"));
@@ -155,20 +154,6 @@ namespace UnityEditor
 				}
 			}
 			m.AddToModuleCurves(this.maxCurve);
-		}
-
-		private float ClampValueToMaxAllowed(float val)
-		{
-			float result;
-			if (Mathf.Abs(val) > this.m_MaxAllowedScalar)
-			{
-				result = this.m_MaxAllowedScalar * Mathf.Sign(val);
-			}
-			else
-			{
-				result = val;
-			}
-			return result;
 		}
 
 		public Vector2 GetAxisScalars()
@@ -237,11 +222,7 @@ namespace UnityEditor
 
 		public void SetMinMaxState(MinMaxCurveState newState, bool addToCurveEditor)
 		{
-			if (this.stateHasMultipleDifferentValues)
-			{
-				Debug.LogError("SetMinMaxState is not allowed with multiple different values");
-			}
-			else if (newState != this.state)
+			if (newState != this.state)
 			{
 				MinMaxCurveState state = this.state;
 				ParticleSystemCurveEditor particleSystemCurveEditor = this.m_Module.GetParticleSystemCurveEditor();

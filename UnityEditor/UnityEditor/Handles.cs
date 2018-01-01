@@ -12,7 +12,7 @@ namespace UnityEditor
 {
 	public sealed class Handles
 	{
-		internal enum FilterMode
+		internal enum CameraFilterMode
 		{
 			Off,
 			ShowFiltered,
@@ -80,11 +80,573 @@ namespace UnityEditor
 
 		public delegate float SizeFunction(Vector3 position);
 
-		private enum PlaneHandle
+		internal struct PositionHandleIds
 		{
-			xzPlane,
-			xyPlane,
-			yzPlane
+			public readonly int x;
+
+			public readonly int y;
+
+			public readonly int z;
+
+			public readonly int xy;
+
+			public readonly int yz;
+
+			public readonly int xz;
+
+			public readonly int xyz;
+
+			public static Handles.PositionHandleIds @default
+			{
+				get
+				{
+					return new Handles.PositionHandleIds(GUIUtility.GetControlID(Handles.s_xAxisMoveHandleHash, FocusType.Passive), GUIUtility.GetControlID(Handles.s_yAxisMoveHandleHash, FocusType.Passive), GUIUtility.GetControlID(Handles.s_zAxisMoveHandleHash, FocusType.Passive), GUIUtility.GetControlID(Handles.s_xyAxisMoveHandleHash, FocusType.Passive), GUIUtility.GetControlID(Handles.s_xzAxisMoveHandleHash, FocusType.Passive), GUIUtility.GetControlID(Handles.s_yzAxisMoveHandleHash, FocusType.Passive), GUIUtility.GetControlID(Handles.s_FreeMoveHandleHash, FocusType.Passive));
+				}
+			}
+
+			public int this[int index]
+			{
+				get
+				{
+					int result;
+					switch (index)
+					{
+					case 0:
+						result = this.x;
+						break;
+					case 1:
+						result = this.y;
+						break;
+					case 2:
+						result = this.z;
+						break;
+					case 3:
+						result = this.xy;
+						break;
+					case 4:
+						result = this.yz;
+						break;
+					case 5:
+						result = this.xz;
+						break;
+					case 6:
+						result = this.xyz;
+						break;
+					default:
+						result = -1;
+						break;
+					}
+					return result;
+				}
+			}
+
+			public PositionHandleIds(int x, int y, int z, int xy, int xz, int yz, int xyz)
+			{
+				this.x = x;
+				this.y = y;
+				this.z = z;
+				this.xy = xy;
+				this.yz = yz;
+				this.xz = xz;
+				this.xyz = xyz;
+			}
+
+			public bool Has(int id)
+			{
+				return this.x == id || this.y == id || this.z == id || this.xy == id || this.yz == id || this.xz == id || this.xyz == id;
+			}
+
+			public override int GetHashCode()
+			{
+				return this.x ^ this.y ^ this.z ^ this.xy ^ this.xz ^ this.yz ^ this.xyz;
+			}
+
+			public override bool Equals(object obj)
+			{
+				bool result;
+				if (!(obj is Handles.PositionHandleIds))
+				{
+					result = false;
+				}
+				else
+				{
+					Handles.PositionHandleIds positionHandleIds = (Handles.PositionHandleIds)obj;
+					result = (positionHandleIds.x == this.x && positionHandleIds.y == this.y && positionHandleIds.z == this.z && positionHandleIds.xy == this.xy && positionHandleIds.xz == this.xz && positionHandleIds.yz == this.yz && positionHandleIds.xyz == this.xyz);
+				}
+				return result;
+			}
+		}
+
+		internal struct PositionHandleParam
+		{
+			[Flags]
+			public enum Handle
+			{
+				X = 1,
+				Y = 2,
+				Z = 4,
+				XY = 8,
+				YZ = 16,
+				XZ = 32,
+				XYZ = 64
+			}
+
+			public enum Orientation
+			{
+				Signed,
+				Camera
+			}
+
+			public static Handles.PositionHandleParam DefaultHandle = new Handles.PositionHandleParam(Handles.PositionHandleParam.Handle.X | Handles.PositionHandleParam.Handle.Y | Handles.PositionHandleParam.Handle.Z | Handles.PositionHandleParam.Handle.XY | Handles.PositionHandleParam.Handle.YZ | Handles.PositionHandleParam.Handle.XZ, Vector3.zero, Vector3.one, Vector3.zero, Vector3.one * 0.25f, Handles.PositionHandleParam.Orientation.Signed, Handles.PositionHandleParam.Orientation.Camera);
+
+			public static Handles.PositionHandleParam DefaultFreeMoveHandle = new Handles.PositionHandleParam(Handles.PositionHandleParam.Handle.X | Handles.PositionHandleParam.Handle.Y | Handles.PositionHandleParam.Handle.Z | Handles.PositionHandleParam.Handle.XYZ, Vector3.zero, Vector3.one, Vector3.zero, Vector3.one * 0.25f, Handles.PositionHandleParam.Orientation.Signed, Handles.PositionHandleParam.Orientation.Signed);
+
+			public readonly Vector3 axisOffset;
+
+			public readonly Vector3 axisSize;
+
+			public readonly Vector3 planeOffset;
+
+			public readonly Vector3 planeSize;
+
+			public readonly Handles.PositionHandleParam.Handle handles;
+
+			public readonly Handles.PositionHandleParam.Orientation axesOrientation;
+
+			public readonly Handles.PositionHandleParam.Orientation planeOrientation;
+
+			public PositionHandleParam(Handles.PositionHandleParam.Handle handles, Vector3 axisOffset, Vector3 axisSize, Vector3 planeOffset, Vector3 planeSize, Handles.PositionHandleParam.Orientation axesOrientation, Handles.PositionHandleParam.Orientation planeOrientation)
+			{
+				this.axisOffset = axisOffset;
+				this.axisSize = axisSize;
+				this.planeOffset = planeOffset;
+				this.planeSize = planeSize;
+				this.handles = handles;
+				this.axesOrientation = axesOrientation;
+				this.planeOrientation = planeOrientation;
+			}
+
+			public bool ShouldShow(int axis)
+			{
+				return (this.handles & (Handles.PositionHandleParam.Handle)(1 << axis)) != (Handles.PositionHandleParam.Handle)0;
+			}
+
+			public bool ShouldShow(Handles.PositionHandleParam.Handle handle)
+			{
+				return (this.handles & handle) != (Handles.PositionHandleParam.Handle)0;
+			}
+		}
+
+		internal struct RotationHandleIds
+		{
+			public readonly int x;
+
+			public readonly int y;
+
+			public readonly int z;
+
+			public readonly int cameraAxis;
+
+			public readonly int xyz;
+
+			public static Handles.RotationHandleIds @default
+			{
+				get
+				{
+					return new Handles.RotationHandleIds(GUIUtility.GetControlID(Handles.s_xRotateHandleHash, FocusType.Passive), GUIUtility.GetControlID(Handles.s_yRotateHandleHash, FocusType.Passive), GUIUtility.GetControlID(Handles.s_zRotateHandleHash, FocusType.Passive), GUIUtility.GetControlID(Handles.s_cameraAxisRotateHandleHash, FocusType.Passive), GUIUtility.GetControlID(Handles.s_xyzRotateHandleHash, FocusType.Passive));
+				}
+			}
+
+			public int this[int index]
+			{
+				get
+				{
+					int result;
+					switch (index)
+					{
+					case 0:
+						result = this.x;
+						break;
+					case 1:
+						result = this.y;
+						break;
+					case 2:
+						result = this.z;
+						break;
+					case 3:
+						result = this.cameraAxis;
+						break;
+					case 4:
+						result = this.xyz;
+						break;
+					default:
+						result = -1;
+						break;
+					}
+					return result;
+				}
+			}
+
+			public RotationHandleIds(int x, int y, int z, int cameraAxis, int xyz)
+			{
+				this.x = x;
+				this.y = y;
+				this.z = z;
+				this.cameraAxis = cameraAxis;
+				this.xyz = xyz;
+			}
+
+			public bool Has(int id)
+			{
+				return this.x == id || this.y == id || this.z == id || this.cameraAxis == id || this.xyz == id;
+			}
+
+			public override int GetHashCode()
+			{
+				return this.x ^ this.y ^ this.z ^ this.cameraAxis ^ this.xyz;
+			}
+
+			public override bool Equals(object obj)
+			{
+				bool result;
+				if (!(obj is Handles.RotationHandleIds))
+				{
+					result = false;
+				}
+				else
+				{
+					Handles.RotationHandleIds rotationHandleIds = (Handles.RotationHandleIds)obj;
+					result = (rotationHandleIds.x == this.x && rotationHandleIds.y == this.y && rotationHandleIds.z == this.z && rotationHandleIds.cameraAxis == this.cameraAxis && rotationHandleIds.xyz == this.xyz);
+				}
+				return result;
+			}
+		}
+
+		internal struct RotationHandleParam
+		{
+			[Flags]
+			public enum Handle
+			{
+				X = 1,
+				Y = 2,
+				Z = 4,
+				CameraAxis = 8,
+				XYZ = 16
+			}
+
+			private static Handles.RotationHandleParam s_Default = new Handles.RotationHandleParam((Handles.RotationHandleParam.Handle)(-1), Vector3.one, 1f, 1.1f, true, false);
+
+			public readonly Vector3 axisSize;
+
+			public readonly float cameraAxisSize;
+
+			public readonly float xyzSize;
+
+			public readonly Handles.RotationHandleParam.Handle handles;
+
+			public readonly bool enableRayDrag;
+
+			public readonly bool displayXYZCircle;
+
+			public static Handles.RotationHandleParam Default
+			{
+				get
+				{
+					return Handles.RotationHandleParam.s_Default;
+				}
+				set
+				{
+					Handles.RotationHandleParam.s_Default = value;
+				}
+			}
+
+			public RotationHandleParam(Handles.RotationHandleParam.Handle handles, Vector3 axisSize, float xyzSize, float cameraAxisSize, bool enableRayDrag, bool displayXYZCircle)
+			{
+				this.axisSize = axisSize;
+				this.xyzSize = xyzSize;
+				this.handles = handles;
+				this.cameraAxisSize = cameraAxisSize;
+				this.enableRayDrag = enableRayDrag;
+				this.displayXYZCircle = displayXYZCircle;
+			}
+
+			public bool ShouldShow(int axis)
+			{
+				return (this.handles & (Handles.RotationHandleParam.Handle)(1 << axis)) != (Handles.RotationHandleParam.Handle)0;
+			}
+
+			public bool ShouldShow(Handles.RotationHandleParam.Handle handle)
+			{
+				return (this.handles & handle) != (Handles.RotationHandleParam.Handle)0;
+			}
+		}
+
+		internal struct ScaleHandleIds
+		{
+			public readonly int x;
+
+			public readonly int y;
+
+			public readonly int z;
+
+			public readonly int xyz;
+
+			public static Handles.ScaleHandleIds @default
+			{
+				get
+				{
+					return new Handles.ScaleHandleIds(GUIUtility.GetControlID(Handles.s_xScaleHandleHash, FocusType.Passive), GUIUtility.GetControlID(Handles.s_yScaleHandleHash, FocusType.Passive), GUIUtility.GetControlID(Handles.s_zScaleHandleHash, FocusType.Passive), GUIUtility.GetControlID(Handles.s_xyzScaleHandleHash, FocusType.Passive));
+				}
+			}
+
+			public int this[int index]
+			{
+				get
+				{
+					int result;
+					switch (index)
+					{
+					case 0:
+						result = this.x;
+						break;
+					case 1:
+						result = this.y;
+						break;
+					case 2:
+						result = this.z;
+						break;
+					case 3:
+						result = this.xyz;
+						break;
+					default:
+						result = -1;
+						break;
+					}
+					return result;
+				}
+			}
+
+			public ScaleHandleIds(int x, int y, int z, int xyz)
+			{
+				this.x = x;
+				this.y = y;
+				this.z = z;
+				this.xyz = xyz;
+			}
+
+			public bool Has(int id)
+			{
+				return this.x == id || this.y == id || this.z == id || this.xyz == id;
+			}
+
+			public override int GetHashCode()
+			{
+				return this.x ^ this.y ^ this.z ^ this.xyz;
+			}
+
+			public override bool Equals(object obj)
+			{
+				bool result;
+				if (!(obj is Handles.ScaleHandleIds))
+				{
+					result = false;
+				}
+				else
+				{
+					Handles.ScaleHandleIds scaleHandleIds = (Handles.ScaleHandleIds)obj;
+					result = (scaleHandleIds.x == this.x && scaleHandleIds.y == this.y && scaleHandleIds.z == this.z && scaleHandleIds.xyz == this.xyz);
+				}
+				return result;
+			}
+		}
+
+		internal struct ScaleHandleParam
+		{
+			[Flags]
+			public enum Handle
+			{
+				X = 1,
+				Y = 2,
+				Z = 4,
+				XYZ = 8
+			}
+
+			public enum Orientation
+			{
+				Signed,
+				Camera
+			}
+
+			private static Handles.ScaleHandleParam s_Default = new Handles.ScaleHandleParam((Handles.ScaleHandleParam.Handle)(-1), Vector3.zero, Vector3.one, Vector3.one, 1f, Handles.ScaleHandleParam.Orientation.Signed);
+
+			public readonly Vector3 axisOffset;
+
+			public readonly Vector3 axisSize;
+
+			public readonly Vector3 axisLineScale;
+
+			public readonly float xyzSize;
+
+			public readonly Handles.ScaleHandleParam.Handle handles;
+
+			public readonly Handles.ScaleHandleParam.Orientation orientation;
+
+			public static Handles.ScaleHandleParam Default
+			{
+				get
+				{
+					return Handles.ScaleHandleParam.s_Default;
+				}
+				set
+				{
+					Handles.ScaleHandleParam.s_Default = value;
+				}
+			}
+
+			public ScaleHandleParam(Handles.ScaleHandleParam.Handle handles, Vector3 axisOffset, Vector3 axisSize, Vector3 axisLineScale, float xyzSize, Handles.ScaleHandleParam.Orientation orientation)
+			{
+				this.axisOffset = axisOffset;
+				this.axisSize = axisSize;
+				this.axisLineScale = axisLineScale;
+				this.xyzSize = xyzSize;
+				this.handles = handles;
+				this.orientation = orientation;
+			}
+
+			public bool ShouldShow(int axis)
+			{
+				return (this.handles & (Handles.ScaleHandleParam.Handle)(1 << axis)) != (Handles.ScaleHandleParam.Handle)0;
+			}
+
+			public bool ShouldShow(Handles.ScaleHandleParam.Handle handle)
+			{
+				return (this.handles & handle) != (Handles.ScaleHandleParam.Handle)0;
+			}
+		}
+
+		internal struct TransformHandleIds
+		{
+			private static readonly int s_TransformTranslationXHash = "TransformTranslationXHash".GetHashCode();
+
+			private static readonly int s_TransformTranslationYHash = "TransformTranslationYHash".GetHashCode();
+
+			private static readonly int s_TransformTranslationZHash = "TransformTranslationZHash".GetHashCode();
+
+			private static readonly int s_TransformTranslationXYHash = "TransformTranslationXYHash".GetHashCode();
+
+			private static readonly int s_TransformTranslationXZHash = "TransformTranslationXZHash".GetHashCode();
+
+			private static readonly int s_TransformTranslationYZHash = "TransformTranslationYZHash".GetHashCode();
+
+			private static readonly int s_TransformTranslationXYZHash = "TransformTranslationXYZHash".GetHashCode();
+
+			private static readonly int s_TransformRotationXHash = "TransformRotationXHash".GetHashCode();
+
+			private static readonly int s_TransformRotationYHash = "TransformRotationYHash".GetHashCode();
+
+			private static readonly int s_TransformRotationZHash = "TransformRotationZHash".GetHashCode();
+
+			private static readonly int s_TransformRotationCameraAxisHash = "TransformRotationCameraAxisHash".GetHashCode();
+
+			private static readonly int s_TransformRotationXYZHash = "TransformRotationXYZHash".GetHashCode();
+
+			private static readonly int s_TransformScaleXHash = "TransformScaleXHash".GetHashCode();
+
+			private static readonly int s_TransformScaleYHash = "TransformScaleYHash".GetHashCode();
+
+			private static readonly int s_TransformScaleZHash = "TransformScaleZHash".GetHashCode();
+
+			private static readonly int s_TransformScaleXYZHash = "TransformScaleXYZHash".GetHashCode();
+
+			public readonly Handles.PositionHandleIds position;
+
+			public readonly Handles.RotationHandleIds rotation;
+
+			public readonly Handles.ScaleHandleIds scale;
+
+			public static Handles.TransformHandleIds Default
+			{
+				get
+				{
+					return new Handles.TransformHandleIds(new Handles.PositionHandleIds(GUIUtility.GetControlID(Handles.TransformHandleIds.s_TransformTranslationXHash, FocusType.Passive), GUIUtility.GetControlID(Handles.TransformHandleIds.s_TransformTranslationYHash, FocusType.Passive), GUIUtility.GetControlID(Handles.TransformHandleIds.s_TransformTranslationZHash, FocusType.Passive), GUIUtility.GetControlID(Handles.TransformHandleIds.s_TransformTranslationXYHash, FocusType.Passive), GUIUtility.GetControlID(Handles.TransformHandleIds.s_TransformTranslationXZHash, FocusType.Passive), GUIUtility.GetControlID(Handles.TransformHandleIds.s_TransformTranslationYZHash, FocusType.Passive), GUIUtility.GetControlID(Handles.TransformHandleIds.s_TransformTranslationXYZHash, FocusType.Passive)), new Handles.RotationHandleIds(GUIUtility.GetControlID(Handles.TransformHandleIds.s_TransformRotationXHash, FocusType.Passive), GUIUtility.GetControlID(Handles.TransformHandleIds.s_TransformRotationYHash, FocusType.Passive), GUIUtility.GetControlID(Handles.TransformHandleIds.s_TransformRotationZHash, FocusType.Passive), GUIUtility.GetControlID(Handles.TransformHandleIds.s_TransformRotationCameraAxisHash, FocusType.Passive), GUIUtility.GetControlID(Handles.TransformHandleIds.s_TransformRotationXYZHash, FocusType.Passive)), new Handles.ScaleHandleIds(GUIUtility.GetControlID(Handles.TransformHandleIds.s_TransformScaleXHash, FocusType.Passive), GUIUtility.GetControlID(Handles.TransformHandleIds.s_TransformScaleYHash, FocusType.Passive), GUIUtility.GetControlID(Handles.TransformHandleIds.s_TransformScaleZHash, FocusType.Passive), GUIUtility.GetControlID(Handles.TransformHandleIds.s_TransformScaleXYZHash, FocusType.Passive)));
+				}
+			}
+
+			public TransformHandleIds(Handles.PositionHandleIds position, Handles.RotationHandleIds rotation, Handles.ScaleHandleIds scale)
+			{
+				this.position = position;
+				this.rotation = rotation;
+				this.scale = scale;
+			}
+
+			public bool Has(int id)
+			{
+				return this.position.Has(id) || this.rotation.Has(id) || this.scale.Has(id);
+			}
+		}
+
+		internal struct TransformHandleParam
+		{
+			private static Handles.TransformHandleParam s_Default = new Handles.TransformHandleParam(new Handles.PositionHandleParam(Handles.PositionHandleParam.Handle.X | Handles.PositionHandleParam.Handle.Y | Handles.PositionHandleParam.Handle.Z | Handles.PositionHandleParam.Handle.XY | Handles.PositionHandleParam.Handle.YZ | Handles.PositionHandleParam.Handle.XZ, Vector3.one * 0.15f, Vector3.one, Vector3.zero, Vector3.one * 0.375f, Handles.PositionHandleParam.Orientation.Signed, Handles.PositionHandleParam.Orientation.Camera), new Handles.RotationHandleParam(Handles.RotationHandleParam.Handle.X | Handles.RotationHandleParam.Handle.Y | Handles.RotationHandleParam.Handle.Z | Handles.RotationHandleParam.Handle.CameraAxis | Handles.RotationHandleParam.Handle.XYZ, Vector3.one * 1.4f, 1.4f, 1.5f, false, false), new Handles.ScaleHandleParam(Handles.ScaleHandleParam.Handle.XYZ, Vector3.zero, Vector3.one, Vector3.one, 1f, Handles.ScaleHandleParam.Orientation.Signed), new Handles.PositionHandleParam(Handles.PositionHandleParam.Handle.X | Handles.PositionHandleParam.Handle.Y | Handles.PositionHandleParam.Handle.XY, Vector3.one * 0.15f, Vector3.one, Vector3.zero, Vector3.one * 0.375f, Handles.PositionHandleParam.Orientation.Signed, Handles.PositionHandleParam.Orientation.Signed), new Handles.RotationHandleParam(Handles.RotationHandleParam.Handle.Z | Handles.RotationHandleParam.Handle.XYZ, Vector3.one * 1.4f, 1.4f, 1.5f, false, false), new Handles.ScaleHandleParam(Handles.ScaleHandleParam.Handle.XYZ, Vector3.zero, Vector3.one, Vector3.one, 1f, Handles.ScaleHandleParam.Orientation.Signed), new Handles.PositionHandleParam(Handles.PositionHandleParam.Handle.X | Handles.PositionHandleParam.Handle.Y | Handles.PositionHandleParam.Handle.Z | Handles.PositionHandleParam.Handle.XY | Handles.PositionHandleParam.Handle.YZ | Handles.PositionHandleParam.Handle.XZ, Vector3.one * 0.15f, Vector3.one, Vector3.zero, Vector3.one * 0.375f, Handles.PositionHandleParam.Orientation.Signed, Handles.PositionHandleParam.Orientation.Camera), new Handles.RotationHandleParam(Handles.RotationHandleParam.Handle.X | Handles.RotationHandleParam.Handle.Y | Handles.RotationHandleParam.Handle.Z | Handles.RotationHandleParam.Handle.CameraAxis | Handles.RotationHandleParam.Handle.XYZ, Vector3.one * 1.4f, 1.4f, 1.5f, false, false), new Handles.ScaleHandleParam(Handles.ScaleHandleParam.Handle.X | Handles.ScaleHandleParam.Handle.Y | Handles.ScaleHandleParam.Handle.Z | Handles.ScaleHandleParam.Handle.XYZ, Vector3.one * 1.5f, Vector3.one, Vector3.one * 0.25f, 1f, Handles.ScaleHandleParam.Orientation.Signed), new Handles.PositionHandleParam(Handles.PositionHandleParam.Handle.X | Handles.PositionHandleParam.Handle.Y | Handles.PositionHandleParam.Handle.Z | Handles.PositionHandleParam.Handle.XYZ, Vector3.one * 0.15f, Vector3.one, Vector3.zero, Vector3.one * 0.375f, Handles.PositionHandleParam.Orientation.Signed, Handles.PositionHandleParam.Orientation.Signed), new Handles.RotationHandleParam((Handles.RotationHandleParam.Handle)0, Vector3.one * 1.4f, 1.4f, 1.5f, false, false), new Handles.ScaleHandleParam((Handles.ScaleHandleParam.Handle)0, Vector3.one * 1.5f, Vector3.one, Vector3.one * 0.25f, 1f, Handles.ScaleHandleParam.Orientation.Signed));
+
+			public readonly Handles.PositionHandleParam position;
+
+			public readonly Handles.RotationHandleParam rotation;
+
+			public readonly Handles.ScaleHandleParam scale;
+
+			public readonly Handles.PositionHandleParam cameraAlignedPosition;
+
+			public readonly Handles.RotationHandleParam cameraAlignedRotation;
+
+			public readonly Handles.ScaleHandleParam cameraAlignedScale;
+
+			public readonly Handles.PositionHandleParam localPosition;
+
+			public readonly Handles.RotationHandleParam localRotation;
+
+			public readonly Handles.ScaleHandleParam localScale;
+
+			public readonly Handles.PositionHandleParam vertexSnappingPosition;
+
+			public readonly Handles.RotationHandleParam vertexSnappingRotation;
+
+			public readonly Handles.ScaleHandleParam vertexSnappingScale;
+
+			public static Handles.TransformHandleParam Default
+			{
+				get
+				{
+					return Handles.TransformHandleParam.s_Default;
+				}
+				set
+				{
+					Handles.TransformHandleParam.s_Default = value;
+				}
+			}
+
+			public TransformHandleParam(Handles.PositionHandleParam position, Handles.RotationHandleParam rotation, Handles.ScaleHandleParam scale, Handles.PositionHandleParam cameraAlignedPosition, Handles.RotationHandleParam cameraAlignedRotation, Handles.ScaleHandleParam cameraAlignedScale, Handles.PositionHandleParam localPosition, Handles.RotationHandleParam localRotation, Handles.ScaleHandleParam localScale, Handles.PositionHandleParam vertexSnappingPosition, Handles.RotationHandleParam vertexSnappingRotation, Handles.ScaleHandleParam vertexSnappingScale)
+			{
+				this.position = position;
+				this.rotation = rotation;
+				this.scale = scale;
+				this.cameraAlignedPosition = cameraAlignedPosition;
+				this.cameraAlignedRotation = cameraAlignedRotation;
+				this.cameraAlignedScale = cameraAlignedScale;
+				this.localPosition = localPosition;
+				this.localRotation = localRotation;
+				this.localScale = localScale;
+				this.vertexSnappingPosition = vertexSnappingPosition;
+				this.vertexSnappingRotation = vertexSnappingRotation;
+				this.vertexSnappingScale = vertexSnappingScale;
+			}
+		}
+
+		private struct RotationHandleData
+		{
+			public bool rotationStarted;
+
+			public Quaternion initialRotation;
 		}
 
 		internal static PrefColor s_XAxisColor = new PrefColor("Scene/X Axis", 0.858823538f, 0.243137255f, 0.113725491f, 0.93f);
@@ -96,6 +658,8 @@ namespace UnityEditor
 		internal static PrefColor s_CenterColor = new PrefColor("Scene/Center Axis", 0.8f, 0.8f, 0.8f, 0.93f);
 
 		internal static PrefColor s_SelectedColor = new PrefColor("Scene/Selected Axis", 0.9647059f, 0.9490196f, 0.196078435f, 0.89f);
+
+		internal static PrefColor s_PreselectionColor = new PrefColor("Scene/Preselection Highlight", 0.7882353f, 0.784313738f, 0.5647059f, 0.89f);
 
 		internal static PrefColor s_SecondaryColor = new PrefColor("Scene/Guide Line", 0.5f, 0.5f, 0.5f, 0.2f);
 
@@ -125,7 +689,7 @@ namespace UnityEditor
 
 		internal static int s_yAxisMoveHandleHash = "yAxisFreeMoveHandleHash".GetHashCode();
 
-		internal static int s_zAxisMoveHandleHash = "xAxisFreeMoveHandleHash".GetHashCode();
+		internal static int s_zAxisMoveHandleHash = "zAxisFreeMoveHandleHash".GetHashCode();
 
 		internal static int s_FreeMoveHandleHash = "FreeMoveHandleHash".GetHashCode();
 
@@ -134,6 +698,12 @@ namespace UnityEditor
 		internal static int s_xyAxisMoveHandleHash = "xyAxisFreeMoveHandleHash".GetHashCode();
 
 		internal static int s_yzAxisMoveHandleHash = "yzAxisFreeMoveHandleHash".GetHashCode();
+
+		internal static int s_xAxisScaleHandleHash = "xAxisScaleHandleHash".GetHashCode();
+
+		internal static int s_yAxisScaleHandleHash = "yAxisScaleHandleHash".GetHashCode();
+
+		internal static int s_zAxisScaleHandleHash = "zAxisScaleHandleHash".GetHashCode();
 
 		internal static int s_ScaleSliderHash = "ScaleSliderHash".GetHashCode();
 
@@ -145,6 +715,8 @@ namespace UnityEditor
 
 		private static Vector3[] s_RectangleCapPointsCache = new Vector3[5];
 
+		private static readonly Vector3[] s_WireArcPoints = new Vector3[60];
+
 		internal static Mesh s_CubeMesh;
 
 		internal static Mesh s_SphereMesh;
@@ -155,7 +727,47 @@ namespace UnityEditor
 
 		internal static Mesh s_QuadMesh;
 
+		internal static int s_xRotateHandleHash = "xRotateHandleHash".GetHashCode();
+
+		internal static int s_yRotateHandleHash = "yRotateHandleHash".GetHashCode();
+
+		internal static int s_zRotateHandleHash = "zRotateHandleHash".GetHashCode();
+
+		internal static int s_cameraAxisRotateHandleHash = "cameraAxisRotateHandleHash".GetHashCode();
+
+		internal static int s_xyzRotateHandleHash = "xyzRotateHandleHash".GetHashCode();
+
+		internal static int s_xScaleHandleHash = "xScaleHandleHash".GetHashCode();
+
+		internal static int s_yScaleHandleHash = "yScaleHandleHash".GetHashCode();
+
+		internal static int s_zScaleHandleHash = "zScaleHandleHash".GetHashCode();
+
+		internal static int s_xyzScaleHandleHash = "xyzScaleHandleHash".GetHashCode();
+
 		private static Color lineTransparency = new Color(1f, 1f, 1f, 0.75f);
+
+		internal const float kCameraViewLerpStart = 0.85f;
+
+		internal const float kCameraViewThreshold = 0.9f;
+
+		internal const float kCameraViewLerpSpeed = 6.666668f;
+
+		private static PrefColor[] s_AxisColor = new PrefColor[]
+		{
+			Handles.s_XAxisColor,
+			Handles.s_YAxisColor,
+			Handles.s_ZAxisColor
+		};
+
+		private static Vector3[] s_AxisVector = new Vector3[]
+		{
+			Vector3.right,
+			Vector3.up,
+			Vector3.forward
+		};
+
+		internal static Color s_DisabledHandleColor = new Color(0.5f, 0.5f, 0.5f, 0.5f);
 
 		private static Vector3[] s_RectangleHandlePointsCache = new Vector3[5];
 
@@ -169,9 +781,38 @@ namespace UnityEditor
 			Vector3.zero
 		};
 
+		private const float kFreeMoveHandleSizeFactor = 0.15f;
+
 		private static bool s_FreeMoveMode = false;
 
 		private static Vector3 s_PlanarHandlesOctant = Vector3.one;
+
+		private static Vector3 s_DoPositionHandle_AxisHandlesOctant = Vector3.one;
+
+		private static Vector3 s_DoPositionHandle_ArrowCapConeOffset = Vector3.zero;
+
+		private static float[] s_DoPositionHandle_Internal_CameraViewLerp = new float[6];
+
+		private static string[] s_DoPositionHandle_Internal_AxisNames = new string[]
+		{
+			"xAxis",
+			"yAxis",
+			"zAxis"
+		};
+
+		private static int[] s_DoPositionHandle_Internal_NextIndex;
+
+		private static int[] s_DoPositionHandle_Internal_PrevIndex;
+
+		private static int[] s_DoPositionHandle_Internal_PrevPlaneIndex;
+
+		private static readonly Color k_RotationPieColor;
+
+		private static Vector3 s_DoScaleHandle_AxisHandlesOctant;
+
+		private static bool s_IsHotInCameraAlignedMode;
+
+		private static Dictionary<Handles.RotationHandleIds, Handles.RotationHandleData> s_TransformHandle_RotationData;
 
 		[CompilerGenerated]
 		private static Handles.CapFunction <>f__mg$cache0;
@@ -193,12 +834,6 @@ namespace UnityEditor
 
 		[CompilerGenerated]
 		private static Handles.CapFunction <>f__mg$cache6;
-
-		[CompilerGenerated]
-		private static Handles.CapFunction <>f__mg$cache7;
-
-		[CompilerGenerated]
-		private static Handles.CapFunction <>f__mg$cache8;
 
 		public static Color xAxisColor
 		{
@@ -237,6 +872,14 @@ namespace UnityEditor
 			get
 			{
 				return Handles.s_SelectedColor;
+			}
+		}
+
+		public static Color preselectionColor
+		{
+			get
+			{
+				return Handles.s_PreselectionColor;
 			}
 		}
 
@@ -487,7 +1130,7 @@ namespace UnityEditor
 
 		public static Vector3 Slider2D(Vector3 handlePos, Vector3 handleDir, Vector3 slideDir1, Vector3 slideDir2, float handleSize, Handles.CapFunction capFunction, Vector2 snap, [DefaultValue("false")] bool drawHelper)
 		{
-			int controlID = GUIUtility.GetControlID(Handles.s_Slider2DHash, FocusType.Keyboard);
+			int controlID = GUIUtility.GetControlID(Handles.s_Slider2DHash, FocusType.Passive);
 			return UnityEditorInternal.Slider2D.Do(controlID, handlePos, new Vector3(0f, 0f, 0f), handleDir, slideDir1, slideDir2, handleSize, capFunction, snap, drawHelper);
 		}
 
@@ -501,7 +1144,7 @@ namespace UnityEditor
 		[Obsolete("DrawCapFunction is obsolete. Use the version with CapFunction instead. Example: Change SphereCap to SphereHandleCap.")]
 		public static Vector3 Slider2D(Vector3 handlePos, Vector3 handleDir, Vector3 slideDir1, Vector3 slideDir2, float handleSize, Handles.DrawCapFunction drawFunc, Vector2 snap, [DefaultValue("false")] bool drawHelper)
 		{
-			int controlID = GUIUtility.GetControlID(Handles.s_Slider2DHash, FocusType.Keyboard);
+			int controlID = GUIUtility.GetControlID(Handles.s_Slider2DHash, FocusType.Passive);
 			return UnityEditorInternal.Slider2D.Do(controlID, handlePos, new Vector3(0f, 0f, 0f), handleDir, slideDir1, slideDir2, handleSize, drawFunc, snap, drawHelper);
 		}
 
@@ -539,7 +1182,7 @@ namespace UnityEditor
 
 		public static Vector3 Slider2D(Vector3 handlePos, Vector3 handleDir, Vector3 slideDir1, Vector3 slideDir2, float handleSize, Handles.CapFunction capFunction, float snap, [DefaultValue("false")] bool drawHelper)
 		{
-			int controlID = GUIUtility.GetControlID(Handles.s_Slider2DHash, FocusType.Keyboard);
+			int controlID = GUIUtility.GetControlID(Handles.s_Slider2DHash, FocusType.Passive);
 			return Handles.Slider2D(controlID, handlePos, new Vector3(0f, 0f, 0f), handleDir, slideDir1, slideDir2, handleSize, capFunction, new Vector2(snap, snap), drawHelper);
 		}
 
@@ -553,25 +1196,25 @@ namespace UnityEditor
 		[Obsolete("DrawCapFunction is obsolete. Use the version with CapFunction instead. Example: Change SphereCap to SphereHandleCap.")]
 		public static Vector3 Slider2D(Vector3 handlePos, Vector3 handleDir, Vector3 slideDir1, Vector3 slideDir2, float handleSize, Handles.DrawCapFunction drawFunc, float snap, [DefaultValue("false")] bool drawHelper)
 		{
-			int controlID = GUIUtility.GetControlID(Handles.s_Slider2DHash, FocusType.Keyboard);
+			int controlID = GUIUtility.GetControlID(Handles.s_Slider2DHash, FocusType.Passive);
 			return Handles.Slider2D(controlID, handlePos, new Vector3(0f, 0f, 0f), handleDir, slideDir1, slideDir2, handleSize, drawFunc, new Vector2(snap, snap), drawHelper);
 		}
 
 		public static Quaternion FreeRotateHandle(Quaternion rotation, Vector3 position, float size)
 		{
-			int controlID = GUIUtility.GetControlID(Handles.s_FreeRotateHandleHash, FocusType.Keyboard);
+			int controlID = GUIUtility.GetControlID(Handles.s_FreeRotateHandleHash, FocusType.Passive);
 			return FreeRotate.Do(controlID, rotation, position, size);
 		}
 
 		public static float ScaleSlider(float scale, Vector3 position, Vector3 direction, Quaternion rotation, float size, float snap)
 		{
-			int controlID = GUIUtility.GetControlID(Handles.s_ScaleSliderHash, FocusType.Keyboard);
+			int controlID = GUIUtility.GetControlID(Handles.s_ScaleSliderHash, FocusType.Passive);
 			return SliderScale.DoAxis(controlID, scale, position, direction, rotation, size, snap);
 		}
 
 		public static Quaternion Disc(Quaternion rotation, Vector3 position, Vector3 axis, float size, bool cutoffPlane, float snap)
 		{
-			int controlID = GUIUtility.GetControlID(Handles.s_DiscHash, FocusType.Keyboard);
+			int controlID = GUIUtility.GetControlID(Handles.s_DiscHash, FocusType.Passive);
 			return UnityEditorInternal.Disc.Do(controlID, rotation, position, axis, size, cutoffPlane, snap);
 		}
 
@@ -596,6 +1239,10 @@ namespace UnityEditor
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern bool Internal_IsCameraDrawModeEnabled(Camera camera, int drawMode);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern void Internal_DrawCameraWithGrid(Camera cam, int renderMode, ref DrawGridParameters gridParam);
 
 		[GeneratedByOldBindingsGenerator]
@@ -604,7 +1251,14 @@ namespace UnityEditor
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void Internal_FinishDrawingCamera(Camera cam);
+		private static extern void Internal_FinishDrawingCamera(Camera cam, [DefaultValue("true")] bool drawGizmos);
+
+		[ExcludeFromDocs]
+		private static void Internal_FinishDrawingCamera(Camera cam)
+		{
+			bool drawGizmos = true;
+			Handles.Internal_FinishDrawingCamera(cam, drawGizmos);
+		}
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -947,9 +1601,8 @@ namespace UnityEditor
 
 		public static void DrawWireArc(Vector3 center, Vector3 normal, Vector3 from, float angle, float radius)
 		{
-			Vector3[] array = new Vector3[60];
-			Handles.SetDiscSectionPoints(array, center, normal, from, angle, radius);
-			Handles.DrawPolyLine(array);
+			Handles.SetDiscSectionPoints(Handles.s_WireArcPoints, center, normal, from, angle, radius);
+			Handles.DrawPolyLine(Handles.s_WireArcPoints);
 		}
 
 		public static void DrawSolidRectangleWithOutline(Rect rectangle, Color faceColor, Color outlineColor)
@@ -1017,23 +1670,25 @@ namespace UnityEditor
 		{
 			if (Event.current.type == EventType.Repaint)
 			{
-				Vector3[] array = new Vector3[60];
-				Handles.SetDiscSectionPoints(array, center, normal, from, angle, radius);
+				Handles.SetDiscSectionPoints(Handles.s_WireArcPoints, center, normal, from, angle, radius);
 				Shader.SetGlobalColor("_HandleColor", Handles.color * new Color(1f, 1f, 1f, 0.5f));
 				Shader.SetGlobalFloat("_HandleSize", 1f);
 				HandleUtility.ApplyWireMaterial(Handles.zTest);
 				GL.PushMatrix();
 				GL.MultMatrix(Handles.matrix);
 				GL.Begin(4);
-				for (int i = 1; i < array.Length; i++)
+				int i = 1;
+				int num = Handles.s_WireArcPoints.Length;
+				while (i < num)
 				{
 					GL.Color(Handles.color);
 					GL.Vertex(center);
-					GL.Vertex(array[i - 1]);
-					GL.Vertex(array[i]);
+					GL.Vertex(Handles.s_WireArcPoints[i - 1]);
+					GL.Vertex(Handles.s_WireArcPoints[i]);
 					GL.Vertex(center);
-					GL.Vertex(array[i]);
-					GL.Vertex(array[i - 1]);
+					GL.Vertex(Handles.s_WireArcPoints[i]);
+					GL.Vertex(Handles.s_WireArcPoints[i - 1]);
+					i++;
 				}
 				GL.End();
 				GL.PopMatrix();
@@ -1112,36 +1767,7 @@ namespace UnityEditor
 						disposable.Dispose();
 					}
 				}
-				if (Application.platform == RuntimePlatform.WindowsEditor)
-				{
-					Handles.ReplaceFontForWindows((Font)EditorGUIUtility.LoadRequired(EditorResourcesUtility.fontsPath + "Lucida Grande.ttf"));
-					Handles.ReplaceFontForWindows((Font)EditorGUIUtility.LoadRequired(EditorResourcesUtility.fontsPath + "Lucida Grande Bold.ttf"));
-					Handles.ReplaceFontForWindows((Font)EditorGUIUtility.LoadRequired(EditorResourcesUtility.fontsPath + "Lucida Grande Small.ttf"));
-					Handles.ReplaceFontForWindows((Font)EditorGUIUtility.LoadRequired(EditorResourcesUtility.fontsPath + "Lucida Grande Small Bold.ttf"));
-					Handles.ReplaceFontForWindows((Font)EditorGUIUtility.LoadRequired(EditorResourcesUtility.fontsPath + "Lucida Grande Big.ttf"));
-				}
 			}
-		}
-
-		private static void ReplaceFontForWindows(Font font)
-		{
-			if (font.name.Contains("Bold"))
-			{
-				font.fontNames = new string[]
-				{
-					"Verdana Bold",
-					"Tahoma Bold"
-				};
-			}
-			else
-			{
-				font.fontNames = new string[]
-				{
-					"Verdana",
-					"Tahoma"
-				};
-			}
-			font.hideFlags = HideFlags.HideAndDontSave;
 		}
 
 		public static void Label(Vector3 position, string text)
@@ -1183,6 +1809,11 @@ namespace UnityEditor
 			return GameView.GetMainGameViewTargetSize();
 		}
 
+		internal static bool IsCameraDrawModeEnabled(Camera camera, DrawCameraMode drawMode)
+		{
+			return Handles.Internal_IsCameraDrawModeEnabled(camera, (int)drawMode);
+		}
+
 		public static void ClearCamera(Rect position, Camera camera)
 		{
 			Event current = Event.current;
@@ -1207,7 +1838,14 @@ namespace UnityEditor
 			}
 		}
 
+		[ExcludeFromDocs]
 		internal static void DrawCameraImpl(Rect position, Camera camera, DrawCameraMode drawMode, bool drawGrid, DrawGridParameters gridParam, bool finish)
+		{
+			bool renderGizmos = true;
+			Handles.DrawCameraImpl(position, camera, drawMode, drawGrid, gridParam, finish, renderGizmos);
+		}
+
+		internal static void DrawCameraImpl(Rect position, Camera camera, DrawCameraMode drawMode, bool drawGrid, DrawGridParameters gridParam, bool finish, [DefaultValue("true")] bool renderGizmos)
 		{
 			Event current = Event.current;
 			if (current.type == EventType.Repaint)
@@ -1239,9 +1877,9 @@ namespace UnityEditor
 					{
 						Handles.Internal_DrawCamera(camera, (int)drawMode);
 					}
-					if (finish)
+					if (finish && camera.cameraType != CameraType.VR)
 					{
-						Handles.Internal_FinishDrawingCamera(camera);
+						Handles.Internal_FinishDrawingCamera(camera, renderGizmos);
 					}
 				}
 			}
@@ -1287,11 +1925,11 @@ namespace UnityEditor
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern void SetCameraFilterMode(Camera camera, Handles.FilterMode mode);
+		internal static extern void SetCameraFilterMode(Camera camera, Handles.CameraFilterMode mode);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern Handles.FilterMode GetCameraFilterMode(Camera camera);
+		internal static extern Handles.CameraFilterMode GetCameraFilterMode(Camera camera);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -1390,6 +2028,21 @@ namespace UnityEditor
 			return Handles.Internal_MakeBezierPoints(startPosition, endPosition, startTangent, endTangent, division);
 		}
 
+		internal static Color GetColorByAxis(int axis)
+		{
+			return Handles.s_AxisColor[axis];
+		}
+
+		internal static Color ToActiveColorSpace(Color color)
+		{
+			return (QualitySettings.activeColorSpace != ColorSpace.Linear) ? color : color.linear;
+		}
+
+		private static Vector3 GetAxisVector(int axis)
+		{
+			return Handles.s_AxisVector[axis];
+		}
+
 		private static bool BeginLineDrawing(Matrix4x4 matrix, bool dottedLines, int mode)
 		{
 			bool result;
@@ -1437,7 +2090,12 @@ namespace UnityEditor
 
 		public static void DrawLine(Vector3 p1, Vector3 p2)
 		{
-			if (Handles.BeginLineDrawing(Handles.matrix, false, 1))
+			Handles.DrawLine(p1, p2, false);
+		}
+
+		internal static void DrawLine(Vector3 p1, Vector3 p2, bool dottedLine)
+		{
+			if (Handles.BeginLineDrawing(Handles.matrix, dottedLine, 1))
 			{
 				GL.Vertex(p1);
 				GL.Vertex(p2);
@@ -1552,6 +2210,16 @@ namespace UnityEditor
 			Handles.DrawLine(array[3], array[8]);
 		}
 
+		public static Quaternion Disc(int id, Quaternion rotation, Vector3 position, Vector3 axis, float size, bool cutoffPlane, float snap)
+		{
+			return UnityEditorInternal.Disc.Do(id, rotation, position, axis, size, cutoffPlane, snap);
+		}
+
+		public static Quaternion FreeRotateHandle(int id, Quaternion rotation, Vector3 position, float size)
+		{
+			return FreeRotate.Do(id, rotation, position, size);
+		}
+
 		public static Vector3 Slider(Vector3 position, Vector3 direction)
 		{
 			float arg_2B_2 = HandleUtility.GetHandleSize(position);
@@ -1564,7 +2232,7 @@ namespace UnityEditor
 
 		public static Vector3 Slider(Vector3 position, Vector3 direction, float size, Handles.CapFunction capFunction, float snap)
 		{
-			int controlID = GUIUtility.GetControlID(Handles.s_SliderHash, FocusType.Keyboard);
+			int controlID = GUIUtility.GetControlID(Handles.s_SliderHash, FocusType.Passive);
 			return Slider1D.Do(controlID, position, direction, size, capFunction, snap);
 		}
 
@@ -1573,36 +2241,51 @@ namespace UnityEditor
 			return Slider1D.Do(controlID, position, direction, size, capFunction, snap);
 		}
 
+		public static Vector3 Slider(int controlID, Vector3 position, Vector3 offset, Vector3 direction, float size, Handles.CapFunction capFunction, float snap)
+		{
+			return Slider1D.Do(controlID, position, offset, direction, direction, size, capFunction, snap);
+		}
+
 		[Obsolete("DrawCapFunction is obsolete. Use the version with CapFunction instead. Example: Change SphereCap to SphereHandleCap.")]
 		public static Vector3 Slider(Vector3 position, Vector3 direction, float size, Handles.DrawCapFunction drawFunc, float snap)
 		{
-			int controlID = GUIUtility.GetControlID(Handles.s_SliderHash, FocusType.Keyboard);
+			int controlID = GUIUtility.GetControlID(Handles.s_SliderHash, FocusType.Passive);
 			return Slider1D.Do(controlID, position, direction, size, drawFunc, snap);
 		}
 
 		public static Vector3 FreeMoveHandle(Vector3 position, Quaternion rotation, float size, Vector3 snap, Handles.CapFunction capFunction)
 		{
-			int controlID = GUIUtility.GetControlID(Handles.s_FreeMoveHandleHash, FocusType.Keyboard);
+			int controlID = GUIUtility.GetControlID(Handles.s_FreeMoveHandleHash, FocusType.Passive);
+			return FreeMove.Do(controlID, position, rotation, size, snap, capFunction);
+		}
+
+		public static Vector3 FreeMoveHandle(int controlID, Vector3 position, Quaternion rotation, float size, Vector3 snap, Handles.CapFunction capFunction)
+		{
 			return FreeMove.Do(controlID, position, rotation, size, snap, capFunction);
 		}
 
 		[Obsolete("DrawCapFunction is obsolete. Use the version with CapFunction instead. Example: Change SphereCap to SphereHandleCap.")]
 		public static Vector3 FreeMoveHandle(Vector3 position, Quaternion rotation, float size, Vector3 snap, Handles.DrawCapFunction capFunc)
 		{
-			int controlID = GUIUtility.GetControlID(Handles.s_FreeMoveHandleHash, FocusType.Keyboard);
+			int controlID = GUIUtility.GetControlID(Handles.s_FreeMoveHandleHash, FocusType.Passive);
 			return FreeMove.Do(controlID, position, rotation, size, snap, capFunc);
 		}
 
 		public static float ScaleValueHandle(float value, Vector3 position, Quaternion rotation, float size, Handles.CapFunction capFunction, float snap)
 		{
-			int controlID = GUIUtility.GetControlID(Handles.s_ScaleValueHandleHash, FocusType.Keyboard);
+			int controlID = GUIUtility.GetControlID(Handles.s_ScaleValueHandleHash, FocusType.Passive);
+			return SliderScale.DoCenter(controlID, value, position, rotation, size, capFunction, snap);
+		}
+
+		public static float ScaleValueHandle(int controlID, float value, Vector3 position, Quaternion rotation, float size, Handles.CapFunction capFunction, float snap)
+		{
 			return SliderScale.DoCenter(controlID, value, position, rotation, size, capFunction, snap);
 		}
 
 		[Obsolete("DrawCapFunction is obsolete. Use the version with CapFunction instead. Example: Change SphereCap to SphereHandleCap.")]
 		public static float ScaleValueHandle(float value, Vector3 position, Quaternion rotation, float size, Handles.DrawCapFunction capFunc, float snap)
 		{
-			int controlID = GUIUtility.GetControlID(Handles.s_ScaleValueHandleHash, FocusType.Keyboard);
+			int controlID = GUIUtility.GetControlID(Handles.s_ScaleValueHandleHash, FocusType.Passive);
 			return SliderScale.DoCenter(controlID, value, position, rotation, size, capFunc, snap);
 		}
 
@@ -1762,20 +2445,25 @@ namespace UnityEditor
 
 		public static void ArrowHandleCap(int controlID, Vector3 position, Quaternion rotation, float size, EventType eventType)
 		{
+			Handles.ArrowHandleCap(controlID, position, rotation, size, eventType, Vector3.zero);
+		}
+
+		internal static void ArrowHandleCap(int controlID, Vector3 position, Quaternion rotation, float size, EventType eventType, Vector3 coneOffset)
+		{
 			if (eventType != EventType.Layout)
 			{
 				if (eventType == EventType.Repaint)
 				{
 					Vector3 vector = rotation * Vector3.forward;
-					Handles.ConeHandleCap(controlID, position + vector * size, Quaternion.LookRotation(vector), size * 0.2f, eventType);
-					Handles.DrawLine(position, position + vector * size * 0.9f);
+					Handles.ConeHandleCap(controlID, position + (vector + coneOffset) * size, Quaternion.LookRotation(vector), size * 0.2f, eventType);
+					Handles.DrawLine(position, position + (vector + coneOffset) * size * 0.9f, false);
 				}
 			}
 			else
 			{
 				Vector3 a = rotation * Vector3.forward;
-				HandleUtility.AddControl(controlID, HandleUtility.DistanceToLine(position, position + a * size * 0.9f));
-				HandleUtility.AddControl(controlID, HandleUtility.DistanceToCircle(position + a * size, size * 0.2f));
+				HandleUtility.AddControl(controlID, HandleUtility.DistanceToLine(position, position + (a + coneOffset) * size * 0.9f));
+				HandleUtility.AddControl(controlID, HandleUtility.DistanceToCircle(position + (a + coneOffset) * size, size * 0.2f));
 			}
 		}
 
@@ -1795,6 +2483,17 @@ namespace UnityEditor
 				Handles.DrawLine(vector3, vector4);
 				Handles.DrawLine(vector4, vector);
 			}
+		}
+
+		internal static float GetCameraViewLerpForWorldAxis(Vector3 viewVector, Vector3 axis)
+		{
+			return Mathf.Clamp01(6.666668f * (Mathf.Abs(Vector3.Dot(viewVector, axis)) - 0.85f));
+		}
+
+		internal static Vector3 GetCameraViewFrom(Vector3 position, Matrix4x4 matrix)
+		{
+			Camera current = Camera.current;
+			return (!current.orthographic) ? matrix.MultiplyVector(position - current.transform.position).normalized : matrix.MultiplyVector(-current.transform.forward).normalized;
 		}
 
 		internal static float DistanceToPolygone(Vector3[] vertices)
@@ -1871,11 +2570,9 @@ namespace UnityEditor
 				switch (current.GetTypeForControl(hashCode))
 				{
 				case EventType.MouseDown:
-					if (!current.alt && ((HandleUtility.nearestControl == hashCode && current.button == 0) || (GUIUtility.keyboardControl == hashCode && current.button == 2)))
+					if (!current.alt && HandleUtility.nearestControl == hashCode && current.button == 0)
 					{
-						int num = hashCode;
-						GUIUtility.keyboardControl = num;
-						GUIUtility.hotControl = num;
+						GUIUtility.hotControl = hashCode;
 						if (current.shift)
 						{
 							UnityEngine.Object[] objects = Selection.objects;
@@ -1900,6 +2597,12 @@ namespace UnityEditor
 						current.Use();
 					}
 					break;
+				case EventType.MouseMove:
+					if (hashCode == HandleUtility.nearestControl)
+					{
+						HandleUtility.Repaint();
+					}
+					break;
 				case EventType.MouseDrag:
 					if (!current.alt && GUIUtility.hotControl == hashCode)
 					{
@@ -1909,30 +2612,32 @@ namespace UnityEditor
 							target
 						};
 						DragAndDrop.StartDrag(ObjectNames.GetDragAndDropTitle(target));
+						GUIUtility.hotControl = 0;
 						current.Use();
 					}
 					break;
 				case EventType.Repaint:
 				{
-					float num2 = Vector3.Magnitude(vector - position);
-					if (num2 > 0f)
+					float num = Vector3.Magnitude(vector - position);
+					if (num > 0f)
 					{
-						float num3 = num2 * 0.08f;
+						Handles.color = ((GUIUtility.hotControl != 0 || HandleUtility.nearestControl != hashCode) ? Handles.color : Handles.preselectionColor);
+						float num2 = num * 0.08f;
 						if (flag)
 						{
-							Handles.DrawBone(vector, position, num3);
+							Handles.DrawBone(vector, position, num2);
 						}
 						else
 						{
-							Handles.SphereHandleCap(hashCode, position, target.rotation, num3 * 0.2f, EventType.Repaint);
+							Handles.SphereHandleCap(hashCode, position, target.rotation, num2 * 0.2f, EventType.Repaint);
 						}
 					}
 					break;
 				}
 				case EventType.Layout:
 				{
-					float num4 = Vector3.Magnitude(vector - position);
-					float radius = num4 * 0.08f;
+					float num3 = Vector3.Magnitude(vector - position);
+					float radius = num3 * 0.08f;
 					Vector3[] boneVertices = Handles.GetBoneVertices(vector, position, radius);
 					HandleUtility.AddControl(hashCode, Handles.DistanceToPolygone(boneVertices));
 					break;
@@ -2115,6 +2820,11 @@ namespace UnityEditor
 
 		public static Vector3 DoPositionHandle(Vector3 position, Quaternion rotation)
 		{
+			return Handles.DoPositionHandle(Handles.PositionHandleIds.@default, position, rotation);
+		}
+
+		internal static Vector3 DoPositionHandle(Handles.PositionHandleIds ids, Vector3 position, Quaternion rotation)
+		{
 			Event current = Event.current;
 			EventType type = current.type;
 			Vector3 result;
@@ -2122,7 +2832,7 @@ namespace UnityEditor
 			{
 				if (type == EventType.KeyUp)
 				{
-					position = Handles.DoPositionHandle_Internal(position, rotation);
+					position = Handles.DoPositionHandle_Internal(ids, position, rotation, Handles.PositionHandleParam.DefaultHandle);
 					if (current.keyCode == KeyCode.V && !current.shift && !Handles.currentlyDragging)
 					{
 						Handles.s_FreeMoveMode = false;
@@ -2142,167 +2852,204 @@ namespace UnityEditor
 			{
 				Handles.s_FreeMoveMode = true;
 			}
-			result = Handles.DoPositionHandle_Internal(position, rotation);
+			Handles.PositionHandleParam param = (!Handles.s_FreeMoveMode) ? Handles.PositionHandleParam.DefaultHandle : Handles.PositionHandleParam.DefaultFreeMoveHandle;
+			result = Handles.DoPositionHandle_Internal(ids, position, rotation, param);
 			return result;
 		}
 
-		private static Vector3 DoPositionHandle_Internal(Vector3 position, Quaternion rotation)
+		private static Vector3 DoPositionHandle_Internal(Handles.PositionHandleIds ids, Vector3 position, Quaternion rotation, Handles.PositionHandleParam param)
 		{
-			float handleSize = HandleUtility.GetHandleSize(position);
 			Color color = Handles.color;
 			bool flag = !Tools.s_Hidden && EditorApplication.isPlaying && GameObjectUtility.ContainsStatic(Selection.gameObjects);
-			Handles.color = ((!flag) ? Handles.xAxisColor : Color.Lerp(Handles.xAxisColor, Handles.staticColor, Handles.staticBlend));
-			GUI.SetNextControlName("xAxis");
-			Vector3 arg_9A_0 = position;
-			Vector3 arg_9A_1 = rotation * Vector3.right;
-			float arg_9A_2 = handleSize;
-			if (Handles.<>f__mg$cache2 == null)
+			Vector3 position2 = Handles.matrix.MultiplyPoint3x4(position);
+			Matrix4x4 inverse = (Handles.matrix * Matrix4x4.TRS(position, rotation, Vector3.one)).inverse;
+			Vector3 cameraViewFrom = Handles.GetCameraViewFrom(position2, inverse);
+			float handleSize = HandleUtility.GetHandleSize(position);
+			for (int i = 0; i < 3; i++)
 			{
-				Handles.<>f__mg$cache2 = new Handles.CapFunction(Handles.ArrowHandleCap);
+				Handles.s_DoPositionHandle_Internal_CameraViewLerp[i] = ((ids[i] != GUIUtility.hotControl) ? Handles.GetCameraViewLerpForWorldAxis(cameraViewFrom, Handles.GetAxisVector(i)) : 0f);
 			}
-			position = Handles.Slider(arg_9A_0, arg_9A_1, arg_9A_2, Handles.<>f__mg$cache2, SnapSettings.move.x);
-			Handles.color = ((!flag) ? Handles.yAxisColor : Color.Lerp(Handles.yAxisColor, Handles.staticColor, Handles.staticBlend));
-			GUI.SetNextControlName("yAxis");
-			Vector3 arg_10C_0 = position;
-			Vector3 arg_10C_1 = rotation * Vector3.up;
-			float arg_10C_2 = handleSize;
-			if (Handles.<>f__mg$cache3 == null)
+			for (int j = 0; j < 3; j++)
 			{
-				Handles.<>f__mg$cache3 = new Handles.CapFunction(Handles.ArrowHandleCap);
+				Handles.s_DoPositionHandle_Internal_CameraViewLerp[3 + j] = Mathf.Max(Handles.s_DoPositionHandle_Internal_CameraViewLerp[j], Handles.s_DoPositionHandle_Internal_CameraViewLerp[(j + 1) % 3]);
 			}
-			position = Handles.Slider(arg_10C_0, arg_10C_1, arg_10C_2, Handles.<>f__mg$cache3, SnapSettings.move.y);
-			Handles.color = ((!flag) ? Handles.zAxisColor : Color.Lerp(Handles.zAxisColor, Handles.staticColor, Handles.staticBlend));
-			GUI.SetNextControlName("zAxis");
-			Vector3 arg_17E_0 = position;
-			Vector3 arg_17E_1 = rotation * Vector3.forward;
-			float arg_17E_2 = handleSize;
-			if (Handles.<>f__mg$cache4 == null)
+			bool flag2 = ids.Has(GUIUtility.hotControl);
+			Vector3 vector = param.axisOffset;
+			Vector3 a = param.planeOffset;
+			if (flag2)
 			{
-				Handles.<>f__mg$cache4 = new Handles.CapFunction(Handles.ArrowHandleCap);
+				vector = Vector3.zero;
+				a = Vector3.zero;
 			}
-			position = Handles.Slider(arg_17E_0, arg_17E_1, arg_17E_2, Handles.<>f__mg$cache4, SnapSettings.move.z);
-			if (Handles.s_FreeMoveMode)
+			Vector3 vector2 = (!flag2) ? param.planeSize : (param.planeSize + param.planeOffset);
+			for (int k = 0; k < 3; k++)
 			{
-				Handles.color = Handles.centerColor;
-				GUI.SetNextControlName("FreeMoveAxis");
-				Vector3 arg_1CF_0 = position;
-				float arg_1CF_2 = handleSize * 0.15f;
-				Vector3 arg_1CF_3 = SnapSettings.move;
-				if (Handles.<>f__mg$cache5 == null)
+				if (param.ShouldShow(3 + k) && (!flag2 || ids[3 + k] == GUIUtility.hotControl))
 				{
-					Handles.<>f__mg$cache5 = new Handles.CapFunction(Handles.RectangleHandleCap);
+					float num = (!flag2) ? Handles.s_DoPositionHandle_Internal_CameraViewLerp[3 + k] : 0f;
+					if (num <= 0.9f)
+					{
+						Vector3 offset = a * handleSize;
+						offset[Handles.s_DoPositionHandle_Internal_PrevIndex[k]] = 0f;
+						float num2 = Mathf.Max(vector2[k], vector2[Handles.s_DoPositionHandle_Internal_NextIndex[k]]);
+						position = Handles.DoPlanarHandle(ids[3 + k], k, position, offset, rotation, handleSize * num2, num, cameraViewFrom, param.planeOrientation);
+					}
 				}
-				position = Handles.FreeMoveHandle(arg_1CF_0, rotation, arg_1CF_2, arg_1CF_3, Handles.<>f__mg$cache5);
+			}
+			for (int l = 0; l < 3; l++)
+			{
+				if (param.ShouldShow(l))
+				{
+					if (!Handles.currentlyDragging)
+					{
+						Handles.PositionHandleParam.Orientation axesOrientation = param.axesOrientation;
+						if (axesOrientation != Handles.PositionHandleParam.Orientation.Camera)
+						{
+							if (axesOrientation == Handles.PositionHandleParam.Orientation.Signed)
+							{
+								Handles.s_DoPositionHandle_AxisHandlesOctant[l] = 1f;
+							}
+						}
+						else
+						{
+							Handles.s_DoPositionHandle_AxisHandlesOctant[l] = (float)((cameraViewFrom[l] <= 0.01f) ? 1 : -1);
+						}
+					}
+					bool flag3 = flag2 && ids[l] == GUIUtility.hotControl;
+					Color colorByAxis = Handles.GetColorByAxis(l);
+					Handles.color = ((!flag) ? colorByAxis : Color.Lerp(colorByAxis, Handles.staticColor, Handles.staticBlend));
+					GUI.SetNextControlName(Handles.s_DoPositionHandle_Internal_AxisNames[l]);
+					float num3 = (!flag3) ? Handles.s_DoPositionHandle_Internal_CameraViewLerp[l] : 0f;
+					if (num3 <= 0.9f)
+					{
+						Handles.color = Color.Lerp(Handles.color, Color.clear, num3);
+						Vector3 axisVector = Handles.GetAxisVector(l);
+						Vector3 vector3 = rotation * axisVector;
+						Vector3 vector4 = vector3 * vector[l] * handleSize;
+						vector3 *= Handles.s_DoPositionHandle_AxisHandlesOctant[l];
+						vector4 *= Handles.s_DoPositionHandle_AxisHandlesOctant[l];
+						if (flag2 && !flag3)
+						{
+							Handles.color = Handles.s_DisabledHandleColor;
+						}
+						if (flag2 && (ids[Handles.s_DoPositionHandle_Internal_PrevPlaneIndex[l]] == GUIUtility.hotControl || ids[l + 3] == GUIUtility.hotControl))
+						{
+							Handles.color = Handles.selectedColor;
+						}
+						Handles.color = Handles.ToActiveColorSpace(Handles.color);
+						Handles.s_DoPositionHandle_ArrowCapConeOffset = ((!flag2) ? Vector3.zero : (rotation * Vector3.Scale(Vector3.Scale(axisVector, param.axisOffset), Handles.s_DoPositionHandle_AxisHandlesOctant)));
+						int arg_494_0 = ids[l];
+						Vector3 arg_494_1 = position;
+						Vector3 arg_494_2 = vector4;
+						Vector3 arg_494_3 = vector3;
+						float arg_494_4 = handleSize * param.axisSize[l];
+						if (Handles.<>f__mg$cache2 == null)
+						{
+							Handles.<>f__mg$cache2 = new Handles.CapFunction(Handles.DoPositionHandle_ArrowCap);
+						}
+						position = Handles.Slider(arg_494_0, arg_494_1, arg_494_2, arg_494_3, arg_494_4, Handles.<>f__mg$cache2, (!GridSnapping.active) ? SnapSettings.move[l] : 0f);
+					}
+				}
+			}
+			VertexSnapping.HandleKeyAndMouseMove(ids.xyz);
+			if (param.ShouldShow(Handles.PositionHandleParam.Handle.XYZ) && ((flag2 && ids.xyz == GUIUtility.hotControl) || !flag2))
+			{
+				Handles.color = Handles.ToActiveColorSpace(Handles.centerColor);
+				GUI.SetNextControlName("FreeMoveAxis");
+				int arg_545_0 = ids.xyz;
+				Vector3 arg_545_1 = position;
+				float arg_545_3 = handleSize * 0.15f;
+				Vector3 arg_545_4 = (!GridSnapping.active) ? SnapSettings.move : Vector3.zero;
+				if (Handles.<>f__mg$cache3 == null)
+				{
+					Handles.<>f__mg$cache3 = new Handles.CapFunction(Handles.RectangleHandleCap);
+				}
+				position = Handles.FreeMoveHandle(arg_545_0, arg_545_1, rotation, arg_545_3, arg_545_4, Handles.<>f__mg$cache3);
+			}
+			Handles.color = color;
+			if (GridSnapping.active)
+			{
+				position = GridSnapping.Snap(position);
+			}
+			return position;
+		}
+
+		private static Vector3 DoPlanarHandle(int id, int planePrimaryAxis, Vector3 position, Vector3 offset, Quaternion rotation, float handleSize, float cameraLerp, Vector3 viewVectorDrawSpace, Handles.PositionHandleParam.Orientation orientation)
+		{
+			int index = (planePrimaryAxis + 1) % 3;
+			int num = (planePrimaryAxis + 2) % 3;
+			Color color = Handles.color;
+			bool flag = !Tools.s_Hidden && EditorApplication.isPlaying && GameObjectUtility.ContainsStatic(Selection.gameObjects);
+			Handles.color = ((!flag) ? Handles.GetColorByAxis(num) : Handles.staticColor);
+			Handles.color = Color.Lerp(Handles.color, Color.clear, cameraLerp);
+			bool flag2 = false;
+			if (GUIUtility.hotControl == id)
+			{
+				Handles.color = Handles.selectedColor;
+			}
+			else if (HandleUtility.nearestControl == id)
+			{
+				Handles.color = Handles.preselectionColor;
 			}
 			else
 			{
-				position = Handles.DoPlanarHandle(Handles.PlaneHandle.xzPlane, position, rotation, handleSize * 0.25f);
-				position = Handles.DoPlanarHandle(Handles.PlaneHandle.xyPlane, position, rotation, handleSize * 0.25f);
-				position = Handles.DoPlanarHandle(Handles.PlaneHandle.yzPlane, position, rotation, handleSize * 0.25f);
+				flag2 = true;
 			}
+			Handles.color = Handles.ToActiveColorSpace(Handles.color);
+			if (!Handles.currentlyDragging)
+			{
+				if (orientation != Handles.PositionHandleParam.Orientation.Camera)
+				{
+					if (orientation == Handles.PositionHandleParam.Orientation.Signed)
+					{
+						Handles.s_PlanarHandlesOctant[planePrimaryAxis] = 1f;
+						Handles.s_PlanarHandlesOctant[index] = 1f;
+					}
+				}
+				else
+				{
+					Handles.s_PlanarHandlesOctant[planePrimaryAxis] = (float)((viewVectorDrawSpace[planePrimaryAxis] <= 0.01f) ? 1 : -1);
+					Handles.s_PlanarHandlesOctant[index] = (float)((viewVectorDrawSpace[index] <= 0.01f) ? 1 : -1);
+				}
+			}
+			Vector3 vector = Handles.s_PlanarHandlesOctant;
+			vector[num] = 0f;
+			Vector3 b = rotation * Vector3.Scale(offset, vector);
+			vector = rotation * (vector * handleSize * 0.5f);
+			Vector3 vector2 = Vector3.zero;
+			Vector3 vector3 = Vector3.zero;
+			Vector3 vector4 = Vector3.zero;
+			vector2[planePrimaryAxis] = 1f;
+			vector3[index] = 1f;
+			vector4[num] = 1f;
+			vector2 = rotation * vector2;
+			vector3 = rotation * vector3;
+			vector4 = rotation * vector4;
+			Handles.verts[0] = position + b + vector + (vector2 + vector3) * handleSize * 0.5f;
+			Handles.verts[1] = position + b + vector + (-vector2 + vector3) * handleSize * 0.5f;
+			Handles.verts[2] = position + b + vector + (-vector2 - vector3) * handleSize * 0.5f;
+			Handles.verts[3] = position + b + vector + (vector2 - vector3) * handleSize * 0.5f;
+			Color color2 = (!flag2) ? Handles.color : new Color(Handles.color.r, Handles.color.g, Handles.color.b, 0.1f);
+			color2 = Handles.ToActiveColorSpace(color2);
+			Handles.DrawSolidRectangleWithOutline(Handles.verts, color2, Color.clear);
+			Vector3 arg_3B3_1 = position;
+			Vector3 arg_3B3_2 = vector + b;
+			Vector3 arg_3B3_3 = vector4;
+			Vector3 arg_3B3_4 = vector2;
+			Vector3 arg_3B3_5 = vector3;
+			float arg_3B3_6 = handleSize * 0.5f;
+			if (Handles.<>f__mg$cache4 == null)
+			{
+				Handles.<>f__mg$cache4 = new Handles.CapFunction(Handles.RectangleHandleCap);
+			}
+			position = Handles.Slider2D(id, arg_3B3_1, arg_3B3_2, arg_3B3_3, arg_3B3_4, arg_3B3_5, arg_3B3_6, Handles.<>f__mg$cache4, (!GridSnapping.active) ? new Vector2(SnapSettings.move[planePrimaryAxis], SnapSettings.move[index]) : Vector2.zero, false);
 			Handles.color = color;
 			return position;
 		}
 
-		private static Vector3 DoPlanarHandle(Handles.PlaneHandle planeID, Vector3 position, Quaternion rotation, float handleSize)
+		private static void DoPositionHandle_ArrowCap(int controlId, Vector3 position, Quaternion rotation, float size, EventType eventType)
 		{
-			int num = 0;
-			int num2 = 0;
-			int hint = 0;
-			bool flag = !Tools.s_Hidden && EditorApplication.isPlaying && GameObjectUtility.ContainsStatic(Selection.gameObjects);
-			if (planeID != Handles.PlaneHandle.xzPlane)
-			{
-				if (planeID != Handles.PlaneHandle.xyPlane)
-				{
-					if (planeID == Handles.PlaneHandle.yzPlane)
-					{
-						num = 1;
-						num2 = 2;
-						Handles.color = ((!flag) ? Handles.xAxisColor : Handles.staticColor);
-						hint = Handles.s_yzAxisMoveHandleHash;
-					}
-				}
-				else
-				{
-					num = 0;
-					num2 = 1;
-					Handles.color = ((!flag) ? Handles.zAxisColor : Handles.staticColor);
-					hint = Handles.s_xyAxisMoveHandleHash;
-				}
-			}
-			else
-			{
-				num = 0;
-				num2 = 2;
-				Handles.color = ((!flag) ? Handles.yAxisColor : Handles.staticColor);
-				hint = Handles.s_xzAxisMoveHandleHash;
-			}
-			int index = 3 - num2 - num;
-			Color color = Handles.color;
-			Matrix4x4 matrix4x = Matrix4x4.TRS(position, rotation, Vector3.one);
-			Vector3 result;
-			if (Camera.current == null)
-			{
-				result = position;
-			}
-			else
-			{
-				Vector3 normalized;
-				if (Camera.current.orthographic)
-				{
-					normalized = matrix4x.inverse.MultiplyVector(Camera.current.transform.rotation * -Vector3.forward).normalized;
-				}
-				else
-				{
-					normalized = matrix4x.inverse.MultiplyPoint(Camera.current.transform.position).normalized;
-				}
-				int controlID = GUIUtility.GetControlID(hint, FocusType.Keyboard);
-				if (Mathf.Abs(normalized[index]) < 0.05f && GUIUtility.hotControl != controlID)
-				{
-					Handles.color = color;
-					result = position;
-				}
-				else
-				{
-					if (!Handles.currentlyDragging)
-					{
-						Handles.s_PlanarHandlesOctant[num] = (float)((normalized[num] >= -0.01f) ? 1 : -1);
-						Handles.s_PlanarHandlesOctant[num2] = (float)((normalized[num2] >= -0.01f) ? 1 : -1);
-					}
-					Vector3 vector = Handles.s_PlanarHandlesOctant;
-					vector[index] = 0f;
-					vector = rotation * (vector * handleSize * 0.5f);
-					Vector3 vector2 = Vector3.zero;
-					Vector3 vector3 = Vector3.zero;
-					Vector3 vector4 = Vector3.zero;
-					vector2[num] = 1f;
-					vector3[num2] = 1f;
-					vector4[index] = 1f;
-					vector2 = rotation * vector2;
-					vector3 = rotation * vector3;
-					vector4 = rotation * vector4;
-					Handles.verts[0] = position + vector + (vector2 + vector3) * handleSize * 0.5f;
-					Handles.verts[1] = position + vector + (-vector2 + vector3) * handleSize * 0.5f;
-					Handles.verts[2] = position + vector + (-vector2 - vector3) * handleSize * 0.5f;
-					Handles.verts[3] = position + vector + (vector2 - vector3) * handleSize * 0.5f;
-					Handles.DrawSolidRectangleWithOutline(Handles.verts, new Color(Handles.color.r, Handles.color.g, Handles.color.b, 0.1f), new Color(0f, 0f, 0f, 0f));
-					int arg_413_0 = controlID;
-					Vector3 arg_413_1 = position;
-					Vector3 arg_413_2 = vector;
-					Vector3 arg_413_3 = vector4;
-					Vector3 arg_413_4 = vector2;
-					Vector3 arg_413_5 = vector3;
-					float arg_413_6 = handleSize * 0.5f;
-					if (Handles.<>f__mg$cache6 == null)
-					{
-						Handles.<>f__mg$cache6 = new Handles.CapFunction(Handles.RectangleHandleCap);
-					}
-					position = Handles.Slider2D(arg_413_0, arg_413_1, arg_413_2, arg_413_3, arg_413_4, arg_413_5, arg_413_6, Handles.<>f__mg$cache6, new Vector2(SnapSettings.move[num], SnapSettings.move[num2]));
-					Handles.color = color;
-					result = position;
-				}
-			}
-			return result;
+			Handles.ArrowHandleCap(controlId, position, rotation, size, eventType, Handles.s_DoPositionHandle_ArrowCapConeOffset);
 		}
 
 		internal static float DoRadiusHandle(Quaternion rotation, Vector3 position, float radius, bool handlesOnly)
@@ -2383,7 +3130,7 @@ namespace UnityEditor
 			Color color = Handles.color;
 			for (int k = 0; k < 6; k++)
 			{
-				int controlID = GUIUtility.GetControlID(Handles.s_RadiusHandleHash, FocusType.Keyboard);
+				int controlID = GUIUtility.GetControlID(Handles.s_RadiusHandleHash, FocusType.Passive);
 				float num10 = Vector3.Angle(array[k], -vector);
 				if ((num10 > 5f && num10 < 175f) || GUIUtility.hotControl == controlID)
 				{
@@ -2396,19 +3143,19 @@ namespace UnityEditor
 					{
 						color2.a = Mathf.Clamp01(color.a * 2f);
 					}
-					Handles.color = color2;
+					Handles.color = Handles.ToActiveColorSpace(color2);
 					Vector3 vector3 = position + radius * array[k];
 					bool changed = GUI.changed;
 					GUI.changed = false;
-					int arg_41A_0 = controlID;
-					Vector3 arg_41A_1 = vector3;
-					Vector3 arg_41A_2 = array[k];
-					float arg_41A_3 = HandleUtility.GetHandleSize(vector3) * 0.03f;
-					if (Handles.<>f__mg$cache7 == null)
+					int arg_41F_0 = controlID;
+					Vector3 arg_41F_1 = vector3;
+					Vector3 arg_41F_2 = array[k];
+					float arg_41F_3 = HandleUtility.GetHandleSize(vector3) * 0.03f;
+					if (Handles.<>f__mg$cache5 == null)
 					{
-						Handles.<>f__mg$cache7 = new Handles.CapFunction(Handles.DotHandleCap);
+						Handles.<>f__mg$cache5 = new Handles.CapFunction(Handles.DotHandleCap);
 					}
-					vector3 = Slider1D.Do(arg_41A_0, arg_41A_1, arg_41A_2, arg_41A_3, Handles.<>f__mg$cache7, 0f);
+					vector3 = Slider1D.Do(arg_41F_0, arg_41F_1, arg_41F_2, arg_41F_3, Handles.<>f__mg$cache5, 0f);
 					if (GUI.changed)
 					{
 						radius = Vector3.Distance(vector3, position);
@@ -2453,20 +3200,50 @@ namespace UnityEditor
 
 		public static Quaternion DoRotationHandle(Quaternion rotation, Vector3 position)
 		{
+			return Handles.DoRotationHandle(Handles.RotationHandleIds.@default, rotation, position, Handles.RotationHandleParam.Default);
+		}
+
+		internal static Quaternion DoRotationHandle(Handles.RotationHandleIds ids, Quaternion rotation, Vector3 position, Handles.RotationHandleParam param)
+		{
+			Event current = Event.current;
+			Transform transform = Camera.current.transform;
 			float handleSize = HandleUtility.GetHandleSize(position);
 			Color color = Handles.color;
 			bool flag = !Tools.s_Hidden && EditorApplication.isPlaying && GameObjectUtility.ContainsStatic(Selection.gameObjects);
-			Handles.color = ((!flag) ? Handles.xAxisColor : Color.Lerp(Handles.xAxisColor, Handles.staticColor, Handles.staticBlend));
-			rotation = Handles.Disc(rotation, position, rotation * Vector3.right, handleSize, true, SnapSettings.rotation);
-			Handles.color = ((!flag) ? Handles.yAxisColor : Color.Lerp(Handles.yAxisColor, Handles.staticColor, Handles.staticBlend));
-			rotation = Handles.Disc(rotation, position, rotation * Vector3.up, handleSize, true, SnapSettings.rotation);
-			Handles.color = ((!flag) ? Handles.zAxisColor : Color.Lerp(Handles.zAxisColor, Handles.staticColor, Handles.staticBlend));
-			rotation = Handles.Disc(rotation, position, rotation * Vector3.forward, handleSize, true, SnapSettings.rotation);
-			if (!flag)
+			bool flag2 = ids.Has(GUIUtility.hotControl);
+			if (!flag && param.ShouldShow(Handles.RotationHandleParam.Handle.XYZ) && ((flag2 && ids.xyz == GUIUtility.hotControl) || !flag2))
 			{
 				Handles.color = Handles.centerColor;
-				rotation = Handles.Disc(rotation, position, Camera.current.transform.forward, handleSize * 1.1f, false, 0f);
-				rotation = Handles.FreeRotateHandle(rotation, position, handleSize);
+				rotation = FreeRotate.Do(ids.xyz, rotation, position, handleSize * param.xyzSize, param.displayXYZCircle);
+			}
+			float num = -1f;
+			for (int i = 0; i < 3; i++)
+			{
+				if (param.ShouldShow(i))
+				{
+					Color colorByAxis = Handles.GetColorByAxis(i);
+					Handles.color = ((!flag) ? colorByAxis : Color.Lerp(colorByAxis, Handles.staticColor, Handles.staticBlend));
+					Handles.color = Handles.ToActiveColorSpace(Handles.color);
+					Vector3 axisVector = Handles.GetAxisVector(i);
+					float num2 = handleSize * param.axisSize[i];
+					num = Mathf.Max(num2, num);
+					rotation = UnityEditorInternal.Disc.Do(ids[i], rotation, position, rotation * axisVector, num2, true, SnapSettings.rotation, param.enableRayDrag, true, Handles.k_RotationPieColor);
+				}
+			}
+			if (num > 0f && current.type == EventType.Repaint)
+			{
+				Handles.color = new Color(0f, 0f, 0f, 0.2f);
+				Handles.DrawWireDisc(position, transform.forward, num);
+			}
+			if (flag2 && current.type == EventType.Repaint)
+			{
+				Handles.color = Handles.ToActiveColorSpace(Handles.s_DisabledHandleColor);
+				Handles.DrawWireDisc(position, transform.forward, handleSize * param.axisSize[0]);
+			}
+			if (!flag && param.ShouldShow(Handles.RotationHandleParam.Handle.CameraAxis) && ((flag2 && ids.cameraAxis == GUIUtility.hotControl) || !flag2))
+			{
+				Handles.color = Handles.ToActiveColorSpace(Handles.centerColor);
+				rotation = UnityEditorInternal.Disc.Do(ids.cameraAxis, rotation, position, Camera.current.transform.forward, handleSize * param.cameraAxisSize, false, 0f, param.enableRayDrag, true, Handles.k_RotationPieColor);
 			}
 			Handles.color = color;
 			return rotation;
@@ -2474,27 +3251,87 @@ namespace UnityEditor
 
 		public static Vector3 DoScaleHandle(Vector3 scale, Vector3 position, Quaternion rotation, float size)
 		{
+			return Handles.DoScaleHandle(Handles.ScaleHandleIds.@default, scale, position, rotation, size, Handles.ScaleHandleParam.Default);
+		}
+
+		internal static Vector3 DoScaleHandle(Handles.ScaleHandleIds ids, Vector3 scale, Vector3 position, Quaternion rotation, float handleSize, Handles.ScaleHandleParam param)
+		{
+			Vector3 position2 = Handles.matrix.MultiplyPoint3x4(position);
+			Matrix4x4 inverse = (Handles.matrix * Matrix4x4.TRS(position, rotation, Vector3.one)).inverse;
+			Vector3 cameraViewFrom = Handles.GetCameraViewFrom(position2, inverse);
 			bool flag = !Tools.s_Hidden && EditorApplication.isPlaying && GameObjectUtility.ContainsStatic(Selection.gameObjects);
-			Handles.color = ((!flag) ? Handles.xAxisColor : Color.Lerp(Handles.xAxisColor, Handles.staticColor, Handles.staticBlend));
-			scale.x = Handles.ScaleSlider(scale.x, position, rotation * Vector3.right, rotation, size, SnapSettings.scale);
-			Handles.color = ((!flag) ? Handles.yAxisColor : Color.Lerp(Handles.yAxisColor, Handles.staticColor, Handles.staticBlend));
-			scale.y = Handles.ScaleSlider(scale.y, position, rotation * Vector3.up, rotation, size, SnapSettings.scale);
-			Handles.color = ((!flag) ? Handles.zAxisColor : Color.Lerp(Handles.zAxisColor, Handles.staticColor, Handles.staticBlend));
-			scale.z = Handles.ScaleSlider(scale.z, position, rotation * Vector3.forward, rotation, size, SnapSettings.scale);
-			Handles.color = Handles.centerColor;
-			EditorGUI.BeginChangeCheck();
-			float arg_14B_0 = scale.x;
-			if (Handles.<>f__mg$cache8 == null)
+			bool flag2 = ids.Has(GUIUtility.hotControl);
+			Vector3 b = param.axisOffset;
+			Vector3 a = param.axisLineScale;
+			if (flag2)
 			{
-				Handles.<>f__mg$cache8 = new Handles.CapFunction(Handles.CubeHandleCap);
+				a += b;
+				b = Vector3.zero;
 			}
-			float num = Handles.ScaleValueHandle(arg_14B_0, position, rotation, size, Handles.<>f__mg$cache8, SnapSettings.scale);
-			if (EditorGUI.EndChangeCheck())
+			bool flag3 = ids.xyz == GUIUtility.hotControl;
+			for (int i = 0; i < 3; i++)
 			{
-				float num2 = num / scale.x;
-				scale.x = num;
-				scale.y *= num2;
-				scale.z *= num2;
+				if (param.ShouldShow(i))
+				{
+					if (!Handles.currentlyDragging)
+					{
+						Handles.ScaleHandleParam.Orientation orientation = param.orientation;
+						if (orientation != Handles.ScaleHandleParam.Orientation.Signed)
+						{
+							if (orientation == Handles.ScaleHandleParam.Orientation.Camera)
+							{
+								Handles.s_DoScaleHandle_AxisHandlesOctant[i] = (float)((cameraViewFrom[i] <= 0.01f) ? 1 : -1);
+							}
+						}
+						else
+						{
+							Handles.s_DoScaleHandle_AxisHandlesOctant[i] = 1f;
+						}
+					}
+					int num = ids[i];
+					bool flag4 = flag2 && num == GUIUtility.hotControl;
+					Vector3 vector = Handles.GetAxisVector(i);
+					Color colorByAxis = Handles.GetColorByAxis(i);
+					float handleOffset = b[i];
+					float num2 = (num != GUIUtility.hotControl) ? Handles.GetCameraViewLerpForWorldAxis(cameraViewFrom, vector) : 0f;
+					num2 = ((!flag2) ? num2 : 0f);
+					Handles.color = ((!flag) ? colorByAxis : Color.Lerp(colorByAxis, Handles.staticColor, Handles.staticBlend));
+					vector *= Handles.s_DoScaleHandle_AxisHandlesOctant[i];
+					if (num2 <= 0.9f)
+					{
+						Handles.color = Color.Lerp(Handles.color, Color.clear, num2);
+						if (flag2 && !flag4)
+						{
+							Handles.color = Handles.s_DisabledHandleColor;
+						}
+						if (flag3)
+						{
+							Handles.color = Handles.selectedColor;
+						}
+						Handles.color = Handles.ToActiveColorSpace(Handles.color);
+						scale[i] = SliderScale.DoAxis(num, scale[i], position, rotation * vector, rotation, handleSize * param.axisSize[i], SnapSettings.scale, handleOffset, a[i]);
+					}
+				}
+			}
+			if (param.ShouldShow(Handles.ScaleHandleParam.Handle.XYZ) && ((flag2 && ids.xyz == GUIUtility.hotControl) || !flag2))
+			{
+				Handles.color = Handles.ToActiveColorSpace(Handles.centerColor);
+				EditorGUI.BeginChangeCheck();
+				int arg_309_0 = ids.xyz;
+				float arg_309_1 = scale.x;
+				float arg_309_4 = handleSize * param.xyzSize;
+				if (Handles.<>f__mg$cache6 == null)
+				{
+					Handles.<>f__mg$cache6 = new Handles.CapFunction(Handles.CubeHandleCap);
+				}
+				float num3 = Handles.ScaleValueHandle(arg_309_0, arg_309_1, position, rotation, arg_309_4, Handles.<>f__mg$cache6, SnapSettings.scale);
+				if (EditorGUI.EndChangeCheck() && !Mathf.Approximately(scale.x, 0f))
+				{
+					float num4 = num3 / scale.x;
+					scale.x = num3;
+					scale.y *= num4;
+					scale.z *= num4;
+				}
 			}
 			return scale;
 		}
@@ -2551,6 +3388,116 @@ namespace UnityEditor
 				Handles.DrawWireArc(position, vector3, vector2, (float)((!hemisphere) ? 360 : 180), radius);
 			}
 			return radius;
+		}
+
+		internal static void TransformHandle(Handles.TransformHandleIds ids, ref Vector3 position, ref Quaternion rotation, ref Vector3 scale, Handles.TransformHandleParam param)
+		{
+			Quaternion rotation2 = rotation;
+			Handles.PositionHandleParam param2 = param.position;
+			Handles.RotationHandleParam param3 = param.rotation;
+			Handles.ScaleHandleParam param4 = param.scale;
+			bool flag = ids.Has(GUIUtility.hotControl);
+			bool flag2 = (flag && Handles.s_IsHotInCameraAlignedMode) || (!flag && Event.current.shift);
+			if (Tools.vertexDragging)
+			{
+				param2 = param.vertexSnappingPosition;
+				param3 = param.vertexSnappingRotation;
+				param4 = param.vertexSnappingScale;
+			}
+			else if (flag2)
+			{
+				rotation2 = Camera.current.transform.rotation;
+				param2 = param.cameraAlignedPosition;
+				param3 = param.cameraAlignedRotation;
+				param4 = param.cameraAlignedScale;
+			}
+			else if (Tools.pivotRotation == PivotRotation.Local)
+			{
+				param2 = param.localPosition;
+				param3 = param.localRotation;
+				param4 = param.localScale;
+			}
+			if (ids.Has(GUIUtility.hotControl))
+			{
+				if (ids.position.Has(GUIUtility.hotControl))
+				{
+					position = Handles.DoPositionHandle_Internal(ids.position, position, rotation2, param2);
+				}
+				else if (ids.rotation.Has(GUIUtility.hotControl))
+				{
+					Quaternion quaternion = Handles.DoRotationHandle(ids.rotation, rotation2, position, param3);
+					if (flag2)
+					{
+						if (!Handles.s_TransformHandle_RotationData.ContainsKey(ids.rotation))
+						{
+							Handles.s_TransformHandle_RotationData[ids.rotation] = new Handles.RotationHandleData
+							{
+								rotationStarted = true,
+								initialRotation = rotation
+							};
+						}
+						Quaternion rhs = (ids.rotation.xyz == GUIUtility.hotControl) ? rotation : Handles.s_TransformHandle_RotationData[ids.rotation].initialRotation;
+						float angle;
+						Vector3 axis;
+						(quaternion * Quaternion.Inverse(rotation2)).ToAngleAxis(out angle, out axis);
+						rotation = Quaternion.AngleAxis(angle, axis) * rhs;
+					}
+					else
+					{
+						rotation = quaternion;
+					}
+				}
+				else if (ids.scale.Has(GUIUtility.hotControl))
+				{
+					scale = Handles.DoScaleHandle(ids.scale, scale, position, rotation2, HandleUtility.GetHandleSize(position), param4);
+				}
+			}
+			else
+			{
+				if (Handles.s_TransformHandle_RotationData.ContainsKey(ids.rotation))
+				{
+					Handles.RotationHandleData value = Handles.s_TransformHandle_RotationData[ids.rotation];
+					value.rotationStarted = false;
+					Handles.s_TransformHandle_RotationData[ids.rotation] = value;
+				}
+				Handles.DoRotationHandle(ids.rotation, rotation2, position, param3);
+				Handles.DoPositionHandle_Internal(ids.position, position, rotation2, param2);
+				Handles.DoScaleHandle(ids.scale, scale, position, rotation2, HandleUtility.GetHandleSize(position), param4);
+			}
+			bool flag3 = ids.Has(GUIUtility.hotControl);
+			if (flag3 && !flag && flag2)
+			{
+				Handles.s_IsHotInCameraAlignedMode = true;
+			}
+			else if (Handles.s_IsHotInCameraAlignedMode && (!flag || !flag3))
+			{
+				Handles.s_IsHotInCameraAlignedMode = false;
+			}
+		}
+
+		static Handles()
+		{
+			// Note: this type is marked as 'beforefieldinit'.
+			int[] expr_49A = new int[3];
+			expr_49A[0] = 1;
+			expr_49A[1] = 2;
+			Handles.s_DoPositionHandle_Internal_NextIndex = expr_49A;
+			Handles.s_DoPositionHandle_Internal_PrevIndex = new int[]
+			{
+				2,
+				0,
+				1
+			};
+			Handles.s_DoPositionHandle_Internal_PrevPlaneIndex = new int[]
+			{
+				5,
+				3,
+				4
+			};
+			Handles.k_RotationPieColor = new Color(0.9647059f, 0.9490196f, 0.196078435f, 0.89f);
+			Handles.s_DoScaleHandle_AxisHandlesOctant = Vector3.one;
+			Handles.s_IsHotInCameraAlignedMode = false;
+			Handles.s_TransformHandle_RotationData = new Dictionary<Handles.RotationHandleIds, Handles.RotationHandleData>();
 		}
 	}
 }

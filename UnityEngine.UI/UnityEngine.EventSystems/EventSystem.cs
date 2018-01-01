@@ -13,6 +13,8 @@ namespace UnityEngine.EventSystems
 
 		private BaseInputModule m_CurrentInputModule;
 
+		private static List<EventSystem> m_EventSystems = new List<EventSystem>();
+
 		[FormerlySerializedAs("m_Selected"), SerializeField]
 		private GameObject m_FirstSelected;
 
@@ -20,7 +22,7 @@ namespace UnityEngine.EventSystems
 		private bool m_sendNavigationEvents = true;
 
 		[SerializeField]
-		private int m_DragThreshold = 5;
+		private int m_DragThreshold = 10;
 
 		private GameObject m_CurrentSelected;
 
@@ -37,8 +39,19 @@ namespace UnityEngine.EventSystems
 
 		public static EventSystem current
 		{
-			get;
-			set;
+			get
+			{
+				return (EventSystem.m_EventSystems.Count <= 0) ? null : EventSystem.m_EventSystems[0];
+			}
+			set
+			{
+				int num = EventSystem.m_EventSystems.IndexOf(value);
+				if (num >= 0)
+				{
+					EventSystem.m_EventSystems.RemoveAt(num);
+					EventSystem.m_EventSystems.Insert(0, value);
+				}
+			}
 		}
 
 		public bool sendNavigationEvents
@@ -179,14 +192,16 @@ namespace UnityEngine.EventSystems
 			int result;
 			if (lhs.module != rhs.module)
 			{
-				if (lhs.module.eventCamera != null && rhs.module.eventCamera != null && lhs.module.eventCamera.depth != rhs.module.eventCamera.depth)
+				Camera eventCamera = lhs.module.eventCamera;
+				Camera eventCamera2 = rhs.module.eventCamera;
+				if (eventCamera != null && eventCamera2 != null && eventCamera.depth != eventCamera2.depth)
 				{
-					if (lhs.module.eventCamera.depth < rhs.module.eventCamera.depth)
+					if (eventCamera.depth < eventCamera2.depth)
 					{
 						result = 1;
 						return result;
 					}
-					if (lhs.module.eventCamera.depth == rhs.module.eventCamera.depth)
+					if (eventCamera.depth == eventCamera2.depth)
 					{
 						result = 0;
 						return result;
@@ -261,14 +276,7 @@ namespace UnityEngine.EventSystems
 		protected override void OnEnable()
 		{
 			base.OnEnable();
-			if (EventSystem.current == null)
-			{
-				EventSystem.current = this;
-			}
-			else
-			{
-				Debug.LogWarning("Multiple EventSystems in scene... this is not supported");
-			}
+			EventSystem.m_EventSystems.Add(this);
 		}
 
 		protected override void OnDisable()
@@ -278,10 +286,7 @@ namespace UnityEngine.EventSystems
 				this.m_CurrentInputModule.DeactivateModule();
 				this.m_CurrentInputModule = null;
 			}
-			if (EventSystem.current == this)
-			{
-				EventSystem.current = null;
-			}
+			EventSystem.m_EventSystems.Remove(this);
 			base.OnDisable();
 		}
 

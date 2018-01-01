@@ -22,6 +22,11 @@ namespace UnityEditor.Web
 			return this.GetServiceName();
 		}
 
+		public virtual string GetPackageName()
+		{
+			return string.Empty;
+		}
+
 		public virtual bool IsServiceEnabled()
 		{
 			return PlayerSettings.GetCloudServiceEnabled(this.GetServiceName());

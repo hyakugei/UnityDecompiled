@@ -15,8 +15,6 @@ namespace UnityEditor.U2D
 
 		internal TextureImporterCompression m_TextureCompression;
 
-		internal ColorSpace m_ColorSpace;
-
 		internal FilterMode m_FilterMode;
 
 		internal int m_GenerateMipMaps;
@@ -24,6 +22,8 @@ namespace UnityEditor.U2D
 		internal int m_Readable;
 
 		internal int m_CrunchedCompression;
+
+		internal int m_sRGB;
 
 		public uint anisoLevel
 		{
@@ -73,18 +73,6 @@ namespace UnityEditor.U2D
 			}
 		}
 
-		public ColorSpace colorSpace
-		{
-			get
-			{
-				return this.m_ColorSpace;
-			}
-			set
-			{
-				this.m_ColorSpace = value;
-			}
-		}
-
 		public FilterMode filterMode
 		{
 			get
@@ -130,6 +118,18 @@ namespace UnityEditor.U2D
 			set
 			{
 				this.m_CrunchedCompression = ((!value) ? 0 : 1);
+			}
+		}
+
+		public bool sRGB
+		{
+			get
+			{
+				return this.m_sRGB != 0;
+			}
+			set
+			{
+				this.m_sRGB = ((!value) ? 0 : 1);
 			}
 		}
 	}

@@ -2,7 +2,7 @@ using System;
 
 namespace UnityEngine.Bindings
 {
-	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Method | AttributeTargets.Property)]
+	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Method | AttributeTargets.Property), VisibleToOtherModules]
 	internal class StaticAccessorAttribute : Attribute, IBindingsAttribute
 	{
 		public string Name
@@ -11,7 +11,7 @@ namespace UnityEngine.Bindings
 			set;
 		}
 
-		public bool Pointer
+		public StaticAccessorType Type
 		{
 			get;
 			set;
@@ -21,20 +21,21 @@ namespace UnityEngine.Bindings
 		{
 		}
 
+		[VisibleToOtherModules]
 		internal StaticAccessorAttribute(string name)
 		{
 			this.Name = name;
 		}
 
-		public StaticAccessorAttribute(bool pointer)
+		public StaticAccessorAttribute(StaticAccessorType type)
 		{
-			this.Pointer = pointer;
+			this.Type = type;
 		}
 
-		public StaticAccessorAttribute(string name, bool pointer)
+		public StaticAccessorAttribute(string name, StaticAccessorType type)
 		{
 			this.Name = name;
-			this.Pointer = pointer;
+			this.Type = type;
 		}
 	}
 }

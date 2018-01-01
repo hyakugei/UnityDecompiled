@@ -4,6 +4,7 @@ using UnityEngine.Scripting;
 
 namespace UnityEngine.Audio
 {
+	[ExcludeFromObjectFactory, ExcludeFromPreset]
 	public class AudioMixer : UnityEngine.Object
 	{
 		public extern AudioMixerGroup outputAudioMixerGroup

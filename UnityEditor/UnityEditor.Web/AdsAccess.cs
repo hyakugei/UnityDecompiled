@@ -18,6 +18,8 @@ namespace UnityEditor.Web
 
 		private const string kServiceDisplayName = "Ads";
 
+		private const string kServicePackageName = "com.unity.ads";
+
 		private const string kServiceUrl = "https://public-cdn.cloud.unity3d.com/editor/production/cloud/ads";
 
 		static AdsAccess()
@@ -36,6 +38,11 @@ namespace UnityEditor.Web
 			return "Ads";
 		}
 
+		public override string GetPackageName()
+		{
+			return "com.unity.ads";
+		}
+
 		public override bool IsServiceEnabled()
 		{
 			return AdvertisementSettings.enabled;
@@ -45,7 +52,7 @@ namespace UnityEditor.Web
 		{
 			if (AdvertisementSettings.enabled != enabled)
 			{
-				AdvertisementSettings.enabled = enabled;
+				AdvertisementSettings.SetEnabledServiceWindow(enabled);
 				EditorAnalytics.SendEventServiceInfo(new AdsAccess.AdsServiceState
 				{
 					ads = enabled
@@ -55,10 +62,7 @@ namespace UnityEditor.Web
 
 		public override void OnProjectUnbound()
 		{
-			AdvertisementSettings.enabled = false;
-			AdvertisementSettings.initializeOnStartup = false;
-			AdvertisementSettings.SetPlatformEnabled(RuntimePlatform.IPhonePlayer, false);
-			AdvertisementSettings.SetPlatformEnabled(RuntimePlatform.Android, false);
+			AdvertisementSettings.SetEnabledServiceWindow(false);
 			AdvertisementSettings.SetGameId(RuntimePlatform.IPhonePlayer, "");
 			AdvertisementSettings.SetGameId(RuntimePlatform.Android, "");
 			AdvertisementSettings.testMode = false;
@@ -72,26 +76,6 @@ namespace UnityEditor.Web
 		public void SetInitializedOnStartup(bool enabled)
 		{
 			AdvertisementSettings.initializeOnStartup = enabled;
-		}
-
-		public bool IsIOSEnabled()
-		{
-			return AdvertisementSettings.IsPlatformEnabled(RuntimePlatform.IPhonePlayer);
-		}
-
-		public void SetIOSEnabled(bool enabled)
-		{
-			AdvertisementSettings.SetPlatformEnabled(RuntimePlatform.IPhonePlayer, enabled);
-		}
-
-		public bool IsAndroidEnabled()
-		{
-			return AdvertisementSettings.IsPlatformEnabled(RuntimePlatform.Android);
-		}
-
-		public void SetAndroidEnabled(bool enabled)
-		{
-			AdvertisementSettings.SetPlatformEnabled(RuntimePlatform.Android, enabled);
 		}
 
 		public string GetIOSGameId()

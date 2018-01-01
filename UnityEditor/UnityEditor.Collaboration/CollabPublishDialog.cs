@@ -5,13 +5,13 @@ namespace UnityEditor.Collaboration
 {
 	internal class CollabPublishDialog : EditorWindow
 	{
-		private static GUIContent DescribeChangesText = EditorGUIUtility.TextContent("Describe your changes here");
+		private static GUIContent DescribeChangesText = EditorGUIUtility.TrTextContent("Describe your changes here", null, null);
 
-		private static GUIContent ChangeAssetsText = EditorGUIUtility.TextContent("Changed assets:");
+		private static GUIContent ChangeAssetsText = EditorGUIUtility.TrTextContent("Changed assets:", null, null);
 
-		private static GUIContent PublishText = EditorGUIUtility.TextContent("Publish");
+		private static GUIContent PublishText = EditorGUIUtility.TrTextContent("Publish", null, null);
 
-		private static GUIContent CancelText = EditorGUIUtility.TextContent("Cancel");
+		private static GUIContent CancelText = EditorGUIUtility.TrTextContent("Cancel", null, null);
 
 		public Vector2 scrollView;
 

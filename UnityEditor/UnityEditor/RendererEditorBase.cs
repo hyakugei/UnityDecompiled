@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
 
 namespace UnityEditor
@@ -20,33 +21,25 @@ namespace UnityEditor
 
 			private SerializedProperty m_ReceiveShadows;
 
-			private GUIContent m_LightProbeUsageStyle = EditorGUIUtility.TextContent("Light Probes|Specifies how Light Probes will handle the interpolation of lighting and occlusion. Disabled if the object is set to Lightmap Static.");
+			private GUIContent m_LightProbeUsageStyle = EditorGUIUtility.TrTextContent("Light Probes", "Specifies how Light Probes will handle the interpolation of lighting and occlusion. Disabled if the object is set to Lightmap Static.", null);
 
-			private GUIContent m_LightProbeVolumeOverrideStyle = EditorGUIUtility.TextContent("Proxy Volume Override|If set, the Renderer will use the Light Probe Proxy Volume component from another GameObject.");
+			private GUIContent m_LightProbeVolumeOverrideStyle = EditorGUIUtility.TrTextContent("Proxy Volume Override", "If set, the Renderer will use the Light Probe Proxy Volume component from another GameObject.", null);
 
-			private GUIContent m_ReflectionProbeUsageStyle = EditorGUIUtility.TextContent("Reflection Probes|Specifies if or how the object is affected by reflections in the Scene.  This property cannot be disabled in deferred rendering modes.");
+			private GUIContent m_ReflectionProbeUsageStyle = EditorGUIUtility.TrTextContent("Reflection Probes", "Specifies if or how the object is affected by reflections in the Scene.  This property cannot be disabled in deferred rendering modes.", null);
 
-			private GUIContent m_ProbeAnchorStyle = EditorGUIUtility.TextContent("Anchor Override|Specifies the Transform position that will be used for sampling the light probes and reflection probes.");
+			private GUIContent m_ProbeAnchorStyle = EditorGUIUtility.TrTextContent("Anchor Override", "Specifies the Transform position that will be used for sampling the light probes and reflection probes.", null);
 
-			private GUIContent m_DeferredNote = EditorGUIUtility.TextContent("In Deferred Shading, all objects receive shadows and get per-pixel reflection probes.");
+			private GUIContent m_DeferredNote = EditorGUIUtility.TrTextContent("In Deferred Shading, all objects receive shadows and get per-pixel reflection probes.", null, null);
 
-			private GUIContent m_LightProbeVolumeNote = EditorGUIUtility.TextContent("A valid Light Probe Proxy Volume component could not be found.");
+			private GUIContent m_LightProbeVolumeNote = EditorGUIUtility.TrTextContent("A valid Light Probe Proxy Volume component could not be found.", null, null);
 
-			private GUIContent m_LightProbeVolumeUnsupportedNote = EditorGUIUtility.TextContent("The Light Probe Proxy Volume feature is unsupported by the current graphics hardware or API configuration. Simple 'Blend Probes' mode will be used instead.");
+			private GUIContent m_LightProbeVolumeUnsupportedNote = EditorGUIUtility.TrTextContent("The Light Probe Proxy Volume feature is unsupported by the current graphics hardware or API configuration. Simple 'Blend Probes' mode will be used instead.", null, null);
 
-			private GUIContent m_LightProbeVolumeUnsupportedOnTreesNote = EditorGUIUtility.TextContent("The Light Probe Proxy Volume feature is not supported on tree rendering. Simple 'Blend Probes' mode will be used instead.");
+			private GUIContent m_LightProbeVolumeUnsupportedOnTreesNote = EditorGUIUtility.TrTextContent("The Light Probe Proxy Volume feature is not supported on tree rendering. Simple 'Blend Probes' mode will be used instead.", null, null);
 
-			private string[] m_ReflectionProbeUsageNames = (from x in Enum.GetNames(typeof(ReflectionProbeUsage))
-			select ObjectNames.NicifyVariableName(x)).ToArray<string>();
-
-			private string[] m_LightProbeUsageNames = (from x in Enum.GetNames(typeof(LightProbeUsage))
-			select ObjectNames.NicifyVariableName(x)).ToArray<string>();
+			private GUIContent m_LightProbeCustomNote = EditorGUIUtility.TrTextContent("The Custom Provided mode requires SH properties to be sent via MaterialPropertyBlock.", null, null);
 
 			private GUIContent[] m_ReflectionProbeUsageOptions = (from x in (from x in Enum.GetNames(typeof(ReflectionProbeUsage))
-			select ObjectNames.NicifyVariableName(x)).ToArray<string>()
-			select new GUIContent(x)).ToArray<GUIContent>();
-
-			private GUIContent[] m_LightProbeBlendModeOptions = (from x in (from x in Enum.GetNames(typeof(LightProbeUsage))
 			select ObjectNames.NicifyVariableName(x)).ToArray<string>()
 			select new GUIContent(x)).ToArray<GUIContent>();
 
@@ -76,11 +69,11 @@ namespace UnityEditor
 			{
 				if (this.IsUsingLightProbeProxyVolume(selectionCount))
 				{
-					if (LightProbeProxyVolume.isFeatureSupported)
+					if (LightProbeProxyVolume.isFeatureSupported && SupportedRenderingFeatures.active.rendererSupportsLightProbeProxyVolumes)
 					{
 						LightProbeProxyVolume component = renderer.GetComponent<LightProbeProxyVolume>();
 						bool flag = renderer.lightProbeProxyVolumeOverride == null || renderer.lightProbeProxyVolumeOverride.GetComponent<LightProbeProxyVolume>() == null;
-						if (component == null && flag)
+						if (component == null && flag && LightProbes.AreLightProbesAllowed(renderer))
 						{
 							EditorGUILayout.HelpBox(this.m_LightProbeVolumeNote.text, MessageType.Warning);
 						}
@@ -94,64 +87,97 @@ namespace UnityEditor
 
 			internal void RenderReflectionProbeUsage(bool useMiniStyle, bool isDeferredRenderingPath, bool isDeferredReflections)
 			{
-				using (new EditorGUI.DisabledScope(isDeferredRenderingPath))
+				if (SupportedRenderingFeatures.active.rendererSupportsReflectionProbes)
 				{
-					if (!useMiniStyle)
+					using (new EditorGUI.DisabledScope(isDeferredRenderingPath))
 					{
-						if (isDeferredReflections)
+						if (!useMiniStyle)
 						{
-							EditorGUILayout.EnumPopup(this.m_ReflectionProbeUsageStyle, (this.m_ReflectionProbeUsage.intValue == 0) ? ReflectionProbeUsage.Off : ReflectionProbeUsage.Simple, new GUILayoutOption[0]);
+							if (isDeferredReflections)
+							{
+								EditorGUILayout.EnumPopup(this.m_ReflectionProbeUsageStyle, (this.m_ReflectionProbeUsage.intValue == 0) ? ReflectionProbeUsage.Off : ReflectionProbeUsage.Simple, new GUILayoutOption[0]);
+							}
+							else
+							{
+								EditorGUILayout.Popup(this.m_ReflectionProbeUsage, this.m_ReflectionProbeUsageOptions, this.m_ReflectionProbeUsageStyle, new GUILayoutOption[0]);
+							}
+						}
+						else if (isDeferredReflections)
+						{
+							ModuleUI.GUIPopup(this.m_ReflectionProbeUsageStyle, 3, this.m_ReflectionProbeUsageOptions, new GUILayoutOption[0]);
 						}
 						else
 						{
-							EditorGUILayout.Popup(this.m_ReflectionProbeUsage, this.m_ReflectionProbeUsageOptions, this.m_ReflectionProbeUsageStyle, new GUILayoutOption[0]);
+							ModuleUI.GUIPopup(this.m_ReflectionProbeUsageStyle, this.m_ReflectionProbeUsage, this.m_ReflectionProbeUsageOptions, new GUILayoutOption[0]);
 						}
-					}
-					else if (isDeferredReflections)
-					{
-						ModuleUI.GUIPopup(this.m_ReflectionProbeUsageStyle, 3, this.m_ReflectionProbeUsageNames, new GUILayoutOption[0]);
-					}
-					else
-					{
-						ModuleUI.GUIPopup(this.m_ReflectionProbeUsageStyle, this.m_ReflectionProbeUsage, this.m_ReflectionProbeUsageNames, new GUILayoutOption[0]);
 					}
 				}
 			}
 
-			internal void RenderLightProbeUsage(int selectionCount, Renderer renderer, bool useMiniStyle, bool usesLightMaps)
+			internal void RenderLightProbeUsage(int selectionCount, Renderer renderer, bool useMiniStyle, bool lightProbeAllowed)
 			{
-				using (new EditorGUI.DisabledScope(usesLightMaps))
+				using (new EditorGUI.DisabledScope(!lightProbeAllowed))
 				{
-					if (!useMiniStyle)
+					if (lightProbeAllowed)
 					{
-						if (usesLightMaps)
+						if (useMiniStyle)
 						{
-							EditorGUILayout.EnumPopup(this.m_LightProbeUsageStyle, LightProbeUsage.Off, new GUILayoutOption[0]);
+							EditorGUI.BeginChangeCheck();
+							Enum @enum = ModuleUI.GUIEnumPopup(this.m_LightProbeUsageStyle, (LightProbeUsage)this.m_LightProbeUsage.intValue, this.m_LightProbeUsage, new GUILayoutOption[0]);
+							if (EditorGUI.EndChangeCheck())
+							{
+								this.m_LightProbeUsage.intValue = (int)((LightProbeUsage)@enum);
+							}
 						}
 						else
 						{
-							EditorGUILayout.Popup(this.m_LightProbeUsage, this.m_LightProbeBlendModeOptions, this.m_LightProbeUsageStyle, new GUILayoutOption[0]);
-							if (!this.m_LightProbeUsage.hasMultipleDifferentValues && this.m_LightProbeUsage.intValue == 2)
+							Rect controlRect = EditorGUILayout.GetControlRect(true, 16f, EditorStyles.popup, new GUILayoutOption[0]);
+							EditorGUI.BeginProperty(controlRect, this.m_LightProbeUsageStyle, this.m_LightProbeUsage);
+							EditorGUI.BeginChangeCheck();
+							Enum enum2 = EditorGUI.EnumPopup(controlRect, this.m_LightProbeUsageStyle, (LightProbeUsage)this.m_LightProbeUsage.intValue);
+							if (EditorGUI.EndChangeCheck())
+							{
+								this.m_LightProbeUsage.intValue = (int)((LightProbeUsage)enum2);
+							}
+							EditorGUI.EndProperty();
+						}
+						if (!this.m_LightProbeUsage.hasMultipleDifferentValues)
+						{
+							if (this.m_LightProbeUsage.intValue == 2 && SupportedRenderingFeatures.active.rendererSupportsLightProbeProxyVolumes)
 							{
 								EditorGUI.indentLevel++;
-								EditorGUILayout.PropertyField(this.m_LightProbeVolumeOverride, this.m_LightProbeVolumeOverrideStyle, new GUILayoutOption[0]);
+								if (useMiniStyle)
+								{
+									ModuleUI.GUIObject(this.m_LightProbeVolumeOverrideStyle, this.m_LightProbeVolumeOverride, new GUILayoutOption[0]);
+								}
+								else
+								{
+									EditorGUILayout.PropertyField(this.m_LightProbeVolumeOverride, this.m_LightProbeVolumeOverrideStyle, new GUILayoutOption[0]);
+								}
+								EditorGUI.indentLevel--;
+							}
+							else if (this.m_LightProbeUsage.intValue == 4)
+							{
+								EditorGUI.indentLevel++;
+								if (!Application.isPlaying)
+								{
+									EditorGUILayout.HelpBox(this.m_LightProbeCustomNote.text, MessageType.Info);
+								}
+								else if (!renderer.HasPropertyBlock())
+								{
+									EditorGUILayout.HelpBox(this.m_LightProbeCustomNote.text, MessageType.Error);
+								}
 								EditorGUI.indentLevel--;
 							}
 						}
 					}
-					else if (usesLightMaps)
+					else if (useMiniStyle)
 					{
-						ModuleUI.GUIPopup(this.m_LightProbeUsageStyle, 0, this.m_LightProbeUsageNames, new GUILayoutOption[0]);
+						ModuleUI.GUIEnumPopup(this.m_LightProbeUsageStyle, LightProbeUsage.Off, this.m_LightProbeUsage, new GUILayoutOption[0]);
 					}
 					else
 					{
-						ModuleUI.GUIPopup(this.m_LightProbeUsageStyle, this.m_LightProbeUsage, this.m_LightProbeUsageNames, new GUILayoutOption[0]);
-						if (!this.m_LightProbeUsage.hasMultipleDifferentValues && this.m_LightProbeUsage.intValue == 2)
-						{
-							EditorGUI.indentLevel++;
-							ModuleUI.GUIObject(this.m_LightProbeVolumeOverrideStyle, this.m_LightProbeVolumeOverride, new GUILayoutOption[0]);
-							EditorGUI.indentLevel--;
-						}
+						EditorGUILayout.EnumPopup(this.m_LightProbeUsageStyle, LightProbeUsage.Off, new GUILayoutOption[0]);
 					}
 				}
 				Tree component = renderer.GetComponent<Tree>();
@@ -187,21 +213,22 @@ namespace UnityEditor
 				int selectionCount = 1;
 				bool flag = SceneView.IsUsingDeferredRenderingPath();
 				bool flag2 = flag && GraphicsSettings.GetShaderMode(BuiltinShaderType.DeferredReflections) != BuiltinShaderMode.Disabled;
-				bool usesLightMaps = false;
+				bool lightProbeAllowed = true;
 				if (selection != null)
 				{
 					for (int i = 0; i < selection.Length; i++)
 					{
 						UnityEngine.Object @object = selection[i];
-						if (LightmapEditorSettings.IsLightmappedOrDynamicLightmappedForRendering((Renderer)@object))
+						if (!LightProbes.AreLightProbesAllowed((Renderer)@object))
 						{
-							usesLightMaps = true;
+							lightProbeAllowed = false;
 							break;
 						}
 					}
 					selectionCount = selection.Length;
 				}
-				this.RenderLightProbeUsage(selectionCount, renderer, useMiniStyle, usesLightMaps);
+				this.RenderLightProbeUsage(selectionCount, renderer, useMiniStyle, lightProbeAllowed);
+				this.RenderLightProbeProxyVolumeWarningNote(renderer, selectionCount);
 				this.RenderReflectionProbeUsage(useMiniStyle, flag, flag2);
 				bool flag3 = this.RenderProbeAnchor(useMiniStyle);
 				if (flag3)
@@ -221,7 +248,6 @@ namespace UnityEditor
 				{
 					EditorGUILayout.HelpBox(this.m_DeferredNote.text, MessageType.Info);
 				}
-				this.RenderLightProbeProxyVolumeWarningNote(renderer, selectionCount);
 			}
 
 			internal static void ShowClosestReflectionProbes(List<ReflectionProbeBlendInfo> blendInfos)
@@ -260,16 +286,44 @@ namespace UnityEditor
 			}
 		}
 
+		private GUIContent m_DynamicOccludeeLabel = EditorGUIUtility.TrTextContent("Dynamic Occluded", "Controls if dynamic occlusion culling should be performed for this renderer.", null);
+
+		private static string[] m_LayerNames;
+
 		private SerializedProperty m_SortingOrder;
 
 		private SerializedProperty m_SortingLayerID;
 
+		private SerializedProperty m_DynamicOccludee;
+
+		private SerializedProperty m_RenderingLayerMask;
+
+		private static GUIContent m_RenderingLayerMaskStyle = EditorGUIUtility.TrTextContent("Rendering Layer Mask", "Mask that can be used with SRP DrawRenderers command to filter renderers outside of the normal layering system.", null);
+
 		protected RendererEditorBase.Probes m_Probes;
+
+		private static string[] layerNames
+		{
+			get
+			{
+				if (RendererEditorBase.m_LayerNames == null)
+				{
+					RendererEditorBase.m_LayerNames = new string[32];
+					for (int i = 0; i < RendererEditorBase.m_LayerNames.Length; i++)
+					{
+						RendererEditorBase.m_LayerNames[i] = string.Format("Layer{0}", i + 1);
+					}
+				}
+				return RendererEditorBase.m_LayerNames;
+			}
+		}
 
 		public virtual void OnEnable()
 		{
 			this.m_SortingOrder = base.serializedObject.FindProperty("m_SortingOrder");
 			this.m_SortingLayerID = base.serializedObject.FindProperty("m_SortingLayerID");
+			this.m_DynamicOccludee = base.serializedObject.FindProperty("m_DynamicOccludee");
+			this.m_RenderingLayerMask = base.serializedObject.FindProperty("m_RenderingLayerMask");
 		}
 
 		protected void RenderSortingLayerFields()
@@ -287,6 +341,54 @@ namespace UnityEditor
 		protected void RenderProbeFields()
 		{
 			this.m_Probes.OnGUI(base.targets, (Renderer)base.target, false);
+		}
+
+		protected void CullDynamicFieldGUI()
+		{
+			EditorGUILayout.PropertyField(this.m_DynamicOccludee, this.m_DynamicOccludeeLabel, new GUILayoutOption[0]);
+		}
+
+		protected void RenderRenderingLayer()
+		{
+			RendererEditorBase.RenderRenderingLayer(this.m_RenderingLayerMask, base.target as Renderer, base.targets.ToArray<UnityEngine.Object>(), false);
+		}
+
+		internal static void RenderRenderingLayer(SerializedProperty layerMask, Renderer target, UnityEngine.Object[] targets, bool useMiniStyle = false)
+		{
+			bool flag = GraphicsSettings.renderPipelineAsset != null;
+			if (flag && !(target == null))
+			{
+				EditorGUI.showMixedValue = layerMask.hasMultipleDifferentValues;
+				int num = (int)target.renderingLayerMask;
+				EditorGUI.BeginChangeCheck();
+				Rect rect = EditorGUILayout.GetControlRect(new GUILayoutOption[0]);
+				EditorGUI.BeginProperty(rect, RendererEditorBase.m_RenderingLayerMaskStyle, layerMask);
+				if (useMiniStyle)
+				{
+					rect = ModuleUI.PrefixLabel(rect, RendererEditorBase.m_RenderingLayerMaskStyle);
+					num = EditorGUI.MaskField(rect, GUIContent.none, num, RendererEditorBase.layerNames, ParticleSystemStyles.Get().popup);
+				}
+				else
+				{
+					num = EditorGUI.MaskField(rect, RendererEditorBase.m_RenderingLayerMaskStyle, num, RendererEditorBase.layerNames);
+				}
+				EditorGUI.EndProperty();
+				if (EditorGUI.EndChangeCheck())
+				{
+					Undo.RecordObjects(targets, "Set rendering layer mask");
+					for (int i = 0; i < targets.Length; i++)
+					{
+						UnityEngine.Object @object = targets[i];
+						Renderer renderer = @object as Renderer;
+						if (renderer != null)
+						{
+							renderer.renderingLayerMask = (uint)num;
+							EditorUtility.SetDirty(@object);
+						}
+					}
+				}
+				EditorGUI.showMixedValue = false;
+			}
 		}
 
 		protected void RenderCommonProbeFields(bool useMiniStyle)

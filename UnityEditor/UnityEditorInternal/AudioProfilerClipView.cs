@@ -222,8 +222,6 @@ namespace UnityEditorInternal
 
 		private GUIStyle m_HeaderStyle;
 
-		private int delayedPingObject;
-
 		public AudioProfilerClipView(EditorWindow editorWindow, AudioProfilerClipTreeViewState state)
 		{
 			this.m_EditorWindow = editorWindow;
@@ -264,11 +262,6 @@ namespace UnityEditorInternal
 				TreeViewController expr_14A = this.m_TreeView;
 				expr_14A.selectionChangedCallback = (Action<int[]>)Delegate.Combine(expr_14A.selectionChangedCallback, new Action<int[]>(this.OnTreeSelectionChanged));
 			}
-		}
-
-		private void PingObjectDelayed()
-		{
-			EditorGUIUtility.PingObject(this.delayedPingObject);
 		}
 
 		public void OnTreeSelectionChanged(int[] selection)

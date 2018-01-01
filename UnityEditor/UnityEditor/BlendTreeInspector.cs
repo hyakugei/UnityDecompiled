@@ -1288,7 +1288,7 @@ namespace UnityEditor
 		public void AddButton(Rect rect, ReorderableList list)
 		{
 			GenericMenu genericMenu = new GenericMenu();
-			genericMenu.AddItem(new GUIContent("Add Motion Field"), false, new GenericMenu.MenuFunction(this.AddChildAnimation));
+			genericMenu.AddItem(EditorGUIUtility.TrTextContent("Add Motion Field", null, null), false, new GenericMenu.MenuFunction(this.AddChildAnimation));
 			genericMenu.AddItem(EditorGUIUtility.TempContent("New Blend Tree"), false, new GenericMenu.MenuFunction(this.AddBlendTreeCallback));
 			genericMenu.Popup(rect, 0);
 		}
@@ -1500,8 +1500,8 @@ namespace UnityEditor
 					}
 					else
 					{
-						genericMenu.AddItem(new GUIContent("Velocity XZ"), false, new GenericMenu.MenuFunction(this.ComputePositionsFromVelocity));
-						genericMenu.AddItem(new GUIContent("Speed And Angular Speed"), false, new GenericMenu.MenuFunction(this.ComputePositionsFromSpeedAndAngularSpeed));
+						genericMenu.AddItem(EditorGUIUtility.TrTextContent("Velocity XZ", null, null), false, new GenericMenu.MenuFunction(this.ComputePositionsFromVelocity));
+						genericMenu.AddItem(EditorGUIUtility.TrTextContent("Speed And Angular Speed", null, null), false, new GenericMenu.MenuFunction(this.ComputePositionsFromSpeedAndAngularSpeed));
 						this.AddComputeMenuItems(genericMenu, "X Position From/", BlendTreeInspector.ChildPropertyToCompute.PositionX);
 						this.AddComputeMenuItems(genericMenu, "Y Position From/", BlendTreeInspector.ChildPropertyToCompute.PositionY);
 					}
@@ -1516,8 +1516,8 @@ namespace UnityEditor
 				if (EditorGUI.DropdownButton(rect2, EditorGUIUtility.TempContent("Select"), FocusType.Passive, EditorStyles.popup))
 				{
 					GenericMenu genericMenu2 = new GenericMenu();
-					genericMenu2.AddItem(new GUIContent("Homogeneous Speed"), false, new GenericMenu.MenuFunction(this.ComputeTimeScaleFromSpeed));
-					genericMenu2.AddItem(new GUIContent("Reset Time Scale"), false, new GenericMenu.MenuFunction(this.ResetTimeScale));
+					genericMenu2.AddItem(EditorGUIUtility.TrTextContent("Homogeneous Speed", null, null), false, new GenericMenu.MenuFunction(this.ComputeTimeScaleFromSpeed));
+					genericMenu2.AddItem(EditorGUIUtility.TrTextContent("Reset Time Scale", null, null), false, new GenericMenu.MenuFunction(this.ResetTimeScale));
 					genericMenu2.DropDown(rect2);
 				}
 			}

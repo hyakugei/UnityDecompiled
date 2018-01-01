@@ -510,6 +510,10 @@ namespace UnityEditor
 				ContainerWindow.SetFreezeDisplay(true);
 				WindowLayout.CloseWindows();
 				UnityEngine.Object[] array3 = InternalEditorUtility.LoadSerializedFileAndForget(path);
+				if (array3 == null || array3.Length == 0)
+				{
+					throw new ArgumentException("Window layout at '" + path + "' could not be loaded.");
+				}
 				List<UnityEngine.Object> list = new List<UnityEngine.Object>();
 				int j = 0;
 				while (j < array3.Length)
@@ -520,7 +524,7 @@ namespace UnityEditor
 					{
 						if (!(editorWindow.m_Parent == null))
 						{
-							goto IL_186;
+							goto IL_1AD;
 						}
 						UnityEngine.Object.DestroyImmediate(editorWindow, true);
 						Console.WriteLine(string.Concat(new object[]
@@ -539,7 +543,7 @@ namespace UnityEditor
 						DockArea dockArea = @object as DockArea;
 						if (!(dockArea != null) || dockArea.m_Panes.Count != 0)
 						{
-							goto IL_186;
+							goto IL_1AD;
 						}
 						dockArea.Close(null);
 						Console.WriteLine(string.Concat(new object[]
@@ -551,12 +555,12 @@ namespace UnityEditor
 						}));
 						flag = true;
 					}
-					IL_190:
+					IL_1B7:
 					j++;
 					continue;
-					IL_186:
+					IL_1AD:
 					list.Add(@object);
-					goto IL_190;
+					goto IL_1B7;
 				}
 				ContainerWindow containerWindow2 = null;
 				ContainerWindow containerWindow3 = null;
@@ -646,7 +650,8 @@ namespace UnityEditor
 			{
 				UnityEngine.Debug.LogError("Failed to load window layout: " + arg);
 				int num = 0;
-				if (!Application.isTestRun)
+				UnityEngine.Object[] array4 = Resources.FindObjectsOfTypeAll(typeof(ContainerWindow));
+				if (!Application.isTestRun && array4.Length > 0)
 				{
 					num = EditorUtility.DisplayDialogComplex("Failed to load window layout", "This can happen if layout contains custom windows and there are compile errors in the project.", "Load Default Layout", "Quit", "Revert Factory Settings");
 				}

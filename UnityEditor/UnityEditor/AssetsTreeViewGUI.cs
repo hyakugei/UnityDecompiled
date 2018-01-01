@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using UnityEditor.IMGUI.Controls;
 using UnityEditor.ProjectWindowCallback;
@@ -12,9 +13,13 @@ namespace UnityEditor
 	{
 		internal delegate void OnAssetIconDrawDelegate(Rect iconRect, string guid);
 
+		internal delegate bool OnAssetLabelDrawDelegate(Rect drawRect, string guid);
+
 		private static bool s_VCEnabled;
 
 		private const float k_IconOverlayPadding = 7f;
+
+		private static IDictionary<int, string> s_GUIDCache;
 
 		internal static event AssetsTreeViewGUI.OnAssetIconDrawDelegate postAssetIconDrawCallback
 		{
@@ -42,9 +47,36 @@ namespace UnityEditor
 			}
 		}
 
+		internal static event AssetsTreeViewGUI.OnAssetLabelDrawDelegate postAssetLabelDrawCallback
+		{
+			add
+			{
+				AssetsTreeViewGUI.OnAssetLabelDrawDelegate onAssetLabelDrawDelegate = AssetsTreeViewGUI.postAssetLabelDrawCallback;
+				AssetsTreeViewGUI.OnAssetLabelDrawDelegate onAssetLabelDrawDelegate2;
+				do
+				{
+					onAssetLabelDrawDelegate2 = onAssetLabelDrawDelegate;
+					onAssetLabelDrawDelegate = Interlocked.CompareExchange<AssetsTreeViewGUI.OnAssetLabelDrawDelegate>(ref AssetsTreeViewGUI.postAssetLabelDrawCallback, (AssetsTreeViewGUI.OnAssetLabelDrawDelegate)Delegate.Combine(onAssetLabelDrawDelegate2, value), onAssetLabelDrawDelegate);
+				}
+				while (onAssetLabelDrawDelegate != onAssetLabelDrawDelegate2);
+			}
+			remove
+			{
+				AssetsTreeViewGUI.OnAssetLabelDrawDelegate onAssetLabelDrawDelegate = AssetsTreeViewGUI.postAssetLabelDrawCallback;
+				AssetsTreeViewGUI.OnAssetLabelDrawDelegate onAssetLabelDrawDelegate2;
+				do
+				{
+					onAssetLabelDrawDelegate2 = onAssetLabelDrawDelegate;
+					onAssetLabelDrawDelegate = Interlocked.CompareExchange<AssetsTreeViewGUI.OnAssetLabelDrawDelegate>(ref AssetsTreeViewGUI.postAssetLabelDrawCallback, (AssetsTreeViewGUI.OnAssetLabelDrawDelegate)Delegate.Remove(onAssetLabelDrawDelegate2, value), onAssetLabelDrawDelegate);
+				}
+				while (onAssetLabelDrawDelegate != onAssetLabelDrawDelegate2);
+			}
+		}
+
 		public AssetsTreeViewGUI(TreeViewController treeView) : base(treeView)
 		{
 			base.iconOverlayGUI = (Action<TreeViewItem, Rect>)Delegate.Combine(base.iconOverlayGUI, new Action<TreeViewItem, Rect>(this.OnIconOverlayGUI));
+			base.labelOverlayGUI = (Action<TreeViewItem, Rect>)Delegate.Combine(base.labelOverlayGUI, new Action<TreeViewItem, Rect>(this.OnLabelOverlayGUI));
 			this.k_TopRowMargin = 4f;
 		}
 
@@ -150,22 +182,47 @@ namespace UnityEditor
 		{
 			if (AssetsTreeViewGUI.postAssetIconDrawCallback != null && AssetDatabase.IsMainAsset(item.id))
 			{
-				string assetPath = AssetDatabase.GetAssetPath(item.id);
-				string guid = AssetDatabase.AssetPathToGUID(assetPath);
-				AssetsTreeViewGUI.postAssetIconDrawCallback(overlayRect, guid);
+				string gUIDForInstanceID = AssetsTreeViewGUI.GetGUIDForInstanceID(item.id);
+				AssetsTreeViewGUI.postAssetIconDrawCallback(overlayRect, gUIDForInstanceID);
 			}
 			if (AssetsTreeViewGUI.s_VCEnabled && AssetDatabase.IsMainAsset(item.id))
 			{
-				string assetPath2 = AssetDatabase.GetAssetPath(item.id);
-				string guid2 = AssetDatabase.AssetPathToGUID(assetPath2);
-				ProjectHooks.OnProjectWindowItem(guid2, overlayRect);
+				string gUIDForInstanceID2 = AssetsTreeViewGUI.GetGUIDForInstanceID(item.id);
+				ProjectHooks.OnProjectWindowItem(gUIDForInstanceID2, overlayRect);
 			}
+		}
+
+		private void OnLabelOverlayGUI(TreeViewItem item, Rect labelRect)
+		{
+			if (AssetsTreeViewGUI.postAssetLabelDrawCallback != null && AssetDatabase.IsMainAsset(item.id))
+			{
+				string gUIDForInstanceID = AssetsTreeViewGUI.GetGUIDForInstanceID(item.id);
+				AssetsTreeViewGUI.postAssetLabelDrawCallback(labelRect, gUIDForInstanceID);
+			}
+		}
+
+		private static string GetGUIDForInstanceID(int instanceID)
+		{
+			if (AssetsTreeViewGUI.s_GUIDCache == null)
+			{
+				AssetsTreeViewGUI.s_GUIDCache = new Dictionary<int, string>();
+			}
+			string text = null;
+			if (!AssetsTreeViewGUI.s_GUIDCache.TryGetValue(instanceID, out text))
+			{
+				string assetPath = AssetDatabase.GetAssetPath(instanceID);
+				text = AssetDatabase.AssetPathToGUID(assetPath);
+				AssetsTreeViewGUI.s_GUIDCache.Add(instanceID, text);
+			}
+			return text;
 		}
 
 		static AssetsTreeViewGUI()
 		{
 			// Note: this type is marked as 'beforefieldinit'.
 			AssetsTreeViewGUI.postAssetIconDrawCallback = null;
+			AssetsTreeViewGUI.postAssetLabelDrawCallback = null;
+			AssetsTreeViewGUI.s_GUIDCache = null;
 		}
 	}
 }

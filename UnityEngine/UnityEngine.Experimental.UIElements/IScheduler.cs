@@ -4,8 +4,14 @@ namespace UnityEngine.Experimental.UIElements
 {
 	public interface IScheduler
 	{
-		ScheduleBuilder Schedule(Action<TimerState> timerUpdateEvent, IEventHandler hanlder);
+		IScheduledItem ScheduleOnce(Action<TimerState> timerUpdateEvent, long delayMs);
 
-		void Unschedule(Action<TimerState> timerUpdateEvent);
+		IScheduledItem ScheduleUntil(Action<TimerState> timerUpdateEvent, long delayMs, long intervalMs, Func<bool> stopCondition = null);
+
+		IScheduledItem ScheduleForDuration(Action<TimerState> timerUpdateEvent, long delayMs, long intervalMs, long durationMs);
+
+		void Unschedule(IScheduledItem item);
+
+		void Schedule(IScheduledItem item);
 	}
 }

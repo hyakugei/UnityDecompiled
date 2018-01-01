@@ -53,7 +53,7 @@ namespace UnityEditor
 					this.m_DstState = dstState;
 					this.m_TransitionDuration = transition.duration;
 					this.m_TransitionOffset = transition.offset;
-					this.m_ExitTime = 0.5f;
+					this.m_ExitTime = transition.exitTime;
 				}
 				else
 				{
@@ -373,6 +373,9 @@ namespace UnityEditor
 							this.m_Timeline.ResetRange();
 						}
 						this.m_AvatarPreview.Animator.StartPlayback();
+						this.m_AvatarPreview.Animator.playbackTime = 0f;
+						this.m_AvatarPreview.Animator.Update(0f);
+						this.m_AvatarPreview.ResetPreviewFocus();
 						this.m_IsResampling = false;
 					}
 				}
@@ -550,6 +553,7 @@ namespace UnityEditor
 				this.m_AvatarPreview = new AvatarPreview(scenePreviewObject, motion);
 				this.m_AvatarPreview.OnAvatarChangeFunc = new AvatarPreview.OnAvatarChange(this.OnPreviewAvatarChanged);
 				this.m_AvatarPreview.ShowIKOnFeetButton = false;
+				this.m_AvatarPreview.ResetPreviewFocus();
 			}
 			if (this.m_Timeline == null)
 			{

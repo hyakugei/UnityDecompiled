@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using UnityEditor.Utils;
 using UnityEditorInternal;
@@ -16,13 +17,13 @@ namespace UnityEditor
 		{
 			public static readonly GUIStyle kReflectionProbePickerStyle = "PaneOptions";
 
-			public static readonly GUIContent lightmapEmissiveLabel = EditorGUIUtility.TextContent("Global Illumination|Controls if the emission is baked or realtime.\n\nBaked only has effect in scenes where baked global illumination is enabled.\n\nRealtime uses realtime global illumination if enabled in the scene. Otherwise the emission won't light up other objects.");
+			public static readonly GUIContent lightmapEmissiveLabel = EditorGUIUtility.TrTextContent("Global Illumination", "Controls if the emission is baked or realtime.\n\nBaked only has effect in scenes where baked global illumination is enabled.\n\nRealtime uses realtime global illumination if enabled in the scene. Otherwise the emission won't light up other objects.", null);
 
 			public static GUIContent[] lightmapEmissiveStrings = new GUIContent[]
 			{
 				EditorGUIUtility.TextContent("Realtime"),
 				EditorGUIUtility.TextContent("Baked"),
-				EditorGUIUtility.TextContent("None")
+				EditorGUIUtility.TrTextContent("None", null, null)
 			};
 
 			public static int[] lightmapEmissiveValues;
@@ -52,18 +53,18 @@ namespace UnityEditor
 			static Styles()
 			{
 				// Note: this type is marked as 'beforefieldinit'.
-				int[] expr_56 = new int[3];
-				expr_56[0] = 1;
-				expr_56[1] = 2;
-				MaterialEditor.Styles.lightmapEmissiveValues = expr_56;
-				MaterialEditor.Styles.propBlockInfo = EditorGUIUtility.TextContent("MaterialPropertyBlock is used to modify these values").text;
-				MaterialEditor.Styles.queueLabel = EditorGUIUtility.TextContent("Render Queue");
+				int[] expr_5E = new int[3];
+				expr_5E[0] = 1;
+				expr_5E[1] = 2;
+				MaterialEditor.Styles.lightmapEmissiveValues = expr_5E;
+				MaterialEditor.Styles.propBlockInfo = EditorGUIUtility.TrTextContent("MaterialPropertyBlock is used to modify these values", null, null).text;
+				MaterialEditor.Styles.queueLabel = EditorGUIUtility.TrTextContent("Render Queue", null, null);
 				MaterialEditor.Styles.queueNames = new GUIContent[]
 				{
-					EditorGUIUtility.TextContent("From Shader"),
-					EditorGUIUtility.TextContent("Geometry|Queue 2000"),
-					EditorGUIUtility.TextContent("AlphaTest|Queue 2450"),
-					EditorGUIUtility.TextContent("Transparent|Queue 3000")
+					EditorGUIUtility.TrTextContent("From Shader", null, null),
+					EditorGUIUtility.TrTextContent("Geometry", "Queue 2000", null),
+					EditorGUIUtility.TrTextContent("AlphaTest", "Queue 2450", null),
+					EditorGUIUtility.TrTextContent("Transparent", "Queue 3000", null)
 				};
 				MaterialEditor.Styles.queueValues = new int[]
 				{
@@ -80,15 +81,15 @@ namespace UnityEditor
 					MaterialEditor.Styles.queueNames[3],
 					EditorGUIUtility.TextContent("")
 				};
-				int[] expr_121 = new int[5];
-				expr_121[0] = MaterialEditor.Styles.queueValues[0];
-				expr_121[1] = MaterialEditor.Styles.queueValues[1];
-				expr_121[2] = MaterialEditor.Styles.queueValues[2];
-				expr_121[3] = MaterialEditor.Styles.queueValues[3];
-				MaterialEditor.Styles.customQueueValues = expr_121;
-				MaterialEditor.Styles.enableInstancingLabel = EditorGUIUtility.TextContent("Enable Instancing");
-				MaterialEditor.Styles.doubleSidedGILabel = EditorGUIUtility.TextContent("Double Sided Global Illumination|When enabled, the lightmapper accounts for both sides of the geometry when calculating Global Illumination. Backfaces are not rendered or added to lightmaps, but get treated as valid when seen from other objects. When using the Progressive Lightmapper backfaces bounce light using the same emission and albedo as frontfaces.");
-				MaterialEditor.Styles.emissionLabel = EditorGUIUtility.TextContent("Emission");
+				int[] expr_141 = new int[5];
+				expr_141[0] = MaterialEditor.Styles.queueValues[0];
+				expr_141[1] = MaterialEditor.Styles.queueValues[1];
+				expr_141[2] = MaterialEditor.Styles.queueValues[2];
+				expr_141[3] = MaterialEditor.Styles.queueValues[3];
+				MaterialEditor.Styles.customQueueValues = expr_141;
+				MaterialEditor.Styles.enableInstancingLabel = EditorGUIUtility.TrTextContent("Enable GPU Instancing", null, null);
+				MaterialEditor.Styles.doubleSidedGILabel = EditorGUIUtility.TrTextContent("Double Sided Global Illumination", "When enabled, the lightmapper accounts for both sides of the geometry when calculating Global Illumination. Backfaces are not rendered or added to lightmaps, but get treated as valid when seen from other objects. When using the Progressive Lightmapper backfaces bounce light using the same emission and albedo as frontfaces.", null);
+				MaterialEditor.Styles.emissionLabel = EditorGUIUtility.TrTextContent("Emission", null, null);
 			}
 		}
 
@@ -115,7 +116,7 @@ namespace UnityEditor
 			}
 		}
 
-		internal delegate void MaterialPropertyCallbackFunction(GenericMenu menu, MaterialProperty property, Renderer target);
+		internal delegate void MaterialPropertyCallbackFunction(GenericMenu menu, MaterialProperty property, Renderer[] renderers);
 
 		internal class ReflectionProbePicker : PopupWindowContent
 		{
@@ -154,19 +155,25 @@ namespace UnityEditor
 
 		private class ForwardApplyMaterialModification
 		{
-			private readonly Renderer renderer;
+			private readonly Renderer[] renderers;
 
 			private bool isMaterialEditable;
 
-			public ForwardApplyMaterialModification(Renderer r, bool inIsMaterialEditable)
+			public ForwardApplyMaterialModification(Renderer[] r, bool inIsMaterialEditable)
 			{
-				this.renderer = r;
+				this.renderers = r;
 				this.isMaterialEditable = inIsMaterialEditable;
 			}
 
 			public bool DidModifyAnimationModeMaterialProperty(MaterialProperty property, int changedMask, object previousValue)
 			{
-				bool flag = MaterialAnimationUtility.ApplyMaterialModificationToAnimationRecording(property, changedMask, this.renderer, previousValue);
+				bool flag = false;
+				Renderer[] array = this.renderers;
+				for (int i = 0; i < array.Length; i++)
+				{
+					Renderer target = array[i];
+					flag |= MaterialAnimationUtility.ApplyMaterialModificationToAnimationRecording(property, changedMask, target, previousValue);
+				}
 				return flag || !this.isMaterialEditable;
 			}
 		}
@@ -191,6 +198,12 @@ namespace UnityEditor
 
 		private SerializedProperty m_DoubleSidedGI;
 
+		private SerializedObject m_LightmapSettings;
+
+		private SerializedProperty m_EnabledRealtimeGI;
+
+		private SerializedProperty m_EnabledBakedGI;
+
 		private string m_InfoMessage;
 
 		private Vector2 m_PreviewDir = new Vector2(0f, -20f);
@@ -201,20 +214,17 @@ namespace UnityEditor
 
 		private int m_LightMode = 1;
 
-		private static readonly GUIContent s_TilingText = new GUIContent("Tiling");
+		private static readonly GUIContent s_TilingText = EditorGUIUtility.TrTextContent("Tiling", null, null);
 
-		private static readonly GUIContent s_OffsetText = new GUIContent("Offset");
+		private static readonly GUIContent s_OffsetText = EditorGUIUtility.TrTextContent("Offset", null, null);
 
 		private ShaderGUI m_CustomShaderGUI;
 
 		private string m_CustomEditorClassName;
 
-		[NonSerialized]
-		private bool m_TriedCreatingCustomGUI;
-
 		private bool m_InsidePropertiesGUI;
 
-		private Renderer m_RendererForAnimationMode;
+		private Renderer[] m_RenderersForAnimationMode;
 
 		private static Stack<MaterialEditor.AnimatedCheckData> s_AnimatedCheckStack = new Stack<MaterialEditor.AnimatedCheckData>();
 
@@ -255,6 +265,45 @@ namespace UnityEditor
 			get
 			{
 				return this.forceVisible || this.m_IsVisible;
+			}
+		}
+
+		private Renderer rendererForAnimationMode
+		{
+			get
+			{
+				Renderer result;
+				if (this.m_RenderersForAnimationMode == null)
+				{
+					result = null;
+				}
+				else if (this.m_RenderersForAnimationMode.Length == 0)
+				{
+					result = null;
+				}
+				else
+				{
+					result = this.m_RenderersForAnimationMode[0];
+				}
+				return result;
+			}
+		}
+
+		private bool isPrefabAsset
+		{
+			get
+			{
+				bool result;
+				if (this.m_SerializedObject == null || this.m_SerializedObject.targetObject == null)
+				{
+					result = false;
+				}
+				else
+				{
+					PrefabType prefabType = PrefabUtility.GetPrefabType(this.m_SerializedObject.targetObject);
+					result = (prefabType == PrefabType.Prefab || prefabType == PrefabType.ModelPrefab);
+				}
+				return result;
 			}
 		}
 
@@ -306,24 +355,33 @@ namespace UnityEditor
 			this.m_Shader = newShader;
 			if (customShaderGUI != this.m_CustomShaderGUI)
 			{
+				if (customShaderGUI != null)
+				{
+					UnityEngine.Object[] targets = base.targets;
+					for (int i = 0; i < targets.Length; i++)
+					{
+						Material material = (Material)targets[i];
+						customShaderGUI.OnClosed(material);
+					}
+				}
 				flag = true;
 			}
-			UnityEngine.Object[] targets = base.targets;
-			for (int i = 0; i < targets.Length; i++)
+			UnityEngine.Object[] targets2 = base.targets;
+			for (int j = 0; j < targets2.Length; j++)
 			{
-				Material material = (Material)targets[i];
-				Shader shader = material.shader;
-				Undo.RecordObject(material, "Assign shader");
+				Material material2 = (Material)targets2[j];
+				Shader shader = material2.shader;
+				Undo.RecordObject(material2, "Assign shader");
 				if (this.m_CustomShaderGUI != null)
 				{
-					this.m_CustomShaderGUI.AssignNewShaderToMaterial(material, shader, newShader);
+					this.m_CustomShaderGUI.AssignNewShaderToMaterial(material2, shader, newShader);
 				}
 				else
 				{
-					material.shader = newShader;
+					material2.shader = newShader;
 				}
-				EditorMaterialUtility.ResetDefaultTextures(material, false);
-				MaterialEditor.ApplyMaterialPropertyDrawers(material);
+				EditorMaterialUtility.ResetDefaultTextures(material2, false);
+				MaterialEditor.ApplyMaterialPropertyDrawers(material2);
 			}
 			if (flag)
 			{
@@ -345,12 +403,17 @@ namespace UnityEditor
 			}
 		}
 
-		internal void OnSelectedShaderPopup(string command, Shader shader)
+		internal void OnSelectedShaderPopup(object shaderNameObj)
 		{
 			base.serializedObject.Update();
-			if (shader != null)
+			string text = (string)shaderNameObj;
+			if (!string.IsNullOrEmpty(text))
 			{
-				this.SetShader(shader);
+				Shader shader = Shader.Find(text);
+				if (shader != null)
+				{
+					this.SetShader(shader);
+				}
 			}
 			this.PropertiesChanged();
 		}
@@ -379,14 +442,93 @@ namespace UnityEditor
 			GUIContent content = EditorGUIUtility.TempContent((!(this.m_Shader != null)) ? "No Shader Selected" : this.m_Shader.name);
 			if (EditorGUI.DropdownButton(rect, content, FocusType.Keyboard, style))
 			{
-				EditorGUI.showMixedValue = false;
-				Vector2 vector = GUIUtility.GUIToScreenPoint(new Vector2(rect.x, rect.y));
-				InternalEditorUtility.SetupShaderMenu(base.target as Material);
-				EditorUtility.Internal_DisplayPopupMenu(new Rect(vector.x, vector.y, rect.width, rect.height), "CONTEXT/ShaderPopup", this, 0);
-				Event.current.Use();
+				GenericMenu genericMenu = new GenericMenu();
+				this.CreateShaderList(genericMenu);
+				genericMenu.DropDown(rect);
 			}
 			EditorGUI.showMixedValue = false;
 			GUI.enabled = enabled;
+		}
+
+		private void CreateShaderList(GenericMenu menu)
+		{
+			ShaderInfo[] allShaderInfo = ShaderUtil.GetAllShaderInfo();
+			List<string> list = new List<string>();
+			List<string> list2 = new List<string>();
+			List<string> list3 = new List<string>();
+			List<string> list4 = new List<string>();
+			List<string> list5 = new List<string>();
+			ShaderInfo[] array = allShaderInfo;
+			for (int i = 0; i < array.Length; i++)
+			{
+				ShaderInfo shaderInfo = array[i];
+				if (!shaderInfo.name.StartsWith("Deprecated") && !shaderInfo.name.StartsWith("Hidden"))
+				{
+					if (shaderInfo.hasErrors)
+					{
+						list5.Add(shaderInfo.name);
+					}
+					else if (!shaderInfo.supported)
+					{
+						list4.Add(shaderInfo.name);
+					}
+					else if (shaderInfo.name.StartsWith("Legacy Shaders/"))
+					{
+						list3.Add(shaderInfo.name);
+					}
+					else if (shaderInfo.name.Contains("/"))
+					{
+						list2.Add(shaderInfo.name);
+					}
+					else
+					{
+						list.Add(shaderInfo.name);
+					}
+				}
+			}
+			list.Sort();
+			list2.Sort();
+			list3.Sort();
+			list4.Sort();
+			list5.Sort();
+			list.ForEach(delegate(string s)
+			{
+				this.AddShaderToMenu("", menu, s);
+			});
+			list2.ForEach(delegate(string s)
+			{
+				this.AddShaderToMenu("", menu, s);
+			});
+			if (list3.Any<string>())
+			{
+				menu.AddSeparator("");
+			}
+			list3.ForEach(delegate(string s)
+			{
+				this.AddShaderToMenu("", menu, s);
+			});
+			if (list4.Any<string>())
+			{
+				menu.AddSeparator("");
+			}
+			list4.ForEach(delegate(string s)
+			{
+				this.AddShaderToMenu("Not supported/", menu, s);
+			});
+			if (list5.Any<string>())
+			{
+				menu.AddSeparator("");
+			}
+			list5.ForEach(delegate(string s)
+			{
+				this.AddShaderToMenu("Failed to compile/", menu, s);
+			});
+		}
+
+		private void AddShaderToMenu(string prefix, GenericMenu menu, string shaderName)
+		{
+			bool on = this.m_Shader != null && this.m_Shader.name == shaderName;
+			menu.AddItem(new GUIContent(prefix + shaderName), on, new GenericMenu.MenuFunction2(this.OnSelectedShaderPopup), shaderName);
 		}
 
 		public virtual void Awake()
@@ -789,7 +931,7 @@ namespace UnityEditor
 			EditorGUI.showMixedValue = prop.hasMixedValue;
 			bool hdr = (prop.flags & MaterialProperty.PropFlags.HDR) != MaterialProperty.PropFlags.None;
 			bool showAlpha = true;
-			Color colorValue = EditorGUI.ColorField(position, label, prop.colorValue, true, showAlpha, hdr, null);
+			Color colorValue = EditorGUI.ColorField(position, label, prop.colorValue, true, showAlpha, hdr);
 			EditorGUI.showMixedValue = false;
 			if (EditorGUI.EndChangeCheck())
 			{
@@ -859,6 +1001,10 @@ namespace UnityEditor
 			{
 				GUI.enabled = false;
 			}
+			if ((prop.flags & MaterialProperty.PropFlags.NonModifiableTextureData) != MaterialProperty.PropFlags.None)
+			{
+				GUI.enabled = false;
+			}
 			EditorGUI.showMixedValue = prop.hasMixedValue;
 			int controlID = GUIUtility.GetControlID(12354, FocusType.Keyboard, position);
 			Texture textureValue = EditorGUI.DoObjectField(position, position, controlID, prop.textureValue, textureTypeFromDimension, null, new EditorGUI.ObjectFieldValidator(this.TextureValidator), false) as Texture;
@@ -897,7 +1043,7 @@ namespace UnityEditor
 		{
 			if (InternalEditorUtility.BumpMapTextureNeedsFixing(prop))
 			{
-				if (this.HelpBoxWithButton(EditorGUIUtility.TextContent("This texture is not marked as a normal map"), EditorGUIUtility.TextContent("Fix Now")))
+				if (this.HelpBoxWithButton(EditorGUIUtility.TrTextContent("This texture is not marked as a normal map", null, null), EditorGUIUtility.TrTextContent("Fix Now", null, null)))
 				{
 					InternalEditorUtility.FixNormalmapTexture(prop);
 				}
@@ -977,6 +1123,8 @@ namespace UnityEditor
 			float num = EditorGUIUtility.labelWidth;
 			float x = position.x + num;
 			float x2 = position.x + EditorGUI.indent;
+			int indentLevel = EditorGUI.indentLevel;
+			EditorGUI.indentLevel = 0;
 			if (partOfTexturePropertyControl)
 			{
 				num = 65f;
@@ -992,6 +1140,7 @@ namespace UnityEditor
 			position2.y += 16f;
 			EditorGUI.PrefixLabel(totalPosition, MaterialEditor.s_OffsetText);
 			value2 = EditorGUI.Vector2Field(position2, GUIContent.none, value2);
+			EditorGUI.indentLevel = indentLevel;
 			return new Vector4(value.x, value.y, value2.x, value2.y);
 		}
 
@@ -1069,20 +1218,25 @@ namespace UnityEditor
 
 		public void BeginAnimatedCheck(Rect totalPosition, MaterialProperty prop)
 		{
-			if (!(this.m_RendererForAnimationMode == null))
+			if (!(this.rendererForAnimationMode == null))
 			{
 				MaterialEditor.s_AnimatedCheckStack.Push(new MaterialEditor.AnimatedCheckData(prop, totalPosition, GUI.backgroundColor));
 				Color backgroundColor;
-				if (MaterialAnimationUtility.OverridePropertyColor(prop, this.m_RendererForAnimationMode, out backgroundColor))
+				if (MaterialAnimationUtility.OverridePropertyColor(prop, this.rendererForAnimationMode, out backgroundColor))
 				{
 					GUI.backgroundColor = backgroundColor;
 				}
 			}
 		}
 
+		public void BeginAnimatedCheck(MaterialProperty prop)
+		{
+			this.BeginAnimatedCheck(Rect.zero, prop);
+		}
+
 		public void EndAnimatedCheck()
 		{
-			if (!(this.m_RendererForAnimationMode == null))
+			if (!(this.rendererForAnimationMode == null))
 			{
 				MaterialEditor.AnimatedCheckData animatedCheckData = MaterialEditor.s_AnimatedCheckStack.Pop();
 				if (Event.current.type == EventType.ContextClick && animatedCheckData.totalPosition.Contains(Event.current.mousePosition))
@@ -1098,7 +1252,7 @@ namespace UnityEditor
 			if (MaterialEditor.contextualPropertyMenu != null)
 			{
 				GenericMenu genericMenu = new GenericMenu();
-				MaterialEditor.contextualPropertyMenu(genericMenu, prop, this.m_RendererForAnimationMode);
+				MaterialEditor.contextualPropertyMenu(genericMenu, prop, this.m_RenderersForAnimationMode);
 				if (genericMenu.GetItemCount() > 0)
 				{
 					genericMenu.ShowAsContext();
@@ -1213,8 +1367,8 @@ namespace UnityEditor
 		public bool EmissionEnabledProperty()
 		{
 			Material[] array = Array.ConvertAll<UnityEngine.Object, Material>(base.targets, (UnityEngine.Object o) => (Material)o);
-			LightModeUtil lightModeUtil = LightModeUtil.Get();
-			MaterialGlobalIlluminationFlags materialGlobalIlluminationFlags = (!lightModeUtil.IsRealtimeGIEnabled()) ? ((!lightModeUtil.AreBakedLightmapsEnabled()) ? MaterialGlobalIlluminationFlags.None : MaterialGlobalIlluminationFlags.BakedEmissive) : MaterialGlobalIlluminationFlags.RealtimeEmissive;
+			this.m_LightmapSettings.Update();
+			MaterialGlobalIlluminationFlags materialGlobalIlluminationFlags = (!this.m_EnabledRealtimeGI.boolValue) ? ((!this.m_EnabledBakedGI.boolValue) ? MaterialGlobalIlluminationFlags.None : MaterialGlobalIlluminationFlags.BakedEmissive) : MaterialGlobalIlluminationFlags.RealtimeEmissive;
 			bool flag = array[0].globalIlluminationFlags != MaterialGlobalIlluminationFlags.EmissiveIsBlack;
 			bool flag2 = false;
 			for (int i = 1; i < array.Length; i++)
@@ -1454,9 +1608,9 @@ namespace UnityEditor
 			return ShaderUtil.GetMaterialProperty_Index(mats, propertyIndex);
 		}
 
-		private static Renderer GetAssociatedRenderFromInspector()
+		private static Renderer[] GetAssociatedRenderersFromInspector()
 		{
-			Renderer result;
+			List<Renderer> list = new List<Renderer>();
 			if (InspectorWindow.s_CurrentInspectorWindow)
 			{
 				Editor[] activeEditors = InspectorWindow.s_CurrentInspectorWindow.tracker.activeEditors;
@@ -1464,31 +1618,44 @@ namespace UnityEditor
 				for (int i = 0; i < array.Length; i++)
 				{
 					Editor editor = array[i];
-					Renderer renderer = editor.target as Renderer;
-					if (renderer)
+					UnityEngine.Object[] targets = editor.targets;
+					for (int j = 0; j < targets.Length; j++)
 					{
-						result = renderer;
-						return result;
+						UnityEngine.Object @object = targets[j];
+						Renderer renderer = @object as Renderer;
+						if (renderer)
+						{
+							list.Add(renderer);
+						}
 					}
 				}
 			}
-			result = null;
-			return result;
+			return list.ToArray();
 		}
 
 		public static Renderer PrepareMaterialPropertiesForAnimationMode(MaterialProperty[] properties, bool isMaterialEditable)
 		{
-			return MaterialEditor.PrepareMaterialPropertiesForAnimationMode(properties, MaterialEditor.GetAssociatedRenderFromInspector(), isMaterialEditable);
+			Renderer[] array = MaterialEditor.PrepareMaterialPropertiesForAnimationMode(properties, MaterialEditor.GetAssociatedRenderersFromInspector(), isMaterialEditable);
+			return (array == null || array.Length <= 0) ? null : array[0];
 		}
 
 		internal static Renderer PrepareMaterialPropertiesForAnimationMode(MaterialProperty[] properties, Renderer renderer, bool isMaterialEditable)
 		{
-			bool flag = AnimationMode.InAnimationMode();
-			if (renderer != null)
+			Renderer[] array = MaterialEditor.PrepareMaterialPropertiesForAnimationMode(properties, new Renderer[]
 			{
-				MaterialEditor.ForwardApplyMaterialModification @object = new MaterialEditor.ForwardApplyMaterialModification(renderer, isMaterialEditable);
+				renderer
+			}, isMaterialEditable);
+			return (array == null || array.Length <= 0) ? null : array[0];
+		}
+
+		internal static Renderer[] PrepareMaterialPropertiesForAnimationMode(MaterialProperty[] properties, Renderer[] renderers, bool isMaterialEditable)
+		{
+			bool flag = AnimationMode.InAnimationMode();
+			if (renderers != null && renderers.Length > 0)
+			{
+				MaterialEditor.ForwardApplyMaterialModification @object = new MaterialEditor.ForwardApplyMaterialModification(renderers, isMaterialEditable);
 				MaterialPropertyBlock materialPropertyBlock = new MaterialPropertyBlock();
-				renderer.GetPropertyBlock(materialPropertyBlock);
+				renderers[0].GetPropertyBlock(materialPropertyBlock);
 				for (int i = 0; i < properties.Length; i++)
 				{
 					MaterialProperty materialProperty = properties[i];
@@ -1499,10 +1666,10 @@ namespace UnityEditor
 					}
 				}
 			}
-			Renderer result;
+			Renderer[] result;
 			if (flag)
 			{
-				result = renderer;
+				result = renderers;
 			}
 			else
 			{
@@ -1571,9 +1738,9 @@ namespace UnityEditor
 			{
 				EditorGUI.BeginChangeCheck();
 				MaterialProperty[] materialProperties = MaterialEditor.GetMaterialProperties(base.targets);
-				this.m_RendererForAnimationMode = MaterialEditor.PrepareMaterialPropertiesForAnimationMode(materialProperties, GUI.enabled);
+				this.m_RenderersForAnimationMode = MaterialEditor.PrepareMaterialPropertiesForAnimationMode(materialProperties, MaterialEditor.GetAssociatedRenderersFromInspector(), GUI.enabled);
 				bool enabled = GUI.enabled;
-				if (this.m_RendererForAnimationMode != null)
+				if (this.m_RenderersForAnimationMode != null)
 				{
 					GUI.enabled = true;
 				}
@@ -1588,12 +1755,12 @@ namespace UnityEditor
 					{
 						this.PropertiesDefaultGUI(materialProperties);
 					}
-					Renderer associatedRenderFromInspector = MaterialEditor.GetAssociatedRenderFromInspector();
-					if (associatedRenderFromInspector != null)
+					Renderer[] associatedRenderersFromInspector = MaterialEditor.GetAssociatedRenderersFromInspector();
+					if (associatedRenderersFromInspector != null && associatedRenderersFromInspector.Length > 0)
 					{
 						if (Event.current.type == EventType.Layout)
 						{
-							associatedRenderFromInspector.GetPropertyBlock(this.m_PropertyBlock);
+							associatedRenderersFromInspector[0].GetPropertyBlock(this.m_PropertyBlock);
 						}
 						if (this.m_PropertyBlock != null && !this.m_PropertyBlock.isEmpty)
 						{
@@ -1605,12 +1772,12 @@ namespace UnityEditor
 				{
 					GUI.enabled = enabled;
 					this.m_InsidePropertiesGUI = false;
-					this.m_RendererForAnimationMode = null;
+					this.m_RenderersForAnimationMode = null;
 					throw;
 				}
 				GUI.enabled = enabled;
 				this.m_InsidePropertiesGUI = false;
-				this.m_RendererForAnimationMode = null;
+				this.m_RenderersForAnimationMode = null;
 				result = EditorGUI.EndChangeCheck();
 			}
 			return result;
@@ -1892,9 +2059,7 @@ namespace UnityEditor
 				this.m_PreviewUtility.Render(true, true);
 				if (previewType == MaterialEditor.PreviewType.Skybox)
 				{
-					GL.sRGBWrite = (QualitySettings.activeColorSpace == ColorSpace.Linear);
 					InternalEditorUtility.DrawSkyboxMaterial(mat, this.m_PreviewUtility.camera);
-					GL.sRGBWrite = false;
 				}
 			}
 		}
@@ -1969,6 +2134,9 @@ namespace UnityEditor
 				this.CreateCustomShaderEditorIfNeeded(this.m_Shader);
 				this.m_EnableInstancing = base.serializedObject.FindProperty("m_EnableInstancingVariants");
 				this.m_DoubleSidedGI = base.serializedObject.FindProperty("m_DoubleSidedGI");
+				this.m_LightmapSettings = new SerializedObject(LightmapEditorSettings.GetLightmapSettings());
+				this.m_EnabledRealtimeGI = this.m_LightmapSettings.FindProperty("m_GISettings.m_EnableRealtimeLightmaps");
+				this.m_EnabledBakedGI = this.m_LightmapSettings.FindProperty("m_GISettings.m_EnableBakedLightmaps");
 				MaterialEditor.s_MaterialEditors.Add(this);
 				Undo.undoRedoPerformed = (Undo.UndoRedoCallback)Delegate.Combine(Undo.undoRedoPerformed, new Undo.UndoRedoCallback(this.UndoRedoPerformed));
 				this.PropertiesChanged();
@@ -2201,7 +2369,7 @@ namespace UnityEditor
 		{
 			Rect controlRectForSingleLine = this.GetControlRectForSingleLine();
 			bool result;
-			if (LightmapEditorSettings.giBakeBackend == LightmapEditorSettings.GIBakeBackend.PathTracer)
+			if (this.isPrefabAsset || LightmapEditorSettings.lightmapper == LightmapEditorSettings.Lightmapper.PathTracer)
 			{
 				EditorGUI.PropertyField(controlRectForSingleLine, this.m_DoubleSidedGI, MaterialEditor.Styles.doubleSidedGILabel);
 				base.serializedObject.ApplyModifiedProperties();
@@ -2209,7 +2377,7 @@ namespace UnityEditor
 			}
 			else
 			{
-				using (new EditorGUI.DisabledScope(LightmapEditorSettings.giBakeBackend != LightmapEditorSettings.GIBakeBackend.PathTracer))
+				using (new EditorGUI.DisabledScope(LightmapEditorSettings.lightmapper != LightmapEditorSettings.Lightmapper.PathTracer))
 				{
 					EditorGUI.Toggle(controlRectForSingleLine, MaterialEditor.Styles.doubleSidedGILabel, false);
 				}
@@ -2256,6 +2424,8 @@ namespace UnityEditor
 			}
 			else
 			{
+				int indentLevel = EditorGUI.indentLevel;
+				EditorGUI.indentLevel = 0;
 				if (extraProperty1 == null || extraProperty2 == null)
 				{
 					MaterialProperty materialProperty = extraProperty1 ?? extraProperty2;
@@ -2278,12 +2448,19 @@ namespace UnityEditor
 					this.ExtraPropertyAfterTexture(MaterialEditor.GetRightAlignedFieldRect(controlRectForSingleLine), extraProperty2);
 					this.ExtraPropertyAfterTexture(MaterialEditor.GetFlexibleRectBetweenLabelAndField(controlRectForSingleLine), extraProperty1);
 				}
+				EditorGUI.indentLevel = indentLevel;
 				result = controlRectForSingleLine;
 			}
 			return result;
 		}
 
+		[Obsolete("Use TexturePropertyWithHDRColor(GUIContent label, MaterialProperty textureProp, MaterialProperty colorProperty, bool showAlpha)")]
 		public Rect TexturePropertyWithHDRColor(GUIContent label, MaterialProperty textureProp, MaterialProperty colorProperty, ColorPickerHDRConfig hdrConfig, bool showAlpha)
+		{
+			return this.TexturePropertyWithHDRColor(label, textureProp, colorProperty, showAlpha);
+		}
+
+		public Rect TexturePropertyWithHDRColor(GUIContent label, MaterialProperty textureProp, MaterialProperty colorProperty, bool showAlpha)
 		{
 			Rect controlRectForSingleLine = this.GetControlRectForSingleLine();
 			this.TexturePropertyMiniThumbnail(controlRectForSingleLine, textureProp, label.text, label.tooltip);
@@ -2296,26 +2473,15 @@ namespace UnityEditor
 			else
 			{
 				this.BeginAnimatedCheck(controlRectForSingleLine, colorProperty);
-				ColorPickerHDRConfig colorPickerHDRConfig = hdrConfig ?? ColorPicker.defaultHDRConfig;
 				Rect leftAlignedFieldRect = MaterialEditor.GetLeftAlignedFieldRect(controlRectForSingleLine);
 				EditorGUI.BeginChangeCheck();
 				EditorGUI.showMixedValue = colorProperty.hasMixedValue;
-				Color colorValue = EditorGUI.ColorField(leftAlignedFieldRect, GUIContent.none, colorProperty.colorValue, true, showAlpha, true, colorPickerHDRConfig);
+				Color colorValue = EditorGUI.ColorField(leftAlignedFieldRect, GUIContent.none, colorProperty.colorValue, true, showAlpha, true);
 				EditorGUI.showMixedValue = false;
 				if (EditorGUI.EndChangeCheck())
 				{
 					colorProperty.colorValue = colorValue;
 				}
-				Rect flexibleRectBetweenFieldAndRightEdge = MaterialEditor.GetFlexibleRectBetweenFieldAndRightEdge(controlRectForSingleLine);
-				float labelWidth = EditorGUIUtility.labelWidth;
-				EditorGUIUtility.labelWidth = flexibleRectBetweenFieldAndRightEdge.width - EditorGUIUtility.fieldWidth;
-				EditorGUI.BeginChangeCheck();
-				colorValue = EditorGUI.ColorBrightnessField(flexibleRectBetweenFieldAndRightEdge, GUIContent.Temp(" "), colorProperty.colorValue, colorPickerHDRConfig.minBrightness, colorPickerHDRConfig.maxBrightness);
-				if (EditorGUI.EndChangeCheck())
-				{
-					colorProperty.colorValue = colorValue;
-				}
-				EditorGUIUtility.labelWidth = labelWidth;
 				this.EndAnimatedCheck();
 				result = controlRectForSingleLine;
 			}

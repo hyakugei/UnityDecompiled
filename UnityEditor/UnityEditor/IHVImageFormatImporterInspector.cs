@@ -9,11 +9,13 @@ namespace UnityEditor
 	{
 		internal class Styles
 		{
-			public static readonly GUIContent readWrite = EditorGUIUtility.TextContent("Read/Write Enabled|Enable to be able to access the raw pixel data from code.");
+			public static readonly GUIContent readWrite = EditorGUIUtility.TrTextContent("Read/Write Enabled", "Enable to be able to access the raw pixel data from code.", null);
 
-			public static readonly GUIContent wrapMode = EditorGUIUtility.TextContent("Wrap Mode");
+			public static readonly GUIContent sRGBTexture = EditorGUIUtility.TrTextContent("sRGB (Color Texture)", "Texture content is stored in gamma space. Non-HDR color textures should enable this flag (except if used for IMGUI).", null);
 
-			public static readonly GUIContent filterMode = EditorGUIUtility.TextContent("Filter Mode");
+			public static readonly GUIContent wrapMode = EditorGUIUtility.TrTextContent("Wrap Mode", null, null);
+
+			public static readonly GUIContent filterMode = EditorGUIUtility.TrTextContent("Filter Mode", null, null);
 
 			public static readonly int[] filterModeValues = new int[]
 			{
@@ -26,11 +28,13 @@ namespace UnityEditor
 			{
 				EditorGUIUtility.TextContent("Point (no filter)"),
 				EditorGUIUtility.TextContent("Bilinear"),
-				EditorGUIUtility.TextContent("Trilinear")
+				EditorGUIUtility.TrTextContent("Trilinear", null, null)
 			};
 		}
 
 		private SerializedProperty m_IsReadable;
+
+		private SerializedProperty m_sRGBTexture;
 
 		private SerializedProperty m_FilterMode;
 
@@ -53,23 +57,11 @@ namespace UnityEditor
 		public override void OnEnable()
 		{
 			this.m_IsReadable = base.serializedObject.FindProperty("m_IsReadable");
+			this.m_sRGBTexture = base.serializedObject.FindProperty("m_sRGBTexture");
 			this.m_FilterMode = base.serializedObject.FindProperty("m_TextureSettings.m_FilterMode");
 			this.m_WrapU = base.serializedObject.FindProperty("m_TextureSettings.m_WrapU");
 			this.m_WrapV = base.serializedObject.FindProperty("m_TextureSettings.m_WrapV");
 			this.m_WrapW = base.serializedObject.FindProperty("m_TextureSettings.m_WrapW");
-		}
-
-		public void IsReadableGUI()
-		{
-			Rect controlRect = EditorGUILayout.GetControlRect(new GUILayoutOption[0]);
-			EditorGUI.BeginProperty(controlRect, IHVImageFormatImporterInspector.Styles.readWrite, this.m_IsReadable);
-			EditorGUI.BeginChangeCheck();
-			bool boolValue = EditorGUI.Toggle(controlRect, IHVImageFormatImporterInspector.Styles.readWrite, this.m_IsReadable.boolValue);
-			if (EditorGUI.EndChangeCheck())
-			{
-				this.m_IsReadable.boolValue = boolValue;
-			}
-			EditorGUI.EndProperty();
 		}
 
 		public void TextureSettingsGUI()
@@ -90,7 +82,8 @@ namespace UnityEditor
 
 		public override void OnInspectorGUI()
 		{
-			this.IsReadableGUI();
+			EditorGUILayout.PropertyField(this.m_IsReadable, IHVImageFormatImporterInspector.Styles.readWrite, new GUILayoutOption[0]);
+			EditorGUILayout.PropertyField(this.m_sRGBTexture, IHVImageFormatImporterInspector.Styles.sRGBTexture, new GUILayoutOption[0]);
 			EditorGUI.BeginChangeCheck();
 			this.TextureSettingsGUI();
 			if (EditorGUI.EndChangeCheck())

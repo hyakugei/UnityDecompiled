@@ -10,10 +10,10 @@ namespace UnityEditor
 
 		void DrawSelectedInstructionDetails();
 
-		void Unselect();
+		void ShowOverlay();
 
 		void SelectRow(int index);
 
-		void ShowOverlay();
+		void ClearRowSelection();
 	}
 }

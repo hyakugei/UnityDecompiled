@@ -45,9 +45,9 @@ namespace UnityEditor
 
 		private Vector2 m_ContactScrollPosition;
 
-		private static readonly GUIContent m_FreezePositionLabel = new GUIContent("Freeze Position");
+		private static readonly GUIContent m_FreezePositionLabel = EditorGUIUtility.TrTextContent("Freeze Position", null, null);
 
-		private static readonly GUIContent m_FreezeRotationLabel = new GUIContent("Freeze Rotation");
+		private static readonly GUIContent m_FreezeRotationLabel = EditorGUIUtility.TrTextContent("Freeze Rotation", null, null);
 
 		private static ContactPoint2D[] m_Contacts = new ContactPoint2D[100];
 

@@ -5,7 +5,7 @@ namespace UnityEditor.Experimental.UIElements
 {
 	public static class UIElementsEntryPoint
 	{
-		public static VisualContainer GetRootVisualContainer(this EditorWindow window)
+		public static VisualElement GetRootVisualContainer(this EditorWindow window)
 		{
 			return window.rootVisualContainer;
 		}

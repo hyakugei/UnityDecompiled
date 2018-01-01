@@ -13,10 +13,10 @@ namespace UnityEditor
 		{
 			public static readonly GUIContent[] TabTypes = new GUIContent[]
 			{
-				EditorGUIUtility.TextContent("Lights"),
-				EditorGUIUtility.TextContent("Reflection Probes"),
-				EditorGUIUtility.TextContent("Light Probes"),
-				EditorGUIUtility.TextContent("Static Emissives")
+				EditorGUIUtility.TrTextContent("Lights", null, null),
+				EditorGUIUtility.TrTextContent("Reflection Probes", null, null),
+				EditorGUIUtility.TrTextContent("Light Probes", null, null),
+				EditorGUIUtility.TrTextContent("Static Emissives", null, null)
 			};
 		}
 
@@ -175,12 +175,8 @@ namespace UnityEditor
 			EditorGUIUtility.labelWidth = 130f;
 			EditorGUILayout.Space();
 			EditorGUILayout.BeginHorizontal(new GUILayoutOption[0]);
-			GUILayout.Space(this.toolbarPadding);
-			float width = base.position.width - this.toolbarPadding * 2f;
-			this.m_SelectedTab = (LightingExplorerWindow.TabType)GUILayout.Toolbar((int)this.m_SelectedTab, LightingExplorerWindow.Styles.TabTypes, "LargeButton", new GUILayoutOption[]
-			{
-				GUILayout.Width(width)
-			});
+			GUILayout.FlexibleSpace();
+			this.m_SelectedTab = (LightingExplorerWindow.TabType)GUILayout.Toolbar((int)this.m_SelectedTab, LightingExplorerWindow.Styles.TabTypes, "LargeButton", GUI.ToolbarButtonSize.FitToContents, new GUILayoutOption[0]);
 			GUILayout.FlexibleSpace();
 			EditorGUILayout.EndHorizontal();
 			EditorGUILayout.Space();

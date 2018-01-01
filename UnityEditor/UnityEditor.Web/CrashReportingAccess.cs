@@ -44,7 +44,7 @@ namespace UnityEditor.Web
 		{
 			if (CrashReportingSettings.enabled != enabled)
 			{
-				CrashReportingSettings.enabled = enabled;
+				CrashReportingSettings.SetEnabledServiceWindow(enabled);
 				EditorAnalytics.SendEventServiceInfo(new CrashReportingAccess.CrashReportingServiceState
 				{
 					crash_reporting = enabled

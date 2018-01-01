@@ -178,7 +178,7 @@ namespace UnityEditor
 				SceneViewMotion.HandleKeyUp();
 				break;
 			case EventType.ScrollWheel:
-				SceneViewMotion.HandleScrollWheel(view, !current.alt);
+				SceneViewMotion.HandleScrollWheel(view, view.in2DMode == current.alt);
 				break;
 			case EventType.Layout:
 			{

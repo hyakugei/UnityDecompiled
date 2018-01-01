@@ -23,9 +23,11 @@ namespace UnityEditor
 			bool on5 = flag;
 			bool flag2 = flag;
 			bool flag3 = flag;
+			bool on6 = flag;
 			bool flag4 = flag;
 			bool flag5 = flag;
 			bool flag6 = flag;
+			bool on7 = flag;
 			bool flag7 = flag;
 			foreach (KeyIdentifier current in keyList)
 			{
@@ -55,11 +57,11 @@ namespace UnityEditor
 				}
 				if (!keyBroken || keyLeftTangentMode != AnimationUtility.TangentMode.Free)
 				{
-					flag2 = false;
+					flag3 = false;
 				}
 				if (!keyBroken || keyLeftTangentMode != AnimationUtility.TangentMode.Linear)
 				{
-					flag3 = false;
+					on6 = false;
 				}
 				if (!keyBroken || keyLeftTangentMode != AnimationUtility.TangentMode.Constant)
 				{
@@ -67,53 +69,129 @@ namespace UnityEditor
 				}
 				if (!keyBroken || keyRightTangentMode != AnimationUtility.TangentMode.Free)
 				{
-					flag5 = false;
+					flag6 = false;
 				}
 				if (!keyBroken || keyRightTangentMode != AnimationUtility.TangentMode.Linear)
 				{
-					flag6 = false;
+					on7 = false;
 				}
 				if (!keyBroken || keyRightTangentMode != AnimationUtility.TangentMode.Constant)
 				{
 					flag7 = false;
 				}
+				if ((keyframe.weightedMode & WeightedMode.In) == WeightedMode.None)
+				{
+					flag2 = false;
+				}
+				if ((keyframe.weightedMode & WeightedMode.Out) == WeightedMode.None)
+				{
+					flag5 = false;
+				}
 			}
 			if (flag)
 			{
-				menu.AddItem(EditorGUIUtility.TextContent("Clamped Auto"), on, new GenericMenu.MenuFunction2(this.SetClampedAuto), keyList);
-				menu.AddItem(EditorGUIUtility.TextContent("Auto"), on2, new GenericMenu.MenuFunction2(this.SetAuto), keyList);
-				menu.AddItem(EditorGUIUtility.TextContent("Free Smooth"), on3, new GenericMenu.MenuFunction2(this.SetEditable), keyList);
-				menu.AddItem(EditorGUIUtility.TextContent("Flat"), on4, new GenericMenu.MenuFunction2(this.SetFlat), keyList);
-				menu.AddItem(EditorGUIUtility.TextContent("Broken"), on5, new GenericMenu.MenuFunction2(this.SetBroken), keyList);
+				menu.AddItem(EditorGUIUtility.TrTextContent("Clamped Auto", null, null), on, new GenericMenu.MenuFunction2(this.SetClampedAuto), keyList);
+				menu.AddItem(EditorGUIUtility.TrTextContent("Auto", null, null), on2, new GenericMenu.MenuFunction2(this.SetAuto), keyList);
+				menu.AddItem(EditorGUIUtility.TrTextContent("Free Smooth", null, null), on3, new GenericMenu.MenuFunction2(this.SetEditable), keyList);
+				menu.AddItem(EditorGUIUtility.TrTextContent("Flat", null, null), on4, new GenericMenu.MenuFunction2(this.SetFlat), keyList);
+				menu.AddItem(EditorGUIUtility.TrTextContent("Broken", null, null), on5, new GenericMenu.MenuFunction2(this.SetBroken), keyList);
 				menu.AddSeparator("");
-				menu.AddItem(EditorGUIUtility.TextContent("Left Tangent/Free"), flag2, new GenericMenu.MenuFunction2(this.SetLeftEditable), keyList);
-				menu.AddItem(EditorGUIUtility.TextContent("Left Tangent/Linear"), flag3, new GenericMenu.MenuFunction2(this.SetLeftLinear), keyList);
-				menu.AddItem(EditorGUIUtility.TextContent("Left Tangent/Constant"), flag4, new GenericMenu.MenuFunction2(this.SetLeftConstant), keyList);
-				menu.AddItem(EditorGUIUtility.TextContent("Right Tangent/Free"), flag5, new GenericMenu.MenuFunction2(this.SetRightEditable), keyList);
-				menu.AddItem(EditorGUIUtility.TextContent("Right Tangent/Linear"), flag6, new GenericMenu.MenuFunction2(this.SetRightLinear), keyList);
-				menu.AddItem(EditorGUIUtility.TextContent("Right Tangent/Constant"), flag7, new GenericMenu.MenuFunction2(this.SetRightConstant), keyList);
-				menu.AddItem(EditorGUIUtility.TextContent("Both Tangents/Free"), flag5 && flag2, new GenericMenu.MenuFunction2(this.SetBothEditable), keyList);
-				menu.AddItem(EditorGUIUtility.TextContent("Both Tangents/Linear"), flag6 && flag3, new GenericMenu.MenuFunction2(this.SetBothLinear), keyList);
-				menu.AddItem(EditorGUIUtility.TextContent("Both Tangents/Constant"), flag7 && flag4, new GenericMenu.MenuFunction2(this.SetBothConstant), keyList);
+				menu.AddItem(EditorGUIUtility.TrTextContent("Left Tangent/Free", null, null), flag3, new GenericMenu.MenuFunction2(this.SetLeftEditable), keyList);
+				menu.AddItem(EditorGUIUtility.TrTextContent("Left Tangent/Linear", null, null), on6, new GenericMenu.MenuFunction2(this.SetLeftLinear), keyList);
+				menu.AddItem(EditorGUIUtility.TrTextContent("Left Tangent/Constant", null, null), flag4, new GenericMenu.MenuFunction2(this.SetLeftConstant), keyList);
+				menu.AddItem(EditorGUIUtility.TrTextContent("Left Tangent/Weighted", null, null), flag2, new GenericMenu.MenuFunction2(this.ToggleLeftWeighted), keyList);
+				menu.AddItem(EditorGUIUtility.TrTextContent("Right Tangent/Linear", null, null), on7, new GenericMenu.MenuFunction2(this.SetRightLinear), keyList);
+				menu.AddItem(EditorGUIUtility.TrTextContent("Right Tangent/Constant", null, null), flag7, new GenericMenu.MenuFunction2(this.SetRightConstant), keyList);
+				menu.AddItem(EditorGUIUtility.TrTextContent("Both Tangents/Free", null, null), flag6 && flag3, new GenericMenu.MenuFunction2(this.SetBothEditable), keyList);
+				menu.AddItem(EditorGUIUtility.TrTextContent("Right Tangent/Weighted", null, null), flag5, new GenericMenu.MenuFunction2(this.ToggleRightWeighted), keyList);
+				menu.AddItem(EditorGUIUtility.TrTextContent("Both Tangents/Constant", null, null), flag7 && flag4, new GenericMenu.MenuFunction2(this.SetBothConstant), keyList);
+				menu.AddItem(EditorGUIUtility.TrTextContent("Both Tangents/Weighted", null, null), flag5 && flag2, new GenericMenu.MenuFunction2(this.ToggleBothWeighted), keyList);
 			}
 			else
 			{
-				menu.AddDisabledItem(EditorGUIUtility.TextContent("Clamped Auto"));
-				menu.AddDisabledItem(EditorGUIUtility.TextContent("Auto"));
-				menu.AddDisabledItem(EditorGUIUtility.TextContent("Free Smooth"));
-				menu.AddDisabledItem(EditorGUIUtility.TextContent("Flat"));
-				menu.AddDisabledItem(EditorGUIUtility.TextContent("Broken"));
+				menu.AddDisabledItem(EditorGUIUtility.TrTextContent("Weighted", null, null));
+				menu.AddDisabledItem(EditorGUIUtility.TrTextContent("Auto", null, null));
+				menu.AddDisabledItem(EditorGUIUtility.TrTextContent("Free Smooth", null, null));
+				menu.AddDisabledItem(EditorGUIUtility.TrTextContent("Flat", null, null));
+				menu.AddDisabledItem(EditorGUIUtility.TrTextContent("Broken", null, null));
 				menu.AddSeparator("");
-				menu.AddDisabledItem(EditorGUIUtility.TextContent("Left Tangent/Free"));
-				menu.AddDisabledItem(EditorGUIUtility.TextContent("Left Tangent/Linear"));
-				menu.AddDisabledItem(EditorGUIUtility.TextContent("Left Tangent/Constant"));
-				menu.AddDisabledItem(EditorGUIUtility.TextContent("Right Tangent/Free"));
-				menu.AddDisabledItem(EditorGUIUtility.TextContent("Right Tangent/Linear"));
-				menu.AddDisabledItem(EditorGUIUtility.TextContent("Right Tangent/Constant"));
-				menu.AddDisabledItem(EditorGUIUtility.TextContent("Both Tangents/Free"));
-				menu.AddDisabledItem(EditorGUIUtility.TextContent("Both Tangents/Linear"));
-				menu.AddDisabledItem(EditorGUIUtility.TextContent("Both Tangents/Constant"));
+				menu.AddDisabledItem(EditorGUIUtility.TrTextContent("Left Tangent/Free", null, null));
+				menu.AddDisabledItem(EditorGUIUtility.TrTextContent("Left Tangent/Linear", null, null));
+				menu.AddDisabledItem(EditorGUIUtility.TrTextContent("Left Tangent/Constant", null, null));
+				menu.AddDisabledItem(EditorGUIUtility.TrTextContent("Right Tangent/Free", null, null));
+				menu.AddDisabledItem(EditorGUIUtility.TrTextContent("Right Tangent/Linear", null, null));
+				menu.AddDisabledItem(EditorGUIUtility.TrTextContent("Right Tangent/Constant", null, null));
+				menu.AddDisabledItem(EditorGUIUtility.TrTextContent("Both Tangents/Free", null, null));
+				menu.AddDisabledItem(EditorGUIUtility.TrTextContent("Both Tangents/Linear", null, null));
+				menu.AddDisabledItem(EditorGUIUtility.TrTextContent("Both Tangents/Constant", null, null));
 			}
+		}
+
+		public void ToggleLeftWeighted(object keysToSet)
+		{
+			this.ToggleWeighted(WeightedMode.In, (List<KeyIdentifier>)keysToSet);
+		}
+
+		public void ToggleRightWeighted(object keysToSet)
+		{
+			this.ToggleWeighted(WeightedMode.Out, (List<KeyIdentifier>)keysToSet);
+		}
+
+		public void ToggleBothWeighted(object keysToSet)
+		{
+			this.ToggleWeighted(WeightedMode.Both, (List<KeyIdentifier>)keysToSet);
+		}
+
+		public void ToggleWeighted(WeightedMode weightedMode, List<KeyIdentifier> keysToSet)
+		{
+			bool flag = keysToSet.TrueForAll((KeyIdentifier key) => (key.keyframe.weightedMode & weightedMode) == weightedMode);
+			List<ChangedCurve> list = new List<ChangedCurve>();
+			foreach (KeyIdentifier current in keysToSet)
+			{
+				AnimationCurve curve = current.curve;
+				Keyframe keyframe = current.keyframe;
+				bool flag2 = (keyframe.weightedMode & weightedMode) == weightedMode;
+				if (flag2 == flag)
+				{
+					WeightedMode weightedMode2 = keyframe.weightedMode;
+					keyframe.weightedMode = ((!flag2) ? (keyframe.weightedMode | weightedMode) : (keyframe.weightedMode & ~weightedMode));
+					if (keyframe.weightedMode != WeightedMode.None)
+					{
+						AnimationUtility.TangentMode keyRightTangentMode = AnimationUtility.GetKeyRightTangentMode(keyframe);
+						AnimationUtility.TangentMode keyLeftTangentMode = AnimationUtility.GetKeyLeftTangentMode(keyframe);
+						if ((weightedMode2 & WeightedMode.Out) == WeightedMode.None && (keyframe.weightedMode & WeightedMode.Out) == WeightedMode.Out)
+						{
+							if (keyRightTangentMode == AnimationUtility.TangentMode.Linear || keyRightTangentMode == AnimationUtility.TangentMode.Constant)
+							{
+								AnimationUtility.SetKeyRightTangentMode(ref keyframe, AnimationUtility.TangentMode.Free);
+							}
+							if (current.key < curve.length - 1)
+							{
+								keyframe.outWeight = 0.333333343f;
+							}
+						}
+						if ((weightedMode2 & WeightedMode.In) == WeightedMode.None && (keyframe.weightedMode & WeightedMode.In) == WeightedMode.In)
+						{
+							if (keyLeftTangentMode == AnimationUtility.TangentMode.Linear || keyLeftTangentMode == AnimationUtility.TangentMode.Constant)
+							{
+								AnimationUtility.SetKeyLeftTangentMode(ref keyframe, AnimationUtility.TangentMode.Free);
+							}
+							if (current.key > 0)
+							{
+								keyframe.inWeight = 0.333333343f;
+							}
+						}
+					}
+					curve.MoveKey(current.key, keyframe);
+					AnimationUtility.UpdateTangentsFromModeSurrounding(curve, current.key);
+					ChangedCurve item = new ChangedCurve(curve, current.curveId, current.binding);
+					if (!list.Contains(item))
+					{
+						list.Add(item);
+					}
+				}
+			}
+			this.updater.UpdateCurves(list, "Toggle Weighted");
 		}
 
 		public void SetClampedAuto(object keysToSet)

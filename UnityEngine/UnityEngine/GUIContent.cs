@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.InteropServices;
+using UnityEngine.Bindings;
 
 namespace UnityEngine
 {
@@ -146,6 +147,10 @@ namespace UnityEngine
 			return GUIContent.s_TextImage;
 		}
 
+		[VisibleToOtherModules(new string[]
+		{
+			"UnityEngine.UIElementsModule"
+		})]
 		internal static void ClearStaticCache()
 		{
 			GUIContent.s_Text.m_Text = null;

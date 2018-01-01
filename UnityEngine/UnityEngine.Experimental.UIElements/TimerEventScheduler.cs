@@ -5,56 +5,129 @@ namespace UnityEngine.Experimental.UIElements
 {
 	internal class TimerEventScheduler : IScheduler
 	{
+		private class TimerEventSchedulerItem : ScheduledItem
+		{
+			private readonly Action<TimerState> m_TimerUpdateEvent;
+
+			public TimerEventSchedulerItem(Action<TimerState> updateEvent)
+			{
+				this.m_TimerUpdateEvent = updateEvent;
+			}
+
+			public override void PerformTimerUpdate(TimerState state)
+			{
+				if (this.m_TimerUpdateEvent != null)
+				{
+					this.m_TimerUpdateEvent(state);
+				}
+			}
+
+			public override string ToString()
+			{
+				return this.m_TimerUpdateEvent.ToString();
+			}
+		}
+
 		private readonly List<ScheduledItem> m_ScheduledItems = new List<ScheduledItem>();
 
 		private bool m_TransactionMode;
 
-		private readonly List<ScheduledItem> m_ScheduleTansactions = new List<ScheduledItem>();
+		private readonly List<ScheduledItem> m_ScheduleTransactions = new List<ScheduledItem>();
 
-		private readonly List<Action<TimerState>> m_UnscheduleTransactions = new List<Action<TimerState>>();
+		private readonly List<ScheduledItem> m_UnscheduleTransactions = new List<ScheduledItem>();
 
-		private void Schedule(ScheduledItem scheduleItem)
+		internal bool disableThrottling = false;
+
+		private int m_LastUpdatedIndex = -1;
+
+		public void Schedule(IScheduledItem item)
 		{
-			if (this.m_ScheduledItems.Contains(scheduleItem))
+			if (item != null)
 			{
-				Debug.LogError("Cannot schedule function " + scheduleItem.timerUpdateEvent + " more than once");
-			}
-			else
-			{
-				this.m_ScheduledItems.Add(scheduleItem);
-			}
-		}
-
-		public ScheduleBuilder Schedule(Action<TimerState> timerUpdateEvent, IEventHandler handler)
-		{
-			ScheduledItem scheduledItem = new ScheduledItem(timerUpdateEvent, handler);
-			if (this.m_TransactionMode)
-			{
-				this.m_ScheduleTansactions.Add(scheduledItem);
-			}
-			else
-			{
-				this.Schedule(scheduledItem);
-			}
-			return new ScheduleBuilder(scheduledItem);
-		}
-
-		public void Unschedule(Action<TimerState> timerUpdateEvent)
-		{
-			if (this.m_TransactionMode)
-			{
-				this.m_UnscheduleTransactions.Add(timerUpdateEvent);
-			}
-			else
-			{
-				ScheduledItem scheduledItem = this.m_ScheduledItems.Find((ScheduledItem t) => t.timerUpdateEvent == timerUpdateEvent);
-				if (scheduledItem != null)
+				ScheduledItem scheduledItem = item as ScheduledItem;
+				if (scheduledItem == null)
 				{
-					this.m_ScheduledItems.Remove(scheduledItem);
+					throw new NotSupportedException("Scheduled Item type is not supported by this scheduler");
+				}
+				if (this.m_TransactionMode)
+				{
+					this.m_ScheduleTransactions.Add(scheduledItem);
 				}
 				else
 				{
-					Debug.LogError("Cannot unschedule unknown scheduled function " + timerUpdateEvent);
+					if (this.m_ScheduledItems.Contains(scheduledItem))
+					{
+						throw new ArgumentException("Cannot schedule function " + scheduledItem + " more than once");
+					}
+					this.m_ScheduledItems.Add(scheduledItem);
+				}
+			}
+		}
+
+		public IScheduledItem ScheduleOnce(Action<TimerState> timerUpdateEvent, long delayMs)
+		{
+			TimerEventScheduler.TimerEventSchedulerItem timerEventSchedulerItem = new TimerEventScheduler.TimerEventSchedulerItem(timerUpdateEvent)
+			{
+				delayMs = delayMs
+			};
+			this.Schedule(timerEventSchedulerItem);
+			return timerEventSchedulerItem;
+		}
+
+		public IScheduledItem ScheduleUntil(Action<TimerState> timerUpdateEvent, long delayMs, long intervalMs, Func<bool> stopCondition)
+		{
+			TimerEventScheduler.TimerEventSchedulerItem timerEventSchedulerItem = new TimerEventScheduler.TimerEventSchedulerItem(timerUpdateEvent)
+			{
+				delayMs = delayMs,
+				intervalMs = intervalMs,
+				timerUpdateStopCondition = stopCondition
+			};
+			this.Schedule(timerEventSchedulerItem);
+			return timerEventSchedulerItem;
+		}
+
+		public IScheduledItem ScheduleForDuration(Action<TimerState> timerUpdateEvent, long delayMs, long intervalMs, long durationMs)
+		{
+			TimerEventScheduler.TimerEventSchedulerItem timerEventSchedulerItem = new TimerEventScheduler.TimerEventSchedulerItem(timerUpdateEvent)
+			{
+				delayMs = delayMs,
+				intervalMs = intervalMs,
+				timerUpdateStopCondition = null
+			};
+			timerEventSchedulerItem.SetDuration(durationMs);
+			this.Schedule(timerEventSchedulerItem);
+			return timerEventSchedulerItem;
+		}
+
+		private bool RemovedScheduledItemAt(int index)
+		{
+			bool result;
+			if (index >= 0)
+			{
+				ScheduledItem scheduledItem = this.m_ScheduledItems[index];
+				this.m_ScheduledItems.RemoveAt(index);
+				scheduledItem.OnItemUnscheduled();
+				result = true;
+			}
+			else
+			{
+				result = false;
+			}
+			return result;
+		}
+
+		public void Unschedule(IScheduledItem item)
+		{
+			ScheduledItem scheduledItem = item as ScheduledItem;
+			if (scheduledItem != null)
+			{
+				if (this.m_TransactionMode)
+				{
+					this.m_UnscheduleTransactions.Add(scheduledItem);
+				}
+				else if (!this.RemovedScheduledItemAt(this.m_ScheduledItems.IndexOf(scheduledItem)))
+				{
+					throw new ArgumentException("Cannot unschedule unknown scheduled function " + scheduledItem);
 				}
 			}
 		}
@@ -64,36 +137,43 @@ namespace UnityEngine.Experimental.UIElements
 			try
 			{
 				this.m_TransactionMode = true;
-				long num = (long)(Time.realtimeSinceStartup * 1000f);
-				for (int i = 0; i < this.m_ScheduledItems.Count; i++)
+				long num = Panel.TimeSinceStartupMs();
+				int count = this.m_ScheduledItems.Count;
+				long num2 = num + 20L;
+				int num3 = this.m_LastUpdatedIndex + 1;
+				if (num3 >= count)
 				{
-					ScheduledItem scheduledItem = this.m_ScheduledItems[i];
-					if (scheduledItem.handler.panel == null)
+					num3 = 0;
+				}
+				for (int i = 0; i < count; i++)
+				{
+					num = Panel.TimeSinceStartupMs();
+					if (!this.disableThrottling && num >= num2)
 					{
-						Debug.Log("Will unschedule action of " + scheduledItem.handler + " because it has no panel");
-						this.Unschedule(scheduledItem.timerUpdateEvent);
+						break;
 					}
-					else if (scheduledItem.IsUpdatable())
+					int num4 = num3 + i;
+					if (num4 >= count)
 					{
-						TimerState obj = new TimerState
+						num4 -= count;
+					}
+					ScheduledItem scheduledItem = this.m_ScheduledItems[num4];
+					if (num - scheduledItem.delayMs >= scheduledItem.startMs)
+					{
+						TimerState state = new TimerState
 						{
-							start = scheduledItem.start,
+							start = scheduledItem.startMs,
 							now = num
 						};
-						if (num - scheduledItem.delay > scheduledItem.start)
+						scheduledItem.PerformTimerUpdate(state);
+						scheduledItem.startMs = num;
+						scheduledItem.delayMs = scheduledItem.intervalMs;
+						if (scheduledItem.ShouldUnschedule())
 						{
-							if (scheduledItem.timerUpdateEvent != null)
-							{
-								scheduledItem.timerUpdateEvent(obj);
-							}
-							scheduledItem.start = num;
-							scheduledItem.delay = scheduledItem.interval;
-							if (scheduledItem.timerUpdateStopCondition != null && scheduledItem.timerUpdateStopCondition())
-							{
-								this.Unschedule(scheduledItem.timerUpdateEvent);
-							}
+							this.Unschedule(scheduledItem);
 						}
 					}
+					this.m_LastUpdatedIndex = num4;
 				}
 			}
 			finally
@@ -104,11 +184,11 @@ namespace UnityEngine.Experimental.UIElements
 					this.Unschedule(this.m_UnscheduleTransactions[j]);
 				}
 				this.m_UnscheduleTransactions.Clear();
-				for (int k = 0; k < this.m_ScheduleTansactions.Count; k++)
+				for (int k = 0; k < this.m_ScheduleTransactions.Count; k++)
 				{
-					this.Schedule(this.m_ScheduleTansactions[k]);
+					this.Schedule(this.m_ScheduleTransactions[k]);
 				}
-				this.m_ScheduleTansactions.Clear();
+				this.m_ScheduleTransactions.Clear();
 			}
 		}
 	}

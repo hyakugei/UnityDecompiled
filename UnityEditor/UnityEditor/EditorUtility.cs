@@ -319,10 +319,10 @@ namespace UnityEditor
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern void UnloadUnusedAssetsImmediateInternal(bool includeMonoReferencesAsRoots);
 
-		[Obsolete("Use BuildPipeline.BuildAssetBundle instead")]
+		[Obsolete("Use BuildPipeline.BuildAssetBundle instead", true)]
 		public static bool BuildResourceFile(UnityEngine.Object[] selection, string pathName)
 		{
-			return BuildPipeline.BuildAssetBundle(null, selection, pathName, BuildAssetBundleOptions.CompleteAssets);
+			return false;
 		}
 
 		internal static void Internal_DisplayPopupMenu(Rect position, string menuItemPath, UnityEngine.Object context, int contextUserData)
@@ -667,7 +667,15 @@ namespace UnityEditor
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern void SetCameraAnimateMaterials(Camera camera, bool animate);
+		public static extern void SetCameraAnimateMaterials(Camera camera, bool animate);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern void SetCameraAnimateMaterialsTime(Camera camera, float time);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern void UpdateGlobalShaderProperties(float time);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -683,10 +691,48 @@ namespace UnityEditor
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void LaunchBugReporter();
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern bool EventHasDragCopyModifierPressed(Event evt);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern bool EventHasDragMoveModifierPressed(Event evt);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void SaveProjectAsTemplate(string targetPath, string name, string displayName, string description, string defaultScene, string version);
+
+		internal static bool IsUnityAssembly(UnityEngine.Object target)
+		{
+			bool result;
+			if (target == null)
+			{
+				result = false;
+			}
+			else
+			{
+				Type type = target.GetType();
+				result = EditorUtility.IsUnityAssembly(type);
+			}
+			return result;
+		}
+
+		internal static bool IsUnityAssembly(Type type)
+		{
+			bool result;
+			if (type == null)
+			{
+				result = false;
+			}
+			else
+			{
+				string name = type.Assembly.GetName().Name;
+				result = (name.StartsWith("UnityEditor") || name.StartsWith("UnityEngine"));
+			}
+			return result;
+		}
 	}
 }

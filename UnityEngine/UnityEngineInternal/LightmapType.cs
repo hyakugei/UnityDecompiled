@@ -2,7 +2,7 @@ using System;
 
 namespace UnityEngineInternal
 {
-	public enum LightmapType
+	internal enum LightmapType
 	{
 		NoLightmap = -1,
 		StaticLightmap,

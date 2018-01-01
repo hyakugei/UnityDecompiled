@@ -1,5 +1,7 @@
 using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using UnityEngine.Bindings;
 
 namespace UnityEditor
 {
@@ -20,6 +22,13 @@ namespace UnityEditor
 
 		public int identifier;
 
+		[Ignore]
 		public int isWorldPlaying;
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void LogToConsoleEx(LogEntry outputEntry);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void RemoveLogEntriesByMode(int mode);
 	}
 }

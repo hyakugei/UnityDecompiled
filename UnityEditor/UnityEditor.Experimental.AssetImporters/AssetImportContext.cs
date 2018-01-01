@@ -1,84 +1,75 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using UnityEngine;
+using UnityEngine.Scripting;
 
 namespace UnityEditor.Experimental.AssetImporters
 {
+	[RequiredByNativeCode]
 	public class AssetImportContext
 	{
-		private List<ImportedObject> m_SubAssets = new List<ImportedObject>();
+		internal IntPtr m_Self;
 
-		public string assetPath
+		public extern string assetPath
 		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
 			internal set;
 		}
 
-		public BuildTarget selectedBuildTarget
+		public extern BuildTarget selectedBuildTarget
 		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			internal set;
 		}
 
-		internal List<ImportedObject> subAssets
+		private AssetImportContext()
 		{
-			get
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void LogMessage(string msg, string file, int line, UnityEngine.Object obj, bool isAnError);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public extern void SetMainObject(UnityEngine.Object obj);
+
+		public void AddObjectToAsset(string identifier, UnityEngine.Object obj)
+		{
+			this.AddObjectToAsset(identifier, obj, null);
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public extern void AddObjectToAsset(string identifier, UnityEngine.Object obj, Texture2D thumbnail);
+
+		internal void DependOnHashOfSourceFile(string path)
+		{
+			if (string.IsNullOrEmpty(path))
 			{
-				return this.m_SubAssets;
+				throw new ArgumentNullException("path", "Cannot add a null path");
 			}
+			this.DependOnHashOfSourceFileInternal(path);
 		}
 
-		internal AssetImportContext()
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void DependOnHashOfSourceFileInternal(string path);
+
+		public void LogImportError(string msg, UnityEngine.Object obj = null)
 		{
+			this.AddToLog(msg, true, obj);
 		}
 
-		public void SetMainAsset(string identifier, UnityEngine.Object asset)
+		public void LogImportWarning(string msg, UnityEngine.Object obj = null)
 		{
-			this.AddAsset(true, identifier, asset, null);
+			this.AddToLog(msg, false, obj);
 		}
 
-		public void SetMainAsset(string identifier, UnityEngine.Object asset, Texture2D thumbnail)
+		private void AddToLog(string msg, bool isAnError, UnityEngine.Object obj)
 		{
-			this.AddAsset(true, identifier, asset, thumbnail);
-		}
-
-		public void AddSubAsset(string identifier, UnityEngine.Object asset)
-		{
-			this.AddAsset(false, identifier, asset, null);
-		}
-
-		public void AddSubAsset(string identifier, UnityEngine.Object asset, Texture2D thumbnail)
-		{
-			this.AddAsset(false, identifier, asset, thumbnail);
-		}
-
-		private void AddAsset(bool main, string identifier, UnityEngine.Object asset, Texture2D thumbnail)
-		{
-			if (asset == null)
-			{
-				throw new ArgumentNullException("asset", "Cannot add a null asset : " + (identifier ?? "<null>"));
-			}
-			ImportedObject importedObject = this.m_SubAssets.FirstOrDefault((ImportedObject x) => x.mainAsset);
-			if (main && importedObject != null)
-			{
-				throw new Exception(string.Format("A Main asset has already been added and only one is allowed: \"{0}\" conflicting on \"{1}\" and \"{2}\"", this.assetPath, importedObject.identifier, identifier));
-			}
-			ImportedObject item = new ImportedObject
-			{
-				mainAsset = main,
-				identifier = identifier,
-				asset = asset,
-				thumbnail = thumbnail
-			};
-			if (main)
-			{
-				this.m_SubAssets.Insert(0, item);
-			}
-			else
-			{
-				this.m_SubAssets.Add(item);
-			}
+			StackTrace stackTrace = new StackTrace(2, true);
+			System.Diagnostics.StackFrame frame = stackTrace.GetFrame(0);
+			this.LogMessage(msg, frame.GetFileName(), frame.GetFileLineNumber(), obj, isAnError);
 		}
 	}
 }

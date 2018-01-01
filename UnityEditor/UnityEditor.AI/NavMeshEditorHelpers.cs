@@ -1,10 +1,25 @@
 using System;
+using System.Runtime.CompilerServices;
 using UnityEngine;
+using UnityEngine.AI;
+using UnityEngine.Internal;
+using UnityEngine.Scripting;
 
 namespace UnityEditor.AI
 {
-	public class NavMeshEditorHelpers
+	public static class NavMeshEditorHelpers
 	{
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern void DrawBuildDebug(NavMeshData navMeshData, [DefaultValue("NavMeshBuildDebugFlags.All")] NavMeshBuildDebugFlags flags);
+
+		[ExcludeFromDocs]
+		public static void DrawBuildDebug(NavMeshData navMeshData)
+		{
+			NavMeshBuildDebugFlags flags = NavMeshBuildDebugFlags.All;
+			NavMeshEditorHelpers.DrawBuildDebug(navMeshData, flags);
+		}
+
 		public static void OpenAgentSettings(int agentTypeID)
 		{
 			NavMeshEditorWindow.OpenAgentSettings(agentTypeID);

@@ -10,19 +10,19 @@ namespace UnityEditor
 	{
 		private static class Contents
 		{
-			public static readonly GUIContent spriteLabel = EditorGUIUtility.TextContent("Sprite|The Sprite defining the mask");
+			public static readonly GUIContent spriteLabel = EditorGUIUtility.TrTextContent("Sprite", "The Sprite defining the mask", null);
 
-			public static readonly GUIContent alphaCutoffLabel = EditorGUIUtility.TextContent("Alpha Cutoff|The minimum alpha value used by the mask to select the area of influence defined over the mask's sprite.");
+			public static readonly GUIContent alphaCutoffLabel = EditorGUIUtility.TrTextContent("Alpha Cutoff", "The minimum alpha value used by the mask to select the area of influence defined over the mask's sprite.", null);
 
-			public static readonly GUIContent isCustomRangeActive = EditorGUIUtility.TextContent("Custom Range|Mask sprites from front to back sorting values only.");
+			public static readonly GUIContent isCustomRangeActive = EditorGUIUtility.TrTextContent("Custom Range", "Mask sprites from front to back sorting values only.", null);
 
-			public static readonly GUIContent createSpriteMaskUndoString = EditorGUIUtility.TextContent("Create Sprite Mask");
+			public static readonly GUIContent createSpriteMaskUndoString = EditorGUIUtility.TrTextContent("Create Sprite Mask", null, null);
 
-			public static readonly GUIContent newSpriteMaskName = EditorGUIUtility.TextContent("New Sprite Mask");
+			public static readonly GUIContent newSpriteMaskName = EditorGUIUtility.TrTextContent("New Sprite Mask", null, null);
 
-			public static readonly GUIContent frontLabel = EditorGUIUtility.TextContent("Front");
+			public static readonly GUIContent frontLabel = EditorGUIUtility.TrTextContent("Front", null, null);
 
-			public static readonly GUIContent backLabel = EditorGUIUtility.TextContent("Back");
+			public static readonly GUIContent backLabel = EditorGUIUtility.TrTextContent("Back", null, null);
 		}
 
 		private SerializedProperty m_Sprite;
@@ -44,7 +44,7 @@ namespace UnityEditor
 		[MenuItem("GameObject/2D Object/Sprite Mask")]
 		private static void CreateSpriteMaskGameObject()
 		{
-			GameObject gameObject = new GameObject("", new Type[]
+			GameObject gameObject = ObjectFactory.CreateGameObject("", new Type[]
 			{
 				typeof(SpriteMask)
 			});
@@ -74,7 +74,7 @@ namespace UnityEditor
 				}
 			}
 			gameObject.name = GameObjectUtility.GetUniqueNameForSibling(gameObject.transform.parent, SpriteMaskEditor.Contents.newSpriteMaskName.text);
-			Undo.RegisterCreatedObjectUndo(gameObject, SpriteMaskEditor.Contents.createSpriteMaskUndoString.text);
+			Undo.SetCurrentGroupName(SpriteMaskEditor.Contents.createSpriteMaskUndoString.text);
 			Selection.activeGameObject = gameObject;
 		}
 
@@ -112,6 +112,7 @@ namespace UnityEditor
 				EditorGUI.indentLevel--;
 			}
 			EditorGUILayout.EndFadeGroup();
+			base.RenderRenderingLayer();
 			base.serializedObject.ApplyModifiedProperties();
 		}
 

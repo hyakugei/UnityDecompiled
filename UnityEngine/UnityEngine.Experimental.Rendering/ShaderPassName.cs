@@ -6,11 +6,19 @@ namespace UnityEngine.Experimental.Rendering
 {
 	public struct ShaderPassName
 	{
-		private int nameIndex;
+		private int m_NameIndex;
+
+		internal int nameIndex
+		{
+			get
+			{
+				return this.m_NameIndex;
+			}
+		}
 
 		public ShaderPassName(string name)
 		{
-			this.nameIndex = ShaderPassName.Init(name);
+			this.m_NameIndex = ShaderPassName.Init(name);
 		}
 
 		[GeneratedByOldBindingsGenerator]

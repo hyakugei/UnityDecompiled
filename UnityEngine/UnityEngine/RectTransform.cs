@@ -342,5 +342,9 @@ namespace UnityEngine
 			}
 			return result;
 		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public extern void ForceUpdateRectTransforms();
 	}
 }

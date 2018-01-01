@@ -28,8 +28,8 @@ namespace UnityEditor
 			{
 				this.viewLabelStyleLeftAligned = new GUIStyle("SC ViewLabel");
 				this.viewLabelStyleCentered = new GUIStyle("SC ViewLabel");
-				this.unlockedRotationIcon = EditorGUIUtility.IconContent("LockIcon", "Lock Rotation|Click to lock the rotation in the current direction.");
-				this.lockedRotationIcon = EditorGUIUtility.IconContent("LockIcon-On", "Lock Rotation|Click to unlock the rotation.");
+				this.unlockedRotationIcon = EditorGUIUtility.TrIconContent("LockIcon", "Click to lock the rotation in the current direction.");
+				this.lockedRotationIcon = EditorGUIUtility.TrIconContent("LockIcon-On", "Click to unlock the rotation.");
 				this.lockStyle = new GUIStyle("label");
 				this.lockStyle.alignment = TextAnchor.MiddleCenter;
 				this.viewLabelStyleLeftAligned.alignment = TextAnchor.MiddleLeft;
@@ -54,7 +54,7 @@ namespace UnityEditor
 			Quaternion.LookRotation(new Vector3(0f, 0f, 1f))
 		};
 
-		private static string[] kDirNames = new string[]
+		internal static string[] kDirNames = new string[]
 		{
 			"Right",
 			"Top",
@@ -67,7 +67,7 @@ namespace UnityEditor
 			"2D"
 		};
 
-		private static string[] kMenuDirNames = new string[]
+		internal static string[] kMenuDirNames = new string[]
 		{
 			"Free",
 			"Right",
@@ -93,14 +93,14 @@ namespace UnityEditor
 
 		private int currentDir = 7;
 
-		private AnimBool[] dirVisible = new AnimBool[]
+		internal AnimBool[] dirVisible = new AnimBool[]
 		{
 			new AnimBool(true),
 			new AnimBool(true),
 			new AnimBool(true)
 		};
 
-		private AnimBool[] dirNameVisible = new AnimBool[]
+		internal AnimBool[] dirNameVisible = new AnimBool[]
 		{
 			new AnimBool(),
 			new AnimBool(),
@@ -228,6 +228,10 @@ namespace UnityEditor
 							color = Color.Lerp(color, Color.gray, this.faded2Dgray);
 						}
 						color.a *= faded * this.fadedVisibility;
+						if (QualitySettings.activeColorSpace == ColorSpace.Linear)
+						{
+							color = color.linear;
+						}
 						Handles.color = color;
 						if (color.a <= 0.1f || view.isRotationLocked)
 						{
@@ -235,15 +239,15 @@ namespace UnityEditor
 						}
 						if (sgn > 0f)
 						{
-							int arg_1A5_0 = this.m_ViewDirectionControlIDs[i];
-							Vector3 arg_1A5_1 = quaternion * Vector3.forward * size * -1.2f;
-							Quaternion arg_1A5_2 = quaternion;
-							float arg_1A5_4 = size * 0.7f;
+							int arg_1B9_0 = this.m_ViewDirectionControlIDs[i];
+							Vector3 arg_1B9_1 = quaternion * Vector3.forward * size * -1.2f;
+							Quaternion arg_1B9_2 = quaternion;
+							float arg_1B9_4 = size * 0.7f;
 							if (SceneViewRotation.<>f__mg$cache0 == null)
 							{
 								SceneViewRotation.<>f__mg$cache0 = new Handles.CapFunction(Handles.ConeHandleCap);
 							}
-							if (Handles.Button(arg_1A5_0, arg_1A5_1, arg_1A5_2, size, arg_1A5_4, SceneViewRotation.<>f__mg$cache0))
+							if (Handles.Button(arg_1B9_0, arg_1B9_1, arg_1B9_2, size, arg_1B9_4, SceneViewRotation.<>f__mg$cache0))
 							{
 								if (!view.in2DMode && !view.isRotationLocked)
 								{
@@ -261,15 +265,15 @@ namespace UnityEditor
 						}
 						if (sgn < 0f)
 						{
-							int arg_2CE_0 = this.m_ViewDirectionControlIDs[i];
-							Vector3 arg_2CE_1 = quaternion * Vector3.forward * size * -1.2f;
-							Quaternion arg_2CE_2 = quaternion;
-							float arg_2CE_4 = size * 0.7f;
+							int arg_2E2_0 = this.m_ViewDirectionControlIDs[i];
+							Vector3 arg_2E2_1 = quaternion * Vector3.forward * size * -1.2f;
+							Quaternion arg_2E2_2 = quaternion;
+							float arg_2E2_4 = size * 0.7f;
 							if (SceneViewRotation.<>f__mg$cache1 == null)
 							{
 								SceneViewRotation.<>f__mg$cache1 = new Handles.CapFunction(Handles.ConeHandleCap);
 							}
-							if (Handles.Button(arg_2CE_0, arg_2CE_1, arg_2CE_2, size, arg_2CE_4, SceneViewRotation.<>f__mg$cache1))
+							if (Handles.Button(arg_2E2_0, arg_2E2_1, arg_2E2_2, size, arg_2E2_4, SceneViewRotation.<>f__mg$cache1))
 							{
 								if (!view.in2DMode && !view.isRotationLocked)
 								{

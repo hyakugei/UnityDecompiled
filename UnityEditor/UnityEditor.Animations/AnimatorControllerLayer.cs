@@ -1,9 +1,13 @@
 using System;
+using System.Runtime.InteropServices;
 using UnityEngine;
+using UnityEngine.Bindings;
 
 namespace UnityEditor.Animations
 {
-	public sealed class AnimatorControllerLayer
+	[NativeType(CodegenOptions.Custom, "MonoAnimatorControllerLayer")]
+	[StructLayout(LayoutKind.Sequential)]
+	public class AnimatorControllerLayer
 	{
 		private string m_Name;
 
@@ -172,7 +176,7 @@ namespace UnityEditor.Animations
 					StateBehavioursPair stateBehavioursPair = behaviours[i];
 					if (stateBehavioursPair.m_State == state)
 					{
-						result = stateBehavioursPair.m_Behaviours;
+						result = (stateBehavioursPair.m_Behaviours as StateMachineBehaviour[]);
 						return result;
 					}
 				}

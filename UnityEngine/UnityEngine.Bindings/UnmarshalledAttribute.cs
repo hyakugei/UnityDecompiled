@@ -2,7 +2,7 @@ using System;
 
 namespace UnityEngine.Bindings
 {
-	[AttributeUsage(AttributeTargets.Parameter)]
+	[AttributeUsage(AttributeTargets.Parameter), VisibleToOtherModules]
 	internal class UnmarshalledAttribute : Attribute, IBindingsAttribute
 	{
 	}

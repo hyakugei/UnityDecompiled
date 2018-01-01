@@ -22,12 +22,6 @@ namespace UnityEditorInternal
 
 		private static AddCurvesPopup.OnNewCurveAdded NewCurveAddedCallback;
 
-		internal static AnimationWindowSelection selection
-		{
-			get;
-			set;
-		}
-
 		private void Init(Rect buttonRect)
 		{
 			buttonRect = GUIUtility.GUIToScreenRect(buttonRect);
@@ -52,7 +46,7 @@ namespace UnityEditorInternal
 
 		internal static void AddNewCurve(AddCurvesPopupPropertyNode node)
 		{
-			AnimationWindowUtility.CreateDefaultCurves(AddCurvesPopup.s_State, node.selectionItem, node.curveBindings);
+			AnimationWindowUtility.CreateDefaultCurves(AddCurvesPopup.s_State, node.curveBindings);
 			if (AddCurvesPopup.NewCurveAddedCallback != null)
 			{
 				AddCurvesPopup.NewCurveAddedCallback(node);

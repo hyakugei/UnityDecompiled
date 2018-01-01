@@ -5,6 +5,8 @@ namespace UnityEngine
 {
 	public struct RenderTextureDescriptor
 	{
+		private int _bindMS;
+
 		private int _depthBufferBits;
 
 		private static int[] depthFormatBits = new int[]
@@ -38,6 +40,18 @@ namespace UnityEngine
 		{
 			get;
 			set;
+		}
+
+		public bool bindMS
+		{
+			get
+			{
+				return this._bindMS != 0;
+			}
+			set
+			{
+				this._bindMS = ((!value) ? 0 : 1);
+			}
 		}
 
 		public RenderTextureFormat colorFormat
@@ -158,6 +172,18 @@ namespace UnityEngine
 			set
 			{
 				this.SetOrClearRenderTextureCreationFlag(value, RenderTextureCreationFlags.CreatedFromScript);
+			}
+		}
+
+		internal bool useDynamicScale
+		{
+			get
+			{
+				return (this._flags & RenderTextureCreationFlags.DynamicallyScalable) != (RenderTextureCreationFlags)0;
+			}
+			set
+			{
+				this.SetOrClearRenderTextureCreationFlag(value, RenderTextureCreationFlags.DynamicallyScalable);
 			}
 		}
 

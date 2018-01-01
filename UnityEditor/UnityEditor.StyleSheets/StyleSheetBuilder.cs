@@ -134,7 +134,7 @@ namespace UnityEditor.StyleSheets
 			this.m_CurrentValues.Clear();
 		}
 
-		public void EndRule()
+		public int EndRule()
 		{
 			StyleSheetBuilder.Log("Ending rule");
 			this.m_BuilderState = StyleSheetBuilder.BuilderState.Init;
@@ -142,6 +142,7 @@ namespace UnityEditor.StyleSheets
 			this.m_Rules.Add(this.m_CurrentRule);
 			this.m_CurrentRule = null;
 			this.m_CurrentProperties.Clear();
+			return this.m_Rules.Count - 1;
 		}
 
 		public void BuildTo(StyleSheet writeTo)

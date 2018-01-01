@@ -7,11 +7,11 @@ namespace UnityEditor.Modules
 	{
 		void LaunchPlayer(BuildLaunchPlayerArgs args);
 
-		void PostProcess(BuildPostProcessArgs args);
+		void PostProcess(BuildPostProcessArgs args, out BuildProperties outProperties);
 
 		bool SupportsInstallInBuildFolder();
 
-		void PostProcessScriptsOnly(BuildPostProcessArgs args);
+		bool SupportsLz4Compression();
 
 		bool SupportsScriptsOnlyBuild();
 

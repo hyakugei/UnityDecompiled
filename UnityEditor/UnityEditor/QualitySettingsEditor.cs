@@ -3,12 +3,14 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Build;
+using UnityEditorInternal;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace UnityEditor
 {
 	[CustomEditor(typeof(QualitySettings))]
-	internal class QualitySettingsEditor : Editor
+	internal class QualitySettingsEditor : ProjectSettingsBaseEditor
 	{
 		private static class Styles
 		{
@@ -18,13 +20,13 @@ namespace UnityEditor
 
 			public static readonly GUIContent kPlatformTooltip = new GUIContent("", "Allow quality setting on platform");
 
-			public static readonly GUIContent kAddQualityLevel = new GUIContent("Add Quality Level");
+			public static readonly GUIContent kAddQualityLevel = EditorGUIUtility.TrTextContent("Add Quality Level", null, null);
 
-			public static readonly GUIContent kIconTrash = EditorGUIUtility.IconContent("TreeEditor.Trash", "|Delete Level");
+			public static readonly GUIContent kIconTrash = EditorGUIUtility.TrIconContent("TreeEditor.Trash", "Delete Level");
 
-			public static readonly GUIContent kSoftParticlesHint = EditorGUIUtility.TextContent("Soft Particles require using Deferred Lighting or making camera render the depth texture.");
+			public static readonly GUIContent kSoftParticlesHint = EditorGUIUtility.TrTextContent("Soft Particles require using Deferred Lighting or making camera render the depth texture.", null, null);
 
-			public static readonly GUIContent kBillboardsFaceCameraPos = EditorGUIUtility.TextContent("Billboards Face Camera Position|Make billboards face towards camera position. Otherwise they face towards camera plane. This makes billboards look nicer when camera rotates but is more expensive to render.");
+			public static readonly GUIContent kBillboardsFaceCameraPos = EditorGUIUtility.TrTextContent("Billboards Face Camera Position", "Make billboards face towards camera position. Otherwise they face towards camera plane. This makes billboards look nicer when camera rotates but is more expensive to render.", null);
 
 			public static readonly GUIStyle kListEvenBg = "ObjectPickerResultsOdd";
 
@@ -591,43 +593,57 @@ namespace UnityEditor
 			SerializedProperty serializedProperty6 = arrayElementAtIndex.FindPropertyRelative("asyncUploadTimeSlice");
 			SerializedProperty serializedProperty7 = arrayElementAtIndex.FindPropertyRelative("asyncUploadBufferSize");
 			SerializedProperty property18 = arrayElementAtIndex.FindPropertyRelative("resolutionScalingFixedDPIFactor");
+			bool flag = GraphicsSettings.renderPipelineAsset != null;
 			if (string.IsNullOrEmpty(serializedProperty.stringValue))
 			{
 				serializedProperty.stringValue = "Level " + num;
 			}
 			EditorGUILayout.PropertyField(serializedProperty, new GUILayoutOption[0]);
+			if (flag)
+			{
+				EditorGUILayout.HelpBox("A Scriptable Render Pipeline is in use, some settings will not be used and are hidden", MessageType.Info);
+			}
 			GUILayout.Space(10f);
 			GUILayout.Label(EditorGUIUtility.TempContent("Rendering"), EditorStyles.boldLabel, new GUILayoutOption[0]);
-			EditorGUILayout.PropertyField(property, new GUILayoutOption[0]);
+			if (!flag)
+			{
+				EditorGUILayout.PropertyField(property, new GUILayoutOption[0]);
+			}
 			EditorGUILayout.PropertyField(property9, new GUILayoutOption[0]);
 			EditorGUILayout.PropertyField(property10, new GUILayoutOption[0]);
-			EditorGUILayout.PropertyField(property11, new GUILayoutOption[0]);
-			EditorGUILayout.PropertyField(serializedProperty5, new GUILayoutOption[0]);
-			if (serializedProperty5.boolValue)
+			if (!flag)
 			{
-				this.SoftParticlesHintGUI();
+				EditorGUILayout.PropertyField(property11, new GUILayoutOption[0]);
+				EditorGUILayout.PropertyField(serializedProperty5, new GUILayoutOption[0]);
+				if (serializedProperty5.boolValue)
+				{
+					this.SoftParticlesHintGUI();
+				}
 			}
 			EditorGUILayout.PropertyField(property12, new GUILayoutOption[0]);
 			EditorGUILayout.PropertyField(property13, QualitySettingsEditor.Styles.kBillboardsFaceCameraPos, new GUILayoutOption[0]);
 			EditorGUILayout.PropertyField(property18, new GUILayoutOption[0]);
 			GUILayout.Space(10f);
-			GUILayout.Label(EditorGUIUtility.TempContent("Shadows"), EditorStyles.boldLabel, new GUILayoutOption[0]);
-			EditorGUILayout.PropertyField(property2, new GUILayoutOption[0]);
-			EditorGUILayout.PropertyField(property3, new GUILayoutOption[0]);
-			EditorGUILayout.PropertyField(property4, new GUILayoutOption[0]);
-			EditorGUILayout.PropertyField(property5, new GUILayoutOption[0]);
-			EditorGUILayout.PropertyField(property7, new GUILayoutOption[0]);
-			EditorGUILayout.PropertyField(property6, new GUILayoutOption[0]);
-			EditorGUILayout.PropertyField(serializedProperty2, new GUILayoutOption[0]);
-			if (serializedProperty2.intValue == 2)
+			if (!flag)
 			{
-				this.DrawCascadeSplitGUI<float>(ref serializedProperty3);
+				GUILayout.Label(EditorGUIUtility.TempContent("Shadows"), EditorStyles.boldLabel, new GUILayoutOption[0]);
+				EditorGUILayout.PropertyField(property2, new GUILayoutOption[0]);
+				EditorGUILayout.PropertyField(property3, new GUILayoutOption[0]);
+				EditorGUILayout.PropertyField(property4, new GUILayoutOption[0]);
+				EditorGUILayout.PropertyField(property5, new GUILayoutOption[0]);
+				EditorGUILayout.PropertyField(property7, new GUILayoutOption[0]);
+				EditorGUILayout.PropertyField(property6, new GUILayoutOption[0]);
+				EditorGUILayout.PropertyField(serializedProperty2, new GUILayoutOption[0]);
+				if (serializedProperty2.intValue == 2)
+				{
+					this.DrawCascadeSplitGUI<float>(ref serializedProperty3);
+				}
+				else if (serializedProperty2.intValue == 4)
+				{
+					this.DrawCascadeSplitGUI<Vector3>(ref serializedProperty4);
+				}
+				GUILayout.Space(10f);
 			}
-			else if (serializedProperty2.intValue == 4)
-			{
-				this.DrawCascadeSplitGUI<Vector3>(ref serializedProperty4);
-			}
-			GUILayout.Space(10f);
 			GUILayout.Label(EditorGUIUtility.TempContent("Other"), EditorStyles.boldLabel, new GUILayoutOption[0]);
 			EditorGUILayout.PropertyField(property8, new GUILayoutOption[0]);
 			EditorGUILayout.PropertyField(property14, new GUILayoutOption[0]);

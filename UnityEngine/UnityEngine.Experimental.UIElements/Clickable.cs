@@ -9,6 +9,8 @@ namespace UnityEngine.Experimental.UIElements
 
 		private readonly long m_Interval;
 
+		private IVisualElementScheduledItem m_Repeater;
+
 		public event Action clicked
 		{
 			add
@@ -60,7 +62,7 @@ namespace UnityEngine.Experimental.UIElements
 		{
 			if (this.clicked != null && this.IsRepeatable())
 			{
-				if (base.target.ContainsPointToLocal(this.lastMousePosition))
+				if (base.target.ContainsPoint(this.lastMousePosition))
 				{
 					this.clicked();
 					base.target.pseudoStates |= PseudoStates.Active;
@@ -77,58 +79,74 @@ namespace UnityEngine.Experimental.UIElements
 			return this.m_Delay > 0L || this.m_Interval > 0L;
 		}
 
-		public override EventPropagation HandleEvent(Event evt, VisualElement finalTarget)
+		protected override void RegisterCallbacksOnTarget()
 		{
-			EventType type = evt.type;
-			EventPropagation result;
-			if (type != EventType.MouseDown)
+			base.target.RegisterCallback<MouseDownEvent>(new EventCallback<MouseDownEvent>(this.OnMouseDown), Capture.NoCapture);
+			base.target.RegisterCallback<MouseMoveEvent>(new EventCallback<MouseMoveEvent>(this.OnMouseMove), Capture.NoCapture);
+			base.target.RegisterCallback<MouseUpEvent>(new EventCallback<MouseUpEvent>(this.OnMouseUp), Capture.NoCapture);
+		}
+
+		protected override void UnregisterCallbacksFromTarget()
+		{
+			base.target.UnregisterCallback<MouseDownEvent>(new EventCallback<MouseDownEvent>(this.OnMouseDown), Capture.NoCapture);
+			base.target.UnregisterCallback<MouseMoveEvent>(new EventCallback<MouseMoveEvent>(this.OnMouseMove), Capture.NoCapture);
+			base.target.UnregisterCallback<MouseUpEvent>(new EventCallback<MouseUpEvent>(this.OnMouseUp), Capture.NoCapture);
+		}
+
+		protected void OnMouseDown(MouseDownEvent evt)
+		{
+			if (base.CanStartManipulation(evt))
 			{
-				if (type != EventType.MouseUp)
-				{
-					if (type == EventType.MouseDrag)
-					{
-						if (this.HasCapture())
-						{
-							this.lastMousePosition = evt.mousePosition;
-							result = EventPropagation.Stop;
-							return result;
-						}
-					}
-				}
-				else if (base.CanStopManipulation(evt))
-				{
-					this.ReleaseCapture();
-					if (this.IsRepeatable())
-					{
-						base.target.Unschedule(new Action<TimerState>(this.OnTimer));
-					}
-					else if (this.clicked != null && base.target.ContainsPointToLocal(evt.mousePosition))
-					{
-						this.clicked();
-					}
-					base.target.pseudoStates &= ~PseudoStates.Active;
-					result = EventPropagation.Stop;
-					return result;
-				}
-			}
-			else if (base.CanStartManipulation(evt))
-			{
-				this.TakeCapture();
-				this.lastMousePosition = evt.mousePosition;
+				base.target.TakeMouseCapture();
+				this.lastMousePosition = evt.localMousePosition;
 				if (this.IsRepeatable())
 				{
-					if (this.clicked != null && base.target.ContainsPointToLocal(evt.mousePosition))
+					if (this.clicked != null && base.target.ContainsPoint(evt.localMousePosition))
 					{
 						this.clicked();
 					}
-					this.Schedule(new Action<TimerState>(this.OnTimer)).StartingIn(this.m_Delay).Every(this.m_Interval);
+					if (this.m_Repeater == null)
+					{
+						this.m_Repeater = base.target.schedule.Execute(new Action<TimerState>(this.OnTimer)).Every(this.m_Interval).StartingIn(this.m_Delay);
+					}
+					else
+					{
+						this.m_Repeater.ExecuteLater(this.m_Delay);
+					}
 				}
 				base.target.pseudoStates |= PseudoStates.Active;
-				result = EventPropagation.Stop;
-				return result;
+				evt.StopPropagation();
 			}
-			result = EventPropagation.Continue;
-			return result;
+		}
+
+		protected void OnMouseMove(MouseMoveEvent evt)
+		{
+			if (base.target.HasMouseCapture())
+			{
+				this.lastMousePosition = evt.localMousePosition;
+				evt.StopPropagation();
+			}
+		}
+
+		protected void OnMouseUp(MouseUpEvent evt)
+		{
+			if (base.CanStopManipulation(evt))
+			{
+				base.target.ReleaseMouseCapture();
+				if (this.IsRepeatable())
+				{
+					if (this.m_Repeater != null)
+					{
+						this.m_Repeater.Pause();
+					}
+				}
+				else if (this.clicked != null && base.target.ContainsPoint(evt.localMousePosition))
+				{
+					this.clicked();
+				}
+				base.target.pseudoStates &= ~PseudoStates.Active;
+				evt.StopPropagation();
+			}
 		}
 	}
 }

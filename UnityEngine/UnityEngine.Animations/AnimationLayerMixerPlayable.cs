@@ -74,15 +74,6 @@ namespace UnityEngine.Animations
 			return this.GetHandle() == other.GetHandle();
 		}
 
-		private static bool CreateHandleInternal(PlayableGraph graph, ref PlayableHandle handle)
-		{
-			return AnimationLayerMixerPlayable.INTERNAL_CALL_CreateHandleInternal(ref graph, ref handle);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern bool INTERNAL_CALL_CreateHandleInternal(ref PlayableGraph graph, ref PlayableHandle handle);
-
 		public bool IsLayerAdditive(uint layerIndex)
 		{
 			if ((ulong)layerIndex >= (ulong)((long)this.m_Handle.GetInputCount()))
@@ -114,31 +105,21 @@ namespace UnityEngine.Animations
 			AnimationLayerMixerPlayable.SetLayerMaskFromAvatarMaskInternal(ref this.m_Handle, layerIndex, mask);
 		}
 
-		private static bool IsLayerAdditiveInternal(ref PlayableHandle handle, uint layerIndex)
+		private static bool CreateHandleInternal(PlayableGraph graph, ref PlayableHandle handle)
 		{
-			return AnimationLayerMixerPlayable.INTERNAL_CALL_IsLayerAdditiveInternal(ref handle, layerIndex);
+			return AnimationLayerMixerPlayable.CreateHandleInternal_Injected(ref graph, ref handle);
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern bool INTERNAL_CALL_IsLayerAdditiveInternal(ref PlayableHandle handle, uint layerIndex);
+		private static extern bool IsLayerAdditiveInternal(ref PlayableHandle handle, uint layerIndex);
 
-		private static void SetLayerAdditiveInternal(ref PlayableHandle handle, uint layerIndex, bool value)
-		{
-			AnimationLayerMixerPlayable.INTERNAL_CALL_SetLayerAdditiveInternal(ref handle, layerIndex, value);
-		}
-
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_SetLayerAdditiveInternal(ref PlayableHandle handle, uint layerIndex, bool value);
+		private static extern void SetLayerAdditiveInternal(ref PlayableHandle handle, uint layerIndex, bool value);
 
-		private static void SetLayerMaskFromAvatarMaskInternal(ref PlayableHandle handle, uint layerIndex, AvatarMask mask)
-		{
-			AnimationLayerMixerPlayable.INTERNAL_CALL_SetLayerMaskFromAvatarMaskInternal(ref handle, layerIndex, mask);
-		}
-
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_SetLayerMaskFromAvatarMaskInternal(ref PlayableHandle handle, uint layerIndex, AvatarMask mask);
+		private static extern void SetLayerMaskFromAvatarMaskInternal(ref PlayableHandle handle, uint layerIndex, AvatarMask mask);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern bool CreateHandleInternal_Injected(ref PlayableGraph graph, ref PlayableHandle handle);
 	}
 }

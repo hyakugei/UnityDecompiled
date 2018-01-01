@@ -11,27 +11,52 @@ namespace UnityEditor
 	{
 		private static class Styles
 		{
-			public static GUIContent MaskDefinition = EditorGUIUtility.TextContent("Definition|Choose between Create From This Model, Copy From Other Avatar. The first one create a Mask for this file and the second one use a Mask from another file to import animation.");
+			public static GUIContent MaskDefinition;
 
-			public static GUIContent[] MaskDefinitionOpt = new GUIContent[]
+			public static GUIContent[] MaskDefinitionOpt;
+
+			public static GUIContent BodyMask;
+
+			public static GUIContent TransformMask;
+
+			public static GUIStyle foldoutStyle;
+
+			public static GUIStyle labelStyle;
+
+			static Styles()
 			{
-				EditorGUIUtility.TextContent("Create From This Model|Create a Mask based on the model from this file. For Humanoid rig all the human transform are always imported and converted to muscle curve, thus they cannot be unchecked."),
-				EditorGUIUtility.TextContent("Copy From Other Mask|Copy a Mask from another file to import animation clip."),
-				EditorGUIUtility.TextContent("None | Import Everything")
-			};
-
-			public static GUIContent BodyMask = EditorGUIUtility.TextContent("Humanoid|Define which body part are active. Also define which animation curves will be imported for an Animation Clip.");
-
-			public static GUIContent TransformMask = EditorGUIUtility.TextContent("Transform|Define which transform are active. Also define which animation curves will be imported for an Animation Clip.");
+				AvatarMaskInspector.Styles.MaskDefinition = EditorGUIUtility.TrTextContent("Definition", "Choose between Create From This Model, Copy From Other Avatar. The first one create a Mask for this file and the second one use a Mask from another file to import animation.", null);
+				AvatarMaskInspector.Styles.MaskDefinitionOpt = new GUIContent[]
+				{
+					EditorGUIUtility.TrTextContent("Create From This Model", "Create a Mask based on the model from this file. For Humanoid rig all the human transform are always imported and converted to muscle curve, thus they cannot be unchecked.", null),
+					EditorGUIUtility.TrTextContent("Copy From Other Mask", "Copy a Mask from another file to import animation clip.", null),
+					EditorGUIUtility.TrTextContent("None ", " Import Everything", null)
+				};
+				AvatarMaskInspector.Styles.BodyMask = EditorGUIUtility.TrTextContent("Humanoid", "Define which body part are active. Also define which animation curves will be imported for an Animation Clip.", null);
+				AvatarMaskInspector.Styles.TransformMask = EditorGUIUtility.TrTextContent("Transform", "Define which transform are active. Also define which animation curves will be imported for an Animation Clip.", null);
+				AvatarMaskInspector.Styles.foldoutStyle = new GUIStyle(EditorStyles.foldout);
+				AvatarMaskInspector.Styles.labelStyle = new GUIStyle(EditorStyles.label);
+				GUIStyle arg_B5_0 = AvatarMaskInspector.Styles.foldoutStyle;
+				bool richText = true;
+				AvatarMaskInspector.Styles.labelStyle.richText = richText;
+				arg_B5_0.richText = richText;
+			}
 		}
 
 		private struct NodeInfo
 		{
+			public enum State
+			{
+				disabled,
+				enabled,
+				invalid
+			}
+
 			public bool m_Expanded;
 
 			public bool m_Show;
 
-			public bool m_Enabled;
+			public AvatarMaskInspector.NodeInfo.State m_State;
 
 			public int m_ParentIndex;
 
@@ -317,7 +342,7 @@ namespace UnityEditor
 				{
 					SerializedObject serializedObject = this.clipInfo.maskTypeProperty.serializedObject;
 					ModelImporter modelImporter = serializedObject.targetObject as ModelImporter;
-					AvatarMaskUtility.UpdateTransformMask(this.m_TransformMask, modelImporter.transformPaths, this.humanTransforms);
+					AvatarMaskUtility.UpdateTransformMask(this.m_TransformMask, modelImporter.transformPaths, this.humanTransforms, true);
 					this.FillNodeInfos();
 				}
 				else if (maskType == ClipAnimationMaskType.CopyFromOther)
@@ -432,12 +457,10 @@ namespace UnityEditor
 								GUILayout.ExpandWidth(false)
 							});
 							rect.x += 15f;
-							bool enabled = GUI.enabled;
-							GUI.enabled = this.m_NodeInfos[i].m_Enabled;
+							EditorGUI.BeginDisabledGroup(this.m_NodeInfos[i].m_State == AvatarMaskInspector.NodeInfo.State.disabled || this.m_NodeInfos[i].m_State == AvatarMaskInspector.NodeInfo.State.invalid);
 							bool flag = Event.current.button == 1;
 							bool flag2 = this.m_NodeInfos[i].m_Weight.floatValue > 0f;
 							flag2 = GUI.Toggle(rect, flag2, "");
-							GUI.enabled = enabled;
 							if (EditorGUI.EndChangeCheck())
 							{
 								this.m_NodeInfos[i].m_Weight.floatValue = ((!flag2) ? 0f : 1f);
@@ -446,14 +469,24 @@ namespace UnityEditor
 									this.CheckChildren(i, flag2);
 								}
 							}
-							if (this.m_NodeInfos[i].m_ChildIndices.Count > 0)
+							string text3;
+							if (this.m_NodeInfos[i].m_State == AvatarMaskInspector.NodeInfo.State.invalid)
 							{
-								this.m_NodeInfos[i].m_Expanded = EditorGUILayout.Foldout(this.m_NodeInfos[i].m_Expanded, this.m_NodeInfos[i].m_Name, true);
+								text3 = "<color=#FF0000AA>" + this.m_NodeInfos[i].m_Name + "</color>";
 							}
 							else
 							{
-								EditorGUILayout.LabelField(this.m_NodeInfos[i].m_Name, new GUILayoutOption[0]);
+								text3 = this.m_NodeInfos[i].m_Name;
 							}
+							if (this.m_NodeInfos[i].m_ChildIndices.Count > 0)
+							{
+								this.m_NodeInfos[i].m_Expanded = EditorGUILayout.Foldout(this.m_NodeInfos[i].m_Expanded, text3, true, AvatarMaskInspector.Styles.foldoutStyle);
+							}
+							else
+							{
+								EditorGUILayout.LabelField(text3, AvatarMaskInspector.Styles.labelStyle, new GUILayoutOption[0]);
+							}
+							EditorGUI.EndDisabledGroup();
 							if (i == 1)
 							{
 								ymin = rect.yMin;
@@ -474,8 +507,8 @@ namespace UnityEditor
 			if (Event.current != null && Event.current.type == EventType.MouseUp && Event.current.button == 1 && rect2.Contains(Event.current.mousePosition))
 			{
 				GenericMenu genericMenu = new GenericMenu();
-				genericMenu.AddItem(new GUIContent("Select all"), false, new GenericMenu.MenuFunction(this.SelectAll));
-				genericMenu.AddItem(new GUIContent("Deselect all"), false, new GenericMenu.MenuFunction(this.DeselectAll));
+				genericMenu.AddItem(EditorGUIUtility.TrTextContent("Select all", null, null), false, new GenericMenu.MenuFunction(this.SelectAll));
+				genericMenu.AddItem(EditorGUIUtility.TrTextContent("Deselect all", null, null), false, new GenericMenu.MenuFunction(this.DeselectAll));
 				genericMenu.ShowAsContext();
 				Event.current.Use();
 			}
@@ -485,7 +518,7 @@ namespace UnityEditor
 		{
 			for (int i = 0; i < this.m_NodeInfos.Length; i++)
 			{
-				if (this.m_NodeInfos[i].m_Enabled)
+				if (this.m_NodeInfos[i].m_State == AvatarMaskInspector.NodeInfo.State.enabled)
 				{
 					this.m_NodeInfos[i].m_Weight.floatValue = ((!active) ? 0f : 1f);
 				}
@@ -512,11 +545,11 @@ namespace UnityEditor
 			}
 			if (this.m_RefImporter != null && GUILayout.Button("Import skeleton", new GUILayoutOption[0]))
 			{
-				AvatarMaskUtility.UpdateTransformMask(this.m_TransformMask, this.m_RefImporter.transformPaths, null);
+				AvatarMaskUtility.UpdateTransformMask(this.m_TransformMask, this.m_RefImporter.transformPaths, null, true);
 			}
 		}
 
-		private void FillNodeInfos()
+		public void FillNodeInfos()
 		{
 			this.m_NodeInfos = new AvatarMaskInspector.NodeInfo[this.m_TransformMask.arraySize];
 			if (this.m_TransformMask.arraySize != 0)
@@ -530,29 +563,51 @@ namespace UnityEditor
 					this.m_NodeInfos[i].m_Weight = arrayElementAtIndex.FindPropertyRelative("m_Weight");
 					array[i] = this.m_NodeInfos[i].m_Path.stringValue;
 					string fullPath = array[i];
-					if (this.humanTransforms != null)
+					if (this.m_CanImport)
 					{
-						this.m_NodeInfos[i].m_Enabled = (ArrayUtility.FindIndex<string>(this.humanTransforms, (string s) => fullPath == s) == -1);
+						this.m_NodeInfos[i].m_State = AvatarMaskInspector.NodeInfo.State.enabled;
+					}
+					else if (this.humanTransforms != null)
+					{
+						if (ArrayUtility.FindIndex<string>(this.humanTransforms, (string s) => fullPath == s) == -1)
+						{
+							if (this.m_TransformPaths != null && ArrayUtility.FindIndex<string>(this.m_TransformPaths, (string s) => fullPath == s) == -1)
+							{
+								this.m_NodeInfos[i].m_State = AvatarMaskInspector.NodeInfo.State.invalid;
+							}
+							else
+							{
+								this.m_NodeInfos[i].m_State = AvatarMaskInspector.NodeInfo.State.enabled;
+							}
+						}
+						else
+						{
+							this.m_NodeInfos[i].m_State = AvatarMaskInspector.NodeInfo.State.disabled;
+						}
+					}
+					else if (this.m_TransformPaths != null && ArrayUtility.FindIndex<string>(this.m_TransformPaths, (string s) => fullPath == s) == -1)
+					{
+						this.m_NodeInfos[i].m_State = AvatarMaskInspector.NodeInfo.State.invalid;
 					}
 					else
 					{
-						this.m_NodeInfos[i].m_Enabled = true;
+						this.m_NodeInfos[i].m_State = AvatarMaskInspector.NodeInfo.State.enabled;
 					}
 					this.m_NodeInfos[i].m_Expanded = true;
 					this.m_NodeInfos[i].m_ParentIndex = -1;
 					this.m_NodeInfos[i].m_ChildIndices = new List<int>();
-					AvatarMaskInspector.NodeInfo[] arg_181_0_cp_0 = this.m_NodeInfos;
-					int arg_181_0_cp_1 = i;
-					int arg_181_1;
+					AvatarMaskInspector.NodeInfo[] arg_248_0_cp_0 = this.m_NodeInfos;
+					int arg_248_0_cp_1 = i;
+					int arg_248_1;
 					if (i == 0)
 					{
-						arg_181_1 = 0;
+						arg_248_1 = 0;
 					}
 					else
 					{
-						arg_181_1 = fullPath.Count((char f) => f == '/');
+						arg_248_1 = fullPath.Count((char f) => f == '/');
 					}
-					arg_181_0_cp_0[arg_181_0_cp_1].m_Depth = arg_181_1;
+					arg_248_0_cp_0[arg_248_0_cp_1].m_Depth = arg_248_1;
 					string text = "";
 					int num = fullPath.LastIndexOf('/');
 					if (num > 0)
@@ -600,7 +655,7 @@ namespace UnityEditor
 		{
 			foreach (int current in this.m_NodeInfos[index].m_ChildIndices)
 			{
-				if (this.m_NodeInfos[current].m_Enabled)
+				if (this.m_NodeInfos[current].m_State == AvatarMaskInspector.NodeInfo.State.enabled)
 				{
 					this.m_NodeInfos[current].m_Weight.floatValue = ((!value) ? 0f : 1f);
 				}

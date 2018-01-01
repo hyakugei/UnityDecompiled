@@ -11,7 +11,7 @@ namespace UnityEditorInternal
 	{
 		public enum ScriptEditor
 		{
-			Internal,
+			SystemDefault,
 			MonoDevelop,
 			VisualStudio,
 			VisualStudioExpress,
@@ -26,7 +26,7 @@ namespace UnityEditorInternal
 			ScriptEditorUtility.ScriptEditor result;
 			if (text == "internal")
 			{
-				result = ScriptEditorUtility.ScriptEditor.Internal;
+				result = ScriptEditorUtility.ScriptEditor.SystemDefault;
 			}
 			else if (text.Contains("monodevelop") || text.Contains("xamarinstudio") || text.Contains("xamarin studio"))
 			{
@@ -42,16 +42,16 @@ namespace UnityEditorInternal
 			}
 			else
 			{
-				string a = Path.GetFileName(Paths.UnifyDirectorySeparator(text)).Replace(" ", "");
-				if (a == "visualstudio.app")
+				string text2 = Path.GetFileName(Paths.UnifyDirectorySeparator(text)).Replace(" ", "");
+				if (text2 == "visualstudio.app")
 				{
 					result = ScriptEditorUtility.ScriptEditor.MonoDevelop;
 				}
-				else if (a == "code.exe" || a == "visualstudiocode.app" || a == "vscode.app" || a == "code.app" || a == "code")
+				else if (text2 == "code.exe" || text2 == "visualstudiocode.app" || text2 == "vscode.app" || text2 == "code.app" || text2 == "code")
 				{
 					result = ScriptEditorUtility.ScriptEditor.VisualStudioCode;
 				}
-				else if (a == "rider.exe" || a == "rider64.exe" || a == "rider32.exe" || a == "ridereap.app" || a == "rider.app" || a == "rider.sh")
+				else if (text2 == "rider.exe" || text2 == "rider64.exe" || text2 == "rider32.exe" || (text2.StartsWith("rider") && text2.EndsWith(".app")) || text2 == "rider.sh")
 				{
 					result = ScriptEditorUtility.ScriptEditor.Rider;
 				}
@@ -63,14 +63,27 @@ namespace UnityEditorInternal
 			return result;
 		}
 
-		public static bool IsScriptEditorSpecial(string path)
-		{
-			return ScriptEditorUtility.GetScriptEditorFromPath(path) != ScriptEditorUtility.ScriptEditor.Other;
-		}
-
 		public static string GetExternalScriptEditor()
 		{
-			return EditorPrefs.GetString("kScriptsDefaultApp");
+			string @string = EditorPrefs.GetString("kScriptsDefaultApp");
+			string result;
+			if (!string.IsNullOrEmpty(@string))
+			{
+				result = @string;
+			}
+			else
+			{
+				string[] foundScriptEditorPaths = ScriptEditorUtility.GetFoundScriptEditorPaths(Application.platform);
+				if (foundScriptEditorPaths.Length > 0)
+				{
+					result = foundScriptEditorPaths[0];
+				}
+				else
+				{
+					result = string.Empty;
+				}
+			}
+			return result;
 		}
 
 		public static void SetExternalScriptEditor(string path)
@@ -109,8 +122,9 @@ namespace UnityEditorInternal
 		public static string GetExternalScriptEditorArgs()
 		{
 			string externalScriptEditor = ScriptEditorUtility.GetExternalScriptEditor();
+			ScriptEditorUtility.ScriptEditor scriptEditorFromPath = ScriptEditorUtility.GetScriptEditorFromPath(externalScriptEditor);
 			string result;
-			if (ScriptEditorUtility.IsScriptEditorSpecial(externalScriptEditor))
+			if (scriptEditorFromPath != ScriptEditorUtility.ScriptEditor.Other)
 			{
 				result = "";
 			}

@@ -1,12 +1,14 @@
 using System;
+using UnityEngine.Bindings;
 
 namespace UnityEditor
 {
+	[NativeType(Header = "Editor/Src/BuildPipeline/BuildTargetPlatformSpecific.h")]
 	public enum BuildTargetGroup
 	{
 		Unknown,
 		Standalone,
-		[Obsolete("WebPlayer was removed in 5.4, consider using WebGL")]
+		[Obsolete("WebPlayer was removed in 5.4, consider using WebGL", true)]
 		WebPlayer,
 		[Obsolete("Use iOS instead (UnityUpgradable) -> iOS", true)]
 		iPhone = 4,
@@ -27,10 +29,13 @@ namespace UnityEditor
 		Tizen,
 		PSP2,
 		PS4,
+		[Obsolete("warning PSM has been removed in >= 5.3")]
 		PSM,
 		XboxOne,
+		[Obsolete("SamsungTV has been removed as of 2017.3")]
 		SamsungTV,
 		N3DS,
+		[Obsolete("Wii U support was removed in 2018.1")]
 		WiiU,
 		tvOS,
 		Facebook,

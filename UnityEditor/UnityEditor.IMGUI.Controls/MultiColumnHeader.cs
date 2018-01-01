@@ -531,7 +531,7 @@ namespace UnityEditor.IMGUI.Controls
 
 		protected virtual void AddColumnHeaderContextMenuItems(GenericMenu menu)
 		{
-			menu.AddItem(new GUIContent("Resize to Fit"), false, new GenericMenu.MenuFunction(this.ResizeToFit));
+			menu.AddItem(EditorGUIUtility.TrTextContent("Resize to Fit", null, null), false, new GenericMenu.MenuFunction(this.ResizeToFit));
 			menu.AddSeparator("");
 			for (int i = 0; i < this.state.columns.Length; i++)
 			{

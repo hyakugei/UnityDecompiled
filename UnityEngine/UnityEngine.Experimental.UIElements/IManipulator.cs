@@ -2,7 +2,7 @@ using System;
 
 namespace UnityEngine.Experimental.UIElements
 {
-	public interface IManipulator : IEventHandler
+	public interface IManipulator
 	{
 		VisualElement target
 		{

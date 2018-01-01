@@ -329,7 +329,7 @@ namespace UnityEditor
 				Debug.LogFormat("Field '{0}' from '{1}', exception {2}", new object[]
 				{
 					field.FullName,
-					field.Module.FullyQualifiedName,
+					field.Module.FileName,
 					ex.Message
 				});
 				result = false;

@@ -36,8 +36,6 @@ namespace UnityEditor
 
 		private AnimationCurve m_Curve;
 
-		private SerializedProperty m_Property;
-
 		private Color m_Color;
 
 		private CurvePresetsContentsForPopupWindow m_CurvePresets;
@@ -46,6 +44,12 @@ namespace UnityEditor
 
 		[SerializeField]
 		private GUIView delegateView;
+
+		public const string CurveChangedCommand = "CurveChanged";
+
+		public const string CurveChangeCompletedCommand = "CurveChangeCompleted";
+
+		private Action<AnimationCurve> m_OnCurveChanged;
 
 		internal static CurveEditorWindow.Styles ms_Styles;
 
@@ -83,7 +87,6 @@ namespace UnityEditor
 			}
 			set
 			{
-				CurveEditorWindow.instance.m_Property = null;
 				if (value == null)
 				{
 					CurveEditorWindow.instance.m_Curve = null;
@@ -91,28 +94,6 @@ namespace UnityEditor
 				else
 				{
 					CurveEditorWindow.instance.m_Curve = value;
-					CurveEditorWindow.instance.RefreshShownCurves();
-				}
-			}
-		}
-
-		public static SerializedProperty property
-		{
-			get
-			{
-				return (!CurveEditorWindow.visible) ? null : CurveEditorWindow.instance.m_Property;
-			}
-			set
-			{
-				if (value == null)
-				{
-					CurveEditorWindow.instance.m_Property = null;
-					CurveEditorWindow.instance.m_Curve = null;
-				}
-				else
-				{
-					CurveEditorWindow.instance.m_Property = value.Copy();
-					CurveEditorWindow.instance.m_Curve = ((!value.hasMultipleDifferentValues) ? value.animationCurveValue : new AnimationCurve());
 					CurveEditorWindow.instance.RefreshShownCurves();
 				}
 			}
@@ -174,7 +155,7 @@ namespace UnityEditor
 			}
 			this.m_CurveEditor.settings.hTickLabelOffset = 10f;
 			this.m_CurveEditor.settings.rectangleToolFlags = CurveEditorSettings.RectangleToolFlags.MiniRectangleTool;
-			this.m_CurveEditor.settings.undoRedoSelection = true;
+			this.m_CurveEditor.settings.undoRedoSelection = false;
 			this.m_CurveEditor.settings.showWrapperPopups = true;
 			bool horizontally = true;
 			bool vertically = true;
@@ -189,6 +170,9 @@ namespace UnityEditor
 				vertically = false;
 			}
 			this.m_CurveEditor.FrameSelected(horizontally, vertically);
+			base.titleContent = EditorGUIUtility.TrTextContent("Curve", null, null);
+			base.minSize = new Vector2(240f, 286f);
+			base.maxSize = new Vector2(10000f, 10000f);
 		}
 
 		private bool GetNormalizationRect(out Rect normalizationRect)
@@ -286,7 +270,10 @@ namespace UnityEditor
 
 		private void OnDestroy()
 		{
-			this.m_CurvePresets.GetPresetLibraryEditor().UnloadUsedLibraries();
+			if (this.m_CurvePresets != null)
+			{
+				this.m_CurvePresets.GetPresetLibraryEditor().UnloadUsedLibraries();
+			}
 		}
 
 		private void OnDisable()
@@ -310,11 +297,17 @@ namespace UnityEditor
 		public void Show(GUIView viewToUpdate, CurveEditorSettings settings)
 		{
 			this.delegateView = viewToUpdate;
+			this.m_OnCurveChanged = null;
 			this.Init(settings);
 			base.ShowAuxWindow();
-			base.titleContent = new GUIContent("Curve");
-			base.minSize = new Vector2(240f, 286f);
-			base.maxSize = new Vector2(10000f, 10000f);
+		}
+
+		public void Show(Action<AnimationCurve> onCurveChanged, CurveEditorSettings settings)
+		{
+			this.m_OnCurveChanged = onCurveChanged;
+			this.delegateView = null;
+			this.Init(settings);
+			base.ShowAuxWindow();
 		}
 
 		private CurveWrapper[] GetCurveWrapperArray()
@@ -479,7 +472,7 @@ namespace UnityEditor
 		private void OnGUI()
 		{
 			bool flag = Event.current.type == EventType.MouseUp;
-			if (this.delegateView == null)
+			if (this.delegateView == null && this.m_OnCurveChanged == null)
 			{
 				this.m_Curve = null;
 			}
@@ -512,7 +505,6 @@ namespace UnityEditor
 						this.m_Curve.postWrapMode = animationCurve.postWrapMode;
 						this.m_Curve.preWrapMode = animationCurve.preWrapMode;
 						this.m_CurveEditor.SelectNone();
-						this.RefreshShownCurves();
 						this.SendEvent("CurveChanged", true);
 					}
 					if (Event.current.type == EventType.Repaint)
@@ -603,6 +595,10 @@ namespace UnityEditor
 				{
 					GUIUtility.ExitGUI();
 				}
+			}
+			if (this.m_OnCurveChanged != null)
+			{
+				this.m_OnCurveChanged(CurveEditorWindow.curve);
 			}
 			GUI.changed = true;
 		}

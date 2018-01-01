@@ -6,6 +6,8 @@ namespace UnityEditor
 {
 	internal class SerializedMinMaxGradient
 	{
+		public SerializedProperty m_RootProperty;
+
 		public SerializedProperty m_MaxGradient;
 
 		public SerializedProperty m_MinGradient;
@@ -58,6 +60,7 @@ namespace UnityEditor
 
 		private void Init(SerializedModule m, string name)
 		{
+			this.m_RootProperty = m.GetProperty(name);
 			this.m_MaxGradient = m.GetProperty(name, "maxGradient");
 			this.m_MinGradient = m.GetProperty(name, "minGradient");
 			this.m_MaxColor = m.GetProperty(name, "maxColor");

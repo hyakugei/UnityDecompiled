@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEditor.IMGUI.Controls;
+using UnityEditor.Utils;
 using UnityEditorInternal;
 using UnityEngine;
 
@@ -156,6 +157,7 @@ namespace UnityEditor
 				EditorGUIUtility.SetIconSize(new Vector2(this.k_IconWidth, this.k_IconWidth));
 				GUIStyle lineStyle = TreeViewGUI.Styles.lineStyle;
 				lineStyle.padding.left = 0;
+				contentRect.height += 5f;
 				if (Event.current.type == EventType.Repaint)
 				{
 					lineStyle.Draw(contentRect, GUIContent.Temp(item.displayName, this.GetIconForItem(item)), false, false, selected, focused);
@@ -229,13 +231,13 @@ namespace UnityEditor
 					ExportPackageItem exportPackageItem = items[i];
 					if (!PackageImport.HasInvalidCharInFilePath(exportPackageItem.assetPath))
 					{
-						string fileName = Path.GetFileName(exportPackageItem.assetPath);
-						string directoryName = Path.GetDirectoryName(exportPackageItem.assetPath);
-						TreeViewItem treeViewItem = this.EnsureFolderPath(directoryName, dictionary, flag);
+						string displayName = Path.GetFileName(exportPackageItem.assetPath).ConvertSeparatorsToUnity();
+						string folderPath = Path.GetDirectoryName(exportPackageItem.assetPath).ConvertSeparatorsToUnity();
+						TreeViewItem treeViewItem = this.EnsureFolderPath(folderPath, dictionary, flag);
 						if (treeViewItem != null)
 						{
 							int hashCode = exportPackageItem.assetPath.GetHashCode();
-							PackageExportTreeView.PackageExportTreeViewItem packageExportTreeViewItem = new PackageExportTreeView.PackageExportTreeViewItem(exportPackageItem, hashCode, treeViewItem.depth + 1, treeViewItem, fileName);
+							PackageExportTreeView.PackageExportTreeViewItem packageExportTreeViewItem = new PackageExportTreeView.PackageExportTreeViewItem(exportPackageItem, hashCode, treeViewItem.depth + 1, treeViewItem, displayName);
 							treeViewItem.AddChild(packageExportTreeViewItem);
 							if (flag)
 							{

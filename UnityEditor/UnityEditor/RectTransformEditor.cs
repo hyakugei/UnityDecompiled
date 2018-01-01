@@ -16,15 +16,15 @@ namespace UnityEditor
 		{
 			public GUIStyle measuringLabelStyle = new GUIStyle("PreOverlayLabel");
 
-			public GUIContent anchorsContent = new GUIContent("Anchors");
+			public GUIContent anchorsContent = EditorGUIUtility.TrTextContent("Anchors", null, null);
 
-			public GUIContent anchorMinContent = new GUIContent("Min", "The normalized position in the parent rectangle that the lower left corner is anchored to.");
+			public GUIContent anchorMinContent = EditorGUIUtility.TrTextContent("Min", "The normalized position in the parent rectangle that the lower left corner is anchored to.", null);
 
-			public GUIContent anchorMaxContent = new GUIContent("Max", "The normalized position in the parent rectangle that the upper right corner is anchored to.");
+			public GUIContent anchorMaxContent = EditorGUIUtility.TrTextContent("Max", "The normalized position in the parent rectangle that the upper right corner is anchored to.", null);
 
-			public GUIContent pivotContent = new GUIContent("Pivot", "The pivot point specified in normalized values between 0 and 1. The pivot point is the origin of this rectangle. Rotation and scaling is around this point.");
+			public GUIContent pivotContent = EditorGUIUtility.TrTextContent("Pivot", "The pivot point specified in normalized values between 0 and 1. The pivot point is the origin of this rectangle. Rotation and scaling is around this point.", null);
 
-			public GUIContent transformScaleContent = new GUIContent("Scale", "The local scaling of this Game Object relative to the parent. This scales everything including image borders and text.");
+			public GUIContent transformScaleContent = EditorGUIUtility.TrTextContent("Scale", "The local scaling of this Game Object relative to the parent. This scales everything including image borders and text.", null);
 
 			public GUIContent rawEditContent;
 
@@ -186,7 +186,7 @@ namespace UnityEditor
 			{
 				this.m_RotationGUI = new TransformRotationGUI();
 			}
-			this.m_RotationGUI.OnEnable(base.serializedObject.FindProperty("m_LocalRotation"), new GUIContent("Rotation"));
+			this.m_RotationGUI.OnEnable(base.serializedObject.FindProperty("m_LocalRotation"), EditorGUIUtility.TrTextContent("Rotation", null, null));
 			this.m_ShowLayoutOptions = EditorPrefs.GetBool("RectTransformEditor.showAnchorProperties", false);
 			this.m_RawEditMode = EditorPrefs.GetBool("RectTransformEditor.lockRect", false);
 			this.m_ChangingAnchors.valueChanged.AddListener(new UnityAction(this.RepaintScene));
@@ -369,7 +369,7 @@ namespace UnityEditor
 			position.height = EditorGUIUtility.singleLineHeight;
 			SerializedProperty serializedProperty = property.Copy();
 			serializedProperty.NextVisible(true);
-			EditorGUI.MultiPropertyField(position, RectTransformEditor.s_XYZLabels, serializedProperty, 13f, disabledMask);
+			EditorGUI.MultiPropertyField(position, RectTransformEditor.s_XYZLabels, serializedProperty, EditorGUI.PropertyVisibility.OnlyVisible, 13f, disabledMask);
 			EditorGUI.EndProperty();
 		}
 
@@ -414,7 +414,7 @@ namespace UnityEditor
 				this.FloatFieldLabelAbove(rect, (RectTransform rectTransform) => rectTransform.anchoredPosition.x, delegate(RectTransform rectTransform, float val)
 				{
 					rectTransform.anchoredPosition = new Vector2(val, rectTransform.anchoredPosition.y);
-				}, DrivenTransformProperties.AnchoredPositionX, new GUIContent("Pos X"));
+				}, DrivenTransformProperties.AnchoredPositionX, EditorGUIUtility.TrTextContent("Pos X", null, null));
 				this.SetFadingBasedOnControlID(ref this.m_ChangingPosX, EditorGUIUtility.s_LastControlID);
 				EditorGUI.EndProperty();
 			}
@@ -425,7 +425,7 @@ namespace UnityEditor
 				this.FloatFieldLabelAbove(rect, (RectTransform rectTransform) => rectTransform.offsetMin.x, delegate(RectTransform rectTransform, float val)
 				{
 					rectTransform.offsetMin = new Vector2(val, rectTransform.offsetMin.y);
-				}, DrivenTransformProperties.None, new GUIContent("Left"));
+				}, DrivenTransformProperties.None, EditorGUIUtility.TrTextContent("Left", null, null));
 				this.SetFadingBasedOnControlID(ref this.m_ChangingLeft, EditorGUIUtility.s_LastControlID);
 				EditorGUI.EndProperty();
 				EditorGUI.EndProperty();
@@ -437,7 +437,7 @@ namespace UnityEditor
 				this.FloatFieldLabelAbove(rect, (RectTransform rectTransform) => rectTransform.anchoredPosition.y, delegate(RectTransform rectTransform, float val)
 				{
 					rectTransform.anchoredPosition = new Vector2(rectTransform.anchoredPosition.x, val);
-				}, DrivenTransformProperties.AnchoredPositionY, new GUIContent("Pos Y"));
+				}, DrivenTransformProperties.AnchoredPositionY, EditorGUIUtility.TrTextContent("Pos Y", null, null));
 				this.SetFadingBasedOnControlID(ref this.m_ChangingPosY, EditorGUIUtility.s_LastControlID);
 				EditorGUI.EndProperty();
 			}
@@ -448,7 +448,7 @@ namespace UnityEditor
 				this.FloatFieldLabelAbove(rect, (RectTransform rectTransform) => -rectTransform.offsetMax.y, delegate(RectTransform rectTransform, float val)
 				{
 					rectTransform.offsetMax = new Vector2(rectTransform.offsetMax.x, -val);
-				}, DrivenTransformProperties.None, new GUIContent("Top"));
+				}, DrivenTransformProperties.None, EditorGUIUtility.TrTextContent("Top", null, null));
 				this.SetFadingBasedOnControlID(ref this.m_ChangingTop, EditorGUIUtility.s_LastControlID);
 				EditorGUI.EndProperty();
 				EditorGUI.EndProperty();
@@ -458,7 +458,7 @@ namespace UnityEditor
 			this.FloatFieldLabelAbove(rect, (RectTransform rectTransform) => rectTransform.transform.localPosition.z, delegate(RectTransform rectTransform, float val)
 			{
 				rectTransform.transform.localPosition = new Vector3(rectTransform.transform.localPosition.x, rectTransform.transform.localPosition.y, val);
-			}, DrivenTransformProperties.AnchoredPositionZ, new GUIContent("Pos Z"));
+			}, DrivenTransformProperties.AnchoredPositionZ, EditorGUIUtility.TrTextContent("Pos Z", null, null));
 			EditorGUI.EndProperty();
 			controlRect.y += EditorGUIUtility.singleLineHeight * 2f;
 			rect = this.GetColumnRect(controlRect, 0);
@@ -468,7 +468,7 @@ namespace UnityEditor
 				this.FloatFieldLabelAbove(rect, (RectTransform rectTransform) => rectTransform.sizeDelta.x, delegate(RectTransform rectTransform, float val)
 				{
 					rectTransform.sizeDelta = new Vector2(val, rectTransform.sizeDelta.y);
-				}, DrivenTransformProperties.SizeDeltaX, (!flag) ? new GUIContent("Width") : new GUIContent("W Delta"));
+				}, DrivenTransformProperties.SizeDeltaX, (!flag) ? new GUIContent("Width") : EditorGUIUtility.TrTextContent("W Delta", null, null));
 				this.SetFadingBasedOnControlID(ref this.m_ChangingWidth, EditorGUIUtility.s_LastControlID);
 				EditorGUI.EndProperty();
 			}
@@ -479,7 +479,7 @@ namespace UnityEditor
 				this.FloatFieldLabelAbove(rect, (RectTransform rectTransform) => -rectTransform.offsetMax.x, delegate(RectTransform rectTransform, float val)
 				{
 					rectTransform.offsetMax = new Vector2(-val, rectTransform.offsetMax.y);
-				}, DrivenTransformProperties.None, new GUIContent("Right"));
+				}, DrivenTransformProperties.None, EditorGUIUtility.TrTextContent("Right", null, null));
 				this.SetFadingBasedOnControlID(ref this.m_ChangingRight, EditorGUIUtility.s_LastControlID);
 				EditorGUI.EndProperty();
 				EditorGUI.EndProperty();
@@ -491,7 +491,7 @@ namespace UnityEditor
 				this.FloatFieldLabelAbove(rect, (RectTransform rectTransform) => rectTransform.sizeDelta.y, delegate(RectTransform rectTransform, float val)
 				{
 					rectTransform.sizeDelta = new Vector2(rectTransform.sizeDelta.x, val);
-				}, DrivenTransformProperties.SizeDeltaY, (!flag2) ? new GUIContent("Height") : new GUIContent("H Delta"));
+				}, DrivenTransformProperties.SizeDeltaY, (!flag2) ? new GUIContent("Height") : EditorGUIUtility.TrTextContent("H Delta", null, null));
 				this.SetFadingBasedOnControlID(ref this.m_ChangingHeight, EditorGUIUtility.s_LastControlID);
 				EditorGUI.EndProperty();
 			}
@@ -502,7 +502,7 @@ namespace UnityEditor
 				this.FloatFieldLabelAbove(rect, (RectTransform rectTransform) => rectTransform.offsetMin.y, delegate(RectTransform rectTransform, float val)
 				{
 					rectTransform.offsetMin = new Vector2(rectTransform.offsetMin.x, val);
-				}, DrivenTransformProperties.None, new GUIContent("Bottom"));
+				}, DrivenTransformProperties.None, EditorGUIUtility.TrTextContent("Bottom", null, null));
 				this.SetFadingBasedOnControlID(ref this.m_ChangingBottom, EditorGUIUtility.s_LastControlID);
 				EditorGUI.EndProperty();
 				EditorGUI.EndProperty();
@@ -760,39 +760,42 @@ namespace UnityEditor
 							}
 							position = space.TransformPoint(position);
 							int controlID = GUIUtility.GetControlID(RectTransformEditor.s_ParentRectPreviewHandlesHash, FocusType.Passive);
-							Vector3 sideVector = (i != 1) ? (space.up * rect.height) : (space.right * rect.width);
+							Vector3 vector = (i != 1) ? (space.up * rect.height) : (space.right * rect.width);
 							Vector3 direction = (i != 1) ? space.right : space.up;
-							EditorGUI.BeginChangeCheck();
-							Vector3 position2 = RectHandles.SideSlider(controlID, position, sideVector, direction, size, null, 0f, -3f);
-							if (EditorGUI.EndChangeCheck())
+							if (!(vector == Vector3.zero))
 							{
-								Vector2 b = space.InverseTransformPoint(position);
-								Vector2 a = space.InverseTransformPoint(position2);
-								Rect rect2 = rect;
-								Vector2 vector = a - b;
-								if (i == 0)
+								EditorGUI.BeginChangeCheck();
+								Vector3 position2 = RectHandles.SideSlider(controlID, position, vector, direction, size, null, 0f, -3f);
+								if (EditorGUI.EndChangeCheck())
 								{
-									rect2.min = new Vector2(rect2.min.x + vector.x, rect2.min.y);
+									Vector2 b = space.InverseTransformPoint(position);
+									Vector2 a = space.InverseTransformPoint(position2);
+									Rect rect2 = rect;
+									Vector2 vector2 = a - b;
+									if (i == 0)
+									{
+										rect2.min = new Vector2(rect2.min.x + vector2.x, rect2.min.y);
+									}
+									if (i == 2)
+									{
+										rect2.max = new Vector2(rect2.max.x + vector2.x, rect2.max.y);
+									}
+									if (j == 0)
+									{
+										rect2.min = new Vector2(rect2.min.x, rect2.min.y + vector2.y);
+									}
+									if (j == 2)
+									{
+										rect2.max = new Vector2(rect2.max.x, rect2.max.y + vector2.y);
+									}
+									this.SetTemporaryRect(gui, rect2, controlID);
 								}
-								if (i == 2)
+								if (GUIUtility.hotControl == controlID)
 								{
-									rect2.max = new Vector2(rect2.max.x + vector.x, rect2.max.y);
+									Handles.BeginGUI();
+									EditorGUI.DropShadowLabel(new Rect(Event.current.mousePosition.x, Event.current.mousePosition.y, 60f, 16f), "Preview");
+									Handles.EndGUI();
 								}
-								if (j == 0)
-								{
-									rect2.min = new Vector2(rect2.min.x, rect2.min.y + vector.y);
-								}
-								if (j == 2)
-								{
-									rect2.max = new Vector2(rect2.max.x, rect2.max.y + vector.y);
-								}
-								this.SetTemporaryRect(gui, rect2, controlID);
-							}
-							if (GUIUtility.hotControl == controlID)
-							{
-								Handles.BeginGUI();
-								EditorGUI.DropShadowLabel(new Rect(Event.current.mousePosition.x, Event.current.mousePosition.y, 60f, 16f), "Preview");
-								Handles.EndGUI();
 							}
 						}
 					}

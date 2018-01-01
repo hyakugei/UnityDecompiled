@@ -20,6 +20,10 @@ namespace UnityEngine
 			get;
 		}
 
+		private ProceduralTexture()
+		{
+		}
+
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern ProceduralOutputType GetProceduralOutputType();

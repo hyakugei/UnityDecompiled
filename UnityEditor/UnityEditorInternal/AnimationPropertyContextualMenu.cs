@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
@@ -10,21 +11,21 @@ namespace UnityEditorInternal
 
 		private IAnimationContextualResponder m_Responder;
 
-		private static GUIContent addKeyContent = EditorGUIUtility.TextContent("Add Key");
+		private static GUIContent addKeyContent = EditorGUIUtility.TrTextContent("Add Key", null, null);
 
-		private static GUIContent updateKeyContent = EditorGUIUtility.TextContent("Update Key");
+		private static GUIContent updateKeyContent = EditorGUIUtility.TrTextContent("Update Key", null, null);
 
-		private static GUIContent removeKeyContent = EditorGUIUtility.TextContent("Remove Key");
+		private static GUIContent removeKeyContent = EditorGUIUtility.TrTextContent("Remove Key", null, null);
 
-		private static GUIContent removeCurveContent = EditorGUIUtility.TextContent("Remove All Keys");
+		private static GUIContent removeCurveContent = EditorGUIUtility.TrTextContent("Remove All Keys", null, null);
 
-		private static GUIContent goToPreviousKeyContent = EditorGUIUtility.TextContent("Go to Previous Key");
+		private static GUIContent goToPreviousKeyContent = EditorGUIUtility.TrTextContent("Go to Previous Key", null, null);
 
-		private static GUIContent goToNextKeyContent = EditorGUIUtility.TextContent("Go to Next Key");
+		private static GUIContent goToNextKeyContent = EditorGUIUtility.TrTextContent("Go to Next Key", null, null);
 
-		private static GUIContent addCandidatesContent = EditorGUIUtility.TextContent("Key All Modified");
+		private static GUIContent addCandidatesContent = EditorGUIUtility.TrTextContent("Key All Modified", null, null);
 
-		private static GUIContent addAnimatedContent = EditorGUIUtility.TextContent("Key All Animated");
+		private static GUIContent addAnimatedContent = EditorGUIUtility.TrTextContent("Key All Animated", null, null);
 
 		public AnimationPropertyContextualMenu()
 		{
@@ -63,20 +64,28 @@ namespace UnityEditorInternal
 			}
 		}
 
-		private void OnPropertyContextMenu(GenericMenu menu, MaterialProperty property, Renderer targetObject)
+		private void OnPropertyContextMenu(GenericMenu menu, MaterialProperty property, Renderer[] renderers)
 		{
 			if (this.m_Responder != null)
 			{
 				if (property.targets != null && property.targets.Length != 0)
 				{
-					PropertyModification[] modifications = MaterialAnimationUtility.MaterialPropertyToPropertyModifications(property, targetObject);
-					if (this.m_Responder.IsEditable(targetObject))
+					if (renderers != null && renderers.Length != 0)
 					{
-						this.OnPropertyContextMenu(menu, modifications);
-					}
-					else
-					{
-						this.OnDisabledPropertyContextMenu(menu);
+						List<PropertyModification> list = new List<PropertyModification>();
+						for (int i = 0; i < renderers.Length; i++)
+						{
+							Renderer target = renderers[i];
+							list.AddRange(MaterialAnimationUtility.MaterialPropertyToPropertyModifications(property, target));
+						}
+						if (this.m_Responder.IsEditable(renderers[0]))
+						{
+							this.OnPropertyContextMenu(menu, list.ToArray());
+						}
+						else
+						{
+							this.OnDisabledPropertyContextMenu(menu);
+						}
 					}
 				}
 			}

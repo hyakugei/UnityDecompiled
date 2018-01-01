@@ -2,11 +2,10 @@ using System;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
-using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
-	internal sealed class UnityLogWriter : TextWriter
+	internal class UnityLogWriter : TextWriter
 	{
 		public override Encoding Encoding
 		{
@@ -16,9 +15,17 @@ namespace UnityEngine
 			}
 		}
 
-		[GeneratedByOldBindingsGenerator, ThreadAndSerializationSafe]
+		[ThreadAndSerializationSafe]
+		public static void WriteStringToUnityLog(string s)
+		{
+			if (s != null)
+			{
+				UnityLogWriter.WriteStringToUnityLogImpl(s);
+			}
+		}
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern void WriteStringToUnityLog(string s);
+		private static extern void WriteStringToUnityLogImpl(string s);
 
 		public static void Init()
 		{
@@ -33,6 +40,11 @@ namespace UnityEngine
 		public override void Write(string s)
 		{
 			UnityLogWriter.WriteStringToUnityLog(s);
+		}
+
+		public override void Write(char[] buffer, int index, int count)
+		{
+			UnityLogWriter.WriteStringToUnityLogImpl(new string(buffer, index, count));
 		}
 	}
 }

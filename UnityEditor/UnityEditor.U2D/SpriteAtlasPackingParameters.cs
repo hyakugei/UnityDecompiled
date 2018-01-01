@@ -8,7 +8,7 @@ namespace UnityEditor.U2D
 	{
 		internal uint m_BlockOffset;
 
-		internal uint m_PaddingPower;
+		internal uint m_Padding;
 
 		internal int m_AllowAlphaSplitting;
 
@@ -28,15 +28,15 @@ namespace UnityEditor.U2D
 			}
 		}
 
-		public uint paddingPower
+		public uint padding
 		{
 			get
 			{
-				return this.m_PaddingPower;
+				return this.m_Padding;
 			}
 			set
 			{
-				this.m_PaddingPower = value;
+				this.m_Padding = value;
 			}
 		}
 

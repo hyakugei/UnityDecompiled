@@ -17,6 +17,8 @@ namespace UnityEditor.Web
 
 		private const string kServiceDisplayName = "Analytics";
 
+		private const string kServicePackageName = "com.unity.analytics";
+
 		private const string kServiceUrl = "https://public-cdn.cloud.unity3d.com/editor/production/cloud/analytics";
 
 		static AnalyticsAccess()
@@ -35,6 +37,11 @@ namespace UnityEditor.Web
 			return "Analytics";
 		}
 
+		public override string GetPackageName()
+		{
+			return "com.unity.analytics";
+		}
+
 		public override bool IsServiceEnabled()
 		{
 			return AnalyticsSettings.enabled;
@@ -44,7 +51,7 @@ namespace UnityEditor.Web
 		{
 			if (AnalyticsSettings.enabled != enabled)
 			{
-				AnalyticsSettings.enabled = enabled;
+				AnalyticsSettings.SetEnabledServiceWindow(enabled);
 				EditorAnalytics.SendEventServiceInfo(new AnalyticsAccess.AnalyticsServiceState
 				{
 					analytics = enabled

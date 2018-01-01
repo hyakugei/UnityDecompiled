@@ -1,7 +1,6 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using UnityEngine.Scripting;
 
 namespace UnityEngine.Networking
 {
@@ -43,23 +42,21 @@ namespace UnityEngine.Networking
 		{
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern void InternalCreateRaw(byte[] data);
-
-		[GeneratedByOldBindingsGenerator, ThreadAndSerializationSafe]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void InternalDestroy();
+		private extern void Release();
 
 		~UploadHandler()
 		{
-			this.InternalDestroy();
+			this.Dispose();
 		}
 
 		public void Dispose()
 		{
-			this.InternalDestroy();
-			GC.SuppressFinalize(this);
+			if (this.m_Ptr != IntPtr.Zero)
+			{
+				this.Release();
+				this.m_Ptr = IntPtr.Zero;
+			}
 		}
 
 		internal virtual byte[] GetData()

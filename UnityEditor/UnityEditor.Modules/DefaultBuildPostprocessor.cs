@@ -14,17 +14,20 @@ namespace UnityEditor.Modules
 		{
 		}
 
+		public virtual void PostProcess(BuildPostProcessArgs args, out BuildProperties outProperties)
+		{
+			this.PostProcess(args);
+			outProperties = ScriptableObject.CreateInstance<DefaultBuildProperties>();
+		}
+
 		public virtual bool SupportsInstallInBuildFolder()
 		{
 			return false;
 		}
 
-		public virtual void PostProcessScriptsOnly(BuildPostProcessArgs args)
+		public virtual bool SupportsLz4Compression()
 		{
-			if (!this.SupportsScriptsOnlyBuild())
-			{
-				throw new NotSupportedException();
-			}
+			return false;
 		}
 
 		public virtual bool SupportsScriptsOnlyBuild()
@@ -39,6 +42,18 @@ namespace UnityEditor.Modules
 
 		public virtual void UpdateBootConfig(BuildTarget target, BootConfigData config, BuildOptions options)
 		{
+			config.Set("wait-for-native-debugger", "0");
+			if (config.Get("player-connection-debug") == "1")
+			{
+				if (EditorUserBuildSettings.GetPlatformSettings(BuildPipeline.GetBuildTargetName(target), "WaitForManagedDebugger") == "true")
+				{
+					config.Set("wait-for-managed-debugger", "1");
+				}
+				else
+				{
+					config.Set("wait-for-managed-debugger", "0");
+				}
+			}
 		}
 
 		public virtual string GetExtension(BuildTarget target, BuildOptions options)

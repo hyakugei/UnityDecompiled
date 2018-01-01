@@ -2,11 +2,11 @@ using System;
 
 namespace UnityEngine.Experimental.UIElements
 {
-	public class ScrollView : VisualContainer
+	public class ScrollView : VisualElement
 	{
 		public static readonly Vector2 kDefaultScrollerValues = new Vector2(0f, 100f);
 
-		private Vector2 m_ScrollOffset;
+		private VisualElement m_ContentContainer;
 
 		public Vector2 horizontalScrollerValues
 		{
@@ -36,7 +36,7 @@ namespace UnityEngine.Experimental.UIElements
 		{
 			get
 			{
-				return this.showHorizontal || this.contentView.position.width - base.position.width > 0f;
+				return this.showHorizontal || this.contentContainer.layout.width - base.layout.width > 0f;
 			}
 		}
 
@@ -44,7 +44,7 @@ namespace UnityEngine.Experimental.UIElements
 		{
 			get
 			{
-				return this.showVertical || this.contentView.position.height - base.position.height > 0f;
+				return this.showVertical || this.contentContainer.layout.height - base.layout.height > 0f;
 			}
 		}
 
@@ -52,25 +52,48 @@ namespace UnityEngine.Experimental.UIElements
 		{
 			get
 			{
-				return this.m_ScrollOffset;
+				return new Vector2(this.horizontalScroller.value, this.verticalScroller.value);
 			}
 			set
 			{
-				this.m_ScrollOffset = value;
-				this.UpdateContentViewTransform();
+				if (value != this.scrollOffset)
+				{
+					this.horizontalScroller.value = value.x;
+					this.verticalScroller.value = value.y;
+					this.UpdateContentViewTransform();
+				}
 			}
 		}
 
-		public VisualContainer contentView
+		private float scrollableWidth
+		{
+			get
+			{
+				return this.contentContainer.layout.width - this.contentViewport.layout.width;
+			}
+		}
+
+		private float scrollableHeight
+		{
+			get
+			{
+				return this.contentContainer.layout.height - this.contentViewport.layout.height;
+			}
+		}
+
+		public VisualElement contentViewport
 		{
 			get;
 			private set;
 		}
 
-		public VisualContainer contentViewport
+		[Obsolete("Please use contentContainer instead", false)]
+		public VisualElement contentView
 		{
-			get;
-			private set;
+			get
+			{
+				return this.contentContainer;
+			}
 		}
 
 		public Scroller horizontalScroller
@@ -85,6 +108,14 @@ namespace UnityEngine.Experimental.UIElements
 			private set;
 		}
 
+		public override VisualElement contentContainer
+		{
+			get
+			{
+				return this.m_ContentContainer;
+			}
+		}
+
 		public ScrollView() : this(ScrollView.kDefaultScrollerValues, ScrollView.kDefaultScrollerValues)
 		{
 		}
@@ -93,95 +124,164 @@ namespace UnityEngine.Experimental.UIElements
 		{
 			this.horizontalScrollerValues = horizontalScrollerValues;
 			this.verticalScrollerValues = verticalScrollerValues;
-			this.contentView = new VisualContainer
-			{
-				name = "ContentView"
-			};
-			this.contentViewport = new VisualContainer
+			this.contentViewport = new VisualElement
 			{
 				name = "ContentViewport"
 			};
-			this.contentViewport.clipChildren = true;
-			this.contentViewport.AddChild(this.contentView);
-			base.AddChild(this.contentViewport);
+			this.contentViewport.clippingOptions = VisualElement.ClippingOptions.ClipContents;
+			base.shadow.Add(this.contentViewport);
+			this.m_ContentContainer = new VisualElement
+			{
+				name = "ContentView"
+			};
+			this.contentViewport.Add(this.m_ContentContainer);
 			this.horizontalScroller = new Scroller(horizontalScrollerValues.x, horizontalScrollerValues.y, delegate(float value)
 			{
 				this.scrollOffset = new Vector2(value, this.scrollOffset.y);
 			}, Slider.Direction.Horizontal)
 			{
-				name = "HorizontalScroller"
+				name = "HorizontalScroller",
+				persistenceKey = "HorizontalScroller"
 			};
-			base.AddChild(this.horizontalScroller);
+			base.shadow.Add(this.horizontalScroller);
 			this.verticalScroller = new Scroller(verticalScrollerValues.x, verticalScrollerValues.y, delegate(float value)
 			{
 				this.scrollOffset = new Vector2(this.scrollOffset.x, value);
 			}, Slider.Direction.Vertical)
 			{
-				name = "VerticalScroller"
+				name = "VerticalScroller",
+				persistenceKey = "VerticalScroller"
 			};
-			base.AddChild(this.verticalScroller);
+			base.shadow.Add(this.verticalScroller);
+			base.RegisterCallback<WheelEvent>(new EventCallback<WheelEvent>(this.OnScrollWheel), Capture.NoCapture);
 		}
 
 		private void UpdateContentViewTransform()
 		{
-			Vector2 scrollOffset = this.m_ScrollOffset;
-			scrollOffset.x -= this.horizontalScroller.lowValue;
-			scrollOffset.x /= this.horizontalScroller.highValue - this.horizontalScroller.lowValue;
-			scrollOffset.y -= this.verticalScroller.lowValue;
-			scrollOffset.y /= this.verticalScroller.highValue - this.verticalScroller.lowValue;
-			float num = this.contentView.position.width - this.contentViewport.position.width;
-			float num2 = this.contentView.position.height - this.contentViewport.position.height;
-			Matrix4x4 transform = this.contentView.transform;
-			transform.m03 = -(scrollOffset.x * num);
-			transform.m13 = -(scrollOffset.y * num2);
-			this.contentView.transform = transform;
+			Vector3 position = this.contentContainer.transform.position;
+			Vector2 scrollOffset = this.scrollOffset;
+			position.x = -scrollOffset.x;
+			position.y = -scrollOffset.y;
+			this.contentContainer.transform.position = position;
 			base.Dirty(ChangeType.Repaint);
 		}
 
-		protected internal override void OnPostLayout(bool hasNewLayout)
+		public void ScrollTo(VisualElement child)
 		{
-			if (hasNewLayout)
+			if (!this.contentContainer.Contains(child))
 			{
-				if (this.contentView.position.width > Mathf.Epsilon)
+				throw new ArgumentException("Cannot scroll to null child");
+			}
+			float num = this.contentContainer.layout.height - this.contentViewport.layout.height;
+			float num2 = this.contentContainer.transform.position.y * -1f;
+			float num3 = this.contentViewport.layout.yMin + num2;
+			float num4 = this.contentViewport.layout.yMax + num2;
+			float yMin = child.layout.yMin;
+			float yMax = child.layout.yMax;
+			if (yMin < num3 || yMax > num4)
+			{
+				bool flag = false;
+				float num5 = yMax - num4;
+				if (num5 < -1f)
 				{
-					this.horizontalScroller.Adjust(this.contentViewport.position.width / this.contentView.position.width);
+					num5 = num3 - yMin;
+					flag = true;
 				}
-				if (this.contentView.position.height > Mathf.Epsilon)
-				{
-					this.verticalScroller.Adjust(this.contentViewport.position.height / this.contentView.position.height);
-				}
-				this.horizontalScroller.enabled = (this.contentView.position.width - base.position.width > 0f);
-				this.verticalScroller.enabled = (this.contentView.position.height - base.position.height > 0f);
-				this.horizontalScroller.visible = this.needsHorizontal;
-				this.verticalScroller.visible = this.needsVertical;
+				float num6 = num5 * this.verticalScroller.highValue / num;
+				this.scrollOffset.Set(this.scrollOffset.x, this.scrollOffset.y + ((!flag) ? num6 : (-num6)));
+				this.verticalScroller.value = this.scrollOffset.y;
 				this.UpdateContentViewTransform();
 			}
 		}
 
-		public override EventPropagation HandleEvent(Event evt, VisualElement finalTarget)
+		protected internal override void ExecuteDefaultAction(EventBase evt)
 		{
-			EventType type = evt.type;
-			EventPropagation result;
-			if (type != EventType.ScrollWheel)
+			base.ExecuteDefaultAction(evt);
+			if (evt.GetEventTypeId() == EventBase<PostLayoutEvent>.TypeId())
 			{
-				result = EventPropagation.Continue;
+				PostLayoutEvent postLayoutEvent = (PostLayoutEvent)evt;
+				this.OnPostLayout(postLayoutEvent.hasNewLayout);
 			}
-			else
+		}
+
+		private void OnPostLayout(bool hasNewLayout)
+		{
+			if (hasNewLayout)
 			{
-				if (this.contentView.position.height - base.position.height > 0f)
+				if (this.contentContainer.layout.width > Mathf.Epsilon)
 				{
-					if (evt.delta.y < 0f)
+					this.horizontalScroller.Adjust(this.contentViewport.layout.width / this.contentContainer.layout.width);
+				}
+				if (this.contentContainer.layout.height > Mathf.Epsilon)
+				{
+					this.verticalScroller.Adjust(this.contentViewport.layout.height / this.contentContainer.layout.height);
+				}
+				this.horizontalScroller.SetEnabled(this.contentContainer.layout.width - base.layout.width > 0f);
+				this.verticalScroller.SetEnabled(this.contentContainer.layout.height - base.layout.height > 0f);
+				this.contentViewport.style.positionRight = ((!this.needsVertical) ? 0f : this.verticalScroller.layout.width);
+				this.horizontalScroller.style.positionRight = ((!this.needsVertical) ? 0f : this.verticalScroller.layout.width);
+				this.contentViewport.style.positionBottom = ((!this.needsHorizontal) ? 0f : this.horizontalScroller.layout.height);
+				this.verticalScroller.style.positionBottom = ((!this.needsHorizontal) ? 0f : this.horizontalScroller.layout.height);
+				if (this.needsHorizontal)
+				{
+					this.horizontalScroller.lowValue = 0f;
+					this.horizontalScroller.highValue = this.scrollableWidth;
+				}
+				else
+				{
+					this.horizontalScroller.value = 0f;
+				}
+				if (this.needsVertical)
+				{
+					this.verticalScroller.lowValue = 0f;
+					this.verticalScroller.highValue = this.scrollableHeight;
+				}
+				else
+				{
+					this.verticalScroller.value = 0f;
+				}
+				if (this.horizontalScroller.visible != this.needsHorizontal)
+				{
+					this.horizontalScroller.visible = this.needsHorizontal;
+					if (this.needsHorizontal)
 					{
-						this.verticalScroller.ScrollPageUp();
+						this.contentViewport.AddToClassList("HorizontalScroll");
 					}
-					else if (evt.delta.y > 0f)
+					else
 					{
-						this.verticalScroller.ScrollPageDown();
+						this.contentViewport.RemoveFromClassList("HorizontalScroll");
 					}
 				}
-				result = EventPropagation.Stop;
+				if (this.verticalScroller.visible != this.needsVertical)
+				{
+					this.verticalScroller.visible = this.needsVertical;
+					if (this.needsVertical)
+					{
+						this.contentViewport.AddToClassList("VerticalScroll");
+					}
+					else
+					{
+						this.contentViewport.RemoveFromClassList("VerticalScroll");
+					}
+				}
+				this.UpdateContentViewTransform();
 			}
-			return result;
+		}
+
+		private void OnScrollWheel(WheelEvent evt)
+		{
+			if (this.contentContainer.layout.height - base.layout.height > 0f)
+			{
+				if (evt.delta.y < 0f)
+				{
+					this.verticalScroller.ScrollPageUp();
+				}
+				else if (evt.delta.y > 0f)
+				{
+					this.verticalScroller.ScrollPageDown();
+				}
+			}
+			evt.StopPropagation();
 		}
 	}
 }

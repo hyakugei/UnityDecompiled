@@ -83,6 +83,20 @@ namespace UnityEditor
 			get;
 		}
 
+		internal static extern long trianglesLong
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+		}
+
+		internal static extern long verticesLong
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+		}
+
 		public static extern int shadowCasters
 		{
 			[GeneratedByOldBindingsGenerator]

@@ -133,17 +133,33 @@ namespace UnityEngine
 			set;
 		}
 
-		public CustomRenderTexture(int width, int height, RenderTextureFormat format, RenderTextureReadWrite readWrite) : base(width, height, 0, format, readWrite)
+		public CustomRenderTexture(int width, int height, RenderTextureFormat format, RenderTextureReadWrite readWrite)
 		{
+			CustomRenderTexture.Internal_CreateCustomRenderTexture(this, readWrite);
+			this.width = width;
+			this.height = height;
+			base.format = format;
 		}
 
-		public CustomRenderTexture(int width, int height, RenderTextureFormat format) : base(width, height, 0, format)
+		public CustomRenderTexture(int width, int height, RenderTextureFormat format)
 		{
+			CustomRenderTexture.Internal_CreateCustomRenderTexture(this, RenderTextureReadWrite.Default);
+			this.width = width;
+			this.height = height;
+			base.format = format;
 		}
 
-		public CustomRenderTexture(int width, int height) : base(width, height, 0)
+		public CustomRenderTexture(int width, int height)
 		{
+			CustomRenderTexture.Internal_CreateCustomRenderTexture(this, RenderTextureReadWrite.Default);
+			this.width = width;
+			this.height = height;
+			base.format = RenderTextureFormat.Default;
 		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void Internal_CreateCustomRenderTexture([Writable] CustomRenderTexture rt, RenderTextureReadWrite readWrite);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]

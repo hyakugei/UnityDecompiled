@@ -18,7 +18,7 @@ namespace UnityEditor.IMGUI.Controls
 
 		void StartDrag(TreeViewItem draggedItem, List<int> draggedItemIDs);
 
-		bool DragElement(TreeViewItem targetItem, Rect targetItemRect, bool firstItem);
+		bool DragElement(TreeViewItem targetItem, Rect targetItemRect, int row);
 
 		void DragCleanup(bool revertExpanded);
 

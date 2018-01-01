@@ -8,29 +8,29 @@ namespace UnityEngine
 	[StructLayout(LayoutKind.Sequential)]
 	public sealed class DetailPrototype
 	{
-		private GameObject m_Prototype = null;
+		internal GameObject m_Prototype = null;
 
-		private Texture2D m_PrototypeTexture = null;
+		internal Texture2D m_PrototypeTexture = null;
 
-		private Color m_HealthyColor = new Color(0.2627451f, 0.9764706f, 0.164705887f, 1f);
+		internal Color m_HealthyColor = new Color(0.2627451f, 0.9764706f, 0.164705887f, 1f);
 
-		private Color m_DryColor = new Color(0.8039216f, 0.7372549f, 0.101960786f, 1f);
+		internal Color m_DryColor = new Color(0.8039216f, 0.7372549f, 0.101960786f, 1f);
 
-		private float m_MinWidth = 1f;
+		internal float m_MinWidth = 1f;
 
-		private float m_MaxWidth = 2f;
+		internal float m_MaxWidth = 2f;
 
-		private float m_MinHeight = 1f;
+		internal float m_MinHeight = 1f;
 
-		private float m_MaxHeight = 2f;
+		internal float m_MaxHeight = 2f;
 
-		private float m_NoiseSpread = 0.1f;
+		internal float m_NoiseSpread = 0.1f;
 
-		private float m_BendFactor = 0.1f;
+		internal float m_BendFactor = 0.1f;
 
-		private int m_RenderMode = 2;
+		internal int m_RenderMode = 2;
 
-		private int m_UsePrototypeMesh = 0;
+		internal int m_UsePrototypeMesh = 0;
 
 		public GameObject prototype
 		{

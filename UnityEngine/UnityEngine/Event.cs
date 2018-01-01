@@ -1,6 +1,7 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using UnityEngine.Bindings;
 using UnityEngine.Scripting;
 
 namespace UnityEngine
@@ -160,11 +161,11 @@ namespace UnityEngine
 			{
 				if (!value)
 				{
-					this.modifiers &= ~EventModifiers.Shift;
+					this.modifiers &= ~EventModifiers.Numeric;
 				}
 				else
 				{
-					this.modifiers |= EventModifiers.Shift;
+					this.modifiers |= EventModifiers.Numeric;
 				}
 			}
 		}
@@ -229,7 +230,7 @@ namespace UnityEngine
 			get
 			{
 				EventType type = this.type;
-				return type == EventType.ScrollWheel || type == EventType.ScrollWheel;
+				return type == EventType.ScrollWheel;
 			}
 		}
 
@@ -785,7 +786,10 @@ namespace UnityEngine
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern void InitPtr(IntPtr ptr);
 
-		[GeneratedByOldBindingsGenerator, ThreadAndSerializationSafe]
+		[VisibleToOtherModules(new string[]
+		{
+			"UnityEngine.UIElementsModule"
+		}), GeneratedByOldBindingsGenerator, ThreadAndSerializationSafe]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern void CopyFromPtr(IntPtr ptr);
 

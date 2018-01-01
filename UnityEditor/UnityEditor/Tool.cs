@@ -9,6 +9,7 @@ namespace UnityEditor
 		Rotate,
 		Scale,
 		Rect,
+		Transform,
 		None = -1
 	}
 }

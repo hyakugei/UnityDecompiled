@@ -117,6 +117,12 @@ namespace UnityEditor.IMGUI.Controls
 			set;
 		}
 
+		public Action<TreeViewItem, Rect> labelOverlayGUI
+		{
+			get;
+			set;
+		}
+
 		public float indentWidth
 		{
 			get
@@ -401,6 +407,10 @@ namespace UnityEditor.IMGUI.Controls
 					rect.xMin += this.k_IconWidth + this.iconTotalPadding + this.k_SpaceBetweenIconAndText;
 				}
 				gUIStyle.Draw(rect, label, false, false, selected, focused);
+				if (this.labelOverlayGUI != null)
+				{
+					this.labelOverlayGUI(item, rect);
+				}
 			}
 		}
 

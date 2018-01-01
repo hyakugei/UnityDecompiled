@@ -16,6 +16,7 @@ namespace UnityEditorInternal
 		NetworkOperations,
 		UI,
 		UIDetails,
+		GlobalIllumination,
 		AreaCount
 	}
 }

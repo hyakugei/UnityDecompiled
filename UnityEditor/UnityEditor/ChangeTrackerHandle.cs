@@ -16,19 +16,14 @@ namespace UnityEditor
 			{
 				throw new ArgumentNullException("Not a valid unity engine object");
 			}
-			return ChangeTrackerHandle.Internal_AcquireTracker(obj);
+			return new ChangeTrackerHandle
+			{
+				m_Handle = ChangeTrackerHandle.Internal_AcquireTracker(obj)
+			};
 		}
 
-		private static ChangeTrackerHandle Internal_AcquireTracker(UnityEngine.Object o)
-		{
-			ChangeTrackerHandle result;
-			ChangeTrackerHandle.INTERNAL_CALL_Internal_AcquireTracker(o, out result);
-			return result;
-		}
-
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_Internal_AcquireTracker(UnityEngine.Object o, out ChangeTrackerHandle value);
+		private static extern IntPtr Internal_AcquireTracker(UnityEngine.Object o);
 
 		internal void ReleaseTracker()
 		{
@@ -36,18 +31,12 @@ namespace UnityEditor
 			{
 				throw new ArgumentNullException("Not a valid handle, has it been released already?");
 			}
-			ChangeTrackerHandle.Internal_ReleaseTracker(this);
+			ChangeTrackerHandle.Internal_ReleaseTracker(this.m_Handle);
 			this.m_Handle = IntPtr.Zero;
 		}
 
-		private static void Internal_ReleaseTracker(ChangeTrackerHandle h)
-		{
-			ChangeTrackerHandle.INTERNAL_CALL_Internal_ReleaseTracker(ref h);
-		}
-
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_Internal_ReleaseTracker(ref ChangeTrackerHandle h);
+		private static extern void Internal_ReleaseTracker(IntPtr handle);
 
 		internal bool PollForChanges()
 		{
@@ -55,11 +44,22 @@ namespace UnityEditor
 			{
 				throw new ArgumentNullException("Not a valid handle, has it been released already?");
 			}
-			return this.Internal_PollChanges();
+			return ChangeTrackerHandle.Internal_PollChanges(this.m_Handle);
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern bool Internal_PollChanges();
+		private static extern bool Internal_PollChanges(IntPtr handle);
+
+		internal void ForceDirtyNextPoll()
+		{
+			if (this.m_Handle == IntPtr.Zero)
+			{
+				throw new ArgumentNullException("Not a valid handle, has it been released already?");
+			}
+			ChangeTrackerHandle.Internal_ForceUpdate(this.m_Handle);
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void Internal_ForceUpdate(IntPtr handle);
 	}
 }

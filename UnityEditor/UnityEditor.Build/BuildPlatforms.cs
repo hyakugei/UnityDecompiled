@@ -24,14 +24,12 @@ namespace UnityEditor.Build
 			list.Add(new BuildPlatform("iOS", "BuildSettings.iPhone", BuildTargetGroup.iPhone, true));
 			list.Add(new BuildPlatform("tvOS", "BuildSettings.tvOS", BuildTargetGroup.tvOS, true));
 			list.Add(new BuildPlatform("Android", "BuildSettings.Android", BuildTargetGroup.Android, true));
-			list.Add(new BuildPlatform("Tizen", "BuildSettings.Tizen", BuildTargetGroup.Tizen, true));
+			list.Add(new BuildPlatform("Tizen", "BuildSettings.Tizen", BuildTargetGroup.Tizen, false));
 			list.Add(new BuildPlatform("Xbox One", "BuildSettings.XboxOne", BuildTargetGroup.XboxOne, true));
 			list.Add(new BuildPlatform("PS Vita", "BuildSettings.PSP2", BuildTargetGroup.PSP2, true));
 			list.Add(new BuildPlatform("PS4", "BuildSettings.PS4", BuildTargetGroup.PS4, true));
-			list.Add(new BuildPlatform("Wii U", "BuildSettings.WiiU", BuildTargetGroup.WiiU, false));
 			list.Add(new BuildPlatform("Universal Windows Platform", "BuildSettings.Metro", BuildTargetGroup.WSA, true));
 			list.Add(new BuildPlatform("WebGL", "BuildSettings.WebGL", BuildTargetGroup.WebGL, true));
-			list.Add(new BuildPlatform("Samsung TV", "BuildSettings.SamsungTV", BuildTargetGroup.SamsungTV, true));
 			list.Add(new BuildPlatform("Nintendo 3DS", "BuildSettings.N3DS", BuildTargetGroup.N3DS, false));
 			list.Add(new BuildPlatform("Facebook", "BuildSettings.Facebook", BuildTargetGroup.Facebook, true));
 			list.Add(new BuildPlatform("Nintendo Switch", "BuildSettings.Switch", BuildTargetGroup.Switch, false));
@@ -42,14 +40,14 @@ namespace UnityEditor.Build
 			this.buildPlatforms = list.ToArray();
 		}
 
-		public string GetBuildTargetDisplayName(BuildTarget target)
+		public string GetBuildTargetDisplayName(BuildTargetGroup group, BuildTarget target)
 		{
 			BuildPlatform[] array = this.buildPlatforms;
 			string result;
 			for (int i = 0; i < array.Length; i++)
 			{
 				BuildPlatform buildPlatform = array[i];
-				if (buildPlatform.defaultTarget == target)
+				if (buildPlatform.defaultTarget == target && buildPlatform.targetGroup == group)
 				{
 					result = buildPlatform.title.text;
 					return result;
@@ -57,42 +55,42 @@ namespace UnityEditor.Build
 			}
 			switch (target)
 			{
-			case BuildTarget.StandaloneOSXUniversal:
+			case BuildTarget.StandaloneOSX:
 			case BuildTarget.StandaloneOSXIntel:
-				goto IL_96;
+				goto IL_A2;
 			case (BuildTarget)3:
-				IL_58:
+				IL_64:
 				switch (target)
 				{
 				case BuildTarget.StandaloneLinux64:
 				case BuildTarget.StandaloneLinuxUniversal:
-					goto IL_A1;
+					goto IL_AD;
 				case BuildTarget.WP8Player:
-					IL_71:
+					IL_7D:
 					switch (target)
 					{
 					case BuildTarget.StandaloneLinux:
-						goto IL_A1;
+						goto IL_AD;
 					case BuildTarget.StandaloneWindows64:
-						goto IL_8B;
+						goto IL_97;
 					}
 					result = "Unsupported Target";
 					return result;
 				case BuildTarget.StandaloneOSXIntel64:
-					goto IL_96;
+					goto IL_A2;
 				}
-				goto IL_71;
-				IL_A1:
+				goto IL_7D;
+				IL_AD:
 				result = "Linux";
 				return result;
 			case BuildTarget.StandaloneWindows:
-				goto IL_8B;
+				goto IL_97;
 			}
-			goto IL_58;
-			IL_8B:
+			goto IL_64;
+			IL_97:
 			result = "Windows";
 			return result;
-			IL_96:
+			IL_A2:
 			result = "Mac OS X";
 			return result;
 		}
@@ -102,7 +100,7 @@ namespace UnityEditor.Build
 			string result;
 			if (buildTargetGroup != BuildTargetGroup.Facebook)
 			{
-				result = this.GetBuildTargetDisplayName(buildTarget);
+				result = this.GetBuildTargetDisplayName(buildTargetGroup, buildTarget);
 			}
 			else
 			{

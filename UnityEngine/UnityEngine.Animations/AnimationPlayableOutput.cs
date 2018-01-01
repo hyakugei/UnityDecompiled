@@ -72,22 +72,10 @@ namespace UnityEngine.Animations
 			AnimationPlayableOutput.InternalSetTarget(ref this.m_Handle, value);
 		}
 
-		private static Animator InternalGetTarget(ref PlayableOutputHandle handle)
-		{
-			return AnimationPlayableOutput.INTERNAL_CALL_InternalGetTarget(ref handle);
-		}
-
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern Animator INTERNAL_CALL_InternalGetTarget(ref PlayableOutputHandle handle);
+		private static extern Animator InternalGetTarget(ref PlayableOutputHandle handle);
 
-		private static void InternalSetTarget(ref PlayableOutputHandle handle, Animator target)
-		{
-			AnimationPlayableOutput.INTERNAL_CALL_InternalSetTarget(ref handle, target);
-		}
-
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_InternalSetTarget(ref PlayableOutputHandle handle, Animator target);
+		private static extern void InternalSetTarget(ref PlayableOutputHandle handle, Animator target);
 	}
 }

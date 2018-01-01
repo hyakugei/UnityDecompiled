@@ -15,21 +15,21 @@ namespace UnityEditor
 
 				public readonly GUIStyle sSeparator = "sv_iconselector_sep";
 
-				public readonly GUIContent sEnvironment = EditorGUIUtility.TextContent("Environment");
+				public readonly GUIContent sEnvironment = EditorGUIUtility.TrTextContent("Environment", null, null);
 
-				public readonly GUIContent sAngleOffset = EditorGUIUtility.TextContent("Angle offset|Rotate the environment");
+				public readonly GUIContent sAngleOffset = EditorGUIUtility.TrTextContent("Angle offset", "Rotate the environment", null);
 
-				public readonly GUIContent sResetEnv = EditorGUIUtility.TextContent("Reset Environment|Reset environment settings");
+				public readonly GUIContent sResetEnv = EditorGUIUtility.TrTextContent("Reset Environment", "Reset environment settings", null);
 
-				public readonly GUIContent sShadows = EditorGUIUtility.TextContent("Shadows");
+				public readonly GUIContent sShadows = EditorGUIUtility.TrTextContent("Shadows", null, null);
 
-				public readonly GUIContent sShadowIntensity = EditorGUIUtility.TextContent("Shadow brightness|Shadow brightness");
+				public readonly GUIContent sShadowIntensity = EditorGUIUtility.TrTextContent("Shadow brightness", "Shadow brightness", null);
 
-				public readonly GUIContent sShadowColor = EditorGUIUtility.TextContent("Color|Shadow color");
+				public readonly GUIContent sShadowColor = EditorGUIUtility.TrTextContent("Color", "Shadow color", null);
 
-				public readonly GUIContent sBrightest = EditorGUIUtility.TextContent("Set position to brightest point|Set the shadow direction to the brightest (higher value) point of the latLong map");
+				public readonly GUIContent sBrightest = EditorGUIUtility.TrTextContent("Set position to brightest point", "Set the shadow direction to the brightest (higher value) point of the latLong map", null);
 
-				public readonly GUIContent sResetShadow = EditorGUIUtility.TextContent("Reset Shadows|Reset shadow properties");
+				public readonly GUIContent sResetShadow = EditorGUIUtility.TrTextContent("Reset Shadows", "Reset shadow properties", null);
 			}
 
 			private static LookDevEnvironmentWindow.EnvSettingsWindow.Styles s_Styles = null;
@@ -127,7 +127,7 @@ namespace UnityEditor
 
 		public class Styles
 		{
-			public readonly GUIContent sTitle = EditorGUIUtility.TextContent("HDRI View|Manage your list of HDRI environments.");
+			public readonly GUIContent sTitle = EditorGUIUtility.TrTextContent("HDRI View", "Manage your list of HDRI environments.", null);
 
 			public readonly GUIContent sCloseIcon = new GUIContent(EditorGUIUtility.IconContent("LookDevClose"));
 
@@ -145,7 +145,7 @@ namespace UnityEditor
 
 			public readonly GUIContent sEnvControlIcon = new GUIContent(EditorGUIUtility.IconContent("LookDevPaneOption"));
 
-			public readonly GUIContent sDragAndDropHDRIText = EditorGUIUtility.TextContent("Drag and drop HDR panorama here.");
+			public readonly GUIContent sDragAndDropHDRIText = EditorGUIUtility.TrTextContent("Drag and drop HDR panorama here.", null, null);
 
 			public Styles()
 			{
@@ -345,9 +345,7 @@ namespace UnityEditor
 				LookDevResources.m_LookDevCubeToLatlong.SetVector("_WindowParams", new Vector4(this.m_displayRect.height, -1000f, 2f, 1f));
 				LookDevResources.m_LookDevCubeToLatlong.SetVector("_CubeToLatLongParams", new Vector4(0.0174532924f * this.m_SelectedCubemapInfo.angleOffset, 0.5f, 1f, 0f));
 				LookDevResources.m_LookDevCubeToLatlong.SetPass(0);
-				GL.sRGBWrite = (QualitySettings.activeColorSpace == ColorSpace.Linear);
 				LookDevView.DrawFullScreenQuad(new Rect(0f, 0f, 250f, 125f));
-				GL.sRGBWrite = false;
 				RenderTexture.active = active;
 				this.m_RenderOverlayThumbnailOnce = false;
 			}
@@ -358,9 +356,7 @@ namespace UnityEditor
 			GUIStyle gUIStyle = "dockarea";
 			LookDevResources.m_LookDevCubeToLatlong.SetVector("_WindowParams", new Vector4(this.m_displayRect.height, this.m_PositionInLookDev.y + 17f, (float)gUIStyle.margin.top, EditorGUIUtility.pixelsPerPoint));
 			LookDevResources.m_LookDevCubeToLatlong.SetVector("_CubeToLatLongParams", new Vector4(0.0174532924f * angleOffset, alpha, intensity, 0f));
-			GL.sRGBWrite = (QualitySettings.activeColorSpace == ColorSpace.Linear);
 			Graphics.DrawTexture(textureRect, infos.cubemap, LookDevResources.m_LookDevCubeToLatlong, 1);
-			GL.sRGBWrite = false;
 		}
 
 		private void DrawSelectionFeedback(Rect textureRect, Color selectionColor1, Color selectionColor2)
@@ -772,13 +768,9 @@ namespace UnityEditor
 									alpha = 0.5f;
 								}
 								this.DrawLatLongThumbnail(infos, cubemapInfo.angleOffset, 0.3f, alpha, textureRect);
-								GL.sRGBWrite = (QualitySettings.activeColorSpace == ColorSpace.Linear);
 								GUI.DrawTexture(rect2, LookDevEnvironmentWindow.styles.sLatlongFrameTexture);
-								GL.sRGBWrite = false;
 							}
-							GL.sRGBWrite = (QualitySettings.activeColorSpace == ColorSpace.Linear);
 							GUI.DrawTexture(position2, LookDevEnvironmentWindow.styles.sLightTexture);
-							GL.sRGBWrite = false;
 						}
 						if (flag2)
 						{

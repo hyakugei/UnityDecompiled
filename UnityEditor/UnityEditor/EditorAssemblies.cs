@@ -10,6 +10,8 @@ namespace UnityEditor
 {
 	internal static class EditorAssemblies
 	{
+		private const BindingFlags k_DefaultMethodBindingFlags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
+
 		internal static List<RuntimeInitializeClassInfo> m_RuntimeInitializeClassInfoList;
 
 		internal static int m_TotalNumRuntimeInitializeMethods;
@@ -28,24 +30,50 @@ namespace UnityEditor
 			}
 		}
 
+		internal static IEnumerable<MethodInfo> GetAllMethodsWithAttribute<T>(BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic) where T : Attribute
+		{
+			return EditorAssemblies.Internal_GetAllMethodsWithAttribute(typeof(T), bindingFlags).Cast<MethodInfo>();
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern object[] Internal_GetAllMethodsWithAttribute(Type attrType, BindingFlags staticness);
+
+		internal static IEnumerable<Type> GetAllTypesWithAttribute<T>() where T : Attribute
+		{
+			return EditorAssemblies.Internal_GetAllTypesWithAttribute(typeof(T));
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern Type[] Internal_GetAllTypesWithAttribute(Type attrType);
+
+		internal static IEnumerable<Type> GetAllTypesWithInterface<T>() where T : class
+		{
+			return EditorAssemblies.GetAllTypesWithInterface(typeof(T));
+		}
+
+		private static IEnumerable<Type> GetAllTypesWithInterface(Type interfaceType)
+		{
+			if (!interfaceType.IsInterface)
+			{
+				throw new ArgumentException(string.Format("Specified type {0} is not an interface.", interfaceType), "interfaceType");
+			}
+			return EditorAssemblies.Internal_GetAllTypesWithInterface(interfaceType);
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern Type[] Internal_GetAllTypesWithInterface(Type interfaceType);
+
 		internal static IEnumerable<Type> SubclassesOf(Type parent)
 		{
-			return from klass in EditorAssemblies.loadedTypes
+			return (!parent.IsInterface) ? (from klass in EditorAssemblies.loadedTypes
 			where klass.IsSubclassOf(parent)
-			select klass;
+			select klass) : EditorAssemblies.GetAllTypesWithInterface(parent);
 		}
 
 		[RequiredByNativeCode]
 		private static void SetLoadedEditorAssemblies(Assembly[] assemblies)
 		{
 			EditorAssemblies.loadedAssemblies = assemblies;
-		}
-
-		internal static void FindClassesThatImplementAnyInterface(List<Type> results, params Type[] interfaces)
-		{
-			results.AddRange(from x in EditorAssemblies.loadedTypes
-			where interfaces.Any((Type i) => i.IsAssignableFrom(x) && i != x)
-			select x);
 		}
 
 		[RequiredByNativeCode]
@@ -80,48 +108,6 @@ namespace UnityEditor
 			EditorAssemblies.m_TotalNumRuntimeInitializeMethods += methodNames.Count;
 		}
 
-		private static void ProcessStaticMethodAttributes(Type type)
-		{
-			List<string> list = null;
-			List<RuntimeInitializeLoadType> list2 = null;
-			MethodInfo[] methods = type.GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
-			for (int i = 0; i < methods.GetLength(0); i++)
-			{
-				MethodInfo methodInfo = methods[i];
-				if (Attribute.IsDefined(methodInfo, typeof(RuntimeInitializeOnLoadMethodAttribute)))
-				{
-					RuntimeInitializeLoadType item = RuntimeInitializeLoadType.AfterSceneLoad;
-					object[] customAttributes = methodInfo.GetCustomAttributes(typeof(RuntimeInitializeOnLoadMethodAttribute), false);
-					if (customAttributes != null && customAttributes.Length > 0)
-					{
-						item = ((RuntimeInitializeOnLoadMethodAttribute)customAttributes[0]).loadType;
-					}
-					if (list == null)
-					{
-						list = new List<string>();
-						list2 = new List<RuntimeInitializeLoadType>();
-					}
-					list.Add(methodInfo.Name);
-					list2.Add(item);
-				}
-				if (Attribute.IsDefined(methodInfo, typeof(InitializeOnLoadMethodAttribute)))
-				{
-					try
-					{
-						methodInfo.Invoke(null, null);
-					}
-					catch (TargetInvocationException ex)
-					{
-						Debug.LogError(ex.InnerException);
-					}
-				}
-			}
-			if (list != null)
-			{
-				EditorAssemblies.StoreRuntimeInitializeClassInfo(type, list, list2);
-			}
-		}
-
 		private static void ProcessEditorInitializeOnLoad(Type type)
 		{
 			try
@@ -134,59 +120,53 @@ namespace UnityEditor
 			}
 		}
 
+		private static void ProcessRuntimeInitializeOnLoad(MethodInfo method)
+		{
+			RuntimeInitializeLoadType item = RuntimeInitializeLoadType.AfterSceneLoad;
+			object[] customAttributes = method.GetCustomAttributes(typeof(RuntimeInitializeOnLoadMethodAttribute), false);
+			if (customAttributes != null && customAttributes.Length > 0)
+			{
+				item = ((RuntimeInitializeOnLoadMethodAttribute)customAttributes[0]).loadType;
+			}
+			EditorAssemblies.StoreRuntimeInitializeClassInfo(method.DeclaringType, new List<string>
+			{
+				method.Name
+			}, new List<RuntimeInitializeLoadType>
+			{
+				item
+			});
+		}
+
+		private static void ProcessInitializeOnLoadMethod(MethodInfo method)
+		{
+			try
+			{
+				method.Invoke(null, null);
+			}
+			catch (TargetInvocationException ex)
+			{
+				Debug.LogError(ex.InnerException);
+			}
+		}
+
 		[RequiredByNativeCode]
 		private static int[] ProcessInitializeOnLoadAttributes()
 		{
-			List<int> list = null;
-			Assembly[] loadedAssemblies = EditorAssemblies.loadedAssemblies;
 			EditorAssemblies.m_TotalNumRuntimeInitializeMethods = 0;
 			EditorAssemblies.m_RuntimeInitializeClassInfoList = new List<RuntimeInitializeClassInfo>();
-			for (int i = 0; i < loadedAssemblies.Length; i++)
+			foreach (Type current in EditorAssemblies.GetAllTypesWithAttribute<InitializeOnLoadAttribute>())
 			{
-				int totalNumRuntimeInitializeMethods = EditorAssemblies.m_TotalNumRuntimeInitializeMethods;
-				int count = EditorAssemblies.m_RuntimeInitializeClassInfoList.Count;
-				try
-				{
-					Type[] typesFromAssembly = AssemblyHelper.GetTypesFromAssembly(loadedAssemblies[i]);
-					Type[] array = typesFromAssembly;
-					for (int j = 0; j < array.Length; j++)
-					{
-						Type type = array[j];
-						if (type.IsDefined(typeof(InitializeOnLoadAttribute), false))
-						{
-							EditorAssemblies.ProcessEditorInitializeOnLoad(type);
-						}
-						EditorAssemblies.ProcessStaticMethodAttributes(type);
-					}
-				}
-				catch (Exception exception)
-				{
-					Debug.LogException(exception);
-					if (list == null)
-					{
-						list = new List<int>();
-					}
-					if (totalNumRuntimeInitializeMethods != EditorAssemblies.m_TotalNumRuntimeInitializeMethods)
-					{
-						EditorAssemblies.m_TotalNumRuntimeInitializeMethods = totalNumRuntimeInitializeMethods;
-					}
-					if (count != EditorAssemblies.m_RuntimeInitializeClassInfoList.Count)
-					{
-						EditorAssemblies.m_RuntimeInitializeClassInfoList.RemoveRange(count, EditorAssemblies.m_RuntimeInitializeClassInfoList.Count - count);
-					}
-					list.Add(i);
-				}
+				EditorAssemblies.ProcessEditorInitializeOnLoad(current);
 			}
-			int[] result;
-			if (list == null)
+			foreach (MethodInfo current2 in EditorAssemblies.GetAllMethodsWithAttribute<RuntimeInitializeOnLoadMethodAttribute>(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic))
 			{
-				result = null;
+				EditorAssemblies.ProcessRuntimeInitializeOnLoad(current2);
 			}
-			else
+			foreach (MethodInfo current3 in EditorAssemblies.GetAllMethodsWithAttribute<InitializeOnLoadMethodAttribute>(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic))
 			{
-				result = list.ToArray();
+				EditorAssemblies.ProcessInitializeOnLoadMethod(current3);
 			}
-			return result;
+			return null;
 		}
 	}
 }

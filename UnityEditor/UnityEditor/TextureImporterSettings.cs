@@ -1,11 +1,13 @@
 using System;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using UnityEngine;
 using UnityEngine.Scripting;
 
 namespace UnityEditor
 {
 	[Serializable]
+	[StructLayout(LayoutKind.Sequential)]
 	public sealed class TextureImporterSettings
 	{
 		[SerializeField]
@@ -47,6 +49,7 @@ namespace UnityEditor
 		[SerializeField]
 		private int m_IsReadable;
 
+		[SerializeField]
 		private int m_NPOTScale;
 
 		[SerializeField]
@@ -93,6 +96,9 @@ namespace UnityEditor
 
 		[SerializeField]
 		private int m_TextureShape;
+
+		[SerializeField]
+		private int m_SingleChannelComponent;
 
 		[SerializeField]
 		private int m_FilterMode;
@@ -340,6 +346,18 @@ namespace UnityEditor
 			set
 			{
 				this.m_AlphaSource = (int)value;
+			}
+		}
+
+		public TextureImporterSingleChannelComponent singleChannelComponent
+		{
+			get
+			{
+				return (TextureImporterSingleChannelComponent)this.m_SingleChannelComponent;
+			}
+			set
+			{
+				this.m_SingleChannelComponent = (int)value;
 			}
 		}
 

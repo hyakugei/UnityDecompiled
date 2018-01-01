@@ -11,61 +11,61 @@ namespace UnityEditor
 
 			public readonly GUIStyle sSeparator = "sv_iconselector_sep";
 
-			public readonly GUIContent sTitle = EditorGUIUtility.TextContent("Settings");
+			public readonly GUIContent sTitle = EditorGUIUtility.TrTextContent("Settings", null, null);
 
-			public readonly GUIContent sMultiView = EditorGUIUtility.TextContent("Multi-view");
+			public readonly GUIContent sMultiView = EditorGUIUtility.TrTextContent("Multi-view", null, null);
 
-			public readonly GUIContent sCamera = EditorGUIUtility.TextContent("Camera");
+			public readonly GUIContent sCamera = EditorGUIUtility.TrTextContent("Camera", null, null);
 
-			public readonly GUIContent sLighting = EditorGUIUtility.TextContent("Lighting");
+			public readonly GUIContent sLighting = EditorGUIUtility.TrTextContent("Lighting", null, null);
 
-			public readonly GUIContent sAnimation = EditorGUIUtility.TextContent("Animation");
+			public readonly GUIContent sAnimation = EditorGUIUtility.TrTextContent("Animation", null, null);
 
-			public readonly GUIContent sViewport = EditorGUIUtility.TextContent("Viewport");
+			public readonly GUIContent sViewport = EditorGUIUtility.TrTextContent("Viewport", null, null);
 
-			public readonly GUIContent sEnvLibrary = EditorGUIUtility.TextContent("Environment Library");
+			public readonly GUIContent sEnvLibrary = EditorGUIUtility.TrTextContent("Environment Library", null, null);
 
-			public readonly GUIContent sMisc = EditorGUIUtility.TextContent("Misc");
+			public readonly GUIContent sMisc = EditorGUIUtility.TrTextContent("Misc", null, null);
 
-			public readonly GUIContent sResetCamera = EditorGUIUtility.TextContent("Fit View        F");
+			public readonly GUIContent sResetCamera = EditorGUIUtility.TrTextContent("Fit View        F", null, null);
 
-			public readonly GUIContent sCreateNewLibrary = EditorGUIUtility.TextContent("Save as new library");
+			public readonly GUIContent sCreateNewLibrary = EditorGUIUtility.TrTextContent("Save as new library", null, null);
 
-			public readonly GUIContent sSaveCurrentLibrary = EditorGUIUtility.TextContent("Save current library");
+			public readonly GUIContent sSaveCurrentLibrary = EditorGUIUtility.TrTextContent("Save current library", null, null);
 
-			public readonly GUIContent sResetView = EditorGUIUtility.TextContent("Reset View");
+			public readonly GUIContent sResetView = EditorGUIUtility.TrTextContent("Reset View", null, null);
 
-			public readonly GUIContent sEnableToneMap = EditorGUIUtility.TextContent("Enable Tone Mapping");
+			public readonly GUIContent sEnableToneMap = EditorGUIUtility.TrTextContent("Enable Tone Mapping", null, null);
 
-			public readonly GUIContent sEnableAutoExp = EditorGUIUtility.TextContent("Enable Auto Exposure");
+			public readonly GUIContent sEnableAutoExp = EditorGUIUtility.TrTextContent("Enable Auto Exposure", null, null);
 
-			public readonly GUIContent sExposureRange = EditorGUIUtility.TextContent("Exposure Range");
+			public readonly GUIContent sExposureRange = EditorGUIUtility.TrTextContent("Exposure Range", null, null);
 
-			public readonly GUIContent sEnableShadows = EditorGUIUtility.TextContent("Enable Shadows");
+			public readonly GUIContent sEnableShadows = EditorGUIUtility.TrTextContent("Enable Shadows", null, null);
 
-			public readonly GUIContent sShadowDistance = EditorGUIUtility.TextContent("Shadow distance");
+			public readonly GUIContent sShadowDistance = EditorGUIUtility.TrTextContent("Shadow distance", null, null);
 
-			public readonly GUIContent sShowBalls = EditorGUIUtility.TextContent("Show Chrome/grey balls");
+			public readonly GUIContent sShowBalls = EditorGUIUtility.TrTextContent("Show Chrome/grey balls", null, null);
 
-			public readonly GUIContent sShowControlWindows = EditorGUIUtility.TextContent("Show Controls");
+			public readonly GUIContent sShowControlWindows = EditorGUIUtility.TrTextContent("Show Controls", null, null);
 
-			public readonly GUIContent sAllowDifferentObjects = EditorGUIUtility.TextContent("Allow Different Objects");
+			public readonly GUIContent sAllowDifferentObjects = EditorGUIUtility.TrTextContent("Allow Different Objects", null, null);
 
-			public readonly GUIContent sResyncObjects = EditorGUIUtility.TextContent("Resynchronize Objects");
+			public readonly GUIContent sResyncObjects = EditorGUIUtility.TrTextContent("Resynchronize Objects", null, null);
 
-			public readonly GUIContent sRotateObjectMode = EditorGUIUtility.TextContent("Rotate Objects");
+			public readonly GUIContent sRotateObjectMode = EditorGUIUtility.TrTextContent("Rotate Objects", null, null);
 
-			public readonly GUIContent sObjRotationSpeed = EditorGUIUtility.TextContent("Rotate Objects speed");
+			public readonly GUIContent sObjRotationSpeed = EditorGUIUtility.TrTextContent("Rotate Objects speed", null, null);
 
-			public readonly GUIContent sRotateEnvMode = EditorGUIUtility.TextContent("Rotate environment");
+			public readonly GUIContent sRotateEnvMode = EditorGUIUtility.TrTextContent("Rotate environment", null, null);
 
-			public readonly GUIContent sEnvRotationSpeed = EditorGUIUtility.TextContent("Rotate Env. speed");
+			public readonly GUIContent sEnvRotationSpeed = EditorGUIUtility.TrTextContent("Rotate Env. speed", null, null);
 
-			public readonly GUIContent sEnableShadowIcon = EditorGUIUtility.IconContent("LookDevShadow", "Shadow|Toggles shadows on and off");
+			public readonly GUIContent sEnableShadowIcon = EditorGUIUtility.TrIconContent("LookDevShadow", "Toggles shadows on and off");
 
 			public readonly GUIContent sEnableObjRotationIcon = EditorGUIUtility.IconContent("LookDevObjRotation", "ObjRotation|Toggles object rotation (turntable) on and off");
 
-			public readonly GUIContent sEnableEnvRotationIcon = EditorGUIUtility.IconContent("LookDevEnvRotation", "EnvRotation|Toggles environment rotation on and off");
+			public readonly GUIContent sEnableEnvRotationIcon = EditorGUIUtility.TrIconContent("LookDevEnvRotation", "Toggles environment rotation on and off");
 
 			public readonly Texture sEnableShadowTexture = EditorGUIUtility.FindTexture("LookDevShadow");
 
@@ -75,11 +75,11 @@ namespace UnityEditor
 
 			public readonly GUIContent[] sMultiViewMode = new GUIContent[]
 			{
-				EditorGUIUtility.TextContent("Single1"),
-				EditorGUIUtility.TextContent("Single2"),
-				EditorGUIUtility.TextContent("Side by side"),
-				EditorGUIUtility.TextContent("Split-screen"),
-				EditorGUIUtility.TextContent("Zone")
+				EditorGUIUtility.TrTextContent("Single1", null, null),
+				EditorGUIUtility.TrTextContent("Single2", null, null),
+				EditorGUIUtility.TrTextContent("Side by side", null, null),
+				EditorGUIUtility.TrTextContent("Split-screen", null, null),
+				EditorGUIUtility.TrTextContent("Zone", null, null)
 			};
 
 			public readonly Texture[] sMultiViewTextures = new Texture[]

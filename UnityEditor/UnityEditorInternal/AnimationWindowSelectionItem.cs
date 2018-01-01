@@ -8,9 +8,6 @@ namespace UnityEditorInternal
 	internal class AnimationWindowSelectionItem : ScriptableObject, IEquatable<AnimationWindowSelectionItem>, ISelectionBinding
 	{
 		[SerializeField]
-		private float m_TimeOffset;
-
-		[SerializeField]
 		private int m_Id;
 
 		[SerializeField]
@@ -23,18 +20,6 @@ namespace UnityEditorInternal
 		private AnimationClip m_AnimationClip;
 
 		private List<AnimationWindowCurve> m_CurvesCache = null;
-
-		public virtual float timeOffset
-		{
-			get
-			{
-				return this.m_TimeOffset;
-			}
-			set
-			{
-				this.m_TimeOffset = value;
-			}
-		}
 
 		public virtual int id
 		{
@@ -124,6 +109,14 @@ namespace UnityEditorInternal
 					result = null;
 				}
 				return result;
+			}
+		}
+
+		public bool disabled
+		{
+			get
+			{
+				return this.animationClip == null;
 			}
 		}
 
@@ -320,9 +313,7 @@ namespace UnityEditorInternal
 
 		public static AnimationWindowSelectionItem Create()
 		{
-			AnimationWindowSelectionItem animationWindowSelectionItem = ScriptableObject.CreateInstance(typeof(AnimationWindowSelectionItem)) as AnimationWindowSelectionItem;
-			animationWindowSelectionItem.hideFlags = HideFlags.HideAndDontSave;
-			return animationWindowSelectionItem;
+			return ScriptableObject.CreateInstance(typeof(AnimationWindowSelectionItem)) as AnimationWindowSelectionItem;
 		}
 
 		public int GetRefreshHash()
@@ -353,7 +344,7 @@ namespace UnityEditorInternal
 			}
 			else if (this.scriptableObject != null)
 			{
-				result = AnimationUtility.GetScriptableObjectEditorCurveValueType(this.scriptableObject, curveBinding);
+				result = AnimationUtility.GetEditorCurveValueType(this.scriptableObject, curveBinding);
 			}
 			else if (curveBinding.isPPtrCurve)
 			{

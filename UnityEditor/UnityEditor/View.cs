@@ -243,7 +243,7 @@ namespace UnityEditor
 			return result;
 		}
 
-		public void OnDestroy()
+		protected virtual void OnDestroy()
 		{
 			View[] children = this.m_Children;
 			for (int i = 0; i < children.Length; i++)

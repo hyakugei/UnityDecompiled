@@ -1,4 +1,5 @@
 using System;
+using UnityEngine.Bindings;
 using UnityEngine.Scripting;
 
 namespace UnityEngine
@@ -10,6 +11,7 @@ namespace UnityEngine
 
 		private string m_HumanName;
 
+		[NativeName("m_Limit")]
 		public HumanLimit limit;
 
 		public string boneName

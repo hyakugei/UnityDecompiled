@@ -44,7 +44,8 @@ namespace UnityEditor
 				"m_Materials",
 				"m_BlendShapeWeights",
 				"m_AABB",
-				"m_LightmapParameters"
+				"m_LightmapParameters",
+				"m_DynamicOccludee"
 			});
 			list.AddRange(RendererEditorBase.Probes.GetFieldsStringArray());
 			this.m_ExcludedProperties = list.ToArray();
@@ -61,16 +62,23 @@ namespace UnityEditor
 			base.serializedObject.Update();
 			this.OnBlendShapeUI();
 			Editor.DrawPropertiesExcluding(base.serializedObject, this.m_ExcludedProperties);
-			EditMode.DoEditModeInspectorModeButton(EditMode.SceneViewEditMode.Collider, "Edit Bounds", PrimitiveBoundsHandle.editModeButton, (base.target as SkinnedMeshRenderer).bounds, this);
+			EditMode.DoEditModeInspectorModeButton(EditMode.SceneViewEditMode.Collider, "Edit Bounds", PrimitiveBoundsHandle.editModeButton, this);
 			EditorGUI.BeginChangeCheck();
-			EditorGUILayout.PropertyField(this.m_AABB, new GUIContent("Bounds"), new GUILayoutOption[0]);
+			EditorGUILayout.PropertyField(this.m_AABB, EditorGUIUtility.TrTextContent("Bounds", null, null), new GUILayoutOption[0]);
 			if (EditorGUI.EndChangeCheck())
 			{
 				this.m_DirtyAABB.boolValue = false;
 			}
 			this.LightingFieldsGUI();
+			base.RenderRenderingLayer();
 			EditorGUILayout.PropertyField(this.m_Materials, true, new GUILayoutOption[0]);
+			base.CullDynamicFieldGUI();
 			base.serializedObject.ApplyModifiedProperties();
+		}
+
+		internal override Bounds GetWorldBoundsOfTarget(UnityEngine.Object targetObject)
+		{
+			return ((SkinnedMeshRenderer)targetObject).bounds;
 		}
 
 		private void LightingFieldsGUI()

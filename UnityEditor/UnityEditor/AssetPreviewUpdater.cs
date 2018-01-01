@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace UnityEditor
 {
-	internal class AssetPreviewUpdater
+	internal static class AssetPreviewUpdater
 	{
 		public static Texture2D CreatePreviewForAsset(UnityEngine.Object obj, UnityEngine.Object[] subAssets, string assetPath)
 		{

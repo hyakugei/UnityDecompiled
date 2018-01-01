@@ -7,6 +7,7 @@ using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
+	[NativeClass("TextRendering::Font")]
 	public sealed class Font : Object
 	{
 		[EditorBrowsable(EditorBrowsableState.Never)]
@@ -174,6 +175,10 @@ namespace UnityEngine
 		{
 			return new Font(fontnames, size);
 		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern Font GetDefault();
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]

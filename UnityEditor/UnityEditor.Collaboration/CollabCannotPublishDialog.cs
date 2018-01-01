@@ -7,9 +7,9 @@ namespace UnityEditor.Collaboration
 	{
 		private static GUIContent WarningText = EditorGUIUtility.TextContent(string.Format("Files that have been moved or in a changed folder cannot be selectively published, please use the Publish option in the collab window to publish all your changes.", new object[0]));
 
-		private static GUIContent IssuesText = EditorGUIUtility.TextContent("Issues:");
+		private static GUIContent IssuesText = EditorGUIUtility.TrTextContent("Issues:", null, null);
 
-		private static GUIContent AcceptText = EditorGUIUtility.TextContent("Accept");
+		private static GUIContent AcceptText = EditorGUIUtility.TrTextContent("Accept", null, null);
 
 		public Vector2 scrollPosition;
 

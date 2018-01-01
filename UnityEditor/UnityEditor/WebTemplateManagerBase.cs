@@ -199,7 +199,7 @@ namespace UnityEditor
 			}
 			if (this.TemplateGUIThumbnails.Length < 1)
 			{
-				GUILayout.Label(EditorGUIUtility.TextContent("No templates found."), new GUILayoutOption[0]);
+				GUILayout.Label(EditorGUIUtility.TrTextContent("No templates found.", null, null), new GUILayoutOption[0]);
 			}
 			else
 			{

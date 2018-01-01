@@ -11,17 +11,14 @@ namespace UnityEngine.iOS
 	{
 		public extern string error
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
 
 		public extern float loadingPriority
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
@@ -30,13 +27,21 @@ namespace UnityEngine.iOS
 		{
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern string GetResourcePath(string resourceName);
 
-		[GeneratedByOldBindingsGenerator, ThreadAndSerializationSafe]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern void Dispose();
+		private static extern void DestroyFromScript(IntPtr ptr);
+
+		public void Dispose()
+		{
+			if (this.m_Ptr != IntPtr.Zero)
+			{
+				OnDemandResourcesRequest.DestroyFromScript(this.m_Ptr);
+				this.m_Ptr = IntPtr.Zero;
+			}
+			GC.SuppressFinalize(this);
+		}
 
 		~OnDemandResourcesRequest()
 		{

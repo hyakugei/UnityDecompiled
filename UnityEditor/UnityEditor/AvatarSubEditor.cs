@@ -110,7 +110,7 @@ namespace UnityEditor
 
 		protected bool HasModified()
 		{
-			return this.serializedObject.hasModifiedProperties;
+			return this.m_Inspector && this.serializedObject.hasModifiedProperties;
 		}
 
 		protected virtual void ResetValues()

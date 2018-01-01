@@ -54,10 +54,6 @@ namespace UnityEditor
 						}
 						Vector3 pos = new Vector3((float)(num + 30 + 16 * (num2 - num3)) + vector2.y + vector2.x + scrollPos.y - num4, vector2.y + scrollPos.y, 0f);
 						GUI.matrix = Matrix4x4.TRS(pos, Quaternion.identity, Vector3.one) * Matrix4x4.TRS(Vector3.zero, Quaternion.Euler(0f, 0f, 90f), Vector3.one);
-						if (SystemInfo.graphicsDeviceVersion.StartsWith("Direct3D 9.0"))
-						{
-							GUI.matrix *= Matrix4x4.TRS(new Vector3(-0.5f, -0.5f, 0f), Quaternion.identity, Vector3.one);
-						}
 						GUI.Label(new Rect(2f - vector2.x - scrollPos.y, scrollPos.y - num4, (float)num, 16f), LayerMask.LayerToName(k), "RightLabel");
 						num3++;
 					}

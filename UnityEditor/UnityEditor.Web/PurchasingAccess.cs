@@ -22,6 +22,8 @@ namespace UnityEditor.Web
 
 		private const string kServiceDisplayName = "In App Purchasing";
 
+		private const string kServicePackageName = "com.unity.purchasing";
+
 		private const string kServiceUrl = "https://public-cdn.cloud.unity3d.com/editor/production/cloud/purchasing";
 
 		private const string kETagPath = "Assets/Plugins/UnityPurchasing/ETag";
@@ -49,6 +51,11 @@ namespace UnityEditor.Web
 			return "In App Purchasing";
 		}
 
+		public override string GetPackageName()
+		{
+			return "com.unity.purchasing";
+		}
+
 		public override bool IsServiceEnabled()
 		{
 			return PurchasingSettings.enabled;
@@ -58,7 +65,7 @@ namespace UnityEditor.Web
 		{
 			if (PurchasingSettings.enabled != enabled)
 			{
-				PurchasingSettings.enabled = enabled;
+				PurchasingSettings.SetEnabledServiceWindow(enabled);
 				EditorAnalytics.SendEventServiceInfo(new PurchasingAccess.PurchasingServiceState
 				{
 					iap = enabled

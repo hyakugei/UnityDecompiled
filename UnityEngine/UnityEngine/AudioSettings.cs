@@ -112,6 +112,26 @@ namespace UnityEngine
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void SetDSPBufferSize(int bufferLength, int numBuffers);
 
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern string[] GetSpatializerPluginNames();
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern string GetSpatializerPluginName();
+
+		public static void SetSpatializerPluginName(string pluginName)
+		{
+			if (!AudioSettings.SetSpatializerPluginName_Internal(pluginName))
+			{
+				throw new ArgumentException("Invalid spatializer plugin name");
+			}
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern bool SetSpatializerPluginName_Internal(string pluginName);
+
 		public static AudioConfiguration GetConfiguration()
 		{
 			AudioConfiguration result;
@@ -140,5 +160,37 @@ namespace UnityEngine
 				AudioSettings.OnAudioConfigurationChanged(deviceWasChanged);
 			}
 		}
+
+		[RequiredByNativeCode]
+		internal static void InvokeOnAudioManagerUpdate()
+		{
+			AudioExtensionManager.Update();
+		}
+
+		[RequiredByNativeCode]
+		internal static void InvokeOnAudioSourcePlay(AudioSource source)
+		{
+			AudioSourceExtension audioSourceExtension = AudioExtensionManager.AddSpatializerExtension(source);
+			if (audioSourceExtension != null)
+			{
+				AudioExtensionManager.GetReadyToPlay(audioSourceExtension);
+			}
+			if (source.clip != null && source.clip.ambisonic)
+			{
+				AudioSourceExtension audioSourceExtension2 = AudioExtensionManager.AddAmbisonicDecoderExtension(source);
+				if (audioSourceExtension2 != null)
+				{
+					AudioExtensionManager.GetReadyToPlay(audioSourceExtension2);
+				}
+			}
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern string GetAmbisonicDecoderPluginName();
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void SetAmbisonicDecoderPluginName(string name);
 	}
 }

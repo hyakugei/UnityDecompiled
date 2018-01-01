@@ -1,88 +1,83 @@
 using System;
 using System.Runtime.CompilerServices;
 using UnityEngine;
-using UnityEngine.Internal;
-using UnityEngine.Scripting;
 
 namespace UnityEditor
 {
-	internal sealed class ParticleSystemEditorUtils
+	internal static class ParticleSystemEditorUtils
 	{
-		internal static extern float editorSimulationSpeed
+		internal static extern float simulationSpeed
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
-		internal static extern float editorPlaybackTime
+		internal static extern float playbackTime
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
-		internal static extern bool editorIsScrubbing
+		internal static extern bool playbackIsScrubbing
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
-		internal static extern bool editorIsPlaying
+		internal static extern bool playbackIsPlaying
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
-		internal static extern bool editorIsPaused
+		internal static extern bool playbackIsPaused
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
-		internal static extern bool editorResimulation
+		internal static extern bool resimulation
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		internal static extern uint previewLayers
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		internal static extern bool renderInSceneView
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		internal static extern ParticleSystem lockedParticleSystem
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern string CheckCircularReferences(ParticleSystem subEmitter);
-
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern void PerformCompleteResimulation();
 
@@ -103,25 +98,6 @@ namespace UnityEditor
 				result = transform.gameObject.GetComponent<ParticleSystem>();
 			}
 			return result;
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern void StopEffect([DefaultValue("true")] bool stop, [DefaultValue("true")] bool clear);
-
-		[ExcludeFromDocs]
-		internal static void StopEffect(bool stop)
-		{
-			bool clear = true;
-			ParticleSystemEditorUtils.StopEffect(stop, clear);
-		}
-
-		[ExcludeFromDocs]
-		internal static void StopEffect()
-		{
-			bool clear = true;
-			bool stop = true;
-			ParticleSystemEditorUtils.StopEffect(stop, clear);
 		}
 	}
 }

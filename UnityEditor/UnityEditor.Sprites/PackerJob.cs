@@ -1,7 +1,6 @@
 using System;
 using System.Runtime.CompilerServices;
 using UnityEngine;
-using UnityEngine.Scripting;
 
 namespace UnityEditor.Sprites
 {
@@ -11,17 +10,25 @@ namespace UnityEditor.Sprites
 		{
 		}
 
-		public void AddAtlas(string atlasName, AtlasSettings settings)
+		private static void Internal_AddAtlas(string atlasName, AtlasSettings settings)
 		{
-			this.AddAtlas_Internal(atlasName, ref settings);
+			PackerJob.Internal_AddAtlas_Injected(atlasName, ref settings);
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void AddAtlas_Internal(string atlasName, ref AtlasSettings settings);
+		private static extern void Internal_AssignToAtlas(string atlasName, Sprite sprite, SpritePackingMode packingMode, SpritePackingRotation packingRotation);
 
-		[GeneratedByOldBindingsGenerator]
+		public void AddAtlas(string atlasName, AtlasSettings settings)
+		{
+			PackerJob.Internal_AddAtlas(atlasName, settings);
+		}
+
+		public void AssignToAtlas(string atlasName, Sprite sprite, SpritePackingMode packingMode, SpritePackingRotation packingRotation)
+		{
+			PackerJob.Internal_AssignToAtlas(atlasName, sprite, packingMode, packingRotation);
+		}
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern void AssignToAtlas(string atlasName, Sprite sprite, SpritePackingMode packingMode, SpritePackingRotation packingRotation);
+		private static extern void Internal_AddAtlas_Injected(string atlasName, ref AtlasSettings settings);
 	}
 }

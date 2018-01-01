@@ -6,9 +6,16 @@ namespace UnityEditorInternal
 {
 	internal class FreeRotate
 	{
+		private static readonly Color s_DimmingColor = new Color(0f, 0f, 0f, 0.078f);
+
 		private static Vector2 s_CurrentMousePosition;
 
 		public static Quaternion Do(int id, Quaternion rotation, Vector3 position, float size)
+		{
+			return FreeRotate.Do(id, rotation, position, size, true);
+		}
+
+		internal static Quaternion Do(int id, Quaternion rotation, Vector3 position, float size, bool drawCircle)
 		{
 			Vector3 vector = Handles.matrix.MultiplyPoint(position);
 			Matrix4x4 matrix = Handles.matrix;
@@ -16,9 +23,8 @@ namespace UnityEditorInternal
 			switch (current.GetTypeForControl(id))
 			{
 			case EventType.MouseDown:
-				if ((HandleUtility.nearestControl == id && current.button == 0) || (GUIUtility.keyboardControl == id && current.button == 2))
+				if (HandleUtility.nearestControl == id && current.button == 0)
 				{
-					GUIUtility.keyboardControl = id;
 					GUIUtility.hotControl = id;
 					Tools.LockHandlePosition();
 					FreeRotate.s_CurrentMousePosition = current.mousePosition;
@@ -34,6 +40,12 @@ namespace UnityEditorInternal
 					GUIUtility.hotControl = 0;
 					current.Use();
 					EditorGUIUtility.SetWantsMouseJumping(0);
+				}
+				break;
+			case EventType.MouseMove:
+				if (id == HandleUtility.nearestControl)
+				{
+					HandleUtility.Repaint();
 				}
 				break;
 			case EventType.MouseDrag:
@@ -82,15 +94,30 @@ namespace UnityEditorInternal
 			case EventType.Repaint:
 			{
 				Color color = Color.white;
-				if (id == GUIUtility.keyboardControl)
+				bool flag2 = id == GUIUtility.hotControl;
+				bool flag3 = id == HandleUtility.nearestControl && GUIUtility.hotControl == 0;
+				if (flag2)
 				{
 					color = Handles.color;
 					Handles.color = Handles.selectedColor;
 				}
+				else if (flag3)
+				{
+					color = Handles.color;
+					Handles.color = Handles.preselectionColor;
+				}
 				Handles.matrix = Matrix4x4.identity;
-				Handles.DrawWireDisc(vector, Camera.current.transform.forward, size);
+				if (drawCircle)
+				{
+					Handles.DrawWireDisc(vector, Camera.current.transform.forward, size);
+				}
+				if (flag3 || flag2)
+				{
+					Handles.color = FreeRotate.s_DimmingColor;
+					Handles.DrawSolidDisc(vector, Camera.current.transform.forward, size);
+				}
 				Handles.matrix = matrix;
-				if (id == GUIUtility.keyboardControl)
+				if (flag2 || flag3)
 				{
 					Handles.color = color;
 				}

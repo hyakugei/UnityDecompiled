@@ -36,7 +36,9 @@ namespace UnityEditor
 			PerRendererData = 2,
 			NoScaleOffset = 4,
 			Normal = 8,
-			HDR = 16
+			HDR = 16,
+			Gamma = 32,
+			NonModifiableTextureData = 64
 		}
 
 		public delegate bool ApplyPropertyCallback(MaterialProperty prop, int changeMask, object previousValue);
