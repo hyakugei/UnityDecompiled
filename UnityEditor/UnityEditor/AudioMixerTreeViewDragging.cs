@@ -40,7 +40,7 @@ namespace UnityEditor
 			}
 		}
 
-		public override bool DragElement(TreeViewItem targetItem, Rect targetItemRect, bool firstItem)
+		public override bool DragElement(TreeViewItem targetItem, Rect targetItemRect, int row)
 		{
 			AudioMixerTreeViewDragging.DragData dragData = DragAndDrop.GetGenericData("AudioMixerDragging") as AudioMixerTreeViewDragging.DragData;
 			bool result;
@@ -73,7 +73,7 @@ namespace UnityEditor
 				}
 				else
 				{
-					result = base.DragElement(targetItem, targetItemRect, firstItem);
+					result = base.DragElement(targetItem, targetItemRect, row);
 				}
 			}
 			return result;

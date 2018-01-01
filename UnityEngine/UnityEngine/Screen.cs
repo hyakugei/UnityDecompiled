@@ -25,29 +25,6 @@ namespace UnityEngine
 			}
 		}
 
-		[ThreadAndSerializationSafe]
-		public static extern int width
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-		}
-
-		[ThreadAndSerializationSafe]
-		public static extern int height
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-		}
-
-		public static extern float dpi
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-		}
-
 		public static extern bool fullScreen
 		{
 			[GeneratedByOldBindingsGenerator]
@@ -58,64 +35,86 @@ namespace UnityEngine
 			set;
 		}
 
-		public static extern bool autorotateToPortrait
+		public static extern int width
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
 		}
 
-		public static extern bool autorotateToPortraitUpsideDown
+		public static extern int height
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
 		}
 
-		public static extern bool autorotateToLandscapeLeft
+		public static extern float dpi
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		public static extern bool autorotateToLandscapeRight
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
 		}
 
 		public static extern ScreenOrientation orientation
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public static extern int sleepTimeout
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
+		}
+
+		public static bool autorotateToPortrait
+		{
+			get
+			{
+				return Screen.IsOrientationEnabled(EnabledOrientation.kAutorotateToPortrait);
+			}
+			set
+			{
+				Screen.SetOrientationEnabled(EnabledOrientation.kAutorotateToPortrait, value);
+			}
+		}
+
+		public static bool autorotateToPortraitUpsideDown
+		{
+			get
+			{
+				return Screen.IsOrientationEnabled(EnabledOrientation.kAutorotateToPortraitUpsideDown);
+			}
+			set
+			{
+				Screen.SetOrientationEnabled(EnabledOrientation.kAutorotateToPortraitUpsideDown, value);
+			}
+		}
+
+		public static bool autorotateToLandscapeLeft
+		{
+			get
+			{
+				return Screen.IsOrientationEnabled(EnabledOrientation.kAutorotateToLandscapeLeft);
+			}
+			set
+			{
+				Screen.SetOrientationEnabled(EnabledOrientation.kAutorotateToLandscapeLeft, value);
+			}
+		}
+
+		public static bool autorotateToLandscapeRight
+		{
+			get
+			{
+				return Screen.IsOrientationEnabled(EnabledOrientation.kAutorotateToLandscapeRight);
+			}
+			set
+			{
+				Screen.SetOrientationEnabled(EnabledOrientation.kAutorotateToLandscapeRight, value);
+			}
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never), Obsolete("Property GetResolution has been deprecated. Use resolutions instead (UnityUpgradable) -> resolutions", true)]
@@ -170,5 +169,11 @@ namespace UnityEngine
 			int preferredRefreshRate = 0;
 			Screen.SetResolution(width, height, fullscreen, preferredRefreshRate);
 		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern bool IsOrientationEnabled(EnabledOrientation orient);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void SetOrientationEnabled(EnabledOrientation orient, bool enabled);
 	}
 }

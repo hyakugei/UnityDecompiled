@@ -6,7 +6,7 @@ namespace UnityEngine.Experimental.UIElements
 	{
 		public RepeatButton(Action clickEvent, long delay, long interval)
 		{
-			base.AddManipulator(new Clickable(clickEvent, delay, interval));
+			this.AddManipulator(new Clickable(clickEvent, delay, interval));
 		}
 	}
 }

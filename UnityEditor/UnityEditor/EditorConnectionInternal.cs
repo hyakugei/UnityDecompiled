@@ -16,6 +16,11 @@ namespace UnityEditor
 			EditorConnectionInternal.SendMessage(messageId.ToString("N"), data, playerId);
 		}
 
+		void IPlayerEditorConnectionNative.Poll()
+		{
+			EditorConnectionInternal.PollInternal();
+		}
+
 		void IPlayerEditorConnectionNative.RegisterInternal(Guid messageId)
 		{
 			EditorConnectionInternal.RegisterInternal(messageId.ToString("N"));
@@ -56,6 +61,10 @@ namespace UnityEditor
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void SendMessage(string messageId, byte[] data, int playerId);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern void PollInternal();
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]

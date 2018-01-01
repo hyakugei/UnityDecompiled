@@ -76,6 +76,8 @@ namespace UnityEditor
 			Vector3.zero
 		};
 
+		private static int s_PreviousNearestControl;
+
 		private static int s_NearestControl;
 
 		private static float s_NearestDistance;
@@ -581,6 +583,11 @@ namespace UnityEditor
 		[RequiredByNativeCode]
 		internal static void EndHandles()
 		{
+			if (HandleUtility.s_PreviousNearestControl != HandleUtility.s_NearestControl && HandleUtility.s_NearestControl != 0)
+			{
+				HandleUtility.s_PreviousNearestControl = HandleUtility.s_NearestControl;
+				HandleUtility.Repaint();
+			}
 			EditorGUI.s_DelayedTextEditor.EndGUI(Event.current.type);
 		}
 

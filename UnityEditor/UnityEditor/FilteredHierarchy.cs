@@ -36,7 +36,7 @@ namespace UnityEditor
 					Texture2D result;
 					if (this.m_Icon == null)
 					{
-						if (this.type == HierarchyType.Assets)
+						if (this.type == HierarchyType.Assets || this.type == HierarchyType.Packages)
 						{
 							string assetPath = AssetDatabase.GetAssetPath(this.instanceID);
 							if (assetPath != null)
@@ -65,7 +65,7 @@ namespace UnityEditor
 				get
 				{
 					string result;
-					if (this.type == HierarchyType.Assets)
+					if (this.type == HierarchyType.Assets || this.type == HierarchyType.Packages)
 					{
 						string assetPath = AssetDatabase.GetAssetPath(this.instanceID);
 						if (assetPath != null)

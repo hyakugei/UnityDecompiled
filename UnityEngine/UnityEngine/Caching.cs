@@ -16,80 +16,72 @@ namespace UnityEngine
 			get;
 		}
 
-		[Obsolete("This property is only used for the current cache, use GetSpaceFree() with cache index to get unused bytes per cache.")]
-		public static extern long spaceFree
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-		}
-
-		[Obsolete("This property is only used for the current cache, use Cache.maximumAvailableStorageSpace to get/set the maximum available storage space per cache.")]
-		public static extern long maximumAvailableDiskSpace
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		[Obsolete("This property is only used for the current cache, use Cache.spaceOccupied to get used bytes per cache.")]
-		public static extern long spaceOccupied
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-		}
-
-		[Obsolete("Please use Cache.spaceAvailable to get unused bytes per cache.")]
-		public static extern int spaceAvailable
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-		}
-
-		[Obsolete("Please use use Cache.spaceOccupied to get used bytes per cache")]
-		public static extern int spaceUsed
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-		}
-
-		[Obsolete("This property is only used for the current cache, use Cache.expirationDelay to get/set the expiration delay per cache.")]
-		public static extern int expirationDelay
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
 		public static extern bool compressionEnabled
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public static extern bool ready
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
 
+		[Obsolete("Please use use Cache.spaceOccupied to get used bytes per cache.")]
+		public static int spaceUsed
+		{
+			get
+			{
+				return (int)Caching.spaceOccupied;
+			}
+		}
+
+		[Obsolete("This property is only used for the current cache, use Cache.spaceOccupied to get used bytes per cache.")]
+		public static extern long spaceOccupied
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+		}
+
+		[Obsolete("Please use use Cache.spaceOccupied to get used bytes per cache.")]
+		public static int spaceAvailable
+		{
+			get
+			{
+				return (int)Caching.spaceFree;
+			}
+		}
+
+		[Obsolete("This property is only used for the current cache, use Cache.spaceFree to get unused bytes per cache.")]
+		public static extern long spaceFree
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+		}
+
+		[Obsolete("This property is only used for the current cache, use Cache.maximumAvailableStorageSpace to access the maximum available storage space per cache.")]
+		public static extern long maximumAvailableDiskSpace
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		[Obsolete("This property is only used for the current cache, use Cache.expirationDelay to access the expiration delay per cache.")]
+		public static extern int expirationDelay
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
 		public static extern int cacheCount
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
@@ -99,7 +91,7 @@ namespace UnityEngine
 			get
 			{
 				Cache result;
-				Caching.INTERNAL_get_defaultCache(out result);
+				Caching.get_defaultCache_Injected(out result);
 				return result;
 			}
 		}
@@ -109,53 +101,70 @@ namespace UnityEngine
 			get
 			{
 				Cache result;
-				Caching.INTERNAL_get_currentCacheForWriting(out result);
+				Caching.get_currentCacheForWriting_Injected(out result);
 				return result;
 			}
 			set
 			{
-				Caching.INTERNAL_set_currentCacheForWriting(ref value);
-			}
-		}
-
-		[Obsolete("This property is only used by web player which is not used any more.", true)]
-		public static bool enabled
-		{
-			get
-			{
-				return true;
+				Caching.set_currentCacheForWriting_Injected(ref value);
 			}
 		}
 
 		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern Hash128[] GetCachedVersions(string assetBundleName);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void GetCachedVersionsInternal(string assetBundleName, object cachedVersions);
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern bool ClearCache();
 
-		[Obsolete("This function is obsolete and will always return -1. Use IsVersionCached instead."), GeneratedByOldBindingsGenerator]
+		public static bool ClearCache(int expiration)
+		{
+			return Caching.ClearCache_Int(expiration);
+		}
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern int GetVersionFromCache(string url);
+		internal static extern bool ClearCache_Int(int expiration);
 
 		public static bool ClearCachedVersion(string assetBundleName, Hash128 hash)
 		{
-			return Caching.INTERNAL_CALL_ClearCachedVersion(assetBundleName, ref hash);
+			if (string.IsNullOrEmpty(assetBundleName))
+			{
+				throw new ArgumentException("Input AssetBundle name cannot be null or empty.");
+			}
+			return Caching.ClearCachedVersionInternal(assetBundleName, hash);
 		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern bool INTERNAL_CALL_ClearCachedVersion(string assetBundleName, ref Hash128 hash);
+		internal static bool ClearCachedVersionInternal(string assetBundleName, Hash128 hash)
+		{
+			return Caching.ClearCachedVersionInternal_Injected(assetBundleName, ref hash);
+		}
 
 		public static bool ClearOtherCachedVersions(string assetBundleName, Hash128 hash)
 		{
-			return Caching.INTERNAL_CALL_ClearOtherCachedVersions(assetBundleName, ref hash);
+			if (string.IsNullOrEmpty(assetBundleName))
+			{
+				throw new ArgumentException("Input AssetBundle name cannot be null or empty.");
+			}
+			return Caching.ClearCachedVersions(assetBundleName, hash, true);
 		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern bool INTERNAL_CALL_ClearOtherCachedVersions(string assetBundleName, ref Hash128 hash);
+		public static bool ClearAllCachedVersions(string assetBundleName)
+		{
+			if (string.IsNullOrEmpty(assetBundleName))
+			{
+				throw new ArgumentException("Input AssetBundle name cannot be null or empty.");
+			}
+			return Caching.ClearCachedVersions(assetBundleName, default(Hash128), false);
+		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern bool ClearAllCachedVersions(string assetBundleName);
+		internal static bool ClearCachedVersions(string assetBundleName, Hash128 hash, bool keepInputVersion)
+		{
+			return Caching.ClearCachedVersions_Injected(assetBundleName, ref hash, keepInputVersion);
+		}
 
 		public static void GetCachedVersions(string assetBundleName, List<Hash128> outCachedVersions)
 		{
@@ -170,19 +179,10 @@ namespace UnityEngine
 			Caching.GetCachedVersionsInternal(assetBundleName, outCachedVersions);
 		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern Hash128[] GetCachedVersions(string assetBundleName);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern void GetCachedVersionsInternal(string assetBundleName, object cachedVersions);
-
-		[Obsolete("This function is obsolete. Please use IsVersionCached with Hash128 instead.")]
+		[Obsolete("Please use IsVersionCached with Hash128 instead.")]
 		public static bool IsVersionCached(string url, int version)
 		{
-			Hash128 hash = new Hash128(0u, 0u, 0u, (uint)version);
-			return Caching.IsVersionCached(url, "", hash);
+			return Caching.IsVersionCached(url, new Hash128(0u, 0u, 0u, (uint)version));
 		}
 
 		public static bool IsVersionCached(string url, Hash128 hash)
@@ -203,20 +203,15 @@ namespace UnityEngine
 			return Caching.IsVersionCached("", cachedBundle.name, cachedBundle.hash);
 		}
 
-		internal static bool IsVersionCached(string url, string name, Hash128 hash)
+		internal static bool IsVersionCached(string url, string assetBundleName, Hash128 hash)
 		{
-			return Caching.INTERNAL_CALL_IsVersionCached(url, name, ref hash);
+			return Caching.IsVersionCached_Injected(url, assetBundleName, ref hash);
 		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern bool INTERNAL_CALL_IsVersionCached(string url, string name, ref Hash128 hash);
-
-		[Obsolete("This function is obsolete. Please use MarkAsUsed with Hash128 instead.")]
+		[Obsolete("Please use MarkAsUsed with Hash128 instead.")]
 		public static bool MarkAsUsed(string url, int version)
 		{
-			Hash128 hash = new Hash128(0u, 0u, 0u, (uint)version);
-			return Caching.MarkAsUsed(url, "", hash);
+			return Caching.MarkAsUsed(url, new Hash128(0u, 0u, 0u, (uint)version));
 		}
 
 		public static bool MarkAsUsed(string url, Hash128 hash)
@@ -237,16 +232,12 @@ namespace UnityEngine
 			return Caching.MarkAsUsed("", cachedBundle.name, cachedBundle.hash);
 		}
 
-		internal static bool MarkAsUsed(string url, string name, Hash128 hash)
+		internal static bool MarkAsUsed(string url, string assetBundleName, Hash128 hash)
 		{
-			return Caching.INTERNAL_CALL_MarkAsUsed(url, name, ref hash);
+			return Caching.MarkAsUsed_Injected(url, assetBundleName, ref hash);
 		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern bool INTERNAL_CALL_MarkAsUsed(string url, string name, ref Hash128 hash);
-
-		[Obsolete("This function is obsolete. Please use SetNoBackupFlag with Hash128 instead.")]
+		[Obsolete("Please use SetNoBackupFlag with Hash128 instead.")]
 		public static void SetNoBackupFlag(string url, int version)
 		{
 		}
@@ -259,7 +250,7 @@ namespace UnityEngine
 		{
 		}
 
-		[Obsolete("This function is obsolete. Please use ResetNoBackupFlag with Hash128 instead.")]
+		[Obsolete("Please use ResetNoBackupFlag with Hash128 instead.")]
 		public static void ResetNoBackupFlag(string url, int version)
 		{
 		}
@@ -272,14 +263,16 @@ namespace UnityEngine
 		{
 		}
 
-		internal static void SetNoBackupFlag(string url, string name, Hash128 hash, bool enabled)
+		internal static void SetNoBackupFlag(string url, string assetBundleName, Hash128 hash, bool enabled)
 		{
-			Caching.INTERNAL_CALL_SetNoBackupFlag(url, name, ref hash, enabled);
+			Caching.SetNoBackupFlag_Injected(url, assetBundleName, ref hash, enabled);
 		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_SetNoBackupFlag(string url, string name, ref Hash128 hash, bool enabled);
+		[Obsolete("This function is obsolete and will always return -1. Use IsVersionCached instead.")]
+		public static int GetVersionFromCache(string url)
+		{
+			return -1;
+		}
 
 		public static Cache AddCache(string cachePath)
 		{
@@ -307,41 +300,29 @@ namespace UnityEngine
 			{
 				throw new InvalidOperationException("Cache with path '" + cachePath + "' has already been added.");
 			}
-			return Caching.AddCache_Internal(cachePath, isReadonly);
+			return Caching.AddCache(cachePath, isReadonly);
 		}
 
-		private static Cache AddCache_Internal(string cachePath, bool isReadonly)
+		internal static Cache AddCache(string cachePath, bool isReadonly)
 		{
 			Cache result;
-			Caching.INTERNAL_CALL_AddCache_Internal(cachePath, isReadonly, out result);
+			Caching.AddCache_Injected(cachePath, isReadonly, out result);
 			return result;
 		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_AddCache_Internal(string cachePath, bool isReadonly, out Cache value);
 
 		public static Cache GetCacheAt(int cacheIndex)
 		{
 			Cache result;
-			Caching.INTERNAL_CALL_GetCacheAt(cacheIndex, out result);
+			Caching.GetCacheAt_Injected(cacheIndex, out result);
 			return result;
 		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_GetCacheAt(int cacheIndex, out Cache value);
 
 		public static Cache GetCacheByPath(string cachePath)
 		{
 			Cache result;
-			Caching.INTERNAL_CALL_GetCacheByPath(cachePath, out result);
+			Caching.GetCacheByPath_Injected(cachePath, out result);
 			return result;
 		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_GetCacheByPath(string cachePath, out Cache value);
 
 		public static void GetAllCachePaths(List<string> cachePaths)
 		{
@@ -354,83 +335,59 @@ namespace UnityEngine
 
 		public static bool RemoveCache(Cache cache)
 		{
-			return Caching.INTERNAL_CALL_RemoveCache(ref cache);
+			return Caching.RemoveCache_Injected(ref cache);
 		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern bool INTERNAL_CALL_RemoveCache(ref Cache cache);
 
 		public static void MoveCacheBefore(Cache src, Cache dst)
 		{
-			Caching.INTERNAL_CALL_MoveCacheBefore(ref src, ref dst);
+			Caching.MoveCacheBefore_Injected(ref src, ref dst);
 		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_MoveCacheBefore(ref Cache src, ref Cache dst);
 
 		public static void MoveCacheAfter(Cache src, Cache dst)
 		{
-			Caching.INTERNAL_CALL_MoveCacheAfter(ref src, ref dst);
+			Caching.MoveCacheAfter_Injected(ref src, ref dst);
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_MoveCacheAfter(ref Cache src, ref Cache dst);
+		private static extern bool ClearCachedVersionInternal_Injected(string assetBundleName, ref Hash128 hash);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_get_defaultCache(out Cache value);
+		private static extern bool ClearCachedVersions_Injected(string assetBundleName, ref Hash128 hash, bool keepInputVersion);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_get_currentCacheForWriting(out Cache value);
+		private static extern bool IsVersionCached_Injected(string url, string assetBundleName, ref Hash128 hash);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_set_currentCacheForWriting(ref Cache value);
+		private static extern bool MarkAsUsed_Injected(string url, string assetBundleName, ref Hash128 hash);
 
-		[Obsolete("This WebPlayer function is not used any more.", true)]
-		public static bool Authorize(string name, string domain, long size, string signature)
-		{
-			return true;
-		}
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void SetNoBackupFlag_Injected(string url, string assetBundleName, ref Hash128 hash, bool enabled);
 
-		[Obsolete("This WebPlayer function is not used any more.", true)]
-		public static bool Authorize(string name, string domain, long size, int expiration, string signature)
-		{
-			return true;
-		}
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void AddCache_Injected(string cachePath, bool isReadonly, out Cache ret);
 
-		[Obsolete("This WebPlayer function is not used any more.", true)]
-		public static bool Authorize(string name, string domain, int size, int expiration, string signature)
-		{
-			return true;
-		}
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void GetCacheAt_Injected(int cacheIndex, out Cache ret);
 
-		[Obsolete("This WebPlayer function is not used any more.", true)]
-		public static bool Authorize(string name, string domain, int size, string signature)
-		{
-			return true;
-		}
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void GetCacheByPath_Injected(string cachePath, out Cache ret);
 
-		[Obsolete("This function is obsolete. Please use ClearCache.  (UnityUpgradable) -> ClearCache()")]
-		public static bool CleanCache()
-		{
-			return Caching.ClearCache();
-		}
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern bool RemoveCache_Injected(ref Cache cache);
 
-		[Obsolete("This API is not for public use.")]
-		public static bool CleanNamedCache(string name)
-		{
-			return false;
-		}
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void MoveCacheBefore_Injected(ref Cache src, ref Cache dst);
 
-		[Obsolete("This function is obsolete and has no effect.")]
-		public static bool DeleteFromCache(string url)
-		{
-			return false;
-		}
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void MoveCacheAfter_Injected(ref Cache src, ref Cache dst);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void get_defaultCache_Injected(out Cache ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void get_currentCacheForWriting_Injected(out Cache ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void set_currentCacheForWriting_Injected(ref Cache value);
 	}
 }

@@ -206,7 +206,7 @@ namespace UnityEditor
 			this.SetSearchFilter("", this.m_SearchMode, true);
 			if (EditorGUI.s_RecycledEditor != null)
 			{
-				EditorGUI.s_RecycledEditor.controlID = 0;
+				EditorGUI.s_RecycledEditor.EndEditing();
 			}
 		}
 

@@ -93,6 +93,14 @@ namespace UnityEditorInternal
 			}
 		}
 
+		public bool isDiscreteCurve
+		{
+			get
+			{
+				return this.curve.isDiscreteCurve;
+			}
+		}
+
 		public AnimationWindowKeyframe()
 		{
 		}

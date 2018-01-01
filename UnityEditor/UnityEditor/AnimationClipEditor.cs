@@ -272,6 +272,7 @@ namespace UnityEditor
 			{
 				if (this.m_AvatarPreview != null && this.m_AvatarPreview.Animator != null)
 				{
+					bool flag = true;
 					if (this.m_Controller == null)
 					{
 						this.m_Controller = new UnityEditor.Animations.AnimatorController();
@@ -287,6 +288,7 @@ namespace UnityEditor
 							layers[0].avatarMask = this.mask;
 							this.m_Controller.layers = layers;
 						}
+						flag = false;
 					}
 					if (this.m_State == null)
 					{
@@ -297,11 +299,18 @@ namespace UnityEditor
 						this.m_Controller.layers = layers2;
 						this.m_State.iKOnFeet = this.m_AvatarPreview.IKOnFeet;
 						this.m_State.hideFlags = HideFlags.HideAndDontSave;
+						flag = false;
 					}
 					UnityEditor.Animations.AnimatorController.SetAnimatorController(this.m_AvatarPreview.Animator, this.m_Controller);
 					if (UnityEditor.Animations.AnimatorController.GetEffectiveAnimatorController(this.m_AvatarPreview.Animator) != this.m_Controller)
 					{
 						UnityEditor.Animations.AnimatorController.SetAnimatorController(this.m_AvatarPreview.Animator, this.m_Controller);
+					}
+					if (!flag)
+					{
+						this.m_AvatarPreview.Animator.Play(0, 0, 0f);
+						this.m_AvatarPreview.Animator.Update(0f);
+						this.m_AvatarPreview.ResetPreviewFocus();
 					}
 				}
 			}

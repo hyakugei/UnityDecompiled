@@ -6,7 +6,7 @@ namespace UnityEditor.StyleSheets
 {
 	internal static class CSSSpec
 	{
-		private static readonly Regex rgx = new Regex("(?<id>#\\w+)|(?<class>\\.\\w+)|(?<pseudoclass>:[\\w-]+(\\((?<param>.+)\\))?)|(?<type>\\w+)|(?<wildcard>\\*)|\\s+", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+		private static readonly Regex rgx = new Regex("(?<id>#[-]?\\w[\\w-]*)|(?<class>\\.\\w+)|(?<pseudoclass>:[\\w-]+(\\((?<param>.+)\\))?)|(?<type>[^\\-]\\w+)|(?<wildcard>\\*)|\\s+", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
 		private const int typeSelectorWeight = 1;
 

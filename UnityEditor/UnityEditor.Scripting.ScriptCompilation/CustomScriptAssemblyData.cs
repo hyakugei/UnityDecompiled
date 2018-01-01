@@ -31,5 +31,10 @@ namespace UnityEditor.Scripting.ScriptCompilation
 			}
 			return customScriptAssemblyData;
 		}
+
+		public static string ToJson(CustomScriptAssemblyData data)
+		{
+			return JsonUtility.ToJson(data, true);
+		}
 	}
 }

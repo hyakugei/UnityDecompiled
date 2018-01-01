@@ -140,19 +140,15 @@ namespace UnityEngine
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern Array ExtractArrayFromList(object list);
+		private static extern void SetGlobalFloatArrayImpl(int nameID, float[] values, int count);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void SetGlobalFloatArrayImpl(int nameID, float[] values);
+		private static extern void SetGlobalVectorArrayImpl(int nameID, Vector4[] values, int count);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void SetGlobalVectorArrayImpl(int nameID, Vector4[] values);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void SetGlobalMatrixArrayImpl(int nameID, Matrix4x4[] values);
+		private static extern void SetGlobalMatrixArrayImpl(int nameID, Matrix4x4[] values, int count);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -237,6 +233,14 @@ namespace UnityEngine
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern int TagToID(string name);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern string IDToTag(int id);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void WarmupAllShaders();
 
 		public static void SetGlobalFloat(string name, float value)
@@ -311,7 +315,7 @@ namespace UnityEngine
 
 		public static void SetGlobalFloatArray(int nameID, List<float> values)
 		{
-			Shader.SetGlobalFloatArray(nameID, (float[])Shader.ExtractArrayFromList(values));
+			Shader.SetGlobalFloatArray(nameID, (float[])NoAllocHelpers.ExtractArrayFromList(values), values.Count);
 		}
 
 		public static void SetGlobalFloatArray(string name, float[] values)
@@ -321,6 +325,11 @@ namespace UnityEngine
 
 		public static void SetGlobalFloatArray(int nameID, float[] values)
 		{
+			Shader.SetGlobalFloatArray(nameID, values, values.Length);
+		}
+
+		private static void SetGlobalFloatArray(int nameID, float[] values, int count)
+		{
 			if (values == null)
 			{
 				throw new ArgumentNullException("values");
@@ -329,7 +338,11 @@ namespace UnityEngine
 			{
 				throw new ArgumentException("Zero-sized array is not allowed.");
 			}
-			Shader.SetGlobalFloatArrayImpl(nameID, values);
+			if (values.Length < count)
+			{
+				throw new ArgumentException("array has less elements than passed count.");
+			}
+			Shader.SetGlobalFloatArrayImpl(nameID, values, count);
 		}
 
 		public static void SetGlobalVectorArray(string name, List<Vector4> values)
@@ -339,7 +352,7 @@ namespace UnityEngine
 
 		public static void SetGlobalVectorArray(int nameID, List<Vector4> values)
 		{
-			Shader.SetGlobalVectorArray(nameID, (Vector4[])Shader.ExtractArrayFromList(values));
+			Shader.SetGlobalVectorArray(nameID, (Vector4[])NoAllocHelpers.ExtractArrayFromList(values), values.Count);
 		}
 
 		public static void SetGlobalVectorArray(string name, Vector4[] values)
@@ -349,6 +362,11 @@ namespace UnityEngine
 
 		public static void SetGlobalVectorArray(int nameID, Vector4[] values)
 		{
+			Shader.SetGlobalVectorArray(nameID, values, values.Length);
+		}
+
+		private static void SetGlobalVectorArray(int nameID, Vector4[] values, int count)
+		{
 			if (values == null)
 			{
 				throw new ArgumentNullException("values");
@@ -357,7 +375,11 @@ namespace UnityEngine
 			{
 				throw new ArgumentException("Zero-sized array is not allowed.");
 			}
-			Shader.SetGlobalVectorArrayImpl(nameID, values);
+			if (values.Length < count)
+			{
+				throw new ArgumentException("array has less elements than passed count.");
+			}
+			Shader.SetGlobalVectorArrayImpl(nameID, values, count);
 		}
 
 		public static void SetGlobalMatrixArray(string name, List<Matrix4x4> values)
@@ -367,7 +389,7 @@ namespace UnityEngine
 
 		public static void SetGlobalMatrixArray(int nameID, List<Matrix4x4> values)
 		{
-			Shader.SetGlobalMatrixArray(nameID, (Matrix4x4[])Shader.ExtractArrayFromList(values));
+			Shader.SetGlobalMatrixArray(nameID, (Matrix4x4[])NoAllocHelpers.ExtractArrayFromList(values), values.Count);
 		}
 
 		public static void SetGlobalMatrixArray(string name, Matrix4x4[] values)
@@ -377,6 +399,11 @@ namespace UnityEngine
 
 		public static void SetGlobalMatrixArray(int nameID, Matrix4x4[] values)
 		{
+			Shader.SetGlobalMatrixArray(nameID, values, values.Length);
+		}
+
+		private static void SetGlobalMatrixArray(int nameID, Matrix4x4[] values, int count)
+		{
 			if (values == null)
 			{
 				throw new ArgumentNullException("values");
@@ -385,7 +412,11 @@ namespace UnityEngine
 			{
 				throw new ArgumentException("Zero-sized array is not allowed.");
 			}
-			Shader.SetGlobalMatrixArrayImpl(nameID, values);
+			if (values.Length < count)
+			{
+				throw new ArgumentException("array has less elements than passed count.");
+			}
+			Shader.SetGlobalMatrixArrayImpl(nameID, values, count);
 		}
 
 		public static float GetGlobalFloat(string name)

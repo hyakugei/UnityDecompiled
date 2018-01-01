@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using System.Threading;
 using UnityEditor.IMGUI.Controls;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -83,84 +82,6 @@ namespace UnityEditor
 
 		internal static GameObjectTreeViewGUI.OnHeaderGUIDelegate OnPostHeaderGUI = null;
 
-		public event Action scrollPositionChanged
-		{
-			add
-			{
-				Action action = this.scrollPositionChanged;
-				Action action2;
-				do
-				{
-					action2 = action;
-					action = Interlocked.CompareExchange<Action>(ref this.scrollPositionChanged, (Action)Delegate.Combine(action2, value), action);
-				}
-				while (action != action2);
-			}
-			remove
-			{
-				Action action = this.scrollPositionChanged;
-				Action action2;
-				do
-				{
-					action2 = action;
-					action = Interlocked.CompareExchange<Action>(ref this.scrollPositionChanged, (Action)Delegate.Remove(action2, value), action);
-				}
-				while (action != action2);
-			}
-		}
-
-		public event Action scrollHeightChanged
-		{
-			add
-			{
-				Action action = this.scrollHeightChanged;
-				Action action2;
-				do
-				{
-					action2 = action;
-					action = Interlocked.CompareExchange<Action>(ref this.scrollHeightChanged, (Action)Delegate.Combine(action2, value), action);
-				}
-				while (action != action2);
-			}
-			remove
-			{
-				Action action = this.scrollHeightChanged;
-				Action action2;
-				do
-				{
-					action2 = action;
-					action = Interlocked.CompareExchange<Action>(ref this.scrollHeightChanged, (Action)Delegate.Remove(action2, value), action);
-				}
-				while (action != action2);
-			}
-		}
-
-		public event Action mouseAndKeyboardInput
-		{
-			add
-			{
-				Action action = this.mouseAndKeyboardInput;
-				Action action2;
-				do
-				{
-					action2 = action;
-					action = Interlocked.CompareExchange<Action>(ref this.mouseAndKeyboardInput, (Action)Delegate.Combine(action2, value), action);
-				}
-				while (action != action2);
-			}
-			remove
-			{
-				Action action = this.mouseAndKeyboardInput;
-				Action action2;
-				do
-				{
-					action2 = action;
-					action = Interlocked.CompareExchange<Action>(ref this.mouseAndKeyboardInput, (Action)Delegate.Remove(action2, value), action);
-				}
-				while (action != action2);
-			}
-		}
-
 		private bool showingStickyHeaders
 		{
 			get
@@ -180,38 +101,41 @@ namespace UnityEditor
 			this.m_PrevTotalHeight = this.m_TreeView.GetTotalRect().height;
 		}
 
-		private void DetectScrollChange()
+		public bool DetectUserInput()
 		{
+			return this.DetectScrollChange() || this.DetectTotalRectChange() || this.DetectMouseDownInTreeViewRect();
+		}
+
+		private bool DetectScrollChange()
+		{
+			bool result = false;
 			float y = this.m_TreeView.state.scrollPos.y;
-			if (this.scrollPositionChanged != null && !Mathf.Approximately(y, this.m_PrevScollPos))
+			if (!Mathf.Approximately(y, this.m_PrevScollPos))
 			{
-				this.scrollPositionChanged();
+				result = true;
 			}
 			this.m_PrevScollPos = y;
+			return result;
 		}
 
-		private void DetectTotalRectChange()
+		private bool DetectTotalRectChange()
 		{
+			bool result = false;
 			float height = this.m_TreeView.GetTotalRect().height;
-			if (this.scrollHeightChanged != null && !Mathf.Approximately(height, this.m_PrevTotalHeight))
+			if (!Mathf.Approximately(height, this.m_PrevTotalHeight))
 			{
-				this.scrollHeightChanged();
+				result = true;
 			}
 			this.m_PrevTotalHeight = height;
+			return result;
 		}
 
-		private void DetectMouseDownInTreeViewRect()
+		private bool DetectMouseDownInTreeViewRect()
 		{
-			if (this.mouseAndKeyboardInput != null)
-			{
-				Event current = Event.current;
-				bool flag = current.type == EventType.MouseDown || current.type == EventType.MouseUp;
-				bool flag2 = current.type == EventType.KeyDown || current.type == EventType.KeyUp;
-				if ((flag && this.m_TreeView.GetTotalRect().Contains(current.mousePosition)) || flag2)
-				{
-					this.mouseAndKeyboardInput();
-				}
-			}
+			Event current = Event.current;
+			bool flag = current.type == EventType.MouseDown || current.type == EventType.MouseUp;
+			bool flag2 = current.type == EventType.KeyDown || current.type == EventType.KeyUp;
+			return (flag && this.m_TreeView.GetTotalRect().Contains(current.mousePosition)) || flag2;
 		}
 
 		private void DoStickySceneHeaders()
@@ -277,9 +201,11 @@ namespace UnityEditor
 
 		public override void BeginRowGUI()
 		{
-			this.DetectScrollChange();
-			this.DetectTotalRectChange();
-			this.DetectMouseDownInTreeViewRect();
+			if (this.DetectUserInput())
+			{
+				GameObjectTreeViewDataSource gameObjectTreeViewDataSource = (GameObjectTreeViewDataSource)this.m_TreeView.data;
+				gameObjectTreeViewDataSource.EnsureFullyInitialized();
+			}
 			base.BeginRowGUI();
 			if (this.showingStickyHeaders && Event.current.type != EventType.Repaint)
 			{

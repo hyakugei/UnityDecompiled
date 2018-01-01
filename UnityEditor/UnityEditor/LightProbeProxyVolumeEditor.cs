@@ -95,7 +95,7 @@ namespace UnityEditor
 				select ObjectNames.NicifyVariableName(x)).ToArray<string>()
 				select new GUIContent(x)).ToArray<GUIContent>();
 				LightProbeProxyVolumeEditor.Styles.resProbesPerUnit = EditorGUIUtility.TextContent("Density|Density in probes per world unit.");
-				LightProbeProxyVolumeEditor.Styles.componentUnusedNote = EditorGUIUtility.TextContent("In order to use the component on this game object, the Light Probes property should be set to 'Use Proxy Volume' in Renderer and baked lightmaps should be disabled.");
+				LightProbeProxyVolumeEditor.Styles.componentUnusedNote = EditorGUIUtility.TextContent("In order to use the component on this game object, the Light Probes property should be set to 'Use Proxy Volume' in Renderer.");
 				LightProbeProxyVolumeEditor.Styles.noRendererNode = EditorGUIUtility.TextContent("The component is unused by this game object because there is no Renderer component attached.");
 				LightProbeProxyVolumeEditor.Styles.noLightProbes = EditorGUIUtility.TextContent("The scene doesn't contain any light probes. Add light probes using Light Probe Group components (menu: Component->Rendering->Light Probe Group).");
 				LightProbeProxyVolumeEditor.Styles.componentUnsuportedOnTreesNote = EditorGUIUtility.TextContent("Tree rendering doesn't support Light Probe Proxy Volume components.");
@@ -215,8 +215,8 @@ namespace UnityEditor
 			get
 			{
 				Renderer renderer = ((LightProbeProxyVolume)base.target).GetComponent(typeof(Renderer)) as Renderer;
-				bool flag = renderer != null && LightmapEditorSettings.IsLightmappedOrDynamicLightmappedForRendering(renderer);
-				return renderer != null && base.targets.Length == 1 && (renderer.lightProbeUsage != LightProbeUsage.UseProxyVolume || flag);
+				bool flag = renderer != null && LightProbes.AreLightProbesAllowed(renderer);
+				return renderer != null && base.targets.Length == 1 && (renderer.lightProbeUsage != LightProbeUsage.UseProxyVolume || !flag);
 			}
 		}
 
@@ -274,19 +274,9 @@ namespace UnityEditor
 			this.UpdateShowOptions(true);
 		}
 
-		private Bounds GetGlobalBounds()
+		internal override Bounds GetWorldBoundsOfTarget(UnityEngine.Object targetObject)
 		{
-			Bounds result;
-			if (base.target is LightProbeProxyVolume)
-			{
-				LightProbeProxyVolume lightProbeProxyVolume = (LightProbeProxyVolume)base.target;
-				result = lightProbeProxyVolume.boundsGlobal;
-			}
-			else
-			{
-				result = default(Bounds);
-			}
-			return result;
+			return ((LightProbeProxyVolume)base.target).boundsGlobal;
 		}
 
 		private void DoToolbar()
@@ -297,7 +287,7 @@ namespace UnityEditor
 				GUILayout.FlexibleSpace();
 				EditMode.SceneViewEditMode editMode = EditMode.editMode;
 				EditorGUI.BeginChangeCheck();
-				EditMode.DoInspectorToolbar(LightProbeProxyVolumeEditor.Styles.sceneViewEditModes, LightProbeProxyVolumeEditor.Styles.toolContents, this.GetGlobalBounds(), this);
+				EditMode.DoInspectorToolbar(LightProbeProxyVolumeEditor.Styles.sceneViewEditModes, LightProbeProxyVolumeEditor.Styles.toolContents, this);
 				if (EditorGUI.EndChangeCheck())
 				{
 					LightProbeProxyVolumeEditor.s_LastInteractedEditor = this;

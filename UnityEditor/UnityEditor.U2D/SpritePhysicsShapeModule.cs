@@ -52,7 +52,7 @@ namespace UnityEditor.U2D
 		{
 			if (spriteRect.physicsShape == null || spriteRect.physicsShape.Count == 0)
 			{
-				spriteRect.physicsShape = SpriteOutlineModule.GenerateSpriteRectOutline(spriteRect.rect, this.spriteEditorWindow.selectedTexture, (Math.Abs(spriteRect.tessellationDetail - -1f) >= Mathf.Epsilon) ? spriteRect.tessellationDetail : this.kDefaultPhysicsTessellationDetail, this.kDefaultPhysicsAlphaTolerance);
+				spriteRect.physicsShape = SpriteOutlineModule.GenerateSpriteRectOutline(spriteRect.rect, this.spriteEditorWindow.selectedTexture, (Math.Abs(spriteRect.tessellationDetail - -1f) >= Mathf.Epsilon) ? spriteRect.tessellationDetail : this.kDefaultPhysicsTessellationDetail, this.kDefaultPhysicsAlphaTolerance, this.spriteEditorWindow.spriteEditorDataProvider);
 				this.spriteEditorWindow.SetDataModified();
 			}
 		}

@@ -15,6 +15,8 @@ namespace UnityEditor
 
 			public GUIContent space = EditorGUIUtility.TextContent("Space|Specifies if the velocity values are in local space (rotated with the transform) or world space.");
 
+			public GUIContent speedMultiplier = EditorGUIUtility.TextContent("Speed Modifier|Multiply the particle speed by this value");
+
 			public string[] spaces = new string[]
 			{
 				"Local",
@@ -29,6 +31,8 @@ namespace UnityEditor
 		private SerializedMinMaxCurve m_Z;
 
 		private SerializedProperty m_InWorldSpace;
+
+		private SerializedMinMaxCurve m_SpeedModifier;
 
 		private static VelocityModuleUI.Texts s_Texts;
 
@@ -49,17 +53,15 @@ namespace UnityEditor
 				this.m_Y = new SerializedMinMaxCurve(this, VelocityModuleUI.s_Texts.y, "y", ModuleUI.kUseSignedRange);
 				this.m_Z = new SerializedMinMaxCurve(this, VelocityModuleUI.s_Texts.z, "z", ModuleUI.kUseSignedRange);
 				this.m_InWorldSpace = base.GetProperty("inWorldSpace");
+				this.m_SpeedModifier = new SerializedMinMaxCurve(this, VelocityModuleUI.s_Texts.speedMultiplier, "speedModifier", ModuleUI.kUseSignedRange);
 			}
 		}
 
 		public override void OnInspectorGUI(InitialModuleUI initial)
 		{
-			if (VelocityModuleUI.s_Texts == null)
-			{
-				VelocityModuleUI.s_Texts = new VelocityModuleUI.Texts();
-			}
 			base.GUITripleMinMaxCurve(GUIContent.none, VelocityModuleUI.s_Texts.x, this.m_X, VelocityModuleUI.s_Texts.y, this.m_Y, VelocityModuleUI.s_Texts.z, this.m_Z, null, new GUILayoutOption[0]);
 			ModuleUI.GUIBoolAsPopup(VelocityModuleUI.s_Texts.space, this.m_InWorldSpace, VelocityModuleUI.s_Texts.spaces, new GUILayoutOption[0]);
+			ModuleUI.GUIMinMaxCurve(VelocityModuleUI.s_Texts.speedMultiplier, this.m_SpeedModifier, new GUILayoutOption[0]);
 		}
 
 		public override void UpdateCullingSupportedString(ref string text)
@@ -79,6 +81,11 @@ namespace UnityEditor
 			if (!this.m_Z.SupportsProcedural(ref empty))
 			{
 				text = text + "\nVelocity over Lifetime module curve Z: " + empty;
+			}
+			empty = string.Empty;
+			if (this.m_SpeedModifier.state != MinMaxCurveState.k_Scalar || this.m_SpeedModifier.maxConstant != 1f)
+			{
+				text += "\nVelocity over Lifetime module curve Speed Multiplier is being used";
 			}
 		}
 	}

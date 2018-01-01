@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace UnityEditor
 {
-	internal class ExpressionEvaluator
+	public class ExpressionEvaluator
 	{
 		private enum Associativity
 		{

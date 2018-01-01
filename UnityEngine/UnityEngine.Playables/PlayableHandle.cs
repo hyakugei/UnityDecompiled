@@ -31,7 +31,7 @@ namespace UnityEngine.Playables
 			}
 			else
 			{
-				object scriptInstance = PlayableHandle.GetScriptInstance(ref this);
+				object scriptInstance = this.GetScriptInstance();
 				if (scriptInstance == null)
 				{
 					result = (T)((object)null);
@@ -44,391 +44,27 @@ namespace UnityEngine.Playables
 			return result;
 		}
 
-		private static object GetScriptInstance(ref PlayableHandle playable)
-		{
-			return PlayableHandle.INTERNAL_CALL_GetScriptInstance(ref playable);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern object INTERNAL_CALL_GetScriptInstance(ref PlayableHandle playable);
-
-		internal void SetScriptInstance(object scriptInstance)
-		{
-			PlayableHandle.SetScriptInstance(ref this, scriptInstance);
-		}
-
-		private static void SetScriptInstance(ref PlayableHandle playable, object scriptInstance)
-		{
-			PlayableHandle.INTERNAL_CALL_SetScriptInstance(ref playable, scriptInstance);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_SetScriptInstance(ref PlayableHandle playable, object scriptInstance);
-
-		internal bool IsValid()
-		{
-			return PlayableHandle.IsValidInternal(ref this);
-		}
-
-		private static bool IsValidInternal(ref PlayableHandle playable)
-		{
-			return PlayableHandle.INTERNAL_CALL_IsValidInternal(ref playable);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern bool INTERNAL_CALL_IsValidInternal(ref PlayableHandle playable);
-
-		private static Type GetPlayableTypeOf(ref PlayableHandle playable)
-		{
-			return PlayableHandle.INTERNAL_CALL_GetPlayableTypeOf(ref playable);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern Type INTERNAL_CALL_GetPlayableTypeOf(ref PlayableHandle playable);
-
-		internal Type GetPlayableType()
-		{
-			return PlayableHandle.GetPlayableTypeOf(ref this);
-		}
-
 		internal bool IsPlayableOfType<T>()
 		{
-			return PlayableHandle.GetPlayableTypeOf(ref this) == typeof(T);
+			return this.GetPlayableType() == typeof(T);
 		}
-
-		internal PlayableGraph GetGraph()
-		{
-			PlayableGraph result = default(PlayableGraph);
-			PlayableHandle.GetGraphInternal(ref this, ref result);
-			return result;
-		}
-
-		internal int GetInputCount()
-		{
-			return PlayableHandle.GetInputCountInternal(ref this);
-		}
-
-		internal void SetInputCount(int value)
-		{
-			PlayableHandle.SetInputCountInternal(ref this, value);
-		}
-
-		internal int GetOutputCount()
-		{
-			return PlayableHandle.GetOutputCountInternal(ref this);
-		}
-
-		internal void SetOutputCount(int value)
-		{
-			PlayableHandle.SetOutputCountInternal(ref this, value);
-		}
-
-		internal PlayState GetPlayState()
-		{
-			return PlayableHandle.GetPlayStateInternal(ref this);
-		}
-
-		internal void SetPlayState(PlayState value)
-		{
-			PlayableHandle.SetPlayStateInternal(ref this, value);
-		}
-
-		internal double GetSpeed()
-		{
-			return PlayableHandle.GetSpeedInternal(ref this);
-		}
-
-		internal void SetSpeed(double value)
-		{
-			PlayableHandle.SetSpeedInternal(ref this, value);
-		}
-
-		internal double GetTime()
-		{
-			return PlayableHandle.GetTimeInternal(ref this);
-		}
-
-		internal void SetTime(double value)
-		{
-			PlayableHandle.SetTimeInternal(ref this, value);
-		}
-
-		internal bool IsDone()
-		{
-			return PlayableHandle.IsDoneInternal(ref this);
-		}
-
-		internal void SetDone(bool value)
-		{
-			PlayableHandle.SetDoneInternal(ref this, value);
-		}
-
-		internal bool GetPropagateSetTime()
-		{
-			return PlayableHandle.GetPropagateSetTimeInternal(ref this);
-		}
-
-		internal void SetPropagateSetTime(bool value)
-		{
-			PlayableHandle.SetPropagateSetTimeInternal(ref this, value);
-		}
-
-		internal bool CanChangeInputs()
-		{
-			return PlayableHandle.CanChangeInputsInternal(ref this);
-		}
-
-		internal bool CanSetWeights()
-		{
-			return PlayableHandle.CanSetWeightsInternal(ref this);
-		}
-
-		internal bool CanDestroy()
-		{
-			return PlayableHandle.CanDestroyInternal(ref this);
-		}
-
-		private static bool CanChangeInputsInternal(ref PlayableHandle playable)
-		{
-			return PlayableHandle.INTERNAL_CALL_CanChangeInputsInternal(ref playable);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern bool INTERNAL_CALL_CanChangeInputsInternal(ref PlayableHandle playable);
-
-		private static bool CanSetWeightsInternal(ref PlayableHandle playable)
-		{
-			return PlayableHandle.INTERNAL_CALL_CanSetWeightsInternal(ref playable);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern bool INTERNAL_CALL_CanSetWeightsInternal(ref PlayableHandle playable);
-
-		private static bool CanDestroyInternal(ref PlayableHandle playable)
-		{
-			return PlayableHandle.INTERNAL_CALL_CanDestroyInternal(ref playable);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern bool INTERNAL_CALL_CanDestroyInternal(ref PlayableHandle playable);
-
-		private static PlayState GetPlayStateInternal(ref PlayableHandle playable)
-		{
-			return PlayableHandle.INTERNAL_CALL_GetPlayStateInternal(ref playable);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern PlayState INTERNAL_CALL_GetPlayStateInternal(ref PlayableHandle playable);
-
-		private static void SetPlayStateInternal(ref PlayableHandle playable, PlayState playState)
-		{
-			PlayableHandle.INTERNAL_CALL_SetPlayStateInternal(ref playable, playState);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_SetPlayStateInternal(ref PlayableHandle playable, PlayState playState);
-
-		private static double GetSpeedInternal(ref PlayableHandle playable)
-		{
-			return PlayableHandle.INTERNAL_CALL_GetSpeedInternal(ref playable);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern double INTERNAL_CALL_GetSpeedInternal(ref PlayableHandle playable);
-
-		private static void SetSpeedInternal(ref PlayableHandle playable, double speed)
-		{
-			PlayableHandle.INTERNAL_CALL_SetSpeedInternal(ref playable, speed);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_SetSpeedInternal(ref PlayableHandle playable, double speed);
-
-		private static double GetTimeInternal(ref PlayableHandle playable)
-		{
-			return PlayableHandle.INTERNAL_CALL_GetTimeInternal(ref playable);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern double INTERNAL_CALL_GetTimeInternal(ref PlayableHandle playable);
-
-		private static void SetTimeInternal(ref PlayableHandle playable, double time)
-		{
-			PlayableHandle.INTERNAL_CALL_SetTimeInternal(ref playable, time);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_SetTimeInternal(ref PlayableHandle playable, double time);
-
-		private static bool IsDoneInternal(ref PlayableHandle playable)
-		{
-			return PlayableHandle.INTERNAL_CALL_IsDoneInternal(ref playable);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern bool INTERNAL_CALL_IsDoneInternal(ref PlayableHandle playable);
-
-		private static void SetDoneInternal(ref PlayableHandle playable, bool isDone)
-		{
-			PlayableHandle.INTERNAL_CALL_SetDoneInternal(ref playable, isDone);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_SetDoneInternal(ref PlayableHandle playable, bool isDone);
-
-		internal double GetDuration()
-		{
-			return PlayableHandle.GetDurationInternal(ref this);
-		}
-
-		internal void SetDuration(double value)
-		{
-			PlayableHandle.SetDurationInternal(ref this, value);
-		}
-
-		private static double GetDurationInternal(ref PlayableHandle playable)
-		{
-			return PlayableHandle.INTERNAL_CALL_GetDurationInternal(ref playable);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern double INTERNAL_CALL_GetDurationInternal(ref PlayableHandle playable);
-
-		private static void SetDurationInternal(ref PlayableHandle playable, double duration)
-		{
-			PlayableHandle.INTERNAL_CALL_SetDurationInternal(ref playable, duration);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_SetDurationInternal(ref PlayableHandle playable, double duration);
-
-		private static bool GetPropagateSetTimeInternal(ref PlayableHandle playable)
-		{
-			return PlayableHandle.INTERNAL_CALL_GetPropagateSetTimeInternal(ref playable);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern bool INTERNAL_CALL_GetPropagateSetTimeInternal(ref PlayableHandle playable);
-
-		private static void SetPropagateSetTimeInternal(ref PlayableHandle playable, bool value)
-		{
-			PlayableHandle.INTERNAL_CALL_SetPropagateSetTimeInternal(ref playable, value);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_SetPropagateSetTimeInternal(ref PlayableHandle playable, bool value);
-
-		private static void GetGraphInternal(ref PlayableHandle playable, ref PlayableGraph graph)
-		{
-			PlayableHandle.INTERNAL_CALL_GetGraphInternal(ref playable, ref graph);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_GetGraphInternal(ref PlayableHandle playable, ref PlayableGraph graph);
-
-		private static int GetInputCountInternal(ref PlayableHandle playable)
-		{
-			return PlayableHandle.INTERNAL_CALL_GetInputCountInternal(ref playable);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern int INTERNAL_CALL_GetInputCountInternal(ref PlayableHandle playable);
-
-		private static void SetInputCountInternal(ref PlayableHandle playable, int count)
-		{
-			PlayableHandle.INTERNAL_CALL_SetInputCountInternal(ref playable, count);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_SetInputCountInternal(ref PlayableHandle playable, int count);
-
-		private static int GetOutputCountInternal(ref PlayableHandle playable)
-		{
-			return PlayableHandle.INTERNAL_CALL_GetOutputCountInternal(ref playable);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern int INTERNAL_CALL_GetOutputCountInternal(ref PlayableHandle playable);
-
-		private static void SetOutputCountInternal(ref PlayableHandle playable, int count)
-		{
-			PlayableHandle.INTERNAL_CALL_SetOutputCountInternal(ref playable, count);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_SetOutputCountInternal(ref PlayableHandle playable, int count);
 
 		internal Playable GetInput(int inputPort)
 		{
-			return new Playable(PlayableHandle.GetInputInternal(ref this, inputPort));
+			return new Playable(this.GetInputHandle(inputPort));
 		}
-
-		private static PlayableHandle GetInputInternal(ref PlayableHandle playable, int index)
-		{
-			PlayableHandle result;
-			PlayableHandle.INTERNAL_CALL_GetInputInternal(ref playable, index, out result);
-			return result;
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_GetInputInternal(ref PlayableHandle playable, int index, out PlayableHandle value);
 
 		internal Playable GetOutput(int outputPort)
 		{
-			return new Playable(PlayableHandle.GetOutputInternal(ref this, outputPort));
+			return new Playable(this.GetOutputHandle(outputPort));
 		}
-
-		private static PlayableHandle GetOutputInternal(ref PlayableHandle playable, int index)
-		{
-			PlayableHandle result;
-			PlayableHandle.INTERNAL_CALL_GetOutputInternal(ref playable, index, out result);
-			return result;
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_GetOutputInternal(ref PlayableHandle playable, int index, out PlayableHandle value);
-
-		private static void SetInputWeightFromIndexInternal(ref PlayableHandle playable, int index, float weight)
-		{
-			PlayableHandle.INTERNAL_CALL_SetInputWeightFromIndexInternal(ref playable, index, weight);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_SetInputWeightFromIndexInternal(ref PlayableHandle playable, int index, float weight);
 
 		internal bool SetInputWeight(int inputIndex, float weight)
 		{
 			bool result;
 			if (this.CheckInputBounds(inputIndex))
 			{
-				PlayableHandle.SetInputWeightFromIndexInternal(ref this, inputIndex, weight);
+				this.SetInputWeightFromIndex(inputIndex, weight);
 				result = true;
 			}
 			else
@@ -438,35 +74,12 @@ namespace UnityEngine.Playables
 			return result;
 		}
 
-		private static float GetInputWeightFromIndexInternal(ref PlayableHandle playable, int index)
-		{
-			return PlayableHandle.INTERNAL_CALL_GetInputWeightFromIndexInternal(ref playable, index);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern float INTERNAL_CALL_GetInputWeightFromIndexInternal(ref PlayableHandle playable, int index);
-
-		internal void SetInputWeight(PlayableHandle input, float weight)
-		{
-			PlayableHandle.SetInputWeightInternal(ref this, ref input, weight);
-		}
-
-		private static void SetInputWeightInternal(ref PlayableHandle playable, ref PlayableHandle input, float weight)
-		{
-			PlayableHandle.INTERNAL_CALL_SetInputWeightInternal(ref playable, ref input, weight);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_SetInputWeightInternal(ref PlayableHandle playable, ref PlayableHandle input, float weight);
-
 		internal float GetInputWeight(int inputIndex)
 		{
 			float result;
 			if (this.CheckInputBounds(inputIndex))
 			{
-				result = PlayableHandle.GetInputWeightFromIndexInternal(ref this, inputIndex);
+				result = this.GetInputWeightFromIndex(inputIndex);
 			}
 			else
 			{
@@ -538,5 +151,275 @@ namespace UnityEngine.Playables
 			}
 			return result;
 		}
+
+		internal bool IsValid()
+		{
+			return PlayableHandle.IsValid_Injected(ref this);
+		}
+
+		internal Type GetPlayableType()
+		{
+			return PlayableHandle.GetPlayableType_Injected(ref this);
+		}
+
+		internal void SetScriptInstance(object scriptInstance)
+		{
+			PlayableHandle.SetScriptInstance_Injected(ref this, scriptInstance);
+		}
+
+		internal bool CanChangeInputs()
+		{
+			return PlayableHandle.CanChangeInputs_Injected(ref this);
+		}
+
+		internal bool CanSetWeights()
+		{
+			return PlayableHandle.CanSetWeights_Injected(ref this);
+		}
+
+		internal bool CanDestroy()
+		{
+			return PlayableHandle.CanDestroy_Injected(ref this);
+		}
+
+		internal PlayState GetPlayState()
+		{
+			return PlayableHandle.GetPlayState_Injected(ref this);
+		}
+
+		internal void Play()
+		{
+			PlayableHandle.Play_Injected(ref this);
+		}
+
+		internal void Pause()
+		{
+			PlayableHandle.Pause_Injected(ref this);
+		}
+
+		internal double GetSpeed()
+		{
+			return PlayableHandle.GetSpeed_Injected(ref this);
+		}
+
+		internal void SetSpeed(double value)
+		{
+			PlayableHandle.SetSpeed_Injected(ref this, value);
+		}
+
+		internal double GetTime()
+		{
+			return PlayableHandle.GetTime_Injected(ref this);
+		}
+
+		internal void SetTime(double value)
+		{
+			PlayableHandle.SetTime_Injected(ref this, value);
+		}
+
+		internal bool IsDone()
+		{
+			return PlayableHandle.IsDone_Injected(ref this);
+		}
+
+		internal void SetDone(bool value)
+		{
+			PlayableHandle.SetDone_Injected(ref this, value);
+		}
+
+		internal double GetDuration()
+		{
+			return PlayableHandle.GetDuration_Injected(ref this);
+		}
+
+		internal void SetDuration(double value)
+		{
+			PlayableHandle.SetDuration_Injected(ref this, value);
+		}
+
+		internal bool GetPropagateSetTime()
+		{
+			return PlayableHandle.GetPropagateSetTime_Injected(ref this);
+		}
+
+		internal void SetPropagateSetTime(bool value)
+		{
+			PlayableHandle.SetPropagateSetTime_Injected(ref this, value);
+		}
+
+		internal PlayableGraph GetGraph()
+		{
+			PlayableGraph result;
+			PlayableHandle.GetGraph_Injected(ref this, out result);
+			return result;
+		}
+
+		internal int GetInputCount()
+		{
+			return PlayableHandle.GetInputCount_Injected(ref this);
+		}
+
+		internal void SetInputCount(int value)
+		{
+			PlayableHandle.SetInputCount_Injected(ref this, value);
+		}
+
+		internal int GetOutputCount()
+		{
+			return PlayableHandle.GetOutputCount_Injected(ref this);
+		}
+
+		internal void SetOutputCount(int value)
+		{
+			PlayableHandle.SetOutputCount_Injected(ref this, value);
+		}
+
+		internal void SetInputWeight(PlayableHandle input, float weight)
+		{
+			PlayableHandle.SetInputWeight_Injected(ref this, ref input, weight);
+		}
+
+		internal void SetDelay(double delay)
+		{
+			PlayableHandle.SetDelay_Injected(ref this, delay);
+		}
+
+		internal double GetDelay()
+		{
+			return PlayableHandle.GetDelay_Injected(ref this);
+		}
+
+		internal bool IsDelayed()
+		{
+			return PlayableHandle.IsDelayed_Injected(ref this);
+		}
+
+		private object GetScriptInstance()
+		{
+			return PlayableHandle.GetScriptInstance_Injected(ref this);
+		}
+
+		private PlayableHandle GetInputHandle(int index)
+		{
+			PlayableHandle result;
+			PlayableHandle.GetInputHandle_Injected(ref this, index, out result);
+			return result;
+		}
+
+		private PlayableHandle GetOutputHandle(int index)
+		{
+			PlayableHandle result;
+			PlayableHandle.GetOutputHandle_Injected(ref this, index, out result);
+			return result;
+		}
+
+		private void SetInputWeightFromIndex(int index, float weight)
+		{
+			PlayableHandle.SetInputWeightFromIndex_Injected(ref this, index, weight);
+		}
+
+		private float GetInputWeightFromIndex(int index)
+		{
+			return PlayableHandle.GetInputWeightFromIndex_Injected(ref this, index);
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern bool IsValid_Injected(ref PlayableHandle _unity_self);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern Type GetPlayableType_Injected(ref PlayableHandle _unity_self);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void SetScriptInstance_Injected(ref PlayableHandle _unity_self, object scriptInstance);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern bool CanChangeInputs_Injected(ref PlayableHandle _unity_self);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern bool CanSetWeights_Injected(ref PlayableHandle _unity_self);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern bool CanDestroy_Injected(ref PlayableHandle _unity_self);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern PlayState GetPlayState_Injected(ref PlayableHandle _unity_self);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void Play_Injected(ref PlayableHandle _unity_self);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void Pause_Injected(ref PlayableHandle _unity_self);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern double GetSpeed_Injected(ref PlayableHandle _unity_self);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void SetSpeed_Injected(ref PlayableHandle _unity_self, double value);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern double GetTime_Injected(ref PlayableHandle _unity_self);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void SetTime_Injected(ref PlayableHandle _unity_self, double value);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern bool IsDone_Injected(ref PlayableHandle _unity_self);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void SetDone_Injected(ref PlayableHandle _unity_self, bool value);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern double GetDuration_Injected(ref PlayableHandle _unity_self);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void SetDuration_Injected(ref PlayableHandle _unity_self, double value);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern bool GetPropagateSetTime_Injected(ref PlayableHandle _unity_self);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void SetPropagateSetTime_Injected(ref PlayableHandle _unity_self, bool value);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void GetGraph_Injected(ref PlayableHandle _unity_self, out PlayableGraph ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern int GetInputCount_Injected(ref PlayableHandle _unity_self);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void SetInputCount_Injected(ref PlayableHandle _unity_self, int value);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern int GetOutputCount_Injected(ref PlayableHandle _unity_self);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void SetOutputCount_Injected(ref PlayableHandle _unity_self, int value);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void SetInputWeight_Injected(ref PlayableHandle _unity_self, ref PlayableHandle input, float weight);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void SetDelay_Injected(ref PlayableHandle _unity_self, double delay);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern double GetDelay_Injected(ref PlayableHandle _unity_self);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern bool IsDelayed_Injected(ref PlayableHandle _unity_self);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern object GetScriptInstance_Injected(ref PlayableHandle _unity_self);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void GetInputHandle_Injected(ref PlayableHandle _unity_self, int index, out PlayableHandle ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void GetOutputHandle_Injected(ref PlayableHandle _unity_self, int index, out PlayableHandle ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void SetInputWeightFromIndex_Injected(ref PlayableHandle _unity_self, int index, float weight);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern float GetInputWeightFromIndex_Injected(ref PlayableHandle _unity_self, int index);
 	}
 }

@@ -12,7 +12,7 @@ namespace UnityEditor
 		BuildAdditionalStreamedScenes = 16,
 		AcceptExternalModificationsToPlayer = 32,
 		InstallInBuildFolder = 64,
-		[Obsolete("WebPlayer has been removed in 5.4")]
+		[Obsolete("WebPlayer has been removed in 5.4", true)]
 		WebPlayerOfflineDeployment = 128,
 		ConnectWithProfiler = 256,
 		AllowDebugging = 512,
@@ -28,6 +28,7 @@ namespace UnityEditor
 		Il2CPP = 65536,
 		ForceEnableAssertions = 131072,
 		CompressWithLz4 = 262144,
+		CompressWithLz4HC = 524288,
 		[Obsolete("Specify IL2CPP optimization level in Player Settings.")]
 		ForceOptimizeScriptCompilation = 0,
 		ComputeCRC = 1048576,

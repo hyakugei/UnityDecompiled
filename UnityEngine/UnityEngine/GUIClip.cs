@@ -67,6 +67,30 @@ namespace UnityEngine
 			return absoluteRect;
 		}
 
+		public static Vector2 UnclipToWindow(Vector2 pos)
+		{
+			GUIClip.UnclipToWindow_Vector2(ref pos);
+			return pos;
+		}
+
+		public static Rect UnclipToWindow(Rect rect)
+		{
+			GUIClip.UnclipToWindow_Rect(ref rect);
+			return rect;
+		}
+
+		public static Vector2 ClipToWindow(Vector2 absolutePos)
+		{
+			GUIClip.ClipToWindow_Vector2(ref absolutePos);
+			return absolutePos;
+		}
+
+		public static Rect ClipToWindow(Rect absoluteRect)
+		{
+			GUIClip.ClipToWindow_Rect(ref absoluteRect);
+			return absoluteRect;
+		}
+
 		public static Vector2 GetAbsoluteMousePosition()
 		{
 			Vector2 result;
@@ -142,6 +166,42 @@ namespace UnityEngine
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern void INTERNAL_CALL_Internal_Clip_Rect(ref Rect absoluteRect);
 
+		private static void UnclipToWindow_Vector2(ref Vector2 pos)
+		{
+			GUIClip.INTERNAL_CALL_UnclipToWindow_Vector2(ref pos);
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void INTERNAL_CALL_UnclipToWindow_Vector2(ref Vector2 pos);
+
+		private static void UnclipToWindow_Rect(ref Rect rect)
+		{
+			GUIClip.INTERNAL_CALL_UnclipToWindow_Rect(ref rect);
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void INTERNAL_CALL_UnclipToWindow_Rect(ref Rect rect);
+
+		private static void ClipToWindow_Vector2(ref Vector2 absolutePos)
+		{
+			GUIClip.INTERNAL_CALL_ClipToWindow_Vector2(ref absolutePos);
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void INTERNAL_CALL_ClipToWindow_Vector2(ref Vector2 absolutePos);
+
+		private static void ClipToWindow_Rect(ref Rect absoluteRect)
+		{
+			GUIClip.INTERNAL_CALL_ClipToWindow_Rect(ref absoluteRect);
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void INTERNAL_CALL_ClipToWindow_Rect(ref Rect absoluteRect);
+
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern void Reapply();
@@ -165,6 +225,17 @@ namespace UnityEngine
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern void INTERNAL_CALL_SetMatrix(ref Matrix4x4 m);
+
+		internal static Matrix4x4 GetTransform()
+		{
+			Matrix4x4 result;
+			GUIClip.INTERNAL_CALL_GetTransform(out result);
+			return result;
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void INTERNAL_CALL_GetTransform(out Matrix4x4 value);
 
 		internal static void SetTransform(Matrix4x4 objectTransform, Rect clipRect)
 		{

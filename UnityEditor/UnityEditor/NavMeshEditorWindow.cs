@@ -294,7 +294,11 @@ namespace UnityEditor
 			{
 				NavMeshEditorWindow.s_Styles = new NavMeshEditorWindow.Styles();
 			}
-			this.m_Mode = (NavMeshEditorWindow.Mode)GUILayout.Toolbar((int)this.m_Mode, NavMeshEditorWindow.s_Styles.m_ModeToggles, "LargeButton", new GUILayoutOption[0]);
+			EditorGUILayout.BeginHorizontal(new GUILayoutOption[0]);
+			GUILayout.FlexibleSpace();
+			this.m_Mode = (NavMeshEditorWindow.Mode)GUILayout.Toolbar((int)this.m_Mode, NavMeshEditorWindow.s_Styles.m_ModeToggles, "LargeButton", GUI.ToolbarButtonSize.FitToContents, new GUILayoutOption[0]);
+			GUILayout.FlexibleSpace();
+			EditorGUILayout.EndHorizontal();
 		}
 
 		private void GetAreaListRects(Rect rect, out Rect stripeRect, out Rect labelRect, out Rect nameRect, out Rect costRect)
@@ -509,7 +513,7 @@ namespace UnityEditor
 				{
 					NavMeshEditorWindow.<>f__mg$cache0 = new SceneViewOverlay.WindowFunction(NavMeshEditorWindow.DisplayControls);
 				}
-				SceneViewOverlay.Window(arg_3D_0, NavMeshEditorWindow.<>f__mg$cache0, 300, SceneViewOverlay.WindowDisplayOption.OneWindowPerTarget);
+				SceneViewOverlay.Window(arg_3D_0, NavMeshEditorWindow.<>f__mg$cache0, 400, SceneViewOverlay.WindowDisplayOption.OneWindowPerTarget);
 				if (this.m_SelectedNavMeshAgentCount > 0)
 				{
 					GUIContent arg_7C_0 = new GUIContent("Agent Display");
@@ -517,7 +521,7 @@ namespace UnityEditor
 					{
 						NavMeshEditorWindow.<>f__mg$cache1 = new SceneViewOverlay.WindowFunction(NavMeshEditorWindow.DisplayAgentControls);
 					}
-					SceneViewOverlay.Window(arg_7C_0, NavMeshEditorWindow.<>f__mg$cache1, 300, SceneViewOverlay.WindowDisplayOption.OneWindowPerTarget);
+					SceneViewOverlay.Window(arg_7C_0, NavMeshEditorWindow.<>f__mg$cache1, 400, SceneViewOverlay.WindowDisplayOption.OneWindowPerTarget);
 				}
 				if (this.m_SelectedNavMeshObstacleCount > 0)
 				{
@@ -526,7 +530,7 @@ namespace UnityEditor
 					{
 						NavMeshEditorWindow.<>f__mg$cache2 = new SceneViewOverlay.WindowFunction(NavMeshEditorWindow.DisplayObstacleControls);
 					}
-					SceneViewOverlay.Window(arg_BC_0, NavMeshEditorWindow.<>f__mg$cache2, 300, SceneViewOverlay.WindowDisplayOption.OneWindowPerTarget);
+					SceneViewOverlay.Window(arg_BC_0, NavMeshEditorWindow.<>f__mg$cache2, 400, SceneViewOverlay.WindowDisplayOption.OneWindowPerTarget);
 				}
 			}
 		}
@@ -658,14 +662,7 @@ namespace UnityEditor
 					{
 						GUILayout.MaxWidth(165f)
 					});
-					EditorGUILayout.HelpBox(string.Concat(new object[]
-					{
-						"Avoidance visualization can be drawn for ",
-						10,
-						" agents (",
-						NavMeshEditorWindow.s_NavMeshEditorWindow.m_SelectedNavMeshAgentCount,
-						" selected)."
-					}), MessageType.Warning);
+					EditorGUILayout.HelpBox(string.Format("Avoidance visualization can be drawn for {0} agents ({1} selected).", 10, NavMeshEditorWindow.s_NavMeshEditorWindow.m_SelectedNavMeshAgentCount), MessageType.Warning);
 					EditorGUILayout.EndVertical();
 				}
 			}

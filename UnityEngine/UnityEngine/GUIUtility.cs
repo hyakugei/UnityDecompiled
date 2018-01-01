@@ -178,11 +178,6 @@ namespace UnityEngine
 			return GUIUtility.processEvent != null && GUIUtility.processEvent(instanceID, nativeEventPtr);
 		}
 
-		internal static void BeginContainer(int instanceID)
-		{
-			GUIUtility.Internal_BeginContainer(instanceID);
-		}
-
 		internal static void EndContainer()
 		{
 			GUIUtility.Internal_EndContainer();
@@ -291,7 +286,7 @@ namespace UnityEngine
 
 		public static Vector2 GUIToScreenPoint(Vector2 guiPoint)
 		{
-			return GUIClip.Unclip(guiPoint) + GUIUtility.s_EditorScreenPointOffset;
+			return GUIClip.UnclipToWindow(guiPoint) + GUIUtility.s_EditorScreenPointOffset;
 		}
 
 		internal static Rect GUIToScreenRect(Rect guiRect)
@@ -304,7 +299,7 @@ namespace UnityEngine
 
 		public static Vector2 ScreenToGUIPoint(Vector2 screenPoint)
 		{
-			return GUIClip.Clip(screenPoint) - GUIUtility.s_EditorScreenPointOffset;
+			return GUIClip.ClipToWindow(screenPoint) - GUIUtility.s_EditorScreenPointOffset;
 		}
 
 		public static Rect ScreenToGUIRect(Rect screenRect)
@@ -331,6 +326,15 @@ namespace UnityEngine
 			Matrix4x4 lhs = Matrix4x4.TRS(vector, Quaternion.identity, new Vector3(scale.x, scale.y, 1f)) * Matrix4x4.TRS(-vector, Quaternion.identity, Vector3.one);
 			GUI.matrix = lhs * matrix;
 		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void BeginContainerFromOwner(ScriptableObject owner);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void BeginContainer(ObjectGUIState objectGUIState);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void Internal_EndContainer();
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -403,14 +407,18 @@ namespace UnityEngine
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void Internal_BeginContainer(int instanceID);
+		internal static extern int CheckForTabEvent(Event evt);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern bool CheckForTabEvent(Event evt);
+		internal static extern void SetKeyboardControlToFirstControlId();
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void Internal_EndContainer();
+		internal static extern void SetKeyboardControlToLastControlId();
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern bool HasFocusableControls();
 	}
 }

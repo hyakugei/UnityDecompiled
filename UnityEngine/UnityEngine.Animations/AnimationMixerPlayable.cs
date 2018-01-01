@@ -66,11 +66,10 @@ namespace UnityEngine.Animations
 
 		private static bool CreateHandleInternal(PlayableGraph graph, int inputCount, bool normalizeWeights, ref PlayableHandle handle)
 		{
-			return AnimationMixerPlayable.INTERNAL_CALL_CreateHandleInternal(ref graph, inputCount, normalizeWeights, ref handle);
+			return AnimationMixerPlayable.CreateHandleInternal_Injected(ref graph, inputCount, normalizeWeights, ref handle);
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern bool INTERNAL_CALL_CreateHandleInternal(ref PlayableGraph graph, int inputCount, bool normalizeWeights, ref PlayableHandle handle);
+		private static extern bool CreateHandleInternal_Injected(ref PlayableGraph graph, int inputCount, bool normalizeWeights, ref PlayableHandle handle);
 	}
 }

@@ -7,6 +7,8 @@ namespace UnityEditor
 	{
 		private class Texts
 		{
+			public GUIContent mode = new GUIContent("Mode", "Select how trails are generated on the particles.");
+
 			public GUIContent ratio = new GUIContent("Ratio", "Choose what proportion of particles will receive a trail.");
 
 			public GUIContent lifetime = EditorGUIUtility.TextContent("Lifetime|How long each trail will last, relative to the life of the particle.");
@@ -33,16 +35,28 @@ namespace UnityEditor
 
 			public GUIContent generateLightingData = EditorGUIUtility.TextContent("Generate Lighting Data|Toggle generation of normal and tangent data, for use in lit shaders.");
 
-			public string[] textureModeOptions = new string[]
+			public GUIContent ribbonCount = EditorGUIUtility.TextContent("Ribbon Count|Select how many ribbons to render throughout the Particle System.");
+
+			public GUIContent splitSubEmitterRibbons = EditorGUIUtility.TextContent("Split Sub Emitter Ribbons|When used on a sub emitter, ribbons will connect particles from each parent particle independently.");
+
+			public GUIContent[] trailModeOptions = new GUIContent[]
 			{
-				"Stretch",
-				"Tile",
-				"DistributePerSegment",
-				"RepeatPerSegment"
+				EditorGUIUtility.TextContent("Particles"),
+				EditorGUIUtility.TextContent("Ribbon")
+			};
+
+			public GUIContent[] textureModeOptions = new GUIContent[]
+			{
+				EditorGUIUtility.TextContent("Stretch"),
+				EditorGUIUtility.TextContent("Tile"),
+				EditorGUIUtility.TextContent("DistributePerSegment"),
+				EditorGUIUtility.TextContent("RepeatPerSegment")
 			};
 		}
 
 		private static TrailModuleUI.Texts s_Texts;
+
+		private SerializedProperty m_Mode;
 
 		private SerializedProperty m_Ratio;
 
@@ -70,6 +84,10 @@ namespace UnityEditor
 
 		private SerializedProperty m_GenerateLightingData;
 
+		private SerializedProperty m_RibbonCount;
+
+		private SerializedProperty m_SplitSubEmitterRibbons;
+
 		public TrailModuleUI(ParticleSystemUI owner, SerializedObject o, string displayName) : base(owner, o, "TrailModule", displayName)
 		{
 			this.m_ToolTip = "Attach trails to the particles.";
@@ -83,6 +101,7 @@ namespace UnityEditor
 				{
 					TrailModuleUI.s_Texts = new TrailModuleUI.Texts();
 				}
+				this.m_Mode = base.GetProperty("mode");
 				this.m_Ratio = base.GetProperty("ratio");
 				this.m_Lifetime = new SerializedMinMaxCurve(this, TrailModuleUI.s_Texts.lifetime, "lifetime");
 				this.m_MinVertexDistance = base.GetProperty("minVertexDistance");
@@ -96,23 +115,39 @@ namespace UnityEditor
 				this.m_WidthOverTrail = new SerializedMinMaxCurve(this, TrailModuleUI.s_Texts.widthOverTrail, "widthOverTrail");
 				this.m_ColorOverTrail = new SerializedMinMaxGradient(this, "colorOverTrail");
 				this.m_GenerateLightingData = base.GetProperty("generateLightingData");
+				this.m_RibbonCount = base.GetProperty("ribbonCount");
+				this.m_SplitSubEmitterRibbons = base.GetProperty("splitSubEmitterRibbons");
 			}
 		}
 
 		public override void OnInspectorGUI(InitialModuleUI initial)
 		{
-			if (TrailModuleUI.s_Texts == null)
+			ParticleSystemTrailMode particleSystemTrailMode = (ParticleSystemTrailMode)ModuleUI.GUIPopup(TrailModuleUI.s_Texts.mode, this.m_Mode, TrailModuleUI.s_Texts.trailModeOptions, new GUILayoutOption[0]);
+			if (!this.m_Mode.hasMultipleDifferentValues)
 			{
-				TrailModuleUI.s_Texts = new TrailModuleUI.Texts();
+				if (particleSystemTrailMode == ParticleSystemTrailMode.PerParticle)
+				{
+					ModuleUI.GUIFloat(TrailModuleUI.s_Texts.ratio, this.m_Ratio, new GUILayoutOption[0]);
+					ModuleUI.GUIMinMaxCurve(TrailModuleUI.s_Texts.lifetime, this.m_Lifetime, new GUILayoutOption[0]);
+					ModuleUI.GUIFloat(TrailModuleUI.s_Texts.minVertexDistance, this.m_MinVertexDistance, new GUILayoutOption[0]);
+					ModuleUI.GUIToggle(TrailModuleUI.s_Texts.worldSpace, this.m_WorldSpace, new GUILayoutOption[0]);
+					ModuleUI.GUIToggle(TrailModuleUI.s_Texts.dieWithParticles, this.m_DieWithParticles, new GUILayoutOption[0]);
+				}
+				else
+				{
+					ModuleUI.GUIInt(TrailModuleUI.s_Texts.ribbonCount, this.m_RibbonCount, new GUILayoutOption[0]);
+					ModuleUI.GUIToggle(TrailModuleUI.s_Texts.splitSubEmitterRibbons, this.m_SplitSubEmitterRibbons, new GUILayoutOption[0]);
+				}
 			}
-			ModuleUI.GUIFloat(TrailModuleUI.s_Texts.ratio, this.m_Ratio, new GUILayoutOption[0]);
-			ModuleUI.GUIMinMaxCurve(TrailModuleUI.s_Texts.lifetime, this.m_Lifetime, new GUILayoutOption[0]);
-			ModuleUI.GUIFloat(TrailModuleUI.s_Texts.minVertexDistance, this.m_MinVertexDistance, new GUILayoutOption[0]);
 			ModuleUI.GUIPopup(TrailModuleUI.s_Texts.textureMode, this.m_TextureMode, TrailModuleUI.s_Texts.textureModeOptions, new GUILayoutOption[0]);
-			ModuleUI.GUIToggle(TrailModuleUI.s_Texts.worldSpace, this.m_WorldSpace, new GUILayoutOption[0]);
-			ModuleUI.GUIToggle(TrailModuleUI.s_Texts.dieWithParticles, this.m_DieWithParticles, new GUILayoutOption[0]);
 			ModuleUI.GUIToggle(TrailModuleUI.s_Texts.sizeAffectsWidth, this.m_SizeAffectsWidth, new GUILayoutOption[0]);
-			ModuleUI.GUIToggle(TrailModuleUI.s_Texts.sizeAffectsLifetime, this.m_SizeAffectsLifetime, new GUILayoutOption[0]);
+			if (!this.m_Mode.hasMultipleDifferentValues)
+			{
+				if (particleSystemTrailMode == ParticleSystemTrailMode.PerParticle)
+				{
+					ModuleUI.GUIToggle(TrailModuleUI.s_Texts.sizeAffectsLifetime, this.m_SizeAffectsLifetime, new GUILayoutOption[0]);
+				}
+			}
 			ModuleUI.GUIToggle(TrailModuleUI.s_Texts.inheritParticleColor, this.m_InheritParticleColor, new GUILayoutOption[0]);
 			base.GUIMinMaxGradient(TrailModuleUI.s_Texts.colorOverLifetime, this.m_ColorOverLifetime, false, new GUILayoutOption[0]);
 			ModuleUI.GUIMinMaxCurve(TrailModuleUI.s_Texts.widthOverTrail, this.m_WidthOverTrail, new GUILayoutOption[0]);
@@ -136,7 +171,11 @@ namespace UnityEditor
 
 		public override void UpdateCullingSupportedString(ref string text)
 		{
-			text += "\nTrails module is enabled.";
+			this.Init();
+			if (this.m_Mode.intValue == 0)
+			{
+				text += "\nTrails module is enabled.";
+			}
 		}
 	}
 }

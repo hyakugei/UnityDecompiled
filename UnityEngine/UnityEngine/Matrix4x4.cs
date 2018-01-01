@@ -59,6 +59,26 @@ namespace UnityEngine
 			}
 		}
 
+		public Quaternion rotation
+		{
+			get
+			{
+				Quaternion result;
+				this.INTERNAL_get_rotation(out result);
+				return result;
+			}
+		}
+
+		public Vector3 lossyScale
+		{
+			get
+			{
+				Vector3 result;
+				this.INTERNAL_get_lossyScale(out result);
+				return result;
+			}
+		}
+
 		public extern bool isIdentity
 		{
 			[GeneratedByOldBindingsGenerator]
@@ -71,6 +91,16 @@ namespace UnityEngine
 			get
 			{
 				return Matrix4x4.Determinant(this);
+			}
+		}
+
+		public FrustumPlanes decomposeProjection
+		{
+			get
+			{
+				FrustumPlanes result;
+				this.INTERNAL_get_decomposeProjection(out result);
+				return result;
 			}
 		}
 
@@ -272,6 +302,18 @@ namespace UnityEngine
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern bool INTERNAL_CALL_Invert(ref Matrix4x4 inMatrix, out Matrix4x4 dest);
 
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void INTERNAL_get_rotation(out Quaternion value);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void INTERNAL_get_lossyScale(out Vector3 value);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public extern bool ValidTRS();
+
 		public static float Determinant(Matrix4x4 m)
 		{
 			return Matrix4x4.INTERNAL_CALL_Determinant(ref m);
@@ -329,6 +371,31 @@ namespace UnityEngine
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern void INTERNAL_CALL_LookAt(ref Vector3 from, ref Vector3 to, ref Vector3 up, out Matrix4x4 value);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void INTERNAL_get_decomposeProjection(out FrustumPlanes value);
+
+		public static Matrix4x4 Frustum(float left, float right, float bottom, float top, float zNear, float zFar)
+		{
+			return Matrix4x4.FrustumInternal(left, right, bottom, top, zNear, zFar);
+		}
+
+		public static Matrix4x4 Frustum(FrustumPlanes frustumPlanes)
+		{
+			return Matrix4x4.FrustumInternal(frustumPlanes.left, frustumPlanes.right, frustumPlanes.bottom, frustumPlanes.top, frustumPlanes.zNear, frustumPlanes.zFar);
+		}
+
+		private static Matrix4x4 FrustumInternal(float left, float right, float bottom, float top, float zNear, float zFar)
+		{
+			Matrix4x4 result;
+			Matrix4x4.INTERNAL_CALL_FrustumInternal(left, right, bottom, top, zNear, zFar, out result);
+			return result;
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void INTERNAL_CALL_FrustumInternal(float left, float right, float bottom, float top, float zNear, float zFar, out Matrix4x4 value);
 
 		public override int GetHashCode()
 		{

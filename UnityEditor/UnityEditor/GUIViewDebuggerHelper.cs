@@ -8,6 +8,8 @@ namespace UnityEditor
 {
 	internal class GUIViewDebuggerHelper
 	{
+		internal static Action onViewInstructionsChanged;
+
 		internal static void GetViews(List<GUIView> views)
 		{
 			GUIViewDebuggerHelper.GetViewsInternal(views);
@@ -25,45 +27,19 @@ namespace UnityEditor
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern void StopDebugging();
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern int GetInstructionCount();
-
-		public static Rect GetRectFromInstruction(int instructionIndex)
+		private static GUIContent CreateGUIContent(string text, Texture image, string tooltip)
 		{
-			Rect result;
-			GUIViewDebuggerHelper.INTERNAL_CALL_GetRectFromInstruction(instructionIndex, out result);
-			return result;
+			return new GUIContent(text, image, tooltip);
+		}
+
+		internal static void GetDrawInstructions(List<IMGUIDrawInstruction> drawInstructions)
+		{
+			GUIViewDebuggerHelper.GetDrawInstructionsInternal(drawInstructions);
 		}
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_GetRectFromInstruction(int instructionIndex, out Rect value);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern GUIStyle GetStyleFromInstruction(int instructionIndex);
-
-		internal static GUIContent GetContentFromInstruction(int instructionIndex)
-		{
-			return new GUIContent
-			{
-				text = GUIViewDebuggerHelper.GetContentTextFromInstruction(instructionIndex),
-				image = GUIViewDebuggerHelper.GetContentImageFromInstruction(instructionIndex)
-			};
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern string GetContentTextFromInstruction(int instructionIndex);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern Texture GetContentImageFromInstruction(int instructionIndex);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern StackFrame[] GetManagedStackTrace(int instructionIndex);
+		private static extern void GetDrawInstructionsInternal(object drawInstructions);
 
 		internal static void GetClipInstructions(List<IMGUIClipInstruction> clipInstructions)
 		{
@@ -73,6 +49,24 @@ namespace UnityEditor
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern void GetClipInstructionsInternal(object clipInstructions);
+
+		internal static void GetNamedControlInstructions(List<IMGUINamedControlInstruction> namedControlInstructions)
+		{
+			GUIViewDebuggerHelper.GetNamedControlInstructionsInternal(namedControlInstructions);
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void GetNamedControlInstructionsInternal(object namedControlInstructions);
+
+		internal static void GetPropertyInstructions(List<IMGUIPropertyInstruction> namedControlInstructions)
+		{
+			GUIViewDebuggerHelper.GetPropertyInstructionsInternal(namedControlInstructions);
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void GetPropertyInstructionsInternal(object propertyInstructions);
 
 		internal static void GetLayoutInstructions(List<IMGUILayoutInstruction> layoutInstructions)
 		{
@@ -91,5 +85,18 @@ namespace UnityEditor
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern void GetUnifiedInstructionsInternal(object instructions);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void ClearInstructions();
+
+		[RequiredByNativeCode]
+		private static void CallOnViewInstructionsChanged()
+		{
+			if (GUIViewDebuggerHelper.onViewInstructionsChanged != null)
+			{
+				GUIViewDebuggerHelper.onViewInstructionsChanged();
+			}
+		}
 	}
 }

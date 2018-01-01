@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEditor.Scripting;
+using UnityEditor.Scripting.ScriptCompilation;
 using UnityEditorInternal;
 using UnityEngine;
 
 namespace UnityEditor.RestService
 {
-	internal class ProjectStateRestHandler : Handler
+	internal class ProjectStateRestHandler : JSONHandler
 	{
 		public class Island
 		{
@@ -55,7 +56,7 @@ namespace UnityEditor.RestService
 
 		private static JSONValue JsonForProject()
 		{
-			List<ProjectStateRestHandler.Island> list = (from i in InternalEditorUtility.GetMonoIslands()
+			List<ProjectStateRestHandler.Island> list = (from i in EditorCompilationInterface.GetAllMonoIslands()
 			select new ProjectStateRestHandler.Island
 			{
 				MonoIsland = i,
@@ -99,8 +100,8 @@ namespace UnityEditor.RestService
 			select i2).ToList<JSONValue>());
 			result["basedirectory"] = ProjectStateRestHandler.ProjectPath;
 			JSONValue value = default(JSONValue);
-			value["files"] = Handler.ToJSON(array);
-			value["emptydirectories"] = Handler.ToJSON(strings);
+			value["files"] = JSONHandler.ToJSON(array);
+			value["emptydirectories"] = JSONHandler.ToJSON(strings);
 			result["assetdatabase"] = value;
 			return result;
 		}
@@ -134,9 +135,9 @@ namespace UnityEditor.RestService
 				JSONValue jSONValue = default(JSONValue);
 				jSONValue["name"] = island.Name;
 				jSONValue["language"] = ((!island.Name.Contains("Boo")) ? ((!island.Name.Contains("UnityScript")) ? "C#" : "UnityScript") : "Boo");
-				jSONValue["files"] = Handler.ToJSON(island.MonoIsland._files);
-				jSONValue["defines"] = Handler.ToJSON(island.MonoIsland._defines);
-				jSONValue["references"] = Handler.ToJSON(island.MonoIsland._references);
+				jSONValue["files"] = JSONHandler.ToJSON(island.MonoIsland._files);
+				jSONValue["defines"] = JSONHandler.ToJSON(island.MonoIsland._defines);
+				jSONValue["references"] = JSONHandler.ToJSON(island.MonoIsland._references);
 				jSONValue["basedirectory"] = ProjectStateRestHandler.ProjectPath;
 				result = jSONValue;
 			}

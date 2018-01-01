@@ -90,6 +90,8 @@ namespace UnityEditor
 
 			internal static bool s_AllowContextCutOrPaste = true;
 
+			private IMECompositionMode m_IMECompositionModeBackup;
+
 			internal bool IsEditingControl(int id)
 			{
 				return GUIUtility.keyboardControl == id && this.controlID == id && EditorGUI.RecycledTextEditor.s_ActuallyEditing && GUIView.current.hasFocus;
@@ -114,6 +116,8 @@ namespace UnityEditor
 					EditorGUI.RecycledTextEditor.s_ActuallyEditing = true;
 					this.scrollOffset = Vector2.zero;
 					UnityEditor.Undo.IncrementCurrentGroup();
+					this.m_IMECompositionModeBackup = Input.imeCompositionMode;
+					Input.imeCompositionMode = IMECompositionMode.On;
 				}
 			}
 
@@ -127,6 +131,7 @@ namespace UnityEditor
 				EditorGUI.RecycledTextEditor.s_ActuallyEditing = false;
 				EditorGUI.RecycledTextEditor.s_AllowContextCutOrPaste = true;
 				UnityEditor.Undo.IncrementCurrentGroup();
+				Input.imeCompositionMode = this.m_IMECompositionModeBackup;
 			}
 		}
 
@@ -139,6 +144,8 @@ namespace UnityEditor
 			internal string controlThatHadFocusValue = "";
 
 			private GUIView viewThatHadFocus;
+
+			private bool m_CommitCommandSentOnLostFocus;
 
 			private bool m_IgnoreBeginGUI = false;
 
@@ -167,7 +174,7 @@ namespace UnityEditor
 					num = this.controlThatHadFocus;
 					this.controlThatHadFocus = 0;
 				}
-				if (num != 0)
+				if (num != 0 && !this.m_CommitCommandSentOnLostFocus)
 				{
 					this.messageControl = num;
 					this.m_IgnoreBeginGUI = true;
@@ -183,6 +190,17 @@ namespace UnityEditor
 
 			public override void EndEditing()
 			{
+				if (Event.current == null)
+				{
+					this.m_CommitCommandSentOnLostFocus = true;
+					this.m_IgnoreBeginGUI = true;
+					this.messageControl = this.controlID;
+					int keyboardControl = GUIUtility.keyboardControl;
+					this.viewThatHadFocus.SetKeyboardControl(0);
+					this.viewThatHadFocus.SendEvent(EditorGUIUtility.CommandEvent("DelayedControlShouldCommit"));
+					this.m_IgnoreBeginGUI = false;
+					this.viewThatHadFocus.SetKeyboardControl(keyboardControl);
+				}
 				base.EndEditing();
 				this.messageControl = 0;
 			}
@@ -193,6 +211,7 @@ namespace UnityEditor
 				string result;
 				if (current.type == EventType.ExecuteCommand && current.commandName == "DelayedControlShouldCommit" && id == this.messageControl)
 				{
+					this.m_CommitCommandSentOnLostFocus = false;
 					changed = (value != this.controlThatHadFocusValue);
 					current.Use();
 					result = this.controlThatHadFocusValue;
@@ -301,6 +320,29 @@ namespace UnityEditor
 					this.m_SourceView.SendEvent(EditorGUIUtility.CommandEvent("PopupMenuChanged"));
 				}
 			}
+		}
+
+		private struct EnumData
+		{
+			public Enum[] values;
+
+			public int[] flagValues;
+
+			public string[] names;
+
+			public bool flags;
+
+			public Type underlyingType;
+
+			public bool unsigned;
+
+			public bool serializable;
+		}
+
+		internal enum PropertyVisibility
+		{
+			All,
+			OnlyVisible
 		}
 
 		public class PropertyScope : GUI.Scope
@@ -983,8 +1025,6 @@ namespace UnityEditor
 
 		private static int s_DragUpdatedOverID = 0;
 
-		private static bool s_WasBoldDefaultFont;
-
 		private static int s_FoldoutHash = "Foldout".GetHashCode();
 
 		private static int s_TagFieldHash = "s_TagFieldHash".GetHashCode();
@@ -1002,6 +1042,8 @@ namespace UnityEditor
 		private static int s_LayerMaskField = "s_LayerMaskField".GetHashCode();
 
 		private static int s_MaskField = "s_MaskField".GetHashCode();
+
+		private static int s_EnumFlagsField = "s_EnumFlagsField".GetHashCode();
 
 		private static int s_GenericField = "s_GenericField".GetHashCode();
 
@@ -1099,6 +1141,8 @@ namespace UnityEditor
 
 		private static float[] s_Vector2Floats = new float[2];
 
+		private static int[] s_Vector2Ints = new int[2];
+
 		private static GUIContent[] s_XYLabels = new GUIContent[]
 		{
 			EditorGUIUtility.TextContent("X"),
@@ -1106,6 +1150,8 @@ namespace UnityEditor
 		};
 
 		private static float[] s_Vector3Floats = new float[3];
+
+		private static int[] s_Vector3Ints = new int[3];
 
 		private static GUIContent[] s_XYZLabels = new GUIContent[]
 		{
@@ -1130,12 +1176,20 @@ namespace UnityEditor
 			EditorGUIUtility.TextContent("H")
 		};
 
-		internal static readonly GUIContent s_ClipingPlanesLabel = EditorGUIUtility.TextContent("Clipping Planes");
+		private static GUIContent s_CenterLabel = EditorGUIUtility.TextContent("Center");
+
+		private static GUIContent s_ExtentLabel = EditorGUIUtility.TextContent("Extent");
+
+		private static GUIContent s_PositionLabel = EditorGUIUtility.TextContent("Position");
+
+		private static GUIContent s_SizeLabel = EditorGUIUtility.TextContent("Size");
+
+		internal static readonly GUIContent s_ClipingPlanesLabel = EditorGUIUtility.TextContent("Clipping Planes|Distances from the camera to start and stop rendering.");
 
 		internal static readonly GUIContent[] s_NearAndFarLabels = new GUIContent[]
 		{
-			EditorGUIUtility.TextContent("Near"),
-			EditorGUIUtility.TextContent("Far")
+			EditorGUIUtility.TextContent("Near|The closest point relative to the camera that drawing will occur."),
+			EditorGUIUtility.TextContent("Far|The furthest point relative to the camera that drawing will occur.\n")
 		};
 
 		internal const float kNearFarLabelsWidth = 35f;
@@ -1188,6 +1242,8 @@ namespace UnityEditor
 
 		internal static readonly string s_AllowedCharactersForInt = "0123456789-*/+%^()";
 
+		private static readonly Dictionary<Type, EditorGUI.EnumData> s_NonObsoleteEnumData = new Dictionary<Type, EditorGUI.EnumData>();
+
 		private static SerializedProperty s_PendingPropertyKeyboardHandling = null;
 
 		private static SerializedProperty s_PendingPropertyDelete = null;
@@ -1219,22 +1275,25 @@ namespace UnityEditor
 		private static GenericMenu.MenuFunction2 <>f__mg$cache1;
 
 		[CompilerGenerated]
-		private static GenericMenu.MenuFunction2 <>f__mg$cache2;
+		private static EditorUtility.SelectMenuItemFunction <>f__mg$cache2;
 
 		[CompilerGenerated]
-		private static GenericMenu.MenuFunction2 <>f__mg$cache3;
+		private static Func<string, string> <>f__mg$cache3;
 
 		[CompilerGenerated]
-		private static EditorUtility.SelectMenuItemFunction <>f__mg$cache4;
+		private static Func<string, string> <>f__mg$cache4;
 
 		[CompilerGenerated]
-		private static EditorGUI.ObjectFieldValidator <>f__mg$cache5;
+		private static Func<string, string> <>f__mg$cache5;
 
 		[CompilerGenerated]
 		private static EditorGUI.ObjectFieldValidator <>f__mg$cache6;
 
 		[CompilerGenerated]
-		private static TargetChoiceHandler.TargetChoiceMenuFunction <>f__mg$cache7;
+		private static EditorGUI.ObjectFieldValidator <>f__mg$cache7;
+
+		[CompilerGenerated]
+		private static TargetChoiceHandler.TargetChoiceMenuFunction <>f__mg$cache8;
 
 		public static bool showMixedValue
 		{
@@ -1343,6 +1402,14 @@ namespace UnityEditor
 			get
 			{
 				return EditorGUIUtility.LoadRequired("Previews/PreviewEncodedLightmapDoubleLDRMaterial.mat") as Material;
+			}
+		}
+
+		internal static Material lightmapFullHDRMaterial
+		{
+			get
+			{
+				return EditorGUIUtility.LoadRequired("Previews/PreviewEncodedLightmapFullHDRMaterial.mat") as Material;
 			}
 		}
 
@@ -1957,58 +2024,6 @@ namespace UnityEditor
 		}
 
 		[ExcludeFromDocs]
-		public static Enum EnumMaskPopup(Rect position, string label, Enum selected)
-		{
-			GUIStyle popup = EditorStyles.popup;
-			return EditorGUI.EnumMaskPopup(position, label, selected, popup);
-		}
-
-		public static Enum EnumMaskPopup(Rect position, string label, Enum selected, [DefaultValue("EditorStyles.popup")] GUIStyle style)
-		{
-			int num;
-			bool flag;
-			return EditorGUI.EnumMaskPopup(position, label, selected, out num, out flag, style);
-		}
-
-		[ExcludeFromDocs]
-		internal static Enum EnumMaskPopup(Rect position, string label, Enum selected, out int changedFlags, out bool changedToValue)
-		{
-			GUIStyle popup = EditorStyles.popup;
-			return EditorGUI.EnumMaskPopup(position, label, selected, out changedFlags, out changedToValue, popup);
-		}
-
-		internal static Enum EnumMaskPopup(Rect position, string label, Enum selected, out int changedFlags, out bool changedToValue, [DefaultValue("EditorStyles.popup")] GUIStyle style)
-		{
-			return EditorGUI.EnumMaskPopup(position, EditorGUIUtility.TempContent(label), selected, out changedFlags, out changedToValue, style);
-		}
-
-		[ExcludeFromDocs]
-		public static Enum EnumMaskPopup(Rect position, GUIContent label, Enum selected)
-		{
-			GUIStyle popup = EditorStyles.popup;
-			return EditorGUI.EnumMaskPopup(position, label, selected, popup);
-		}
-
-		public static Enum EnumMaskPopup(Rect position, GUIContent label, Enum selected, [DefaultValue("EditorStyles.popup")] GUIStyle style)
-		{
-			int num;
-			bool flag;
-			return EditorGUI.EnumMaskPopup(position, label, selected, out num, out flag, style);
-		}
-
-		[ExcludeFromDocs]
-		internal static Enum EnumMaskPopup(Rect position, GUIContent label, Enum selected, out int changedFlags, out bool changedToValue)
-		{
-			GUIStyle popup = EditorStyles.popup;
-			return EditorGUI.EnumMaskPopup(position, label, selected, out changedFlags, out changedToValue, popup);
-		}
-
-		internal static Enum EnumMaskPopup(Rect position, GUIContent label, Enum selected, out int changedFlags, out bool changedToValue, [DefaultValue("EditorStyles.popup")] GUIStyle style)
-		{
-			return EditorGUI.EnumMaskPopupInternal(position, label, selected, out changedFlags, out changedToValue, style);
-		}
-
-		[ExcludeFromDocs]
 		public static int IntPopup(Rect position, int selectedValue, string[] displayedOptions, int[] optionValues)
 		{
 			GUIStyle popup = EditorStyles.popup;
@@ -2174,42 +2189,6 @@ namespace UnityEditor
 		public static int MaskField(Rect position, int mask, string[] displayedOptions, [DefaultValue("EditorStyles.popup")] GUIStyle style)
 		{
 			return EditorGUI.MaskFieldInternal(position, mask, displayedOptions, style);
-		}
-
-		[ExcludeFromDocs]
-		public static Enum EnumMaskField(Rect position, GUIContent label, Enum enumValue)
-		{
-			GUIStyle popup = EditorStyles.popup;
-			return EditorGUI.EnumMaskField(position, label, enumValue, popup);
-		}
-
-		public static Enum EnumMaskField(Rect position, GUIContent label, Enum enumValue, [DefaultValue("EditorStyles.popup")] GUIStyle style)
-		{
-			return EditorGUI.EnumMaskFieldInternal(position, label, enumValue, style);
-		}
-
-		[ExcludeFromDocs]
-		public static Enum EnumMaskField(Rect position, string label, Enum enumValue)
-		{
-			GUIStyle popup = EditorStyles.popup;
-			return EditorGUI.EnumMaskField(position, label, enumValue, popup);
-		}
-
-		public static Enum EnumMaskField(Rect position, string label, Enum enumValue, [DefaultValue("EditorStyles.popup")] GUIStyle style)
-		{
-			return EditorGUI.EnumMaskFieldInternal(position, EditorGUIUtility.TempContent(label), enumValue, style);
-		}
-
-		[ExcludeFromDocs]
-		public static Enum EnumMaskField(Rect position, Enum enumValue)
-		{
-			GUIStyle popup = EditorStyles.popup;
-			return EditorGUI.EnumMaskField(position, enumValue, popup);
-		}
-
-		public static Enum EnumMaskField(Rect position, Enum enumValue, [DefaultValue("EditorStyles.popup")] GUIStyle style)
-		{
-			return EditorGUI.EnumMaskFieldInternal(position, enumValue, style);
 		}
 
 		[ExcludeFromDocs]
@@ -2603,7 +2582,7 @@ namespace UnityEditor
 			}
 			if (editor.controlID == id && GUIUtility.keyboardControl != id)
 			{
-				editor.controlID = 0;
+				editor.EndEditing();
 			}
 			bool flag = false;
 			string text3 = editor.text;
@@ -2650,7 +2629,7 @@ namespace UnityEditor
 					GUIUtility.hotControl = id;
 					current.Use();
 				}
-				goto IL_9B5;
+				goto IL_9B4;
 			case EventType.MouseUp:
 				if (GUIUtility.hotControl == id)
 				{
@@ -2681,11 +2660,11 @@ namespace UnityEditor
 						current.Use();
 					}
 				}
-				goto IL_9B5;
+				goto IL_9B4;
 			case EventType.MouseMove:
 			case EventType.KeyUp:
 			case EventType.ScrollWheel:
-				IL_125:
+				IL_124:
 				switch (typeForControl)
 				{
 				case EventType.ValidateCommand:
@@ -2722,7 +2701,7 @@ namespace UnityEditor
 							}
 						}
 					}
-					goto IL_9B5;
+					goto IL_9B4;
 				case EventType.ExecuteCommand:
 					if (GUIUtility.keyboardControl == id)
 					{
@@ -2790,9 +2769,9 @@ namespace UnityEditor
 							}
 						}
 					}
-					goto IL_9B5;
+					goto IL_9B4;
 				case EventType.DragExited:
-					goto IL_9B5;
+					goto IL_9B4;
 				case EventType.ContextClick:
 					if (position.Contains(current.mousePosition))
 					{
@@ -2805,9 +2784,9 @@ namespace UnityEditor
 						EditorGUI.ShowTextEditorPopupMenu();
 						Event.current.Use();
 					}
-					goto IL_9B5;
+					goto IL_9B4;
 				default:
-					goto IL_9B5;
+					goto IL_9B4;
 				}
 				break;
 			case EventType.MouseDrag:
@@ -2833,7 +2812,7 @@ namespace UnityEditor
 					EditorGUI.s_Dragged = true;
 					current.Use();
 				}
-				goto IL_9B5;
+				goto IL_9B4;
 			case EventType.KeyDown:
 				if (GUIUtility.keyboardControl == id)
 				{
@@ -2869,7 +2848,7 @@ namespace UnityEditor
 							{
 								editor.Insert(character);
 								flag = true;
-								goto IL_9B5;
+								goto IL_9B4;
 							}
 							editor.EndEditing();
 						}
@@ -2910,7 +2889,7 @@ namespace UnityEditor
 						}
 					}
 				}
-				goto IL_9B5;
+				goto IL_9B4;
 			case EventType.Repaint:
 			{
 				string text4;
@@ -2944,11 +2923,11 @@ namespace UnityEditor
 				{
 					editor.DrawCursor(text4);
 				}
-				goto IL_9B5;
+				goto IL_9B4;
 			}
 			}
-			goto IL_125;
-			IL_9B5:
+			goto IL_124;
+			IL_9B4:
 			if (GUIUtility.keyboardControl == id)
 			{
 				GUIUtility.textFieldInput = EditorGUIUtility.editingTextField;
@@ -3921,13 +3900,25 @@ namespace UnityEditor
 			int num2 = num;
 			EditorGUI.BeginChangeCheck();
 			int controlID = GUIUtility.GetControlID(EditorGUI.s_DelayedTextFieldHash, FocusType.Keyboard, position);
-			string s = EditorGUI.DelayedTextFieldInternal(position, controlID, label, num.ToString(), EditorGUI.s_AllowedCharactersForInt, style);
+			string text = EditorGUI.DelayedTextFieldInternal(position, controlID, label, num.ToString(), EditorGUI.s_AllowedCharactersForInt, style);
 			if (EditorGUI.EndChangeCheck())
 			{
-				if (int.TryParse(s, out num2) && num2 != num)
+				if (int.TryParse(text, out num2))
 				{
-					value = num2;
-					GUI.changed = true;
+					if (num2 != num)
+					{
+						value = num2;
+						GUI.changed = true;
+					}
+				}
+				else
+				{
+					num2 = ExpressionEvaluator.Evaluate<int>(text);
+					if (num2 != num)
+					{
+						value = num2;
+						GUI.changed = true;
+					}
 				}
 			}
 			return num2;
@@ -4064,22 +4055,16 @@ namespace UnityEditor
 					{
 						genericMenu.AddSeparator("");
 					}
-					GenericMenu arg_14A_0 = genericMenu;
-					GUIContent arg_14A_1 = EditorGUIUtility.TextContent("Duplicate Array Element");
-					bool arg_14A_2 = false;
-					if (EditorGUI.<>f__mg$cache2 == null)
+					genericMenu.AddItem(EditorGUIUtility.TextContent("Duplicate Array Element"), false, delegate(object a)
 					{
-						EditorGUI.<>f__mg$cache2 = new GenericMenu.MenuFunction2(TargetChoiceHandler.DuplicateArrayElement);
-					}
-					arg_14A_0.AddItem(arg_14A_1, arg_14A_2, EditorGUI.<>f__mg$cache2, serializedProperty);
-					GenericMenu arg_179_0 = genericMenu;
-					GUIContent arg_179_1 = EditorGUIUtility.TextContent("Delete Array Element");
-					bool arg_179_2 = false;
-					if (EditorGUI.<>f__mg$cache3 == null)
+						TargetChoiceHandler.DuplicateArrayElement(a);
+						EditorGUIUtility.editingTextField = false;
+					}, serializedProperty);
+					genericMenu.AddItem(EditorGUIUtility.TextContent("Delete Array Element"), false, delegate(object a)
 					{
-						EditorGUI.<>f__mg$cache3 = new GenericMenu.MenuFunction2(TargetChoiceHandler.DeleteArrayElement);
-					}
-					arg_179_0.AddItem(arg_179_1, arg_179_2, EditorGUI.<>f__mg$cache3, serializedProperty);
+						TargetChoiceHandler.DeleteArrayElement(a);
+						EditorGUIUtility.editingTextField = false;
+					}, serializedProperty);
 				}
 			}
 			if (Event.current.shift)
@@ -4194,6 +4179,7 @@ namespace UnityEditor
 
 		private static float DoSlider(Rect position, Rect dragZonePosition, int id, float value, float left, float right, string formatString, float power, GUIStyle sliderStyle, GUIStyle thumbStyle, Texture2D sliderBackground)
 		{
+			int controlID = GUIUtility.GetControlID(EditorGUI.s_SliderKnobHash, FocusType.Passive, position);
 			left = Mathf.Clamp(left, -3.40282347E+38f, 3.40282347E+38f);
 			right = Mathf.Clamp(right, -3.40282347E+38f, 3.40282347E+38f);
 			float num = position.width;
@@ -4201,7 +4187,6 @@ namespace UnityEditor
 			{
 				float num2 = num - 5f - EditorGUIUtility.fieldWidth;
 				EditorGUI.BeginChangeCheck();
-				int controlID = GUIUtility.GetControlID(EditorGUI.s_SliderKnobHash, FocusType.Passive, position);
 				if (GUIUtility.keyboardControl == id && !EditorGUI.s_RecycledEditor.IsEditingControl(id))
 				{
 					GUIUtility.keyboardControl = controlID;
@@ -4359,28 +4344,12 @@ namespace UnityEditor
 			Type type = selected.GetType();
 			if (!type.IsEnum)
 			{
-				throw new Exception("parameter _enum must be of type System.Enum");
+				throw new ArgumentException("Parameter selected must be of type System.Enum", "selected");
 			}
-			Enum[] array = Enum.GetValues(type).Cast<Enum>().ToArray<Enum>();
-			string[] names = Enum.GetNames(type);
-			int num = Array.IndexOf<Enum>(array, selected);
-			num = EditorGUI.Popup(position, label, num, EditorGUIUtility.TempContent((from x in names
-			select ObjectNames.NicifyVariableName(x)).ToArray<string>()), style);
-			Enum result;
-			if (num < 0 || num >= names.Length)
-			{
-				result = selected;
-			}
-			else
-			{
-				result = array[num];
-			}
-			return result;
-		}
-
-		private static Enum EnumMaskPopupInternal(Rect position, GUIContent label, Enum selected, out int changedFlags, out bool changedToValue, GUIStyle style)
-		{
-			return EditorGUI.EnumMaskField(position, label, selected, style, out changedFlags, out changedToValue);
+			EditorGUI.EnumData nonObsoleteEnumData = EditorGUI.GetNonObsoleteEnumData(type);
+			int num = Array.IndexOf<Enum>(nonObsoleteEnumData.values, selected);
+			num = EditorGUI.Popup(position, label, num, EditorGUIUtility.TempContent(nonObsoleteEnumData.names), style);
+			return (num >= 0 && num < nonObsoleteEnumData.flagValues.Length) ? nonObsoleteEnumData.values[num] : selected;
 		}
 
 		private static int IntPopupInternal(Rect position, GUIContent label, int selectedValue, GUIContent[] displayedOptions, int[] optionValues, GUIStyle style)
@@ -4686,10 +4655,10 @@ namespace UnityEditor
 						num2++;
 					}
 				}
-				string[] layers = InternalEditorUtility.layers;
-				ArrayUtility.Add<string>(ref layers, "");
-				ArrayUtility.Add<string>(ref layers, "Add Layer...");
-				EditorGUI.DoPopup(position, controlID, num2, EditorGUIUtility.TempContent(layers), style);
+				string[] layersWithId = InternalEditorUtility.GetLayersWithId();
+				ArrayUtility.Add<string>(ref layersWithId, "");
+				ArrayUtility.Add<string>(ref layersWithId, "Add Layer...");
+				EditorGUI.DoPopup(position, controlID, num2, EditorGUIUtility.TempContent(layersWithId), style);
 				Event.current.Use();
 				result = layer;
 			}
@@ -4702,6 +4671,71 @@ namespace UnityEditor
 				result = layer;
 			}
 			return result;
+		}
+
+		private static EditorGUI.EnumData GetNonObsoleteEnumData(Type enumType)
+		{
+			EditorGUI.EnumData enumData;
+			if (!EditorGUI.s_NonObsoleteEnumData.TryGetValue(enumType, out enumData))
+			{
+				enumData = default(EditorGUI.EnumData);
+				enumData.underlyingType = Enum.GetUnderlyingType(enumType);
+				enumData.unsigned = (enumData.underlyingType == typeof(byte) || enumData.underlyingType == typeof(ushort) || enumData.underlyingType == typeof(uint) || enumData.underlyingType == typeof(ulong));
+				enumData.names = (from n in Enum.GetNames(enumType)
+				where enumType.GetField(n).GetCustomAttributes(typeof(ObsoleteAttribute), false).Length == 0
+				select n).ToArray<string>();
+				enumData.values = (from n in enumData.names
+				select (Enum)Enum.Parse(enumType, n)).ToArray<Enum>();
+				int[] arg_15A_1;
+				if (enumData.unsigned)
+				{
+					arg_15A_1 = (from v in enumData.values
+					select (int)Convert.ToUInt64(v)).ToArray<int>();
+				}
+				else
+				{
+					arg_15A_1 = (from v in enumData.values
+					select (int)Convert.ToInt64(v)).ToArray<int>();
+				}
+				enumData.flagValues = arg_15A_1;
+				int i = 0;
+				int num = enumData.names.Length;
+				while (i < num)
+				{
+					enumData.names[i] = ObjectNames.NicifyVariableName(enumData.names[i]);
+					i++;
+				}
+				if (enumData.underlyingType == typeof(ushort))
+				{
+					int j = 0;
+					int num2 = enumData.flagValues.Length;
+					while (j < num2)
+					{
+						if ((long)enumData.flagValues[j] == 65535L)
+						{
+							enumData.flagValues[j] = -1;
+						}
+						j++;
+					}
+				}
+				else if (enumData.underlyingType == typeof(byte))
+				{
+					int k = 0;
+					int num3 = enumData.flagValues.Length;
+					while (k < num3)
+					{
+						if ((long)enumData.flagValues[k] == 255L)
+						{
+							enumData.flagValues[k] = -1;
+						}
+						k++;
+					}
+				}
+				enumData.flags = (enumType.GetCustomAttributes(typeof(FlagsAttribute), false).Length > 0);
+				enumData.serializable = (enumData.underlyingType != typeof(long) && enumData.underlyingType != typeof(ulong));
+				EditorGUI.s_NonObsoleteEnumData[enumType] = enumData;
+			}
+			return enumData;
 		}
 
 		internal static int MaskFieldInternal(Rect position, GUIContent label, int mask, string[] displayedOptions, GUIStyle style)
@@ -4724,57 +4758,65 @@ namespace UnityEditor
 			return MaskFieldGUI.DoMaskField(EditorGUI.IndentedRect(position), controlID, mask, displayedOptions, style);
 		}
 
-		internal static Enum EnumMaskFieldInternal(Rect position, GUIContent label, Enum enumValue, GUIStyle style)
+		public static Enum EnumFlagsField(Rect position, Enum enumValue)
+		{
+			return EditorGUI.EnumFlagsField(position, enumValue, EditorStyles.popup);
+		}
+
+		public static Enum EnumFlagsField(Rect position, Enum enumValue, GUIStyle style)
+		{
+			return EditorGUI.EnumFlagsField(position, GUIContent.none, enumValue, style);
+		}
+
+		public static Enum EnumFlagsField(Rect position, string label, Enum enumValue)
+		{
+			return EditorGUI.EnumFlagsField(position, label, enumValue, EditorStyles.popup);
+		}
+
+		public static Enum EnumFlagsField(Rect position, string label, Enum enumValue, GUIStyle style)
+		{
+			return EditorGUI.EnumFlagsField(position, EditorGUIUtility.TempContent(label), enumValue, style);
+		}
+
+		public static Enum EnumFlagsField(Rect position, GUIContent label, Enum enumValue)
+		{
+			return EditorGUI.EnumFlagsField(position, label, enumValue, EditorStyles.popup);
+		}
+
+		public static Enum EnumFlagsField(Rect position, GUIContent label, Enum enumValue, GUIStyle style)
+		{
+			int num;
+			bool flag;
+			return EditorGUI.EnumFlagsField(position, label, enumValue, out num, out flag, style);
+		}
+
+		internal static Enum EnumFlagsField(Rect position, GUIContent label, Enum enumValue, out int changedFlags, out bool changedToValue, GUIStyle style)
 		{
 			Type type = enumValue.GetType();
 			if (!type.IsEnum)
 			{
-				throw new Exception("parameter _enum must be of type System.Enum");
+				throw new ArgumentException("Parameter enumValue must be of type System.Enum", "enumValue");
 			}
-			int controlID = GUIUtility.GetControlID(EditorGUI.s_MaskField, FocusType.Keyboard, position);
-			Rect position2 = EditorGUI.PrefixLabel(position, controlID, label);
-			position.xMax = position2.x;
-			string[] flagNames = (from x in Enum.GetNames(enumValue.GetType())
-			select ObjectNames.NicifyVariableName(x)).ToArray<string>();
-			int value = MaskFieldGUI.DoMaskField(position2, controlID, Convert.ToInt32(enumValue), flagNames, style);
-			return EditorGUI.EnumFlagsToInt(type, value);
-		}
-
-		internal static Enum EnumMaskFieldInternal(Rect position, Enum enumValue, GUIStyle style)
-		{
-			Type type = enumValue.GetType();
-			if (!type.IsEnum)
+			EditorGUI.EnumData nonObsoleteEnumData = EditorGUI.GetNonObsoleteEnumData(type);
+			if (!nonObsoleteEnumData.serializable)
 			{
-				throw new Exception("parameter _enum must be of type System.Enum");
+				throw new NotSupportedException(string.Format("Unsupported enum base type for {0}", type.Name));
 			}
-			string[] flagNames = (from x in Enum.GetNames(enumValue.GetType())
-			select ObjectNames.NicifyVariableName(x)).ToArray<string>();
-			int value = MaskFieldGUI.DoMaskField(EditorGUI.IndentedRect(position), GUIUtility.GetControlID(EditorGUI.s_MaskField, FocusType.Keyboard, position), Convert.ToInt32(enumValue), flagNames, style);
-			return EditorGUI.EnumFlagsToInt(type, value);
-		}
-
-		internal static Enum EnumMaskField(Rect position, GUIContent label, Enum enumValue, GUIStyle style, out int changedFlags, out bool changedToValue)
-		{
-			return EditorGUI.DoEnumMaskField(position, label, enumValue, style, out changedFlags, out changedToValue);
-		}
-
-		internal static Enum EnumMaskField(Rect position, Enum enumValue, GUIStyle style, out int changedFlags, out bool changedToValue)
-		{
-			return EditorGUI.DoEnumMaskField(position, GUIContent.none, enumValue, style, out changedFlags, out changedToValue);
-		}
-
-		private static Enum DoEnumMaskField(Rect position, GUIContent label, Enum enumValue, GUIStyle style, out int changedFlags, out bool changedToValue)
-		{
-			Type type = enumValue.GetType();
-			if (!type.IsEnum)
+			int controlID = GUIUtility.GetControlID(EditorGUI.s_EnumFlagsField, FocusType.Keyboard, position);
+			position = EditorGUI.PrefixLabel(position, controlID, label);
+			int num = EditorGUI.EnumFlagsToInt(nonObsoleteEnumData, enumValue);
+			EditorGUI.BeginChangeCheck();
+			num = MaskFieldGUI.DoMaskField(position, controlID, num, nonObsoleteEnumData.names, nonObsoleteEnumData.flagValues, style, out changedFlags, out changedToValue);
+			Enum result;
+			if (!EditorGUI.EndChangeCheck())
 			{
-				throw new Exception("parameter _enum must be of type System.Enum");
+				result = enumValue;
 			}
-			int controlID = GUIUtility.GetControlID(EditorGUI.s_MaskField, FocusType.Keyboard, position);
-			string[] flagNames = (from x in Enum.GetNames(enumValue.GetType())
-			select ObjectNames.NicifyVariableName(x)).ToArray<string>();
-			int value = MaskFieldGUI.DoMaskField(EditorGUI.PrefixLabel(position, controlID, label), controlID, Convert.ToInt32(enumValue), flagNames, style, out changedFlags, out changedToValue);
-			return EditorGUI.EnumFlagsToInt(type, value);
+			else
+			{
+				result = EditorGUI.IntToEnumFlags(type, num);
+			}
+			return result;
 		}
 
 		public static void ObjectField(Rect position, SerializedProperty property)
@@ -4949,6 +4991,11 @@ namespace UnityEditor
 							result = references[0];
 							return result;
 						}
+						if (references[0].GetType() == typeof(GameObject) && typeof(Component).IsAssignableFrom(objType))
+						{
+							GameObject gameObject = (GameObject)references[0];
+							references = gameObject.GetComponents(typeof(Component));
+						}
 						UnityEngine.Object[] array = references;
 						for (int i = 0; i < array.Length; i++)
 						{
@@ -4975,8 +5022,8 @@ namespace UnityEditor
 				{
 					if (references[0] != null && references[0].GetType() == typeof(GameObject) && typeof(Component).IsAssignableFrom(objType))
 					{
-						GameObject gameObject = (GameObject)references[0];
-						references = gameObject.GetComponents(typeof(Component));
+						GameObject gameObject2 = (GameObject)references[0];
+						references = gameObject2.GetComponents(typeof(Component));
 					}
 					UnityEngine.Object[] array2 = references;
 					for (int j = 0; j < array2.Length; j++)
@@ -5080,8 +5127,8 @@ namespace UnityEditor
 			position = EditorGUI.MultiFieldPrefixLabel(position, controlID, label, 2);
 			position.height = 16f;
 			SerializedProperty serializedProperty = property.Copy();
-			serializedProperty.NextVisible(true);
-			EditorGUI.MultiPropertyField(position, EditorGUI.s_XYLabels, serializedProperty);
+			serializedProperty.Next(true);
+			EditorGUI.MultiPropertyField(position, EditorGUI.s_XYLabels, serializedProperty, EditorGUI.PropertyVisibility.All);
 		}
 
 		private static void Vector3Field(Rect position, SerializedProperty property, GUIContent label)
@@ -5090,8 +5137,8 @@ namespace UnityEditor
 			position = EditorGUI.MultiFieldPrefixLabel(position, controlID, label, 3);
 			position.height = 16f;
 			SerializedProperty serializedProperty = property.Copy();
-			serializedProperty.NextVisible(true);
-			EditorGUI.MultiPropertyField(position, EditorGUI.s_XYZLabels, serializedProperty);
+			serializedProperty.Next(true);
+			EditorGUI.MultiPropertyField(position, EditorGUI.s_XYZLabels, serializedProperty, EditorGUI.PropertyVisibility.All);
 		}
 
 		private static void Vector4Field(Rect position, SerializedProperty property, GUIContent label)
@@ -5100,8 +5147,8 @@ namespace UnityEditor
 			position = EditorGUI.MultiFieldPrefixLabel(position, controlID, label, 4);
 			position.height = 16f;
 			SerializedProperty serializedProperty = property.Copy();
-			serializedProperty.NextVisible(true);
-			EditorGUI.MultiPropertyField(position, EditorGUI.s_XYZWLabels, serializedProperty);
+			serializedProperty.Next(true);
+			EditorGUI.MultiPropertyField(position, EditorGUI.s_XYZWLabels, serializedProperty, EditorGUI.PropertyVisibility.All);
 		}
 
 		public static Vector4 Vector4Field(Rect position, string label, Vector4 value)
@@ -5134,6 +5181,84 @@ namespace UnityEditor
 				value.w = EditorGUI.s_Vector4Floats[3];
 			}
 			return value;
+		}
+
+		public static Vector2Int Vector2IntField(Rect position, string label, Vector2Int value)
+		{
+			return EditorGUI.Vector2IntField(position, EditorGUIUtility.TempContent(label), value);
+		}
+
+		public static Vector2Int Vector2IntField(Rect position, GUIContent label, Vector2Int value)
+		{
+			int controlID = GUIUtility.GetControlID(EditorGUI.s_FoldoutHash, FocusType.Keyboard, position);
+			position = EditorGUI.MultiFieldPrefixLabel(position, controlID, label, 2);
+			position.height = 16f;
+			return EditorGUI.Vector2IntField(position, value);
+		}
+
+		private static Vector2Int Vector2IntField(Rect position, Vector2Int value)
+		{
+			EditorGUI.s_Vector2Ints[0] = value.x;
+			EditorGUI.s_Vector2Ints[1] = value.y;
+			position.height = 16f;
+			EditorGUI.BeginChangeCheck();
+			EditorGUI.MultiIntField(position, EditorGUI.s_XYLabels, EditorGUI.s_Vector2Ints);
+			if (EditorGUI.EndChangeCheck())
+			{
+				value.x = EditorGUI.s_Vector2Ints[0];
+				value.y = EditorGUI.s_Vector2Ints[1];
+			}
+			return value;
+		}
+
+		private static void Vector2IntField(Rect position, SerializedProperty property, GUIContent label)
+		{
+			int controlID = GUIUtility.GetControlID(EditorGUI.s_FoldoutHash, FocusType.Keyboard, position);
+			position = EditorGUI.MultiFieldPrefixLabel(position, controlID, label, 2);
+			position.height = 16f;
+			SerializedProperty serializedProperty = property.Copy();
+			serializedProperty.Next(true);
+			EditorGUI.MultiPropertyField(position, EditorGUI.s_XYLabels, serializedProperty, EditorGUI.PropertyVisibility.All);
+		}
+
+		public static Vector3Int Vector3IntField(Rect position, string label, Vector3Int value)
+		{
+			return EditorGUI.Vector3IntField(position, EditorGUIUtility.TempContent(label), value);
+		}
+
+		public static Vector3Int Vector3IntField(Rect position, GUIContent label, Vector3Int value)
+		{
+			int controlID = GUIUtility.GetControlID(EditorGUI.s_FoldoutHash, FocusType.Keyboard, position);
+			position = EditorGUI.MultiFieldPrefixLabel(position, controlID, label, 3);
+			position.height = 16f;
+			return EditorGUI.Vector3IntField(position, value);
+		}
+
+		private static Vector3Int Vector3IntField(Rect position, Vector3Int value)
+		{
+			EditorGUI.s_Vector3Ints[0] = value.x;
+			EditorGUI.s_Vector3Ints[1] = value.y;
+			EditorGUI.s_Vector3Ints[2] = value.z;
+			position.height = 16f;
+			EditorGUI.BeginChangeCheck();
+			EditorGUI.MultiIntField(position, EditorGUI.s_XYZLabels, EditorGUI.s_Vector3Ints);
+			if (EditorGUI.EndChangeCheck())
+			{
+				value.x = EditorGUI.s_Vector3Ints[0];
+				value.y = EditorGUI.s_Vector3Ints[1];
+				value.z = EditorGUI.s_Vector3Ints[2];
+			}
+			return value;
+		}
+
+		private static void Vector3IntField(Rect position, SerializedProperty property, GUIContent label)
+		{
+			int controlID = GUIUtility.GetControlID(EditorGUI.s_FoldoutHash, FocusType.Keyboard, position);
+			position = EditorGUI.MultiFieldPrefixLabel(position, controlID, label, 3);
+			position.height = 16f;
+			SerializedProperty serializedProperty = property.Copy();
+			serializedProperty.Next(true);
+			EditorGUI.MultiPropertyField(position, EditorGUI.s_XYZLabels, serializedProperty, EditorGUI.PropertyVisibility.All);
 		}
 
 		public static Rect RectField(Rect position, Rect value)
@@ -5184,21 +5309,71 @@ namespace UnityEditor
 			position = EditorGUI.MultiFieldPrefixLabel(position, controlID, label, 2);
 			position.height = 16f;
 			SerializedProperty serializedProperty = property.Copy();
-			serializedProperty.NextVisible(true);
-			EditorGUI.MultiPropertyField(position, EditorGUI.s_XYLabels, serializedProperty);
+			serializedProperty.Next(true);
+			EditorGUI.MultiPropertyField(position, EditorGUI.s_XYLabels, serializedProperty, EditorGUI.PropertyVisibility.All);
 			position.y += 16f;
-			EditorGUI.MultiPropertyField(position, EditorGUI.s_WHLabels, serializedProperty);
+			EditorGUI.MultiPropertyField(position, EditorGUI.s_WHLabels, serializedProperty, EditorGUI.PropertyVisibility.All);
 		}
 
-		private static Rect DrawBoundsFieldLabelsAndAdjustPositionForValues(Rect position, bool drawOutside)
+		public static RectInt RectIntField(Rect position, RectInt value)
+		{
+			position.height = 16f;
+			EditorGUI.s_Vector2Ints[0] = value.x;
+			EditorGUI.s_Vector2Ints[1] = value.y;
+			EditorGUI.BeginChangeCheck();
+			EditorGUI.MultiIntField(position, EditorGUI.s_XYLabels, EditorGUI.s_Vector2Ints);
+			if (EditorGUI.EndChangeCheck())
+			{
+				value.x = EditorGUI.s_Vector2Ints[0];
+				value.y = EditorGUI.s_Vector2Ints[1];
+			}
+			position.y += 16f;
+			EditorGUI.s_Vector2Ints[0] = value.width;
+			EditorGUI.s_Vector2Ints[1] = value.height;
+			EditorGUI.BeginChangeCheck();
+			EditorGUI.MultiIntField(position, EditorGUI.s_WHLabels, EditorGUI.s_Vector2Ints);
+			if (EditorGUI.EndChangeCheck())
+			{
+				value.width = EditorGUI.s_Vector2Ints[0];
+				value.height = EditorGUI.s_Vector2Ints[1];
+			}
+			return value;
+		}
+
+		public static RectInt RectIntField(Rect position, string label, RectInt value)
+		{
+			return EditorGUI.RectIntField(position, EditorGUIUtility.TempContent(label), value);
+		}
+
+		public static RectInt RectIntField(Rect position, GUIContent label, RectInt value)
+		{
+			int controlID = GUIUtility.GetControlID(EditorGUI.s_FoldoutHash, FocusType.Keyboard, position);
+			position = EditorGUI.MultiFieldPrefixLabel(position, controlID, label, 2);
+			position.height = 16f;
+			return EditorGUI.RectIntField(position, value);
+		}
+
+		private static void RectIntField(Rect position, SerializedProperty property, GUIContent label)
+		{
+			int controlID = GUIUtility.GetControlID(EditorGUI.s_FoldoutHash, FocusType.Keyboard, position);
+			position = EditorGUI.MultiFieldPrefixLabel(position, controlID, label, 2);
+			position.height = 16f;
+			SerializedProperty serializedProperty = property.Copy();
+			serializedProperty.Next(true);
+			EditorGUI.MultiPropertyField(position, EditorGUI.s_XYLabels, serializedProperty, EditorGUI.PropertyVisibility.All);
+			position.y += 16f;
+			EditorGUI.MultiPropertyField(position, EditorGUI.s_WHLabels, serializedProperty, EditorGUI.PropertyVisibility.All);
+		}
+
+		private static Rect DrawBoundsFieldLabelsAndAdjustPositionForValues(Rect position, bool drawOutside, GUIContent firstContent, GUIContent secondContent)
 		{
 			if (drawOutside)
 			{
 				position.xMin -= 53f;
 			}
-			GUI.Label(position, "Center:", EditorStyles.label);
+			GUI.Label(position, firstContent, EditorStyles.label);
 			position.y += 16f;
-			GUI.Label(position, "Extents:", EditorStyles.label);
+			GUI.Label(position, secondContent, EditorStyles.label);
 			position.y -= 16f;
 			position.xMin += 53f;
 			return position;
@@ -5237,7 +5412,7 @@ namespace UnityEditor
 		private static Bounds BoundsFieldNoIndent(Rect position, Bounds value, bool isBelowLabel)
 		{
 			position.height = 16f;
-			position = EditorGUI.DrawBoundsFieldLabelsAndAdjustPositionForValues(position, EditorGUIUtility.wideMode && isBelowLabel);
+			position = EditorGUI.DrawBoundsFieldLabelsAndAdjustPositionForValues(position, EditorGUIUtility.wideMode && isBelowLabel, EditorGUI.s_CenterLabel, EditorGUI.s_ExtentLabel);
 			value.center = EditorGUI.Vector3Field(position, value.center);
 			position.y += 16f;
 			value.extents = EditorGUI.Vector3Field(position, value.extents);
@@ -5257,14 +5432,77 @@ namespace UnityEditor
 				}
 			}
 			position.height = 16f;
-			position = EditorGUI.DrawBoundsFieldLabelsAndAdjustPositionForValues(position, EditorGUIUtility.wideMode && flag);
+			position = EditorGUI.DrawBoundsFieldLabelsAndAdjustPositionForValues(position, EditorGUIUtility.wideMode && flag, EditorGUI.s_CenterLabel, EditorGUI.s_ExtentLabel);
 			SerializedProperty serializedProperty = property.Copy();
-			serializedProperty.NextVisible(true);
-			serializedProperty.NextVisible(true);
-			EditorGUI.MultiPropertyField(position, EditorGUI.s_XYZLabels, serializedProperty);
-			serializedProperty.NextVisible(true);
+			serializedProperty.Next(true);
+			serializedProperty.Next(true);
+			EditorGUI.MultiPropertyField(position, EditorGUI.s_XYZLabels, serializedProperty, EditorGUI.PropertyVisibility.All);
+			serializedProperty.Next(true);
 			position.y += 16f;
-			EditorGUI.MultiPropertyField(position, EditorGUI.s_XYZLabels, serializedProperty);
+			EditorGUI.MultiPropertyField(position, EditorGUI.s_XYZLabels, serializedProperty, EditorGUI.PropertyVisibility.All);
+		}
+
+		public static BoundsInt BoundsIntField(Rect position, BoundsInt value)
+		{
+			return EditorGUI.BoundsIntFieldNoIndent(EditorGUI.IndentedRect(position), value, false);
+		}
+
+		public static BoundsInt BoundsIntField(Rect position, string label, BoundsInt value)
+		{
+			return EditorGUI.BoundsIntField(position, EditorGUIUtility.TempContent(label), value);
+		}
+
+		public static BoundsInt BoundsIntField(Rect position, GUIContent label, BoundsInt value)
+		{
+			BoundsInt result;
+			if (!EditorGUI.LabelHasContent(label))
+			{
+				result = EditorGUI.BoundsIntFieldNoIndent(EditorGUI.IndentedRect(position), value, false);
+			}
+			else
+			{
+				int controlID = GUIUtility.GetControlID(EditorGUI.s_FoldoutHash, FocusType.Keyboard, position);
+				position = EditorGUI.MultiFieldPrefixLabel(position, controlID, label, 3);
+				if (EditorGUIUtility.wideMode)
+				{
+					position.y += 16f;
+				}
+				result = EditorGUI.BoundsIntFieldNoIndent(position, value, true);
+			}
+			return result;
+		}
+
+		private static BoundsInt BoundsIntFieldNoIndent(Rect position, BoundsInt value, bool isBelowLabel)
+		{
+			position.height = 16f;
+			position = EditorGUI.DrawBoundsFieldLabelsAndAdjustPositionForValues(position, EditorGUIUtility.wideMode && isBelowLabel, EditorGUI.s_PositionLabel, EditorGUI.s_SizeLabel);
+			value.position = EditorGUI.Vector3IntField(position, value.position);
+			position.y += 16f;
+			value.size = EditorGUI.Vector3IntField(position, value.size);
+			return value;
+		}
+
+		private static void BoundsIntField(Rect position, SerializedProperty property, GUIContent label)
+		{
+			bool flag = EditorGUI.LabelHasContent(label);
+			if (flag)
+			{
+				int controlID = GUIUtility.GetControlID(EditorGUI.s_FoldoutHash, FocusType.Keyboard, position);
+				position = EditorGUI.MultiFieldPrefixLabel(position, controlID, label, 3);
+				if (EditorGUIUtility.wideMode)
+				{
+					position.y += 16f;
+				}
+			}
+			position.height = 16f;
+			position = EditorGUI.DrawBoundsFieldLabelsAndAdjustPositionForValues(position, EditorGUIUtility.wideMode && flag, EditorGUI.s_PositionLabel, EditorGUI.s_SizeLabel);
+			SerializedProperty serializedProperty = property.Copy();
+			serializedProperty.Next(true);
+			serializedProperty.Next(true);
+			EditorGUI.MultiPropertyField(position, EditorGUI.s_XYZLabels, serializedProperty, EditorGUI.PropertyVisibility.All);
+			serializedProperty.Next(true);
+			position.y += 16f;
+			EditorGUI.MultiPropertyField(position, EditorGUI.s_XYZLabels, serializedProperty, EditorGUI.PropertyVisibility.All);
 		}
 
 		public static void MultiFloatField(Rect position, GUIContent label, GUIContent[] subLabels, float[] values)
@@ -5299,6 +5537,30 @@ namespace UnityEditor
 			EditorGUI.indentLevel = indentLevel;
 		}
 
+		public static void MultiIntField(Rect position, GUIContent[] subLabels, int[] values)
+		{
+			EditorGUI.MultiIntField(position, subLabels, values, 13f);
+		}
+
+		internal static void MultiIntField(Rect position, GUIContent[] subLabels, int[] values, float labelWidth)
+		{
+			int num = values.Length;
+			float num2 = (position.width - (float)(num - 1) * 2f) / (float)num;
+			Rect position2 = new Rect(position);
+			position2.width = num2;
+			float labelWidth2 = EditorGUIUtility.labelWidth;
+			int indentLevel = EditorGUI.indentLevel;
+			EditorGUIUtility.labelWidth = labelWidth;
+			EditorGUI.indentLevel = 0;
+			for (int i = 0; i < values.Length; i++)
+			{
+				values[i] = EditorGUI.IntField(position2, subLabels[i], values[i]);
+				position2.x += num2 + 2f;
+			}
+			EditorGUIUtility.labelWidth = labelWidth2;
+			EditorGUI.indentLevel = indentLevel;
+		}
+
 		public static void MultiPropertyField(Rect position, GUIContent[] subLabels, SerializedProperty valuesIterator, GUIContent label)
 		{
 			int controlID = GUIUtility.GetControlID(EditorGUI.s_FoldoutHash, FocusType.Keyboard, position);
@@ -5309,10 +5571,15 @@ namespace UnityEditor
 
 		public static void MultiPropertyField(Rect position, GUIContent[] subLabels, SerializedProperty valuesIterator)
 		{
-			EditorGUI.MultiPropertyField(position, subLabels, valuesIterator, 13f, null);
+			EditorGUI.MultiPropertyField(position, subLabels, valuesIterator, EditorGUI.PropertyVisibility.OnlyVisible);
 		}
 
-		internal static void MultiPropertyField(Rect position, GUIContent[] subLabels, SerializedProperty valuesIterator, float labelWidth, bool[] disabledMask)
+		private static void MultiPropertyField(Rect position, GUIContent[] subLabels, SerializedProperty valuesIterator, EditorGUI.PropertyVisibility visibility)
+		{
+			EditorGUI.MultiPropertyField(position, subLabels, valuesIterator, visibility, 13f, null);
+		}
+
+		internal static void MultiPropertyField(Rect position, GUIContent[] subLabels, SerializedProperty valuesIterator, EditorGUI.PropertyVisibility visibility, float labelWidth, bool[] disabledMask)
 		{
 			int num = subLabels.Length;
 			float num2 = (position.width - (float)(num - 1) * 2f) / (float)num;
@@ -5334,7 +5601,17 @@ namespace UnityEditor
 					EditorGUI.EndDisabled();
 				}
 				position2.x += num2 + 2f;
-				valuesIterator.NextVisible(false);
+				if (visibility != EditorGUI.PropertyVisibility.All)
+				{
+					if (visibility == EditorGUI.PropertyVisibility.OnlyVisible)
+					{
+						valuesIterator.NextVisible(false);
+					}
+				}
+				else
+				{
+					valuesIterator.Next(false);
+				}
 			}
 			EditorGUIUtility.labelWidth = labelWidth2;
 			EditorGUI.indentLevel = indentLevel;
@@ -6040,12 +6317,10 @@ namespace UnityEditor
 					}
 				}
 			}
-			Rect position4 = rect2;
-			position4.x -= 18f;
-			if (EditorGUI.HelpIconButton(position4, targetObjs[0]))
-			{
-				position2.xMax = position4.xMin - 2f;
-			}
+			Rect rectangle = rect2;
+			rectangle.x -= 18f;
+			rectangle = EditorGUIUtility.DrawEditorHeaderItems(rectangle, targetObjs);
+			position2.xMax = rectangle.xMin - 2f;
 			if (current.type == EventType.Repaint)
 			{
 				Texture2D miniThumbnail = AssetPreview.GetMiniThumbnail(targetObjs[0]);
@@ -6106,14 +6381,16 @@ namespace UnityEditor
 			return EditorGUIInternal.DoToggleForward(EditorGUI.IndentedRect(position), controlID, foldout, GUIContent.none, GUIStyle.none);
 		}
 
-		internal static bool HelpIconButton(Rect position, UnityEngine.Object obj)
+		[EditorHeaderItem(typeof(UnityEngine.Object), -1000)]
+		internal static bool HelpIconButton(Rect position, UnityEngine.Object[] objs)
 		{
+			UnityEngine.Object @object = objs[0];
 			bool flag = Unsupported.IsDeveloperBuild();
 			bool flag2 = !flag;
 			if (!flag2)
 			{
 				EditorCompilation.TargetAssemblyInfo[] targetAssemblies = EditorCompilationInterface.GetTargetAssemblies();
-				string a = obj.GetType().Assembly.ToString();
+				string a = @object.GetType().Assembly.ToString();
 				for (int i = 0; i < targetAssemblies.Length; i++)
 				{
 					if (a == targetAssemblies[i].Name)
@@ -6123,17 +6400,17 @@ namespace UnityEditor
 					}
 				}
 			}
-			bool flag3 = Help.HasHelpForObject(obj, flag2);
+			bool flag3 = Help.HasHelpForObject(@object, flag2);
 			bool result;
 			if (flag3 || flag)
 			{
 				Color color = GUI.color;
 				GUIContent gUIContent = new GUIContent(EditorGUI.GUIContents.helpIcon);
-				string niceHelpNameForObject = Help.GetNiceHelpNameForObject(obj, flag2);
+				string niceHelpNameForObject = Help.GetNiceHelpNameForObject(@object, flag2);
 				if (flag && !flag3)
 				{
 					GUI.color = Color.yellow;
-					bool flag4 = obj is MonoBehaviour;
+					bool flag4 = @object is MonoBehaviour;
 					string arg = ((!flag4) ? "sealed partial class-" : "script-") + niceHelpNameForObject;
 					gUIContent.tooltip = string.Format("Could not find Reference page for {0} ({1}).\nDocs for this object is missing or all docs are missing.\nThis warning only shows up in development builds.", niceHelpNameForObject, arg);
 				}
@@ -6144,7 +6421,7 @@ namespace UnityEditor
 				GUIStyle iconButton = EditorStyles.iconButton;
 				if (GUI.Button(position, gUIContent, iconButton))
 				{
-					Help.ShowHelpForObject(obj);
+					Help.ShowHelpForObject(@object);
 				}
 				GUI.color = color;
 				result = true;
@@ -6460,7 +6737,7 @@ namespace UnityEditor
 				EditorGUI.HelpBox(totalPosition, "null", MessageType.Error);
 				throw new NullReferenceException(message);
 			}
-			EditorGUI.s_PropertyFieldTempContent.text = LocalizationDatabase.GetLocalizedString((label != null) ? label.text : property.displayName);
+			EditorGUI.s_PropertyFieldTempContent.text = ((label != null) ? label.text : L10n.Tr(property.displayName));
 			EditorGUI.s_PropertyFieldTempContent.tooltip = ((!EditorGUI.isCollectingTooltips) ? null : ((label != null) ? label.tooltip : property.tooltip));
 			string tooltip = ScriptAttributeUtility.GetHandler(property).tooltip;
 			if (tooltip != null)
@@ -6481,6 +6758,8 @@ namespace UnityEditor
 				EditorGUIUtility.SetBoldDefaultFont(property.prefabOverride);
 			}
 			EditorGUI.s_PropertyStack.Push(new PropertyGUIData(property, totalPosition, boldDefaultFont, GUI.enabled, GUI.backgroundColor));
+			string targetTypeAssemblyQualifiedName = (!(property.serializedObject.targetObject != null)) ? null : property.serializedObject.targetObject.GetType().AssemblyQualifiedName;
+			GUIDebugger.LogBeginProperty(targetTypeAssemblyQualifiedName, property.propertyPath, totalPosition);
 			EditorGUI.showMixedValue = property.hasMultipleDifferentValues;
 			if (property.isAnimated)
 			{
@@ -6502,6 +6781,7 @@ namespace UnityEditor
 
 		public static void EndProperty()
 		{
+			GUIDebugger.LogEndProperty();
 			EditorGUI.showMixedValue = false;
 			PropertyGUIData propertyGUIData = EditorGUI.s_PropertyStack.Pop();
 			if (Event.current.type == EventType.ContextClick && propertyGUIData.totalPosition.Contains(Event.current.mousePosition))
@@ -6585,11 +6865,11 @@ namespace UnityEditor
 				Rect arg_F5_0 = position;
 				string[] arg_F5_1 = property.GetLayerMaskNames();
 				int[] arg_F5_2 = (!property.hasMultipleDifferentValues) ? property.GetLayerMaskSelectedIndex() : new int[0];
-				if (EditorGUI.<>f__mg$cache4 == null)
+				if (EditorGUI.<>f__mg$cache2 == null)
 				{
-					EditorGUI.<>f__mg$cache4 = new EditorUtility.SelectMenuItemFunction(EditorGUI.SetLayerMaskValueDelegate);
+					EditorGUI.<>f__mg$cache2 = new EditorUtility.SelectMenuItemFunction(EditorGUI.SetLayerMaskValueDelegate);
 				}
-				EditorUtility.DisplayCustomMenu(arg_F5_0, arg_F5_1, arg_F5_2, EditorGUI.<>f__mg$cache4, userData);
+				EditorUtility.DisplayCustomMenu(arg_F5_0, arg_F5_1, arg_F5_2, EditorGUI.<>f__mg$cache2, userData);
 				Event.current.Use();
 				GUIUtility.keyboardControl = controlID;
 			}
@@ -6661,10 +6941,21 @@ namespace UnityEditor
 					mat = EditorGUI.GetMaterialForSpecialTexture(image);
 				}
 				GL.sRGBWrite = (QualitySettings.activeColorSpace == ColorSpace.Linear && !TextureUtil.GetLinearSampled(image));
+				RenderTexture renderTexture = image as RenderTexture;
+				bool flag = renderTexture != null && renderTexture.bindTextureMS;
+				if (flag)
+				{
+					RenderTextureDescriptor descriptor = renderTexture.descriptor;
+					descriptor.bindMS = false;
+					descriptor.msaaSamples = 1;
+					RenderTexture temporary = RenderTexture.GetTemporary(descriptor);
+					temporary.Create();
+					renderTexture.ResolveAntiAliasedSurface(temporary);
+					image = temporary;
+				}
 				if (mat == null)
 				{
 					GUI.DrawTexture(position, image, scaleMode, false, imageAspect);
-					GL.sRGBWrite = false;
 				}
 				else
 				{
@@ -6678,7 +6969,11 @@ namespace UnityEditor
 						sourceRect.height *= (float)texture2D.height / (float)TextureUtil.GetGPUHeight(texture2D);
 					}
 					Graphics.DrawTexture(screenRect, image, sourceRect, 0, 0, 0, 0, GUI.color, mat);
-					GL.sRGBWrite = false;
+				}
+				GL.sRGBWrite = false;
+				if (flag)
+				{
+					RenderTexture.ReleaseTemporary(image as RenderTexture);
 				}
 			}
 		}
@@ -6693,19 +6988,24 @@ namespace UnityEditor
 			else
 			{
 				TextureUsageMode usageMode = TextureUtil.GetUsageMode(t);
-				if (usageMode == TextureUsageMode.LightmapRGBM || usageMode == TextureUsageMode.RGBMEncoded)
+				TextureFormat textureFormat = TextureUtil.GetTextureFormat(t);
+				if (usageMode == TextureUsageMode.RealtimeLightmapRGBM || usageMode == TextureUsageMode.BakedLightmapRGBM || usageMode == TextureUsageMode.RGBMEncoded)
 				{
 					result = EditorGUI.lightmapRGBMMaterial;
 				}
-				else if (usageMode == TextureUsageMode.LightmapDoubleLDR)
+				else if (usageMode == TextureUsageMode.BakedLightmapDoubleLDR)
 				{
 					result = EditorGUI.lightmapDoubleLDRMaterial;
 				}
-				else if (usageMode == TextureUsageMode.NormalmapDXT5nm)
+				else if (usageMode == TextureUsageMode.BakedLightmapFullHDR)
+				{
+					result = EditorGUI.lightmapFullHDRMaterial;
+				}
+				else if (usageMode == TextureUsageMode.NormalmapDXT5nm || (usageMode == TextureUsageMode.NormalmapPlain && textureFormat == TextureFormat.BC5))
 				{
 					result = EditorGUI.normalmapMaterial;
 				}
-				else if (TextureUtil.IsAlphaOnlyTextureFormat(TextureUtil.GetTextureFormat(t)))
+				else if (TextureUtil.IsAlphaOnlyTextureFormat(textureFormat))
 				{
 					result = EditorGUI.alphaMaterial;
 				}
@@ -6748,15 +7048,15 @@ namespace UnityEditor
 		public static float GetPropertyHeight(SerializedPropertyType type, GUIContent label)
 		{
 			float result;
-			if (type == SerializedPropertyType.Vector3 || type == SerializedPropertyType.Vector2 || type == SerializedPropertyType.Vector4)
+			if (type == SerializedPropertyType.Vector3 || type == SerializedPropertyType.Vector2 || type == SerializedPropertyType.Vector4 || type == SerializedPropertyType.Vector3Int || type == SerializedPropertyType.Vector2Int)
 			{
 				result = ((EditorGUI.LabelHasContent(label) && !EditorGUIUtility.wideMode) ? 16f : 0f) + 16f;
 			}
-			else if (type == SerializedPropertyType.Rect)
+			else if (type == SerializedPropertyType.Rect || type == SerializedPropertyType.RectInt)
 			{
 				result = ((EditorGUI.LabelHasContent(label) && !EditorGUIUtility.wideMode) ? 16f : 0f) + 32f;
 			}
-			else if (type == SerializedPropertyType.Bounds)
+			else if (type == SerializedPropertyType.Bounds || type == SerializedPropertyType.BoundsInt)
 			{
 				result = (EditorGUI.LabelHasContent(label) ? 16f : 0f) + 32f;
 			}
@@ -6772,19 +7072,43 @@ namespace UnityEditor
 			return ScriptAttributeUtility.GetHandler(property).GetHeight(property, label, includeChildren);
 		}
 
+		public static bool CanCacheInspectorGUI(SerializedProperty property)
+		{
+			return ScriptAttributeUtility.GetHandler(property).CanCacheInspectorGUI(property);
+		}
+
 		internal static bool HasVisibleChildFields(SerializedProperty property)
 		{
+			SerializedPropertyType propertyType = property.propertyType;
 			bool result;
-			switch (property.propertyType)
+			switch (propertyType)
 			{
 			case SerializedPropertyType.Vector2:
 			case SerializedPropertyType.Vector3:
 			case SerializedPropertyType.Rect:
 			case SerializedPropertyType.Bounds:
-				result = false;
-				return result;
+				goto IL_4E;
+			case SerializedPropertyType.Vector4:
+			case SerializedPropertyType.ArraySize:
+			case SerializedPropertyType.Character:
+			case SerializedPropertyType.AnimationCurve:
+				IL_30:
+				switch (propertyType)
+				{
+				case SerializedPropertyType.Vector2Int:
+				case SerializedPropertyType.Vector3Int:
+				case SerializedPropertyType.RectInt:
+				case SerializedPropertyType.BoundsInt:
+					goto IL_4E;
+				default:
+					result = property.hasVisibleChildren;
+					return result;
+				}
+				break;
 			}
-			result = property.hasVisibleChildren;
+			goto IL_30;
+			IL_4E:
+			result = false;
 			return result;
 		}
 
@@ -6810,7 +7134,7 @@ namespace UnityEditor
 					{
 						property.longValue = longValue;
 					}
-					goto IL_33A;
+					goto IL_382;
 				}
 				case SerializedPropertyType.Boolean:
 				{
@@ -6820,7 +7144,7 @@ namespace UnityEditor
 					{
 						property.boolValue = boolValue;
 					}
-					goto IL_33A;
+					goto IL_382;
 				}
 				case SerializedPropertyType.Float:
 				{
@@ -6831,7 +7155,7 @@ namespace UnityEditor
 					{
 						property.doubleValue = doubleValue;
 					}
-					goto IL_33A;
+					goto IL_382;
 				}
 				case SerializedPropertyType.String:
 				{
@@ -6841,7 +7165,7 @@ namespace UnityEditor
 					{
 						property.stringValue = stringValue;
 					}
-					goto IL_33A;
+					goto IL_382;
 				}
 				case SerializedPropertyType.Color:
 				{
@@ -6851,29 +7175,29 @@ namespace UnityEditor
 					{
 						property.colorValue = colorValue;
 					}
-					goto IL_33A;
+					goto IL_382;
 				}
 				case SerializedPropertyType.ObjectReference:
 					EditorGUI.ObjectFieldInternal(position, property, null, label, EditorStyles.objectField);
-					goto IL_33A;
+					goto IL_382;
 				case SerializedPropertyType.LayerMask:
 					EditorGUI.LayerMaskField(position, property, label);
-					goto IL_33A;
+					goto IL_382;
 				case SerializedPropertyType.Enum:
 					EditorGUI.Popup(position, property, label);
-					goto IL_33A;
+					goto IL_382;
 				case SerializedPropertyType.Vector2:
 					EditorGUI.Vector2Field(position, property, label);
-					goto IL_33A;
+					goto IL_382;
 				case SerializedPropertyType.Vector3:
 					EditorGUI.Vector3Field(position, property, label);
-					goto IL_33A;
+					goto IL_382;
 				case SerializedPropertyType.Vector4:
 					EditorGUI.Vector4Field(position, property, label);
-					goto IL_33A;
+					goto IL_382;
 				case SerializedPropertyType.Rect:
 					EditorGUI.RectField(position, property, label);
-					goto IL_33A;
+					goto IL_382;
 				case SerializedPropertyType.ArraySize:
 				{
 					EditorGUI.BeginChangeCheck();
@@ -6882,7 +7206,7 @@ namespace UnityEditor
 					{
 						property.intValue = intValue;
 					}
-					goto IL_33A;
+					goto IL_382;
 				}
 				case SerializedPropertyType.Character:
 				{
@@ -6905,30 +7229,42 @@ namespace UnityEditor
 						}
 					}
 					GUI.changed |= changed;
-					goto IL_33A;
+					goto IL_382;
 				}
 				case SerializedPropertyType.AnimationCurve:
 				{
 					int controlID = GUIUtility.GetControlID(EditorGUI.s_CurveHash, FocusType.Keyboard, position);
 					EditorGUI.DoCurveField(EditorGUI.PrefixLabel(position, controlID, label), controlID, null, EditorGUI.kCurveColor, default(Rect), property);
-					goto IL_33A;
+					goto IL_382;
 				}
 				case SerializedPropertyType.Bounds:
 					EditorGUI.BoundsField(position, property, label);
-					goto IL_33A;
+					goto IL_382;
 				case SerializedPropertyType.Gradient:
 				{
 					int controlID2 = GUIUtility.GetControlID(EditorGUI.s_CurveHash, FocusType.Keyboard, position);
 					EditorGUI.DoGradientField(EditorGUI.PrefixLabel(position, controlID2, label), controlID2, null, property, false);
-					goto IL_33A;
+					goto IL_382;
 				}
 				case SerializedPropertyType.FixedBufferSize:
 					EditorGUI.IntField(position, label, property.intValue);
-					goto IL_33A;
+					goto IL_382;
+				case SerializedPropertyType.Vector2Int:
+					EditorGUI.Vector2IntField(position, property, label);
+					goto IL_382;
+				case SerializedPropertyType.Vector3Int:
+					EditorGUI.Vector3IntField(position, property, label);
+					goto IL_382;
+				case SerializedPropertyType.RectInt:
+					EditorGUI.RectIntField(position, property, label);
+					goto IL_382;
+				case SerializedPropertyType.BoundsInt:
+					EditorGUI.BoundsIntField(position, property, label);
+					goto IL_382;
 				}
 				int controlID3 = GUIUtility.GetControlID(EditorGUI.s_GenericField, FocusType.Keyboard, position);
 				EditorGUI.PrefixLabel(position, controlID3, label);
-				IL_33A:;
+				IL_382:;
 			}
 			else
 			{
@@ -6944,10 +7280,10 @@ namespace UnityEditor
 				{
 					Rect position2 = position;
 					position2.xMin += EditorGUIUtility.labelWidth - EditorGUI.indent;
-					GUIContent arg_42D_0 = EditorGUI.s_ArrayMultiInfoContent;
+					GUIContent arg_475_0 = EditorGUI.s_ArrayMultiInfoContent;
 					string text2 = string.Format(EditorGUI.s_ArrayMultiInfoFormatString, property.serializedObject.maxArraySizeForMultiEditing);
 					EditorGUI.s_ArrayMultiInfoContent.tooltip = text2;
-					arg_42D_0.text = text2;
+					arg_475_0.text = text2;
 					EditorGUI.LabelField(position2, GUIContent.none, EditorGUI.s_ArrayMultiInfoContent, EditorStyles.helpBox);
 				}
 				if (flag3 != flag)
@@ -7100,9 +7436,204 @@ namespace UnityEditor
 			return result;
 		}
 
-		private static Enum EnumFlagsToInt(Type type, int value)
+		private static int EnumFlagsToInt(EditorGUI.EnumData enumData, Enum enumValue)
 		{
-			return Enum.Parse(type, value.ToString()) as Enum;
+			int result;
+			if (enumData.unsigned)
+			{
+				if (enumData.underlyingType == typeof(uint))
+				{
+					result = (int)Convert.ToUInt32(enumValue);
+				}
+				else if (enumData.underlyingType == typeof(ushort))
+				{
+					ushort num = Convert.ToUInt16(enumValue);
+					result = ((num != 65535) ? ((int)num) : -1);
+				}
+				else
+				{
+					byte b = Convert.ToByte(enumValue);
+					result = ((b != 255) ? ((int)b) : -1);
+				}
+			}
+			else
+			{
+				result = Convert.ToInt32(enumValue);
+			}
+			return result;
+		}
+
+		private static Enum IntToEnumFlags(Type enumType, int value)
+		{
+			EditorGUI.EnumData nonObsoleteEnumData = EditorGUI.GetNonObsoleteEnumData(enumType);
+			Enum result;
+			if (nonObsoleteEnumData.unsigned)
+			{
+				if (nonObsoleteEnumData.underlyingType == typeof(uint))
+				{
+					uint num = (uint)value;
+					result = (Enum.Parse(enumType, num.ToString()) as Enum);
+				}
+				else if (nonObsoleteEnumData.underlyingType == typeof(ushort))
+				{
+					result = (Enum.Parse(enumType, ((ushort)value).ToString()) as Enum);
+				}
+				else
+				{
+					result = (Enum.Parse(enumType, ((byte)value).ToString()) as Enum);
+				}
+			}
+			else
+			{
+				result = (Enum.Parse(enumType, value.ToString()) as Enum);
+			}
+			return result;
+		}
+
+		[Obsolete("EnumMaskField has been deprecated. Use EnumFlagsField instead.")]
+		public static Enum EnumMaskField(Rect position, Enum enumValue)
+		{
+			return EditorGUI.EnumMaskField(position, enumValue, EditorStyles.popup);
+		}
+
+		[Obsolete("EnumMaskField has been deprecated. Use EnumFlagsField instead.")]
+		public static Enum EnumMaskField(Rect position, Enum enumValue, GUIStyle style)
+		{
+			return EditorGUI.EnumMaskFieldInternal(position, enumValue, style);
+		}
+
+		[Obsolete("EnumMaskField has been deprecated. Use EnumFlagsField instead.")]
+		public static Enum EnumMaskField(Rect position, string label, Enum enumValue)
+		{
+			return EditorGUI.EnumMaskField(position, label, enumValue, EditorStyles.popup);
+		}
+
+		[Obsolete("EnumMaskField has been deprecated. Use EnumFlagsField instead.")]
+		public static Enum EnumMaskField(Rect position, string label, Enum enumValue, GUIStyle style)
+		{
+			return EditorGUI.EnumMaskFieldInternal(position, EditorGUIUtility.TempContent(label), enumValue, style);
+		}
+
+		[Obsolete("EnumMaskField has been deprecated. Use EnumFlagsField instead.")]
+		public static Enum EnumMaskField(Rect position, GUIContent label, Enum enumValue)
+		{
+			return EditorGUI.EnumMaskField(position, label, enumValue, EditorStyles.popup);
+		}
+
+		[Obsolete("EnumMaskField has been deprecated. Use EnumFlagsField instead.")]
+		public static Enum EnumMaskField(Rect position, GUIContent label, Enum enumValue, GUIStyle style)
+		{
+			return EditorGUI.EnumMaskFieldInternal(position, label, enumValue, style);
+		}
+
+		[Obsolete("EnumMaskPopup has been deprecated. Use EnumFlagsField instead.")]
+		public static Enum EnumMaskPopup(Rect position, string label, Enum selected)
+		{
+			return EditorGUI.EnumMaskPopup(position, label, selected, EditorStyles.popup);
+		}
+
+		[Obsolete("EnumMaskPopup has been deprecated. Use EnumFlagsField instead.")]
+		public static Enum EnumMaskPopup(Rect position, string label, Enum selected, GUIStyle style)
+		{
+			int num;
+			bool flag;
+			return EditorGUI.EnumMaskPopup(position, label, selected, out num, out flag, style);
+		}
+
+		[Obsolete("EnumMaskPopup has been deprecated. Use EnumFlagsField instead.")]
+		public static Enum EnumMaskPopup(Rect position, GUIContent label, Enum selected)
+		{
+			return EditorGUI.EnumMaskPopup(position, label, selected, EditorStyles.popup);
+		}
+
+		[Obsolete("EnumMaskPopup has been deprecated. Use EnumFlagsField instead.")]
+		public static Enum EnumMaskPopup(Rect position, GUIContent label, Enum selected, GUIStyle style)
+		{
+			int num;
+			bool flag;
+			return EditorGUI.EnumMaskPopup(position, label, selected, out num, out flag, style);
+		}
+
+		[Obsolete("EnumMaskField has been deprecated. Use EnumFlagsField instead.")]
+		private static Enum EnumMaskField(Rect position, GUIContent label, Enum enumValue, GUIStyle style, out int changedFlags, out bool changedToValue)
+		{
+			return EditorGUI.DoEnumMaskField(position, label, enumValue, style, out changedFlags, out changedToValue);
+		}
+
+		[Obsolete("EnumMaskField has been deprecated. Use EnumFlagsField instead.")]
+		private static Enum EnumMaskFieldInternal(Rect position, Enum enumValue, GUIStyle style)
+		{
+			Type type = enumValue.GetType();
+			if (!type.IsEnum)
+			{
+				throw new ArgumentException("Parameter enumValue must be of type System.Enum", "enumValue");
+			}
+			IEnumerable<string> arg_46_0 = Enum.GetNames(type);
+			if (EditorGUI.<>f__mg$cache3 == null)
+			{
+				EditorGUI.<>f__mg$cache3 = new Func<string, string>(ObjectNames.NicifyVariableName);
+			}
+			string[] flagNames = arg_46_0.Select(EditorGUI.<>f__mg$cache3).ToArray<string>();
+			int value = MaskFieldGUIDeprecated.DoMaskField(EditorGUI.IndentedRect(position), GUIUtility.GetControlID(EditorGUI.s_MaskField, FocusType.Keyboard, position), Convert.ToInt32(enumValue), flagNames, style);
+			return EditorGUI.IntToEnumFlags(type, value);
+		}
+
+		[Obsolete("EnumMaskField has been deprecated. Use EnumFlagsField instead.")]
+		private static Enum EnumMaskFieldInternal(Rect position, GUIContent label, Enum enumValue, GUIStyle style)
+		{
+			Type type = enumValue.GetType();
+			if (!type.IsEnum)
+			{
+				throw new ArgumentException("Parameter enumValue must be of type System.Enum", "enumValue");
+			}
+			int controlID = GUIUtility.GetControlID(EditorGUI.s_MaskField, FocusType.Keyboard, position);
+			Rect position2 = EditorGUI.PrefixLabel(position, controlID, label);
+			position.xMax = position2.x;
+			IEnumerable<string> arg_6A_0 = Enum.GetNames(type);
+			if (EditorGUI.<>f__mg$cache4 == null)
+			{
+				EditorGUI.<>f__mg$cache4 = new Func<string, string>(ObjectNames.NicifyVariableName);
+			}
+			string[] flagNames = arg_6A_0.Select(EditorGUI.<>f__mg$cache4).ToArray<string>();
+			int value = MaskFieldGUIDeprecated.DoMaskField(position2, controlID, Convert.ToInt32(enumValue), flagNames, style);
+			return EditorGUI.IntToEnumFlags(type, value);
+		}
+
+		[Obsolete("EnumMaskField has been deprecated. Use EnumFlagsField instead.")]
+		private static Enum DoEnumMaskField(Rect position, GUIContent label, Enum enumValue, GUIStyle style, out int changedFlags, out bool changedToValue)
+		{
+			Type type = enumValue.GetType();
+			if (!type.IsEnum)
+			{
+				throw new ArgumentException("Parameter enumValue must be of type System.Enum", "enumValue");
+			}
+			int controlID = GUIUtility.GetControlID(EditorGUI.s_MaskField, FocusType.Keyboard, position);
+			IEnumerable<string> arg_53_0 = Enum.GetNames(type);
+			if (EditorGUI.<>f__mg$cache5 == null)
+			{
+				EditorGUI.<>f__mg$cache5 = new Func<string, string>(ObjectNames.NicifyVariableName);
+			}
+			string[] flagNames = arg_53_0.Select(EditorGUI.<>f__mg$cache5).ToArray<string>();
+			int value = MaskFieldGUIDeprecated.DoMaskField(EditorGUI.PrefixLabel(position, controlID, label), controlID, Convert.ToInt32(enumValue), flagNames, style, out changedFlags, out changedToValue);
+			return EditorGUI.IntToEnumFlags(type, value);
+		}
+
+		[Obsolete("EnumMaskField has been deprecated. Use EnumFlagsField instead.")]
+		private static Enum EnumMaskPopup(Rect position, string label, Enum selected, out int changedFlags, out bool changedToValue, GUIStyle style)
+		{
+			return EditorGUI.EnumMaskPopup(position, EditorGUIUtility.TempContent(label), selected, out changedFlags, out changedToValue, style);
+		}
+
+		[Obsolete("EnumMaskPopup has been deprecated. Use EnumFlagsField instead.")]
+		internal static Enum EnumMaskPopup(Rect position, GUIContent label, Enum selected, out int changedFlags, out bool changedToValue, GUIStyle style)
+		{
+			return EditorGUI.EnumMaskPopupInternal(position, label, selected, out changedFlags, out changedToValue, style);
+		}
+
+		[Obsolete("EnumMaskPopup has been deprecated. Use EnumFlagsField instead.")]
+		private static Enum EnumMaskPopupInternal(Rect position, GUIContent label, Enum selected, out int changedFlags, out bool changedToValue, GUIStyle style)
+		{
+			return EditorGUI.EnumMaskField(position, label, selected, style, out changedFlags, out changedToValue);
 		}
 
 		internal static bool ButtonWithRotatedIcon(Rect rect, GUIContent guiContent, float iconAngle, bool mouseDownButton, GUIStyle style)
@@ -7675,11 +8206,11 @@ namespace UnityEditor
 		{
 			if (validator == null)
 			{
-				if (EditorGUI.<>f__mg$cache5 == null)
+				if (EditorGUI.<>f__mg$cache6 == null)
 				{
-					EditorGUI.<>f__mg$cache5 = new EditorGUI.ObjectFieldValidator(EditorGUI.ValidateObjectFieldAssignment);
+					EditorGUI.<>f__mg$cache6 = new EditorGUI.ObjectFieldValidator(EditorGUI.ValidateObjectFieldAssignment);
 				}
-				validator = EditorGUI.<>f__mg$cache5;
+				validator = EditorGUI.<>f__mg$cache6;
 			}
 			Event current = Event.current;
 			EventType eventType = current.type;
@@ -8025,11 +8556,11 @@ namespace UnityEditor
 		{
 			if (validator == null)
 			{
-				if (EditorGUI.<>f__mg$cache6 == null)
+				if (EditorGUI.<>f__mg$cache7 == null)
 				{
-					EditorGUI.<>f__mg$cache6 = new EditorGUI.ObjectFieldValidator(EditorGUI.ValidateObjectFieldAssignment);
+					EditorGUI.<>f__mg$cache7 = new EditorGUI.ObjectFieldValidator(EditorGUI.ValidateObjectFieldAssignment);
 				}
-				validator = EditorGUI.<>f__mg$cache6;
+				validator = EditorGUI.<>f__mg$cache7;
 			}
 			Event current = Event.current;
 			EventType eventType = current.type;
@@ -8093,11 +8624,11 @@ namespace UnityEditor
 
 		internal static void TargetChoiceField(Rect position, SerializedProperty property, GUIContent label)
 		{
-			if (EditorGUI.<>f__mg$cache7 == null)
+			if (EditorGUI.<>f__mg$cache8 == null)
 			{
-				EditorGUI.<>f__mg$cache7 = new TargetChoiceHandler.TargetChoiceMenuFunction(TargetChoiceHandler.SetToValueOfTarget);
+				EditorGUI.<>f__mg$cache8 = new TargetChoiceHandler.TargetChoiceMenuFunction(TargetChoiceHandler.SetToValueOfTarget);
 			}
-			EditorGUI.TargetChoiceField(position, property, label, EditorGUI.<>f__mg$cache7);
+			EditorGUI.TargetChoiceField(position, property, label, EditorGUI.<>f__mg$cache8);
 		}
 
 		internal static void TargetChoiceField(Rect position, SerializedProperty property, GUIContent label, TargetChoiceHandler.TargetChoiceMenuFunction func)

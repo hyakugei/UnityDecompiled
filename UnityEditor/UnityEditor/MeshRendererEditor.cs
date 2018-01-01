@@ -95,6 +95,7 @@ namespace UnityEditor
 					EditorGUILayout.HelpBox(MeshRendererEditor.Styles.StaticBatchingWarning, MessageType.Warning, true);
 				}
 			}
+			base.CullDynamicFieldGUI();
 			base.serializedObject.ApplyModifiedProperties();
 		}
 	}

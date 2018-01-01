@@ -51,16 +51,16 @@ namespace UnityEditor
 
 			public GUIContent flipV = EditorGUIUtility.TextContent("Flip V|Cause some particle texture mapping to be flipped vertically. (Set between 0 and 1, where a higher value causes more to flip)");
 
-			public string[] modes = new string[]
+			public GUIContent[] modes = new GUIContent[]
 			{
-				"Grid",
-				"Sprites"
+				EditorGUIUtility.TextContent("Grid"),
+				EditorGUIUtility.TextContent("Sprites")
 			};
 
-			public string[] types = new string[]
+			public GUIContent[] types = new GUIContent[]
 			{
-				"Whole Sheet",
-				"Single Row"
+				EditorGUIUtility.TextContent("Whole Sheet"),
+				EditorGUIUtility.TextContent("Single Row")
 			};
 		}
 
@@ -124,10 +124,6 @@ namespace UnityEditor
 
 		public override void OnInspectorGUI(InitialModuleUI initial)
 		{
-			if (UVModuleUI.s_Texts == null)
-			{
-				UVModuleUI.s_Texts = new UVModuleUI.Texts();
-			}
 			int num = ModuleUI.GUIPopup(UVModuleUI.s_Texts.mode, this.m_Mode, UVModuleUI.s_Texts.modes, new GUILayoutOption[0]);
 			if (!this.m_Mode.hasMultipleDifferentValues)
 			{

@@ -102,7 +102,12 @@ namespace UnityEditor
 					}
 					else
 					{
-						diagnosticSwitch.persistentValue = EditorGUI.IntPopup(rect, label, (int)diagnosticSwitch.persistentValue, diagnosticSwitch.enumInfo.guiNames, diagnosticSwitch.enumInfo.values);
+						GUIContent[] array3 = new GUIContent[diagnosticSwitch.enumInfo.names.Length];
+						for (int j = 0; j < diagnosticSwitch.enumInfo.names.Length; j++)
+						{
+							array3[j] = new GUIContent(diagnosticSwitch.enumInfo.names[j], diagnosticSwitch.enumInfo.annotations[j]);
+						}
+						diagnosticSwitch.persistentValue = EditorGUI.IntPopup(rect, label, (int)diagnosticSwitch.persistentValue, array3, diagnosticSwitch.enumInfo.values);
 					}
 				}
 				else if (diagnosticSwitch.value is uint)
@@ -150,7 +155,7 @@ namespace UnityEditor
 		}
 
 		[PreferenceItem("Diagnostics")]
-		public static void OnGUI()
+		private static void OnGUI()
 		{
 			List<DiagnosticSwitch> list = new List<DiagnosticSwitch>();
 			Debug.GetDiagnosticSwitches(list);

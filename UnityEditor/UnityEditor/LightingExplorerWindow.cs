@@ -175,12 +175,8 @@ namespace UnityEditor
 			EditorGUIUtility.labelWidth = 130f;
 			EditorGUILayout.Space();
 			EditorGUILayout.BeginHorizontal(new GUILayoutOption[0]);
-			GUILayout.Space(this.toolbarPadding);
-			float width = base.position.width - this.toolbarPadding * 2f;
-			this.m_SelectedTab = (LightingExplorerWindow.TabType)GUILayout.Toolbar((int)this.m_SelectedTab, LightingExplorerWindow.Styles.TabTypes, "LargeButton", new GUILayoutOption[]
-			{
-				GUILayout.Width(width)
-			});
+			GUILayout.FlexibleSpace();
+			this.m_SelectedTab = (LightingExplorerWindow.TabType)GUILayout.Toolbar((int)this.m_SelectedTab, LightingExplorerWindow.Styles.TabTypes, "LargeButton", GUI.ToolbarButtonSize.FitToContents, new GUILayoutOption[0]);
 			GUILayout.FlexibleSpace();
 			EditorGUILayout.EndHorizontal();
 			EditorGUILayout.Space();

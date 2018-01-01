@@ -7,7 +7,7 @@ using UnityEngine.Rendering;
 namespace UnityEditor
 {
 	[CanEditMultipleObjects, CustomEditor(typeof(Light))]
-	internal class LightEditor : Editor
+	public class LightEditor : Editor
 	{
 		private class Styles
 		{
@@ -19,7 +19,7 @@ namespace UnityEditor
 
 			public readonly GUIContent Range = EditorGUIUtility.TextContent("Range|Controls how far the light is emitted from the center of the object.");
 
-			public readonly GUIContent SpotAngle = EditorGUIUtility.TextContent("Spot Angle|Controls the angle in degrees at the base of a Spot light�s cone.");
+			public readonly GUIContent SpotAngle = EditorGUIUtility.TextContent("Spot Angle|Controls the angle in degrees at the base of a Spot light's cone.");
 
 			public readonly GUIContent Color = EditorGUIUtility.TextContent("Color|Controls the color being emitted by the light.");
 
@@ -79,7 +79,7 @@ namespace UnityEditor
 
 			public readonly GUIContent CookieWarning = EditorGUIUtility.TextContent("Cookie textures for spot lights should be set to clamp, not repeat, to avoid artifacts.");
 
-			public readonly GUIContent DisabledLightWarning = EditorGUIUtility.TextContent("Lighting has been disabled in at least one Scene view.  Any changes applied to lights in the Scene will not be updated in these views until Lighting has been enabled again.");
+			public readonly GUIContent DisabledLightWarning = EditorGUIUtility.TextContent("Lighting has been disabled in at least one Scene view. Any changes applied to lights in the Scene will not be updated in these views until Lighting has been enabled again.");
 
 			static Styles()
 			{
@@ -373,7 +373,7 @@ namespace UnityEditor
 		{
 			if (EditorGUILayout.BeginFadeGroup(1f - this.m_AnimShowAreaOptions.faded))
 			{
-				LightModeUtil.Get().DrawElement(this.m_Lightmapping, LightEditor.s_Styles.LightmappingMode);
+				EditorGUILayout.PropertyField(this.m_Lightmapping, LightEditor.s_Styles.LightmappingMode, new GUILayoutOption[0]);
 				if (this.bakingWarningValue)
 				{
 					EditorGUILayout.HelpBox(LightEditor.s_Styles.BakingWarning.text, MessageType.Info);

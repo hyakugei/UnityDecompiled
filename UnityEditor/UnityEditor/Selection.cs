@@ -107,10 +107,9 @@ namespace UnityEditor
 			get;
 		}
 
-		public static bool Contains(int instanceID)
-		{
-			return Array.IndexOf<int>(Selection.instanceIDs, instanceID) != -1;
-		}
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern bool Contains(int instanceID);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]

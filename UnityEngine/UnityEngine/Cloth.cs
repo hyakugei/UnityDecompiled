@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using UnityEngine.Internal;
 using UnityEngine.Scripting;
@@ -141,7 +142,18 @@ namespace UnityEngine
 			set;
 		}
 
+		[Obsolete("useContinuousCollision is no longer supported, use enableContinuousCollision instead")]
 		public extern float useContinuousCollision
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public extern bool enableContinuousCollision
 		{
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
@@ -191,7 +203,20 @@ namespace UnityEngine
 			set;
 		}
 
-		public extern bool solverFrequency
+		[Obsolete("Parameter solverFrequency is obsolete and no longer supported. Please use clothSolverFrequency instead.")]
+		public bool solverFrequency
+		{
+			get
+			{
+				return this.clothSolverFrequency > 0f;
+			}
+			set
+			{
+				this.clothSolverFrequency = ((!value) ? 0f : 120f);
+			}
+		}
+
+		public extern float clothSolverFrequency
 		{
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
@@ -219,6 +244,100 @@ namespace UnityEngine
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
+		}
+
+		public extern bool useTethers
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public extern float stiffnessFrequency
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public extern float selfCollisionDistance
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public extern float selfCollisionStiffness
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public void GetVirtualParticleIndices(List<uint> indices)
+		{
+			if (indices == null)
+			{
+				throw new ArgumentNullException("indices");
+			}
+			this.GetVirtualParticleIndicesMono(indices);
+		}
+
+		public void SetVirtualParticleIndices(List<uint> indices)
+		{
+			if (indices == null)
+			{
+				throw new ArgumentNullException("indices");
+			}
+			this.SetVirtualParticleIndicesMono(indices);
+		}
+
+		public void GetVirtualParticleWeights(List<Vector3> weights)
+		{
+			if (weights == null)
+			{
+				throw new ArgumentNullException("weights");
+			}
+			this.GetVirtualParticleWeightsMono(weights);
+		}
+
+		public void SetVirtualParticleWeights(List<Vector3> weights)
+		{
+			if (weights == null)
+			{
+				throw new ArgumentNullException("weights");
+			}
+			this.SetVirtualParticleWeightsMono(weights);
+		}
+
+		public void GetSelfAndInterCollisionIndices(List<uint> indices)
+		{
+			if (indices == null)
+			{
+				throw new ArgumentNullException("indices");
+			}
+			this.GetSelfAndInterCollisionIndicesMono(indices);
+		}
+
+		public void SetSelfAndInterCollisionIndices(List<uint> indices)
+		{
+			if (indices == null)
+			{
+				throw new ArgumentNullException("indices");
+			}
+			this.SetSelfAndInterCollisionIndicesMono(indices);
 		}
 
 		[GeneratedByOldBindingsGenerator]
@@ -256,5 +375,29 @@ namespace UnityEngine
 			float interpolationTime = 0.5f;
 			this.SetEnabledFading(enabled, interpolationTime);
 		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern void GetVirtualParticleIndicesMono(object indicesOutList);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern void SetVirtualParticleIndicesMono(object indicesInList);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern void GetVirtualParticleWeightsMono(object weightsOutList);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern void SetVirtualParticleWeightsMono(object weightsInList);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern void GetSelfAndInterCollisionIndicesMono(object indicesOutList);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern void SetSelfAndInterCollisionIndicesMono(object indicesInList);
 	}
 }

@@ -14,8 +14,7 @@ namespace UnityEditor
 	{
 		internal enum Language
 		{
-			CSharp,
-			JavaScript
+			CSharp
 		}
 
 		private class Element : IComparable
@@ -144,20 +143,11 @@ namespace UnityEditor
 				get
 				{
 					AddComponentWindow.Language s_Lang = AddComponentWindow.s_Lang;
-					string result;
 					if (s_Lang != AddComponentWindow.Language.CSharp)
 					{
-						if (s_Lang != AddComponentWindow.Language.JavaScript)
-						{
-							throw new ArgumentOutOfRangeException();
-						}
-						result = "js";
+						throw new ArgumentOutOfRangeException();
 					}
-					else
-					{
-						result = "cs";
-					}
-					return result;
+					return "cs";
 				}
 			}
 
@@ -167,20 +157,11 @@ namespace UnityEditor
 				{
 					string path = Path.Combine(EditorApplication.applicationContentsPath, "Resources/ScriptTemplates");
 					AddComponentWindow.Language s_Lang = AddComponentWindow.s_Lang;
-					string result;
-					if (s_Lang != AddComponentWindow.Language.JavaScript)
+					if (s_Lang != AddComponentWindow.Language.CSharp)
 					{
-						if (s_Lang != AddComponentWindow.Language.CSharp)
-						{
-							throw new ArgumentOutOfRangeException();
-						}
-						result = Path.Combine(path, "81-C# Script-NewBehaviourScript.cs.txt");
+						throw new ArgumentOutOfRangeException();
 					}
-					else
-					{
-						result = Path.Combine(path, "82-Javascript-NewBehaviourScript.js.txt");
-					}
-					return result;
+					return Path.Combine(path, "81-C# Script-NewBehaviourScript.cs.txt");
 				}
 			}
 
@@ -261,6 +242,12 @@ namespace UnityEditor
 						monoScript.SetScriptTypeWasJustCreatedFromComponentMenu();
 						InternalEditorUtility.AddScriptComponentUncheckedUndoable(gameObject, monoScript);
 					}
+					AddComponentWindow.s_AddComponentWindow.SendUsabilityAnalyticsEvent(new AddComponentWindow.AnalyticsEventData
+					{
+						name = AddComponentWindow.className,
+						filter = (AddComponentWindow.s_AddComponentWindow.m_DelayedSearch ?? AddComponentWindow.s_AddComponentWindow.m_Search),
+						isNewScript = true
+					});
 					AddComponentWindow.s_AddComponentWindow.Close();
 				}
 			}
@@ -300,6 +287,16 @@ namespace UnityEditor
 				ProjectWindowUtil.CreateScriptAssetFromTemplate(this.TargetPath(), this.templatePath);
 				AssetDatabase.Refresh();
 			}
+		}
+
+		[Serializable]
+		private class AnalyticsEventData
+		{
+			public string name;
+
+			public string filter;
+
+			public bool isNewScript;
 		}
 
 		private class Styles
@@ -380,6 +377,8 @@ namespace UnityEditor
 		private string m_DelayedSearch = null;
 
 		private string m_Search = "";
+
+		private DateTime m_OpenTime;
 
 		private const string kSearchHeader = "Search";
 
@@ -547,6 +546,7 @@ namespace UnityEditor
 
 		private void Init(Rect buttonRect)
 		{
+			this.m_OpenTime = DateTime.UtcNow;
 			buttonRect = GUIUtility.GUIToScreenRect(buttonRect);
 			this.CreateComponentTree();
 			base.ShowAsDropDown(buttonRect, new Vector2(buttonRect.width, 320f), null, ShowMode.PopupMenuWithKeyboardFocus);
@@ -865,6 +865,12 @@ namespace UnityEditor
 			{
 				if (addIfComponent)
 				{
+					this.SendUsabilityAnalyticsEvent(new AddComponentWindow.AnalyticsEventData
+					{
+						name = ((AddComponentWindow.ComponentElement)e).name,
+						filter = (this.m_DelayedSearch ?? this.m_Search),
+						isNewScript = false
+					});
 					EditorApplication.ExecuteMenuItemOnGameObjects(((AddComponentWindow.ComponentElement)e).menuPath, this.m_GameObjects);
 					base.Close();
 				}
@@ -882,6 +888,11 @@ namespace UnityEditor
 					this.m_Stack.Add(e as AddComponentWindow.GroupElement);
 				}
 			}
+		}
+
+		private void SendUsabilityAnalyticsEvent(AddComponentWindow.AnalyticsEventData eventData)
+		{
+			UsabilityAnalytics.SendEvent("executeAddComponentWindow", this.m_OpenTime, DateTime.UtcNow - this.m_OpenTime, false, eventData);
 		}
 
 		private void ListGUI(AddComponentWindow.Element[] tree, float anim, AddComponentWindow.GroupElement parent, AddComponentWindow.GroupElement grandParent)

@@ -3,15 +3,41 @@ using UnityEngine.Experimental.UIElements.StyleSheets;
 
 namespace UnityEngine.Experimental.UIElements
 {
-	public class TextField : VisualElement
+	public class TextField : VisualContainer
 	{
+		public Action<string> OnTextChanged;
+
+		public Action OnTextChangeValidated;
+
+		private const string SelectionColorProperty = "selection-color";
+
+		private const string CursorColorProperty = "cursor-color";
+
+		private StyleValue<Color> m_SelectionColor;
+
+		private StyleValue<Color> m_CursorColor;
+
 		private bool m_Multiline;
 
 		private bool m_IsPasswordField;
 
 		internal const int kMaxLengthNone = -1;
 
-		private GUIStyle m_DrawGUIStyle;
+		public Color selectionColor
+		{
+			get
+			{
+				return this.m_SelectionColor.GetSpecifiedValueOrDefault(Color.clear);
+			}
+		}
+
+		public Color cursorColor
+		{
+			get
+			{
+				return this.m_CursorColor.GetSpecifiedValueOrDefault(Color.clear);
+			}
+		}
 
 		public bool multiline
 		{
@@ -77,31 +103,18 @@ namespace UnityEngine.Experimental.UIElements
 			}
 		}
 
-		internal GUIStyle style
-		{
-			get
-			{
-				GUIStyle arg_1C_0;
-				if ((arg_1C_0 = this.m_DrawGUIStyle) == null)
-				{
-					arg_1C_0 = (this.m_DrawGUIStyle = new GUIStyle());
-				}
-				return arg_1C_0;
-			}
-		}
-
 		public bool hasFocus
 		{
 			get
 			{
-				return base.elementPanel != null && base.elementPanel.focusedElement == this;
+				return base.elementPanel != null && base.elementPanel.focusController.focusedElement == this;
 			}
 		}
 
-		public TextEditor editor
+		internal TextEditor editor
 		{
 			get;
-			protected set;
+			set;
 		}
 
 		public TextField() : this(-1, false, false, '\0')
@@ -124,13 +137,40 @@ namespace UnityEngine.Experimental.UIElements
 				this.tripleClickSelectsLine = true;
 				this.editor = new KeyboardTextEditor(this);
 			}
-			base.AddManipulator(this.editor);
+			this.editor.style = new GUIStyle(this.editor.style);
+			base.focusIndex = 0;
+			this.AddManipulator(this.editor);
 		}
 
-		public override void OnStylesResolved(ICustomStyles styles)
+		internal void TextFieldChanged()
 		{
-			base.OnStylesResolved(styles);
-			this.m_Styles.WriteToGUIStyle(this.style);
+			if (this.OnTextChanged != null)
+			{
+				this.OnTextChanged(base.text);
+			}
+		}
+
+		internal void TextFieldChangeValidated()
+		{
+			if (this.OnTextChangeValidated != null)
+			{
+				this.OnTextChangeValidated();
+			}
+		}
+
+		public override void OnPersistentDataReady()
+		{
+			base.OnPersistentDataReady();
+			string fullHierarchicalPersistenceKey = base.GetFullHierarchicalPersistenceKey();
+			base.OverwriteFromPersistedData(this, fullHierarchicalPersistenceKey);
+		}
+
+		public override void OnStyleResolved(ICustomStyle style)
+		{
+			base.OnStyleResolved(style);
+			base.effectiveStyle.ApplyCustomProperty("selection-color", ref this.m_SelectionColor);
+			base.effectiveStyle.ApplyCustomProperty("cursor-color", ref this.m_CursorColor);
+			base.effectiveStyle.WriteToGUIStyle(this.editor.style);
 		}
 
 		internal override void DoRepaint(IStylePainter painter)
@@ -151,36 +191,39 @@ namespace UnityEngine.Experimental.UIElements
 						GUI.changed = true;
 					}
 				}
-				string t = base.text;
+				string text = base.text;
 				if (touchScreenTextEditor != null && !string.IsNullOrEmpty(touchScreenTextEditor.secureText))
 				{
-					t = "".PadRight(touchScreenTextEditor.secureText.Length, this.maskChar);
+					text = "".PadRight(touchScreenTextEditor.secureText.Length, this.maskChar);
 				}
-				this.style.Draw(base.position, GUIContent.Temp(t), 0, false);
+				base.DoRepaint(painter);
+				base.text = text;
 			}
 			else if (this.isPasswordField)
 			{
-				string text = "".PadRight(base.text.Length, this.maskChar);
+				string text2 = base.text;
+				base.text = "".PadRight(base.text.Length, this.maskChar);
 				if (!this.hasFocus)
 				{
-					this.style.Draw(base.position, GUIContent.Temp(text), 0, false);
+					base.DoRepaint(painter);
 				}
 				else
 				{
-					this.DrawCursor(text);
+					this.DrawWithTextSelectionAndCursor(painter, base.text);
 				}
+				base.text = text2;
 			}
 			else if (!this.hasFocus)
 			{
-				this.style.Draw(base.position, GUIContent.Temp(base.text), 0, false);
+				base.DoRepaint(painter);
 			}
 			else
 			{
-				this.DrawCursor(base.text);
+				this.DrawWithTextSelectionAndCursor(painter, base.text);
 			}
 		}
 
-		private void DrawCursor(string newText)
+		private void DrawWithTextSelectionAndCursor(IStylePainter painter, string newText)
 		{
 			KeyboardTextEditor keyboardTextEditor = this.editor as KeyboardTextEditor;
 			if (keyboardTextEditor != null)
@@ -190,25 +233,97 @@ namespace UnityEngine.Experimental.UIElements
 				int selectIndex = keyboardTextEditor.selectIndex;
 				Rect localPosition = keyboardTextEditor.localPosition;
 				Vector2 scrollOffset = keyboardTextEditor.scrollOffset;
-				Vector2 contentOffset = this.style.contentOffset;
-				this.style.contentOffset -= scrollOffset;
-				this.style.Internal_clipOffset = scrollOffset;
-				Input.compositionCursorPos = keyboardTextEditor.graphicalCursorPos - scrollOffset + new Vector2(localPosition.x, localPosition.y + this.style.lineHeight);
-				GUIContent content = new GUIContent(keyboardTextEditor.text);
-				if (!string.IsNullOrEmpty(Input.compositionString))
+				IStyle style = base.style;
+				TextStylePainterParameters defaultTextParameters = painter.GetDefaultTextParameters(this);
+				defaultTextParameters.text = " ";
+				defaultTextParameters.wordWrapWidth = 0f;
+				defaultTextParameters.wordWrap = false;
+				float num = painter.ComputeTextHeight(defaultTextParameters);
+				float num2 = (!style.wordWrap) ? 0f : base.contentRect.width;
+				Input.compositionCursorPos = keyboardTextEditor.graphicalCursorPos - scrollOffset + new Vector2(localPosition.x, localPosition.y + num);
+				Color color = (!(this.cursorColor != Color.clear)) ? GUI.skin.settings.cursorColor : this.cursorColor;
+				int num3 = (!string.IsNullOrEmpty(Input.compositionString)) ? (cursorIndex + Input.compositionString.Length) : selectIndex;
+				painter.DrawBackground(this);
+				if (cursorIndex != num3)
 				{
-					this.style.DrawWithTextSelection(base.position, content, this.HasCapture(), this.hasFocus, cursorIndex, cursorIndex + Input.compositionString.Length, true);
+					RectStylePainterParameters defaultRectParameters = painter.GetDefaultRectParameters(this);
+					defaultRectParameters.color = this.selectionColor;
+					defaultRectParameters.borderLeftWidth = 0f;
+					defaultRectParameters.borderTopWidth = 0f;
+					defaultRectParameters.borderRightWidth = 0f;
+					defaultRectParameters.borderBottomWidth = 0f;
+					defaultRectParameters.borderTopLeftRadius = 0f;
+					defaultRectParameters.borderTopRightRadius = 0f;
+					defaultRectParameters.borderBottomRightRadius = 0f;
+					defaultRectParameters.borderBottomLeftRadius = 0f;
+					int cursorIndex2 = (cursorIndex >= num3) ? num3 : cursorIndex;
+					int cursorIndex3 = (cursorIndex <= num3) ? num3 : cursorIndex;
+					CursorPositionStylePainterParameters defaultCursorPositionParameters = painter.GetDefaultCursorPositionParameters(this);
+					defaultCursorPositionParameters.text = keyboardTextEditor.text;
+					defaultCursorPositionParameters.wordWrapWidth = num2;
+					defaultCursorPositionParameters.cursorIndex = cursorIndex2;
+					Vector2 a = painter.GetCursorPosition(defaultCursorPositionParameters);
+					defaultCursorPositionParameters.cursorIndex = cursorIndex3;
+					Vector2 a2 = painter.GetCursorPosition(defaultCursorPositionParameters);
+					a -= scrollOffset;
+					a2 -= scrollOffset;
+					if (Mathf.Approximately(a.y, a2.y))
+					{
+						defaultRectParameters.layout = new Rect(a.x, a.y, a2.x - a.x, num);
+						painter.DrawRect(defaultRectParameters);
+					}
+					else
+					{
+						defaultRectParameters.layout = new Rect(a.x, a.y, num2 - a.x, num);
+						painter.DrawRect(defaultRectParameters);
+						float num4 = a2.y - a.y - num;
+						if (num4 > 0f)
+						{
+							defaultRectParameters.layout = new Rect(0f, a.y + num, num2, num4);
+							painter.DrawRect(defaultRectParameters);
+						}
+						defaultRectParameters.layout = new Rect(0f, a2.y, a2.x, num);
+						painter.DrawRect(defaultRectParameters);
+					}
 				}
-				else
+				painter.DrawBorder(this);
+				if (!string.IsNullOrEmpty(keyboardTextEditor.text) && base.contentRect.width > 0f && base.contentRect.height > 0f)
 				{
-					this.style.DrawWithTextSelection(base.position, content, this.HasCapture(), this.hasFocus, cursorIndex, selectIndex, false);
+					defaultTextParameters = painter.GetDefaultTextParameters(this);
+					defaultTextParameters.layout = new Rect(base.contentRect.x - scrollOffset.x, base.contentRect.y - scrollOffset.y, base.contentRect.width, base.contentRect.height);
+					defaultTextParameters.text = keyboardTextEditor.text;
+					painter.DrawText(defaultTextParameters);
+				}
+				if (cursorIndex == num3 && style.font != null)
+				{
+					CursorPositionStylePainterParameters defaultCursorPositionParameters = painter.GetDefaultCursorPositionParameters(this);
+					defaultCursorPositionParameters.text = keyboardTextEditor.text;
+					defaultCursorPositionParameters.wordWrapWidth = num2;
+					defaultCursorPositionParameters.cursorIndex = cursorIndex;
+					Vector2 a3 = painter.GetCursorPosition(defaultCursorPositionParameters);
+					a3 -= scrollOffset;
+					RectStylePainterParameters painterParams = new RectStylePainterParameters
+					{
+						layout = new Rect(a3.x, a3.y, 1f, num),
+						color = color
+					};
+					painter.DrawRect(painterParams);
 				}
 				if (keyboardTextEditor.altCursorPosition != -1)
 				{
-					this.style.DrawCursor(base.position, content, 0, keyboardTextEditor.altCursorPosition);
+					CursorPositionStylePainterParameters defaultCursorPositionParameters = painter.GetDefaultCursorPositionParameters(this);
+					defaultCursorPositionParameters.text = keyboardTextEditor.text.Substring(0, keyboardTextEditor.altCursorPosition);
+					defaultCursorPositionParameters.wordWrapWidth = num2;
+					defaultCursorPositionParameters.cursorIndex = keyboardTextEditor.altCursorPosition;
+					Vector2 a4 = painter.GetCursorPosition(defaultCursorPositionParameters);
+					a4 -= scrollOffset;
+					RectStylePainterParameters painterParams2 = new RectStylePainterParameters
+					{
+						layout = new Rect(a4.x, a4.y, 1f, num),
+						color = color
+					};
+					painter.DrawRect(painterParams2);
 				}
-				this.style.contentOffset = contentOffset;
-				this.style.Internal_clipOffset = Vector2.zero;
 				keyboardTextEditor.PostDrawCursor();
 			}
 		}

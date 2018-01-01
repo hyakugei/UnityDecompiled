@@ -33,7 +33,7 @@ namespace UnityEngine.Experimental.UIElements
 		[CompilerGenerated]
 		private static Func<Exception, bool> <>f__mg$cache4;
 
-		internal static IDispatcher eventDispatcher
+		internal static IEventDispatcher eventDispatcher
 		{
 			get
 			{
@@ -80,6 +80,11 @@ namespace UnityEngine.Experimental.UIElements
 				UIElementsUtility.<>f__mg$cache4 = new Func<Exception, bool>(UIElementsUtility.EndContainerGUIFromException);
 			}
 			GUIUtility.endContainerGUIFromException = (Func<Exception, bool>)Delegate.Combine(arg_105_0, UIElementsUtility.<>f__mg$cache4);
+		}
+
+		internal static void ClearDispatcher()
+		{
+			UIElementsUtility.s_EventDispatcher = null;
 		}
 
 		private static void TakeCapture()
@@ -139,34 +144,46 @@ namespace UnityEngine.Experimental.UIElements
 			return GUIUtility.ShouldRethrowException(exception);
 		}
 
-		internal static void BeginContainerGUI(GUILayoutUtility.LayoutCache cache, int instanceID, Event evt, IMGUIContainer container)
+		internal static void BeginContainerGUI(GUILayoutUtility.LayoutCache cache, Event evt, IMGUIContainer container)
 		{
-			GUIUtility.BeginContainer(instanceID);
+			if (container.useOwnerObjectGUIState)
+			{
+				GUIUtility.BeginContainerFromOwner(container.elementPanel.ownerObject);
+			}
+			else
+			{
+				GUIUtility.BeginContainer(container.guiState);
+			}
 			UIElementsUtility.s_ContainerStack.Push(container);
 			GUIUtility.s_SkinMode = (int)container.contextType;
-			GUIUtility.s_OriginalID = instanceID;
+			GUIUtility.s_OriginalID = container.elementPanel.ownerObject.GetInstanceID();
 			Event.current = evt;
 			if (UIElementsUtility.s_BeginContainerCallback != null)
 			{
 				UIElementsUtility.s_BeginContainerCallback(container);
 			}
+			GUI.enabled = container.enabledInHierarchy;
 			GUILayoutUtility.BeginContainer(cache);
 			GUIUtility.ResetGlobalState();
 			Rect clipRect = container.lastWorldClip;
 			if (clipRect.width == 0f || clipRect.height == 0f)
 			{
-				clipRect = container.globalBound;
+				clipRect = container.worldBound;
 			}
-			Matrix4x4 rhs = Matrix4x4.TRS(new Vector3(container.position.x, container.position.y, 0f), Quaternion.identity, Vector3.one);
-			GUIClip.SetTransform(container.globalTransform * rhs, clipRect);
+			Matrix4x4 lhs = container.worldTransform;
+			if (evt.type == EventType.Repaint && container.elementPanel != null && container.elementPanel.stylePainter != null)
+			{
+				lhs = container.elementPanel.stylePainter.currentTransform;
+			}
+			GUIClip.SetTransform(lhs * Matrix4x4.Translate(container.layout.position), clipRect);
 		}
 
 		internal static void EndContainerGUI()
 		{
 			if (Event.current.type == EventType.Layout && UIElementsUtility.s_ContainerStack.Count > 0)
 			{
-				Rect globalBound = UIElementsUtility.s_ContainerStack.Peek().globalBound;
-				GUILayoutUtility.LayoutFromContainer(globalBound.width, globalBound.height);
+				Rect layout = UIElementsUtility.s_ContainerStack.Peek().layout;
+				GUILayoutUtility.LayoutFromContainer(layout.width, layout.height);
 			}
 			GUILayoutUtility.SelectIDList(GUIUtility.s_OriginalID, false);
 			GUIContent.ClearStaticCache();
@@ -187,6 +204,72 @@ namespace UnityEngine.Experimental.UIElements
 			return (GUIUtility.s_SkinMode != 0) ? ContextType.Editor : ContextType.Player;
 		}
 
+		internal static EventBase CreateEvent(Event systemEvent)
+		{
+			EventBase pooled;
+			switch (systemEvent.type)
+			{
+			case EventType.MouseDown:
+				pooled = MouseEventBase<MouseDownEvent>.GetPooled(systemEvent);
+				break;
+			case EventType.MouseUp:
+				pooled = MouseEventBase<MouseUpEvent>.GetPooled(systemEvent);
+				break;
+			case EventType.MouseMove:
+				pooled = MouseEventBase<MouseMoveEvent>.GetPooled(systemEvent);
+				break;
+			case EventType.MouseDrag:
+				pooled = MouseEventBase<MouseMoveEvent>.GetPooled(systemEvent);
+				break;
+			case EventType.KeyDown:
+				pooled = KeyboardEventBase<KeyDownEvent>.GetPooled(systemEvent);
+				break;
+			case EventType.KeyUp:
+				pooled = KeyboardEventBase<KeyUpEvent>.GetPooled(systemEvent);
+				break;
+			case EventType.ScrollWheel:
+				pooled = WheelEvent.GetPooled(systemEvent);
+				break;
+			default:
+				pooled = IMGUIEvent.GetPooled(systemEvent);
+				break;
+			}
+			return pooled;
+		}
+
+		internal static void ReleaseEvent(EventBase evt)
+		{
+			long eventTypeId = evt.GetEventTypeId();
+			if (eventTypeId == EventBase<MouseMoveEvent>.TypeId())
+			{
+				EventBase<MouseMoveEvent>.ReleasePooled((MouseMoveEvent)evt);
+			}
+			else if (eventTypeId == EventBase<MouseDownEvent>.TypeId())
+			{
+				EventBase<MouseDownEvent>.ReleasePooled((MouseDownEvent)evt);
+			}
+			else if (eventTypeId == EventBase<MouseUpEvent>.TypeId())
+			{
+				EventBase<MouseUpEvent>.ReleasePooled((MouseUpEvent)evt);
+			}
+			else if (eventTypeId == EventBase<WheelEvent>.TypeId())
+			{
+				EventBase<WheelEvent>.ReleasePooled((WheelEvent)evt);
+			}
+			else if (eventTypeId == EventBase<KeyDownEvent>.TypeId())
+			{
+				EventBase<KeyDownEvent>.ReleasePooled((KeyDownEvent)evt);
+			}
+			else if (eventTypeId == EventBase<KeyUpEvent>.TypeId())
+			{
+				EventBase<KeyUpEvent>.ReleasePooled((KeyUpEvent)evt);
+			}
+			else if (eventTypeId == EventBase<IMGUIEvent>.TypeId())
+			{
+				EventBase<IMGUIEvent>.ReleasePooled((IMGUIEvent)evt);
+			}
+		}
+
 		private static bool DoDispatch(BaseVisualElementPanel panel)
 		{
 			bool result;
@@ -198,12 +281,16 @@ namespace UnityEngine.Experimental.UIElements
 			else
 			{
 				panel.ValidateLayout();
-				EventPropagation eventPropagation = UIElementsUtility.s_EventDispatcher.DispatchEvent(UIElementsUtility.s_EventInstance, panel);
-				if (eventPropagation == EventPropagation.Stop)
+				EventBase eventBase = UIElementsUtility.CreateEvent(UIElementsUtility.s_EventInstance);
+				Vector2 mousePosition = UIElementsUtility.s_EventInstance.mousePosition;
+				UIElementsUtility.s_EventDispatcher.DispatchEvent(eventBase, panel);
+				UIElementsUtility.s_EventInstance.mousePosition = mousePosition;
+				if (eventBase.isPropagationStopped)
 				{
 					panel.visualTree.Dirty(ChangeType.Repaint);
 				}
-				result = (eventPropagation == EventPropagation.Stop);
+				result = eventBase.isPropagationStopped;
+				UIElementsUtility.ReleaseEvent(eventBase);
 			}
 			return result;
 		}
@@ -213,13 +300,13 @@ namespace UnityEngine.Experimental.UIElements
 			return UIElementsUtility.s_UIElementsCache.GetEnumerator();
 		}
 
-		internal static Panel FindOrCreatePanel(int instanceId, ContextType contextType, IDataWatchService dataWatch = null, LoadResourceFunction loadResourceFunction = null)
+		internal static Panel FindOrCreatePanel(ScriptableObject ownerObject, ContextType contextType, IDataWatchService dataWatch = null)
 		{
 			Panel panel;
-			if (!UIElementsUtility.s_UIElementsCache.TryGetValue(instanceId, out panel))
+			if (!UIElementsUtility.s_UIElementsCache.TryGetValue(ownerObject.GetInstanceID(), out panel))
 			{
-				panel = new Panel(instanceId, contextType, loadResourceFunction, dataWatch, UIElementsUtility.eventDispatcher);
-				UIElementsUtility.s_UIElementsCache.Add(instanceId, panel);
+				panel = new Panel(ownerObject, contextType, dataWatch, UIElementsUtility.eventDispatcher);
+				UIElementsUtility.s_UIElementsCache.Add(ownerObject.GetInstanceID(), panel);
 			}
 			else
 			{
@@ -228,13 +315,9 @@ namespace UnityEngine.Experimental.UIElements
 			return panel;
 		}
 
-		internal static Panel FindOrCreatePanel(int instanceId)
+		internal static Panel FindOrCreatePanel(ScriptableObject ownerObject)
 		{
-			return UIElementsUtility.FindOrCreatePanel(instanceId, UIElementsUtility.GetGUIContextType(), null, null);
-		}
-
-		internal static void BeginBuilder(VisualContainer w)
-		{
+			return UIElementsUtility.FindOrCreatePanel(ownerObject, UIElementsUtility.GetGUIContextType(), null);
 		}
 	}
 }

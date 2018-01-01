@@ -8,14 +8,14 @@ namespace UnityEngine.Experimental.UIElements
 
 		public EventModifiers modifiers;
 
-		public bool Matches(Event evt)
+		public bool Matches(IMouseEvent e)
 		{
-			return this.button == (MouseButton)evt.button && this.HasModifiers(evt);
+			return this.button == (MouseButton)e.button && this.HasModifiers(e);
 		}
 
-		private bool HasModifiers(Event evt)
+		private bool HasModifiers(IMouseEvent e)
 		{
-			return ((this.modifiers & EventModifiers.Alt) == EventModifiers.None || evt.alt) && ((this.modifiers & EventModifiers.Alt) != EventModifiers.None || !evt.alt) && ((this.modifiers & EventModifiers.Control) == EventModifiers.None || evt.control) && ((this.modifiers & EventModifiers.Control) != EventModifiers.None || !evt.control) && ((this.modifiers & EventModifiers.Shift) == EventModifiers.None || evt.shift) && ((this.modifiers & EventModifiers.Shift) != EventModifiers.None || !evt.shift) && ((this.modifiers & EventModifiers.Command) == EventModifiers.None || evt.command) && ((this.modifiers & EventModifiers.Command) != EventModifiers.None || !evt.command);
+			return ((this.modifiers & EventModifiers.Alt) == EventModifiers.None || e.altKey) && ((this.modifiers & EventModifiers.Alt) != EventModifiers.None || !e.altKey) && ((this.modifiers & EventModifiers.Control) == EventModifiers.None || e.ctrlKey) && ((this.modifiers & EventModifiers.Control) != EventModifiers.None || !e.ctrlKey) && ((this.modifiers & EventModifiers.Shift) == EventModifiers.None || e.shiftKey) && ((this.modifiers & EventModifiers.Shift) != EventModifiers.None || !e.shiftKey) && ((this.modifiers & EventModifiers.Command) == EventModifiers.None || e.commandKey) && ((this.modifiers & EventModifiers.Command) != EventModifiers.None || !e.commandKey);
 		}
 	}
 }

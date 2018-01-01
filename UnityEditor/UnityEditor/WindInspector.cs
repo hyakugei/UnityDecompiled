@@ -18,7 +18,7 @@ namespace UnityEditor
 
 			public static GUIContent WindTurbulence = EditorGUIUtility.TextContent("Turbulence|Randomness in strength");
 
-			public static GUIContent WindPulseMagnitude = EditorGUIUtility.TextContent("Pulse Magnitude|Stength of the wind pulses");
+			public static GUIContent WindPulseMagnitude = EditorGUIUtility.TextContent("Pulse Magnitude|Strength of the wind pulses");
 
 			public static GUIContent WindPulseFrequency = EditorGUIUtility.TextContent("Pulse Frequency|Frequency of the wind pulses");
 		}

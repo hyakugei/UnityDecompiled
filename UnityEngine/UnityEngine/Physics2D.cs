@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using UnityEngine.Bindings;
 using UnityEngine.Internal;
 using UnityEngine.Scripting;
 
@@ -15,6 +16,268 @@ namespace UnityEngine
 		public const int AllLayers = -1;
 
 		private static List<Rigidbody2D> m_LastDisabledRigidbody2D = new List<Rigidbody2D>();
+
+		public static extern int velocityIterations
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public static extern int positionIterations
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public static Vector2 gravity
+		{
+			get
+			{
+				Vector2 result;
+				Physics2D.get_gravity_Injected(out result);
+				return result;
+			}
+			set
+			{
+				Physics2D.set_gravity_Injected(ref value);
+			}
+		}
+
+		public static extern bool queriesHitTriggers
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public static extern bool queriesStartInColliders
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public static extern bool changeStopsCallbacks
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public static extern bool callbacksOnDisable
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public static extern bool autoSyncTransforms
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public static extern bool autoSimulation
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public static extern float velocityThreshold
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public static extern float maxLinearCorrection
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public static extern float maxAngularCorrection
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public static extern float maxTranslationSpeed
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public static extern float maxRotationSpeed
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public static extern float defaultContactOffset
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public static extern float baumgarteScale
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public static extern float baumgarteTOIScale
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public static extern float timeToSleep
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public static extern float linearSleepTolerance
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public static extern float angularSleepTolerance
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public static extern bool alwaysShowColliders
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public static extern bool showColliderSleep
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public static extern bool showColliderContacts
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public static extern bool showColliderAABB
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public static extern float contactArrowScale
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public static Color colliderAwakeColor
+		{
+			get
+			{
+				Color result;
+				Physics2D.get_colliderAwakeColor_Injected(out result);
+				return result;
+			}
+			set
+			{
+				Physics2D.set_colliderAwakeColor_Injected(ref value);
+			}
+		}
+
+		public static Color colliderAsleepColor
+		{
+			get
+			{
+				Color result;
+				Physics2D.get_colliderAsleepColor_Injected(out result);
+				return result;
+			}
+			set
+			{
+				Physics2D.set_colliderAsleepColor_Injected(ref value);
+			}
+		}
+
+		public static Color colliderContactColor
+		{
+			get
+			{
+				Color result;
+				Physics2D.get_colliderContactColor_Injected(out result);
+				return result;
+			}
+			set
+			{
+				Physics2D.set_colliderContactColor_Injected(ref value);
+			}
+		}
+
+		public static Color colliderAABBColor
+		{
+			get
+			{
+				Color result;
+				Physics2D.get_colliderAABBColor_Injected(out result);
+				return result;
+			}
+			set
+			{
+				Physics2D.set_colliderAABBColor_Injected(ref value);
+			}
+		}
 
 		[Obsolete("Physics2D.raycastsHitTriggers is deprecated. Use Physics2D.queriesHitTriggers instead. (UnityUpgradable) -> queriesHitTriggers", true)]
 		public static bool raycastsHitTriggers
@@ -65,430 +328,138 @@ namespace UnityEngine
 			}
 		}
 
-		[ThreadAndSerializationSafe]
-		public static extern int velocityIterations
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		public static extern int positionIterations
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		public static Vector2 gravity
-		{
-			get
-			{
-				Vector2 result;
-				Physics2D.INTERNAL_get_gravity(out result);
-				return result;
-			}
-			set
-			{
-				Physics2D.INTERNAL_set_gravity(ref value);
-			}
-		}
-
-		public static extern bool queriesHitTriggers
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		public static extern bool queriesStartInColliders
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		public static extern bool changeStopsCallbacks
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		public static extern bool callbacksOnDisable
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		public static extern bool autoSimulation
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		public static extern float velocityThreshold
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		public static extern float maxLinearCorrection
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		public static extern float maxAngularCorrection
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		public static extern float maxTranslationSpeed
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		public static extern float maxRotationSpeed
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		public static extern float defaultContactOffset
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		public static extern float baumgarteScale
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		public static extern float baumgarteTOIScale
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		public static extern float timeToSleep
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		public static extern float linearSleepTolerance
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		public static extern float angularSleepTolerance
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		public static extern bool alwaysShowColliders
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		public static extern bool showColliderSleep
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		public static extern bool showColliderContacts
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		public static extern bool showColliderAABB
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		public static extern float contactArrowScale
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		public static Color colliderAwakeColor
-		{
-			get
-			{
-				Color result;
-				Physics2D.INTERNAL_get_colliderAwakeColor(out result);
-				return result;
-			}
-			set
-			{
-				Physics2D.INTERNAL_set_colliderAwakeColor(ref value);
-			}
-		}
-
-		public static Color colliderAsleepColor
-		{
-			get
-			{
-				Color result;
-				Physics2D.INTERNAL_get_colliderAsleepColor(out result);
-				return result;
-			}
-			set
-			{
-				Physics2D.INTERNAL_set_colliderAsleepColor(ref value);
-			}
-		}
-
-		public static Color colliderContactColor
-		{
-			get
-			{
-				Color result;
-				Physics2D.INTERNAL_get_colliderContactColor(out result);
-				return result;
-			}
-			set
-			{
-				Physics2D.INTERNAL_set_colliderContactColor(ref value);
-			}
-		}
-
-		public static Color colliderAABBColor
-		{
-			get
-			{
-				Color result;
-				Physics2D.INTERNAL_get_colliderAABBColor(out result);
-				return result;
-			}
-			set
-			{
-				Physics2D.INTERNAL_set_colliderAABBColor(ref value);
-			}
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_get_gravity(out Vector2 value);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_set_gravity(ref Vector2 value);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_get_colliderAwakeColor(out Color value);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_set_colliderAwakeColor(ref Color value);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_get_colliderAsleepColor(out Color value);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_set_colliderAsleepColor(ref Color value);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_get_colliderContactColor(out Color value);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_set_colliderContactColor(ref Color value);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_get_colliderAABBColor(out Color value);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_set_colliderAABBColor(ref Color value);
-
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern bool Simulate(float step);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern void IgnoreCollision(Collider2D collider1, Collider2D collider2, [DefaultValue("true")] bool ignore);
+		public static extern void SyncTransforms();
 
-		[ExcludeFromDocs]
-		public static void IgnoreCollision(Collider2D collider1, Collider2D collider2)
+		public static void IgnoreCollision([Writable] Collider2D collider1, [Writable] Collider2D collider2)
 		{
-			bool ignore = true;
-			Physics2D.IgnoreCollision(collider1, collider2, ignore);
+			Physics2D.IgnoreCollision(collider1, collider2, true);
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern bool GetIgnoreCollision(Collider2D collider1, Collider2D collider2);
+		public static extern void IgnoreCollision([NotNull, Writable] Collider2D collider1, [NotNull, Writable] Collider2D collider2, [DefaultValue("true")] bool ignore);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern void IgnoreLayerCollision(int layer1, int layer2, [DefaultValue("true")] bool ignore);
+		public static extern bool GetIgnoreCollision([Writable] Collider2D collider1, [Writable] Collider2D collider2);
 
-		[ExcludeFromDocs]
 		public static void IgnoreLayerCollision(int layer1, int layer2)
 		{
-			bool ignore = true;
-			Physics2D.IgnoreLayerCollision(layer1, layer2, ignore);
+			Physics2D.IgnoreLayerCollision(layer1, layer2, true);
 		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern bool GetIgnoreLayerCollision(int layer1, int layer2);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern void SetLayerCollisionMask(int layer, int layerMask);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern int GetLayerCollisionMask(int layer);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern bool IsTouching(Collider2D collider1, Collider2D collider2);
-
-		public static bool IsTouching(Collider2D collider1, Collider2D collider2, ContactFilter2D contactFilter)
+		public static void IgnoreLayerCollision(int layer1, int layer2, bool ignore)
 		{
-			return Physics2D.Internal_IsTouching(collider1, collider2, contactFilter);
+			if (layer1 < 0 || layer1 > 31)
+			{
+				throw new ArgumentOutOfRangeException("layer1 is out of range. Layer numbers must be in the range 0 to 31.");
+			}
+			if (layer2 < 0 || layer2 > 31)
+			{
+				throw new ArgumentOutOfRangeException("layer2 is out of range. Layer numbers must be in the range 0 to 31.");
+			}
+			Physics2D.IgnoreLayerCollision_Internal(layer1, layer2, ignore);
 		}
 
-		private static bool Internal_IsTouching(Collider2D collider1, Collider2D collider2, ContactFilter2D contactFilter)
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void IgnoreLayerCollision_Internal(int layer1, int layer2, bool ignore);
+
+		public static bool GetIgnoreLayerCollision(int layer1, int layer2)
 		{
-			return Physics2D.INTERNAL_CALL_Internal_IsTouching(collider1, collider2, ref contactFilter);
+			if (layer1 < 0 || layer1 > 31)
+			{
+				throw new ArgumentOutOfRangeException("layer1 is out of range. Layer numbers must be in the range 0 to 31.");
+			}
+			if (layer2 < 0 || layer2 > 31)
+			{
+				throw new ArgumentOutOfRangeException("layer2 is out of range. Layer numbers must be in the range 0 to 31.");
+			}
+			return Physics2D.GetIgnoreLayerCollision_Internal(layer1, layer2);
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern bool INTERNAL_CALL_Internal_IsTouching(Collider2D collider1, Collider2D collider2, ref ContactFilter2D contactFilter);
+		private static extern bool GetIgnoreLayerCollision_Internal(int layer1, int layer2);
 
-		public static bool IsTouching(Collider2D collider, ContactFilter2D contactFilter)
+		public static void SetLayerCollisionMask(int layer, int layerMask)
 		{
-			return Physics2D.INTERNAL_CALL_IsTouching(collider, ref contactFilter);
+			if (layer < 0 || layer > 31)
+			{
+				throw new ArgumentOutOfRangeException("layer1 is out of range. Layer numbers must be in the range 0 to 31.");
+			}
+			Physics2D.SetLayerCollisionMask_Internal(layer, layerMask);
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern bool INTERNAL_CALL_IsTouching(Collider2D collider, ref ContactFilter2D contactFilter);
+		private static extern void SetLayerCollisionMask_Internal(int layer, int layerMask);
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern bool IsTouchingLayers(Collider2D collider, [DefaultValue("AllLayers")] int layerMask);
-
-		[ExcludeFromDocs]
-		public static bool IsTouchingLayers(Collider2D collider)
+		public static int GetLayerCollisionMask(int layer)
 		{
-			int layerMask = -1;
-			return Physics2D.IsTouchingLayers(collider, layerMask);
+			if (layer < 0 || layer > 31)
+			{
+				throw new ArgumentOutOfRangeException("layer1 is out of range. Layer numbers must be in the range 0 to 31.");
+			}
+			return Physics2D.GetLayerCollisionMask_Internal(layer);
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern ColliderDistance2D Distance(Collider2D colliderA, Collider2D colliderB);
+		private static extern int GetLayerCollisionMask_Internal(int layer);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern bool IsTouching([NotNull, Writable] Collider2D collider1, [NotNull, Writable] Collider2D collider2);
+
+		public static bool IsTouching([Writable] Collider2D collider1, [Writable] Collider2D collider2, ContactFilter2D contactFilter)
+		{
+			return Physics2D.IsTouching_TwoCollidersWithFilter(collider1, collider2, contactFilter);
+		}
+
+		private static bool IsTouching_TwoCollidersWithFilter([NotNull, Writable] Collider2D collider1, [NotNull, Writable] Collider2D collider2, ContactFilter2D contactFilter)
+		{
+			return Physics2D.IsTouching_TwoCollidersWithFilter_Injected(collider1, collider2, ref contactFilter);
+		}
+
+		public static bool IsTouching([Writable] Collider2D collider, ContactFilter2D contactFilter)
+		{
+			return Physics2D.IsTouching_SingleColliderWithFilter(collider, contactFilter);
+		}
+
+		private static bool IsTouching_SingleColliderWithFilter([NotNull, Writable] Collider2D collider, ContactFilter2D contactFilter)
+		{
+			return Physics2D.IsTouching_SingleColliderWithFilter_Injected(collider, ref contactFilter);
+		}
+
+		public static bool IsTouchingLayers([Writable] Collider2D collider)
+		{
+			return Physics2D.IsTouchingLayers(collider, -1);
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern bool IsTouchingLayers([NotNull, Writable] Collider2D collider, [DefaultValue("Physics2D.AllLayers")] int layerMask);
+
+		public static ColliderDistance2D Distance([Writable] Collider2D colliderA, [Writable] Collider2D colliderB)
+		{
+			if (colliderA == null)
+			{
+				throw new ArgumentNullException("ColliderA cannot be NULL.");
+			}
+			if (colliderB == null)
+			{
+				throw new ArgumentNullException("ColliderB cannot be NULL.");
+			}
+			if (colliderA == colliderB)
+			{
+				throw new ArgumentException("Cannot calculate the distance between the same collider.");
+			}
+			return Physics2D.Distance_Internal(colliderA, colliderB);
+		}
+
+		private static ColliderDistance2D Distance_Internal([NotNull, Writable] Collider2D colliderA, [NotNull, Writable] Collider2D colliderB)
+		{
+			ColliderDistance2D result;
+			Physics2D.Distance_Internal_Injected(colliderA, colliderB, out result);
+			return result;
+		}
 
 		internal static void SetEditorDragMovement(bool dragging, GameObject[] objs)
 		{
@@ -2001,6 +1972,15 @@ namespace UnityEngine
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern int INTERNAL_CALL_GetColliderContacts(Collider2D collider, ref ContactFilter2D contactFilter, ContactPoint2D[] results);
 
+		private static int GetColliderColliderContacts(Collider2D collider1, Collider2D collider2, ContactFilter2D contactFilter, ContactPoint2D[] results)
+		{
+			return Physics2D.INTERNAL_CALL_GetColliderColliderContacts(collider1, collider2, ref contactFilter, results);
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern int INTERNAL_CALL_GetColliderColliderContacts(Collider2D collider1, Collider2D collider2, ref ContactFilter2D contactFilter, ContactPoint2D[] results);
+
 		private static int GetRigidbodyContacts(Rigidbody2D rigidbody, ContactFilter2D contactFilter, ContactPoint2D[] results)
 		{
 			return Physics2D.INTERNAL_CALL_GetRigidbodyContacts(rigidbody, ref contactFilter, results);
@@ -2027,6 +2007,11 @@ namespace UnityEngine
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern int INTERNAL_CALL_GetRigidbodyContactsCollidersOnly(Rigidbody2D rigidbody, ref ContactFilter2D contactFilter, Collider2D[] results);
+
+		public static int GetContacts(Collider2D collider1, Collider2D collider2, ContactFilter2D contactFilter, ContactPoint2D[] contacts)
+		{
+			return Physics2D.GetColliderColliderContacts(collider1, collider2, contactFilter, contacts);
+		}
 
 		public static int GetContacts(Collider2D collider, ContactPoint2D[] contacts)
 		{
@@ -2067,5 +2052,44 @@ namespace UnityEngine
 		{
 			return Physics2D.GetRigidbodyContactsCollidersOnly(rigidbody, contactFilter, colliders);
 		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void get_gravity_Injected(out Vector2 ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void set_gravity_Injected(ref Vector2 value);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void get_colliderAwakeColor_Injected(out Color ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void set_colliderAwakeColor_Injected(ref Color value);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void get_colliderAsleepColor_Injected(out Color ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void set_colliderAsleepColor_Injected(ref Color value);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void get_colliderContactColor_Injected(out Color ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void set_colliderContactColor_Injected(ref Color value);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void get_colliderAABBColor_Injected(out Color ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void set_colliderAABBColor_Injected(ref Color value);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern bool IsTouching_TwoCollidersWithFilter_Injected([Writable] Collider2D collider1, [Writable] Collider2D collider2, ref ContactFilter2D contactFilter);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern bool IsTouching_SingleColliderWithFilter_Injected([Writable] Collider2D collider, ref ContactFilter2D contactFilter);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void Distance_Internal_Injected([Writable] Collider2D colliderA, [Writable] Collider2D colliderB, out ColliderDistance2D ret);
 	}
 }

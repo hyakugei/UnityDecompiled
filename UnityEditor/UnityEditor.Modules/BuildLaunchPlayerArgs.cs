@@ -1,4 +1,5 @@
 using System;
+using UnityEditor.BuildReporting;
 
 namespace UnityEditor.Modules
 {
@@ -13,5 +14,7 @@ namespace UnityEditor.Modules
 		public string productName;
 
 		public BuildOptions options;
+
+		public BuildReport report;
 	}
 }

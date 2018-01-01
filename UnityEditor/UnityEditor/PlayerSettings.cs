@@ -1,10 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using UnityEditor.Build;
 using UnityEditor.Rendering;
+using UnityEditor.XR.Daydream;
 using UnityEngine;
 using UnityEngine.Internal;
 using UnityEngine.Rendering;
@@ -113,6 +115,26 @@ namespace UnityEditor
 			}
 
 			public static extern bool androidIsGame
+			{
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			internal static extern bool androidTangoEnabled
+			{
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern bool androidTangoUsesCamera
 			{
 				[GeneratedByOldBindingsGenerator]
 				[MethodImpl(MethodImplOptions.InternalCall)]
@@ -239,6 +261,43 @@ namespace UnityEditor
 				set;
 			}
 
+			public static extern AndroidBlitType blitType
+			{
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			internal static extern int supportedAspectRatioMode
+			{
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern float maxAspectRatio
+			{
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			internal static extern bool useLowAccuracyLocation
+			{
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+			}
+
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			internal static extern AndroidBanner[] GetAndroidBanners();
@@ -296,6 +355,46 @@ namespace UnityEditor
 				[MethodImpl(MethodImplOptions.InternalCall)]
 				set;
 			}
+
+			public static extern SupportedHeadTracking minimumSupportedHeadTracking
+			{
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern SupportedHeadTracking maximumSupportedHeadTracking
+			{
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern bool enableVideoSurface
+			{
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern bool enableVideoSurfaceProtectedMemory
+			{
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
 		}
 
 		public sealed class Facebook
@@ -333,6 +432,16 @@ namespace UnityEditor
 				{
 					PlayerSettings.SetBuildNumber(BuildTargetGroup.iPhone, value);
 				}
+			}
+
+			public static extern bool disableDepthAndStencilBuffers
+			{
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
 			}
 
 			public static extern ScriptCallOptimizationLevel scriptCallOptimization
@@ -2024,80 +2133,6 @@ namespace UnityEditor
 			}
 		}
 
-		public sealed class SamsungTV
-		{
-			public enum SamsungTVProductCategories
-			{
-				Games,
-				Videos,
-				Sports,
-				Lifestyle,
-				Information,
-				Education,
-				Kids
-			}
-
-			public static extern string deviceAddress
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string productDescription
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string productAuthor
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string productAuthorEmail
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern string productLink
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-
-			public static extern PlayerSettings.SamsungTV.SamsungTVProductCategories productCategory
-			{
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				get;
-				[GeneratedByOldBindingsGenerator]
-				[MethodImpl(MethodImplOptions.InternalCall)]
-				set;
-			}
-		}
-
 		public struct SplashScreenLogo
 		{
 			private const float k_MinLogoTime = 2f;
@@ -3557,6 +3592,36 @@ namespace UnityEditor
 				set;
 			}
 
+			public static extern bool socketInitializeEnabled
+			{
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern bool networkInterfaceManagerInitializeEnabled
+			{
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
+			public static extern bool playerConnectionEnabled
+			{
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			private static extern string GetManualHTMLPath();
@@ -3733,6 +3798,16 @@ namespace UnityEditor
 						PlayerSettings.WSA.internalFileTypeAssociations = value;
 					}
 				}
+			}
+
+			public static extern bool transparentSwapchain
+			{
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
 			}
 
 			public static extern string packageName
@@ -4751,6 +4826,16 @@ namespace UnityEditor
 				set;
 			}
 
+			public static extern uint PresentImmediateThreshold
+			{
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				get;
+				[GeneratedByOldBindingsGenerator]
+				[MethodImpl(MethodImplOptions.InternalCall)]
+				set;
+			}
+
 			public static extern bool Enable7thCore
 			{
 				[GeneratedByOldBindingsGenerator]
@@ -5122,6 +5207,16 @@ namespace UnityEditor
 			set;
 		}
 
+		public static extern bool macRetinaSupport
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
 		public static extern bool runInBackground
 		{
 			[GeneratedByOldBindingsGenerator]
@@ -5192,6 +5287,7 @@ namespace UnityEditor
 			set;
 		}
 
+		[Obsolete("D3D9 support has been removed; d3d9FullscreenMode does nothing now")]
 		public static extern D3D9FullscreenMode d3d9FullscreenMode
 		{
 			[GeneratedByOldBindingsGenerator]
@@ -5344,16 +5440,6 @@ namespace UnityEditor
 			{
 				PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.iPhone, value);
 			}
-		}
-
-		internal static extern string webPlayerTemplate
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
 		}
 
 		internal static extern string[] templateCustomKeys
@@ -5826,16 +5912,6 @@ namespace UnityEditor
 			set;
 		}
 
-		public static extern bool mobileMTRendering
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
 		[Obsolete("Use UnityEditor.PlayerSettings.SetGraphicsAPIs/GetGraphicsAPIs instead")]
 		public static extern bool useDirect3D11
 		{
@@ -6155,46 +6231,106 @@ namespace UnityEditor
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void SetAspectRatio(AspectRatio aspectRatio, bool enable);
 
+		public static Texture2D[] GetIconsForTargetGroup(BuildTargetGroup platform, IconKind kind)
+		{
+			return PlayerSettings.GetIconsForPlatform(PlayerSettings.GetPlatformName(platform), kind);
+		}
+
 		public static Texture2D[] GetIconsForTargetGroup(BuildTargetGroup platform)
 		{
-			Texture2D[] iconsForPlatform = PlayerSettings.GetIconsForPlatform(PlayerSettings.GetPlatformName(platform));
-			Texture2D[] result;
-			if (iconsForPlatform.Length == 0)
-			{
-				result = new Texture2D[PlayerSettings.GetIconSizesForTargetGroup(platform).Length];
-			}
-			else
-			{
-				result = iconsForPlatform;
-			}
-			return result;
+			return PlayerSettings.GetIconsForTargetGroup(platform, IconKind.Any);
 		}
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern Texture2D[] GetIconsForPlatform(string platform);
+		internal static extern Texture2D[] GetIconsForPlatform(string platform, IconKind kind);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern Texture2D[] GetAllIconsForPlatform(string platform);
+
+		public static void SetIconsForTargetGroup(BuildTargetGroup platform, Texture2D[] icons, IconKind kind)
+		{
+			PlayerSettings.SetIconsForPlatform(PlayerSettings.GetPlatformName(platform), icons, kind);
+		}
 
 		public static void SetIconsForTargetGroup(BuildTargetGroup platform, Texture2D[] icons)
 		{
-			PlayerSettings.SetIconsForPlatform(PlayerSettings.GetPlatformName(platform), icons);
+			PlayerSettings.SetIconsForTargetGroup(platform, icons, IconKind.Any);
+		}
+
+		internal static void SetIconsForPlatform(string platform, Texture2D[] icons)
+		{
+			PlayerSettings.SetIconsForPlatform(platform, icons, IconKind.Any);
+		}
+
+		internal static void SetIconsForPlatform(string platform, Texture2D[] icons, IconKind[] kinds)
+		{
+			IconKind[] supportedIconKindsForPlatform = PlayerSettings.GetSupportedIconKindsForPlatform(platform);
+			for (int i = 0; i < supportedIconKindsForPlatform.Length; i++)
+			{
+				IconKind iconKind = supportedIconKindsForPlatform[i];
+				List<Texture2D> list = new List<Texture2D>();
+				for (int j = 0; j < icons.Length; j++)
+				{
+					if (kinds[j] == iconKind)
+					{
+						list.Add(icons[j]);
+					}
+				}
+				PlayerSettings.SetIconsForPlatform(platform, list.ToArray(), iconKind);
+			}
 		}
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern void SetIconsForPlatform(string platform, Texture2D[] icons);
+		internal static extern void SetIconsForPlatform(string platform, Texture2D[] icons, IconKind kind);
+
+		public static int[] GetIconSizesForTargetGroup(BuildTargetGroup platform, IconKind kind)
+		{
+			return PlayerSettings.GetIconWidthsForPlatform(PlayerSettings.GetPlatformName(platform), kind);
+		}
 
 		public static int[] GetIconSizesForTargetGroup(BuildTargetGroup platform)
 		{
-			return PlayerSettings.GetIconWidthsForPlatform(PlayerSettings.GetPlatformName(platform));
+			return PlayerSettings.GetIconSizesForTargetGroup(platform, IconKind.Any);
 		}
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern int[] GetIconWidthsForPlatform(string platform);
+		internal static extern int[] GetIconWidthsForPlatform(string platform, IconKind kind);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern int[] GetIconHeightsForPlatform(string platform);
+		internal static extern int[] GetIconHeightsForPlatform(string platform, IconKind kind);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern int[] GetIconWidthsOfAllKindsForPlatform(string platform);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern int[] GetIconHeightsOfAllKindsForPlatform(string platform);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern IconKind[] GetIconKindsForPlatform(string platform);
+
+		internal static IconKind[] GetSupportedIconKindsForPlatform(string platform)
+		{
+			List<IconKind> list = new List<IconKind>();
+			IconKind[] iconKindsForPlatform = PlayerSettings.GetIconKindsForPlatform(platform);
+			IconKind[] array = iconKindsForPlatform;
+			for (int i = 0; i < array.Length; i++)
+			{
+				IconKind item = array[i];
+				if (!list.Contains(item))
+				{
+					list.Add(item);
+				}
+			}
+			return list.ToArray();
+		}
 
 		internal static string GetPlatformName(BuildTargetGroup targetGroup)
 		{
@@ -6204,7 +6340,7 @@ namespace UnityEditor
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern Texture2D GetIconForPlatformAtSize(string platform, int width, int height);
+		internal static extern Texture2D GetIconForPlatformAtSize(string platform, int width, int height, IconKind kind);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -6213,6 +6349,14 @@ namespace UnityEditor
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern void SetBatchingForPlatform(BuildTarget platform, int staticBatching, int dynamicBatching);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern LightmapEncodingQuality GetLightmapEncodingQualityForPlatformGroup(BuildTargetGroup platformGroup);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void SetLightmapEncodingQualityForPlatformGroup(BuildTargetGroup platformGroup, LightmapEncodingQuality encodingQuality);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -6239,6 +6383,20 @@ namespace UnityEditor
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void SetUseDefaultGraphicsAPIs(BuildTarget platform, bool automatic);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern ColorGamut[] GetColorGamuts();
+
+		internal static void SetColorGamuts(ColorGamut[] colorSpaces)
+		{
+			PlayerSettings.SetColorGamutsImpl(colorSpaces);
+			PlayerSettingsEditor.SyncColorGamuts();
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void SetColorGamutsImpl(ColorGamut[] colorSpaces);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -6315,6 +6473,14 @@ namespace UnityEditor
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern bool GetPlatformVuforiaEnabled(BuildTargetGroup targetGroup);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern void SetPlatformVuforiaEnabled(BuildTargetGroup targetGroup, bool enabled);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern ApiCompatibilityLevel GetApiCompatibilityLevel(BuildTargetGroup buildTargetGroup);
 
 		[GeneratedByOldBindingsGenerator]
@@ -6328,6 +6494,14 @@ namespace UnityEditor
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern void INTERNAL_set_cursorHotspot(ref Vector2 value);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern void SetMobileMTRendering(BuildTargetGroup targetGroup, bool enable);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern bool GetMobileMTRendering(BuildTargetGroup targetGroup);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]

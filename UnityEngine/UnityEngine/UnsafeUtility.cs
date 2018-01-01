@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using UnityEngine.Collections;
 
 namespace UnityEngine
@@ -18,12 +19,22 @@ namespace UnityEngine
 
 		public unsafe static T ReadArrayElement<T>(IntPtr source, int index)
 		{
-			return *(source + (IntPtr)index);
+			return *(source + (IntPtr)(index * sizeof(T)));
+		}
+
+		public unsafe static T ReadArrayElementWithStride<T>(IntPtr source, int index, int stride)
+		{
+			return *(source + (IntPtr)(index * stride));
 		}
 
 		public unsafe static void WriteArrayElement<T>(IntPtr destination, int index, T value)
 		{
-			*(destination + (IntPtr)index) = value;
+			*(destination + (IntPtr)(index * sizeof(T))) = value;
+		}
+
+		public unsafe static void WriteArrayElementWithStride<T>(IntPtr destination, int index, int stride, T value)
+		{
+			*(destination + (IntPtr)(index * stride)) = value;
 		}
 
 		public static IntPtr AddressOf<T>(ref T output) where T : struct
@@ -33,12 +44,17 @@ namespace UnityEngine
 
 		public static int SizeOf<T>() where T : struct
 		{
-			return UnsafeUtility.SizeOfStruct(typeof(T));
+			return sizeof(T);
 		}
 
 		public static int AlignOf<T>() where T : struct
 		{
 			return 4;
+		}
+
+		public static int OffsetOf<T>(string name) where T : struct
+		{
+			return (int)Marshal.OffsetOf(typeof(T), name);
 		}
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -49,6 +65,12 @@ namespace UnityEngine
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void MemCpy(IntPtr destination, IntPtr source, int size);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern void MemMove(IntPtr destination, IntPtr source, int size);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern void MemClear(IntPtr destination, int size);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern int SizeOfStruct(Type type);

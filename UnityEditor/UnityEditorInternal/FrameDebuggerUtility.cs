@@ -45,6 +45,13 @@ namespace UnityEditorInternal
 			get;
 		}
 
+		public static extern uint eventDataHash
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+		}
+
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void SetEnabled(bool enabled, int remotePlayerGUID);
@@ -76,20 +83,13 @@ namespace UnityEditorInternal
 
 		public static bool GetFrameEventData(int index, out FrameDebuggerEventData frameDebuggerEventData)
 		{
-			frameDebuggerEventData = FrameDebuggerUtility.GetFrameEventData();
+			FrameDebuggerUtility.GetFrameEventDataInternal(out frameDebuggerEventData);
 			return frameDebuggerEventData.frameEventIndex == index;
-		}
-
-		private static FrameDebuggerEventData GetFrameEventData()
-		{
-			FrameDebuggerEventData result;
-			FrameDebuggerUtility.INTERNAL_CALL_GetFrameEventData(out result);
-			return result;
 		}
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_GetFrameEventData(out FrameDebuggerEventData value);
+		private static extern void GetFrameEventDataInternal(out FrameDebuggerEventData frameDebuggerEventData);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]

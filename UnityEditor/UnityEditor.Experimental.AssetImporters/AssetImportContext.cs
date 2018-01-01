@@ -7,7 +7,7 @@ namespace UnityEditor.Experimental.AssetImporters
 {
 	public class AssetImportContext
 	{
-		private List<ImportedObject> m_SubAssets = new List<ImportedObject>();
+		private List<ImportedObject> m_ImportedObjects = new List<ImportedObject>();
 
 		public string assetPath
 		{
@@ -21,11 +21,11 @@ namespace UnityEditor.Experimental.AssetImporters
 			internal set;
 		}
 
-		internal List<ImportedObject> subAssets
+		internal List<ImportedObject> importedObjects
 		{
 			get
 			{
-				return this.m_SubAssets;
+				return this.m_ImportedObjects;
 			}
 		}
 
@@ -33,52 +33,50 @@ namespace UnityEditor.Experimental.AssetImporters
 		{
 		}
 
-		public void SetMainAsset(string identifier, UnityEngine.Object asset)
+		public void SetMainObject(UnityEngine.Object obj)
 		{
-			this.AddAsset(true, identifier, asset, null);
-		}
-
-		public void SetMainAsset(string identifier, UnityEngine.Object asset, Texture2D thumbnail)
-		{
-			this.AddAsset(true, identifier, asset, thumbnail);
-		}
-
-		public void AddSubAsset(string identifier, UnityEngine.Object asset)
-		{
-			this.AddAsset(false, identifier, asset, null);
-		}
-
-		public void AddSubAsset(string identifier, UnityEngine.Object asset, Texture2D thumbnail)
-		{
-			this.AddAsset(false, identifier, asset, thumbnail);
-		}
-
-		private void AddAsset(bool main, string identifier, UnityEngine.Object asset, Texture2D thumbnail)
-		{
-			if (asset == null)
+			if (!(obj == null))
 			{
-				throw new ArgumentNullException("asset", "Cannot add a null asset : " + (identifier ?? "<null>"));
+				ImportedObject importedObject = this.m_ImportedObjects.FirstOrDefault((ImportedObject x) => x.mainAssetObject);
+				if (importedObject != null)
+				{
+					if (importedObject.obj == obj)
+					{
+						return;
+					}
+					Debug.LogWarning(string.Format("An object was already set as the main object: \"{0}\" conflicting on \"{1}\"", this.assetPath, importedObject.localIdentifier));
+					importedObject.mainAssetObject = false;
+				}
+				importedObject = this.m_ImportedObjects.FirstOrDefault((ImportedObject x) => x.obj == obj);
+				if (importedObject == null)
+				{
+					throw new Exception("Before an object can be set as main, it must first be added using AddObjectToAsset.");
+				}
+				importedObject.mainAssetObject = true;
+				this.m_ImportedObjects.Remove(importedObject);
+				this.m_ImportedObjects.Insert(0, importedObject);
 			}
-			ImportedObject importedObject = this.m_SubAssets.FirstOrDefault((ImportedObject x) => x.mainAsset);
-			if (main && importedObject != null)
+		}
+
+		public void AddObjectToAsset(string identifier, UnityEngine.Object obj)
+		{
+			this.AddObjectToAsset(identifier, obj, null);
+		}
+
+		public void AddObjectToAsset(string identifier, UnityEngine.Object obj, Texture2D thumbnail)
+		{
+			if (obj == null)
 			{
-				throw new Exception(string.Format("A Main asset has already been added and only one is allowed: \"{0}\" conflicting on \"{1}\" and \"{2}\"", this.assetPath, importedObject.identifier, identifier));
+				throw new ArgumentNullException("obj", "Cannot add a null object : " + (identifier ?? "<null>"));
 			}
 			ImportedObject item = new ImportedObject
 			{
-				mainAsset = main,
-				identifier = identifier,
-				asset = asset,
+				mainAssetObject = false,
+				localIdentifier = identifier,
+				obj = obj,
 				thumbnail = thumbnail
 			};
-			if (main)
-			{
-				this.m_SubAssets.Insert(0, item);
-			}
-			else
-			{
-				this.m_SubAssets.Add(item);
-			}
+			this.m_ImportedObjects.Add(item);
 		}
 	}
 }

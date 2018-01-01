@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
+using UnityEditorInternal;
 using UnityEngine;
 
 namespace UnityEditor
 {
 	[CustomEditor(typeof(AudioManager))]
-	internal class AudioManagerInspector : Editor
+	internal class AudioManagerInspector : ProjectSettingsBaseEditor
 	{
 		private class Styles
 		{
@@ -100,7 +101,7 @@ namespace UnityEditor
 			EditorGUILayout.PropertyField(this.m_DSPBufferSize, AudioManagerInspector.Styles.DSPBufferSize, new GUILayoutOption[0]);
 			EditorGUILayout.PropertyField(this.m_VirtualVoiceCount, AudioManagerInspector.Styles.VirtualVoiceCount, new GUILayoutOption[0]);
 			EditorGUILayout.PropertyField(this.m_RealVoiceCount, AudioManagerInspector.Styles.RealVoiceCount, new GUILayoutOption[0]);
-			List<string> list = new List<string>(AudioUtil.GetSpatializerPluginNames());
+			List<string> list = new List<string>(AudioSettings.GetSpatializerPluginNames());
 			list.Insert(0, "None");
 			string[] array = list.ToArray();
 			List<GUIContent> list2 = new List<GUIContent>();

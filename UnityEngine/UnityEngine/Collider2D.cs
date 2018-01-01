@@ -1,56 +1,48 @@
 using System;
 using System.Runtime.CompilerServices;
+using UnityEngine.Bindings;
 using UnityEngine.Internal;
 using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
-	[RequireComponent(typeof(Transform))]
+	[RequireComponent(typeof(Transform)), RequireComponent(typeof(Transform))]
 	public class Collider2D : Behaviour
 	{
 		public extern float density
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern bool isTrigger
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern bool usedByEffector
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern bool usedByComposite
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern CompositeCollider2D composite
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
@@ -60,25 +52,23 @@ namespace UnityEngine
 			get
 			{
 				Vector2 result;
-				this.INTERNAL_get_offset(out result);
+				this.get_offset_Injected(out result);
 				return result;
 			}
 			set
 			{
-				this.INTERNAL_set_offset(ref value);
+				this.set_offset_Injected(ref value);
 			}
 		}
 
 		public extern Rigidbody2D attachedRigidbody
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
 
 		public extern int shapeCount
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
@@ -88,107 +78,83 @@ namespace UnityEngine
 			get
 			{
 				Bounds result;
-				this.INTERNAL_get_bounds(out result);
+				this.get_bounds_Injected(out result);
 				return result;
 			}
 		}
 
 		internal extern ColliderErrorState2D errorState
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
 
 		internal extern bool compositeCapable
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
 
 		public extern PhysicsMaterial2D sharedMaterial
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern float friction
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
 
 		public extern float bounciness
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void INTERNAL_get_offset(out Vector2 value);
+		public extern bool IsTouching([NotNull, Writable] Collider2D collider);
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void INTERNAL_set_offset(ref Vector2 value);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void INTERNAL_get_bounds(out Bounds value);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern bool IsTouching(Collider2D collider);
-
-		public bool IsTouching(Collider2D collider, ContactFilter2D contactFilter)
+		public bool IsTouching([Writable] Collider2D collider, ContactFilter2D contactFilter)
 		{
-			return this.Internal_IsTouching(collider, contactFilter);
+			return this.IsTouching_OtherColliderWithFilter(collider, contactFilter);
 		}
 
-		private bool Internal_IsTouching(Collider2D collider, ContactFilter2D contactFilter)
+		private bool IsTouching_OtherColliderWithFilter([NotNull, Writable] Collider2D collider, ContactFilter2D contactFilter)
 		{
-			return Collider2D.INTERNAL_CALL_Internal_IsTouching(this, collider, ref contactFilter);
+			return this.IsTouching_OtherColliderWithFilter_Injected(collider, ref contactFilter);
 		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern bool INTERNAL_CALL_Internal_IsTouching(Collider2D self, Collider2D collider, ref ContactFilter2D contactFilter);
 
 		public bool IsTouching(ContactFilter2D contactFilter)
 		{
-			return Collider2D.INTERNAL_CALL_IsTouching(this, ref contactFilter);
+			return this.IsTouching_AnyColliderWithFilter(contactFilter);
 		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern bool INTERNAL_CALL_IsTouching(Collider2D self, ref ContactFilter2D contactFilter);
+		private bool IsTouching_AnyColliderWithFilter(ContactFilter2D contactFilter)
+		{
+			return this.IsTouching_AnyColliderWithFilter_Injected(ref contactFilter);
+		}
 
-		[GeneratedByOldBindingsGenerator]
+		public bool IsTouchingLayers()
+		{
+			return this.IsTouchingLayers(-1);
+		}
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern bool IsTouchingLayers([DefaultValue("Physics2D.AllLayers")] int layerMask);
 
-		[ExcludeFromDocs]
-		public bool IsTouchingLayers()
-		{
-			int layerMask = -1;
-			return this.IsTouchingLayers(layerMask);
-		}
-
 		public bool OverlapPoint(Vector2 point)
 		{
-			return Collider2D.INTERNAL_CALL_OverlapPoint(this, ref point);
+			return this.OverlapPoint_Injected(ref point);
 		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern bool INTERNAL_CALL_OverlapPoint(Collider2D self, ref Vector2 point);
+		public ColliderDistance2D Distance([Writable] Collider2D collider)
+		{
+			return Physics2D.Distance(this, collider);
+		}
 
 		public int OverlapCollider(ContactFilter2D contactFilter, Collider2D[] results)
 		{
@@ -328,9 +294,22 @@ namespace UnityEngine
 			return Physics2D.GetContacts(this, contactFilter, colliders);
 		}
 
-		public ColliderDistance2D Distance(Collider2D collider)
-		{
-			return Physics2D.Distance(this, collider);
-		}
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void get_offset_Injected(out Vector2 ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void set_offset_Injected(ref Vector2 value);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void get_bounds_Injected(out Bounds ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern bool IsTouching_OtherColliderWithFilter_Injected([Writable] Collider2D collider, ref ContactFilter2D contactFilter);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern bool IsTouching_AnyColliderWithFilter_Injected(ref ContactFilter2D contactFilter);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern bool OverlapPoint_Injected(ref Vector2 point);
 	}
 }

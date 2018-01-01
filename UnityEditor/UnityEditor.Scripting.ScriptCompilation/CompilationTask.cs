@@ -18,7 +18,7 @@ namespace UnityEditor.Scripting.ScriptCompilation
 
 		private int compilePhase = 0;
 
-		private BuildFlags buildFlags;
+		private EditorScriptCompilationOptions options;
 
 		private int maxConcurrentCompilers;
 
@@ -102,12 +102,12 @@ namespace UnityEditor.Scripting.ScriptCompilation
 			}
 		}
 
-		public CompilationTask(ScriptAssembly[] scriptAssemblies, string buildOutputDirectory, BuildFlags buildFlags, int maxConcurrentCompilers)
+		public CompilationTask(ScriptAssembly[] scriptAssemblies, string buildOutputDirectory, EditorScriptCompilationOptions options, int maxConcurrentCompilers)
 		{
 			this.pendingAssemblies = new HashSet<ScriptAssembly>(scriptAssemblies);
 			this.CompileErrors = false;
 			this.buildOutputDirectory = buildOutputDirectory;
-			this.buildFlags = buildFlags;
+			this.options = options;
 			this.maxConcurrentCompilers = maxConcurrentCompilers;
 		}
 
@@ -227,11 +227,11 @@ namespace UnityEditor.Scripting.ScriptCompilation
 				}
 				if (list != null)
 				{
-					bool buildingForEditor = (this.buildFlags & BuildFlags.BuildingForEditor) == BuildFlags.BuildingForEditor;
+					bool buildingForEditor = (this.options & EditorScriptCompilationOptions.BuildingForEditor) == EditorScriptCompilationOptions.BuildingForEditor;
 					foreach (ScriptAssembly current2 in list)
 					{
 						this.pendingAssemblies.Remove(current2);
-						MonoIsland island = current2.ToMonoIsland(this.buildFlags, this.buildOutputDirectory);
+						MonoIsland island = current2.ToMonoIsland(this.options, this.buildOutputDirectory);
 						ScriptCompilerBase scriptCompilerBase = ScriptCompilers.CreateCompilerInstance(island, buildingForEditor, island._target, current2.RunUpdater);
 						this.compilerTasks.Add(current2, scriptCompilerBase);
 						scriptCompilerBase.BeginCompiling();

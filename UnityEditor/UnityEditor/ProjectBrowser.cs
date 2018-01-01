@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using UnityEditor.IMGUI.Controls;
 using UnityEditor.ProjectWindowCallback;
 using UnityEditor.TreeViewExamples;
@@ -35,22 +36,6 @@ namespace UnityEditor
 
 		private class Styles
 		{
-			public GUIStyle smallStatus = "ObjectPickerSmallStatus";
-
-			public GUIStyle largeStatus = "ObjectPickerLargeStatus";
-
-			public GUIStyle toolbarBack = "ObjectPickerToolbar";
-
-			public GUIStyle tab = "ObjectPickerTab";
-
-			public GUIStyle bottomResize = "WindowBottomResize";
-
-			public GUIStyle background = "ObjectPickerBackground";
-
-			public GUIStyle previewBackground = "PopupCurveSwatchBackground";
-
-			public GUIStyle previewTextureBackground = "ObjectPickerPreviewBackground";
-
 			public GUIStyle bottomBarBg = "ProjectBrowserBottomBarBg";
 
 			public GUIStyle topBarBg = "ProjectBrowserTopBarBg";
@@ -63,13 +48,9 @@ namespace UnityEditor
 
 			public GUIStyle foldout = "AC RightArrow";
 
-			public GUIStyle exposablePopupItem = ProjectBrowser.Styles.GetStyle("ExposablePopupItem");
-
 			public GUIContent m_FilterByLabel = new GUIContent(EditorGUIUtility.FindTexture("FilterByLabel"), "Search by Label");
 
 			public GUIContent m_FilterByType = new GUIContent(EditorGUIUtility.FindTexture("FilterByType"), "Search by Type");
-
-			public GUIContent m_ShowChildAssetsContent = new GUIContent("", EditorGUIUtility.FindTexture("UnityEditor.HierarchyWindow"), "Toggle visibility of child assets in folders");
 
 			public GUIContent m_CreateDropdownContent = new GUIContent("Create");
 
@@ -227,8 +208,6 @@ namespace UnityEditor
 
 		private float m_LastListWidth;
 
-		private int m_CurrentNumItems;
-
 		private bool m_DidSelectSearchResult = false;
 
 		private bool m_ItemSelectedByRightClickThisEvent = false;
@@ -316,6 +295,9 @@ namespace UnityEditor
 		[NonSerialized]
 		public GUIContent m_SearchAssetStore = new GUIContent("Asset Store");
 
+		[CompilerGenerated]
+		private static Func<string, bool> <>f__mg$cache0;
+
 		private bool useTreeViewSelectionInsteadOfMainSelection
 		{
 			get
@@ -350,7 +332,8 @@ namespace UnityEditor
 			base.titleContent = base.GetLocalizedTitleContent();
 			ProjectBrowser.s_ProjectBrowsers.Add(this);
 			EditorApplication.projectWindowChanged = (EditorApplication.CallbackFunction)Delegate.Combine(EditorApplication.projectWindowChanged, new EditorApplication.CallbackFunction(this.OnProjectChanged));
-			EditorApplication.playmodeStateChanged = (EditorApplication.CallbackFunction)Delegate.Combine(EditorApplication.playmodeStateChanged, new EditorApplication.CallbackFunction(this.OnPlayModeStateChanged));
+			EditorApplication.pauseStateChanged += new Action<PauseState>(this.OnPauseStateChanged);
+			EditorApplication.playModeStateChanged += new Action<PlayModeStateChange>(this.OnPlayModeStateChanged);
 			EditorApplication.assetLabelsChanged = (EditorApplication.CallbackFunction)Delegate.Combine(EditorApplication.assetLabelsChanged, new EditorApplication.CallbackFunction(this.OnAssetLabelsChanged));
 			EditorApplication.assetBundleNameChanged = (EditorApplication.CallbackFunction)Delegate.Combine(EditorApplication.assetBundleNameChanged, new EditorApplication.CallbackFunction(this.OnAssetBundleNameChanged));
 			AssemblyReloadEvents.afterAssemblyReload += new AssemblyReloadEvents.AssemblyReloadCallback(this.OnAfterAssemblyReload);
@@ -364,7 +347,8 @@ namespace UnityEditor
 
 		private void OnDisable()
 		{
-			EditorApplication.playmodeStateChanged = (EditorApplication.CallbackFunction)Delegate.Remove(EditorApplication.playmodeStateChanged, new EditorApplication.CallbackFunction(this.OnPlayModeStateChanged));
+			EditorApplication.pauseStateChanged -= new Action<PauseState>(this.OnPauseStateChanged);
+			EditorApplication.playModeStateChanged -= new Action<PlayModeStateChange>(this.OnPlayModeStateChanged);
 			EditorApplication.projectWindowChanged = (EditorApplication.CallbackFunction)Delegate.Remove(EditorApplication.projectWindowChanged, new EditorApplication.CallbackFunction(this.OnProjectChanged));
 			EditorApplication.assetLabelsChanged = (EditorApplication.CallbackFunction)Delegate.Remove(EditorApplication.assetLabelsChanged, new EditorApplication.CallbackFunction(this.OnAssetLabelsChanged));
 			EditorApplication.assetBundleNameChanged = (EditorApplication.CallbackFunction)Delegate.Remove(EditorApplication.assetBundleNameChanged, new EditorApplication.CallbackFunction(this.OnAssetBundleNameChanged));
@@ -372,7 +356,12 @@ namespace UnityEditor
 			ProjectBrowser.s_ProjectBrowsers.Remove(this);
 		}
 
-		private void OnPlayModeStateChanged()
+		private void OnPauseStateChanged(PauseState state)
+		{
+			this.EndRenaming();
+		}
+
+		private void OnPlayModeStateChanged(PlayModeStateChange state)
 		{
 			this.EndRenaming();
 		}
@@ -1263,7 +1252,6 @@ namespace UnityEditor
 		private void OnLostFocus()
 		{
 			this.EndRenaming();
-			EditorGUI.EndEditingActiveTextField();
 		}
 
 		private bool ShouldFrameAsset(int instanceID)
@@ -1515,7 +1503,17 @@ namespace UnityEditor
 		private void InitListArea()
 		{
 			this.ShowAndHideFolderTreeSelectionAsNeeded();
-			this.m_ListArea.Init(this.m_ListAreaRect, HierarchyType.Assets, this.m_SearchFilter, false);
+			HierarchyType hierarchyType = HierarchyType.Assets;
+			IEnumerable<string> arg_31_0 = this.m_SearchFilter.folders;
+			if (ProjectBrowser.<>f__mg$cache0 == null)
+			{
+				ProjectBrowser.<>f__mg$cache0 = new Func<string, bool>(AssetDatabase.IsPackagedAssetPath);
+			}
+			if (arg_31_0.Any(ProjectBrowser.<>f__mg$cache0))
+			{
+				hierarchyType = HierarchyType.Packages;
+			}
+			this.m_ListArea.Init(this.m_ListAreaRect, hierarchyType, this.m_SearchFilter, false);
 			this.m_ListArea.InitSelection(Selection.instanceIDs);
 		}
 
@@ -1537,20 +1535,6 @@ namespace UnityEditor
 			{
 				ProjectBrowser.s_LastInteractedProjectBrowser = null;
 			}
-		}
-
-		private static List<string> GetMainPaths(List<int> instanceIDs)
-		{
-			List<string> list = new List<string>();
-			foreach (int current in instanceIDs)
-			{
-				if (AssetDatabase.IsMainAsset(current))
-				{
-					string assetPath = AssetDatabase.GetAssetPath(current);
-					list.Add(assetPath);
-				}
-			}
-			return list;
 		}
 
 		internal static int[] DuplicateFolders(int[] instanceIDs)
@@ -2127,6 +2111,13 @@ namespace UnityEditor
 			InternalEditorUtility.RequestScriptReload();
 		}
 
+		private void ToggleShowPackagesInAssetsFolder()
+		{
+			bool @bool = EditorPrefs.GetBool("ShowPackagesFolder", false);
+			EditorPrefs.SetBool("ShowPackagesFolder", !@bool);
+			EditorApplication.projectWindowChanged();
+		}
+
 		public virtual void AddItemsToMenu(GenericMenu menu)
 		{
 			if (this.m_EnableOldAssetTree)
@@ -2144,6 +2135,7 @@ namespace UnityEditor
 				}
 				if (Unsupported.IsDeveloperBuild())
 				{
+					menu.AddItem(new GUIContent("DEVELOPER/Show Packages in Project Window"), EditorPrefs.GetBool("ShowPackagesFolder", false), new GenericMenu.MenuFunction(this.ToggleShowPackagesInAssetsFolder));
 					menu.AddItem(new GUIContent("DEVELOPER/Open TreeView Test Window..."), false, new GenericMenu.MenuFunction(this.OpenTreeViewTestWindow));
 					menu.AddItem(new GUIContent("DEVELOPER/Use TreeView Expansion Animation"), EditorPrefs.GetBool("TreeViewExpansionAnimation", false), new GenericMenu.MenuFunction(this.ToggleExpansionAnimationPreference));
 				}
@@ -2418,6 +2410,10 @@ namespace UnityEditor
 							'/'
 						});
 						string text2 = "";
+						if (array.Length > 0 && array[0] == AssetDatabase.GetPackagesMountPoint())
+						{
+							array[0] = AssetDatabase.GetPackagesRootPath();
+						}
 						string[] array2 = array;
 						for (int i = 0; i < array2.Length; i++)
 						{
@@ -2661,52 +2657,8 @@ namespace UnityEditor
 			}
 			if (list.Count != 0)
 			{
-				bool flag = list.IndexOf(ProjectBrowserColumnOneTreeViewDataSource.GetAssetsFolderInstanceID()) >= 0;
-				if (flag)
-				{
-					string title = "Cannot Delete";
-					EditorUtility.DisplayDialog(title, "Deleting the 'Assets' folder is not allowed", "Ok");
-				}
-				else
-				{
-					List<string> mainPaths = ProjectBrowser.GetMainPaths(list);
-					if (mainPaths.Count != 0)
-					{
-						if (askIfSure)
-						{
-							string text = "Delete selected asset";
-							if (mainPaths.Count > 1)
-							{
-								text += "s";
-							}
-							text += "?";
-							int num = 3;
-							string text2 = "";
-							int num2 = 0;
-							while (num2 < mainPaths.Count && num2 < num)
-							{
-								text2 = text2 + "   " + mainPaths[num2] + "\n";
-								num2++;
-							}
-							if (mainPaths.Count > num)
-							{
-								text2 += "   ...\n";
-							}
-							text2 += "\nYou cannot undo this action.";
-							if (!EditorUtility.DisplayDialog(text, text2, "Delete", "Cancel"))
-							{
-								return;
-							}
-						}
-						AssetDatabase.StartAssetEditing();
-						foreach (string current in mainPaths)
-						{
-							AssetDatabase.MoveAssetToTrash(current);
-						}
-						AssetDatabase.StopAssetEditing();
-						Selection.instanceIDs = new int[0];
-					}
-				}
+				ProjectWindowUtil.DeleteAssets(list, askIfSure);
+				Selection.instanceIDs = new int[0];
 			}
 		}
 

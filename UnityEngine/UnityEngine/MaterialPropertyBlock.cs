@@ -79,19 +79,15 @@ namespace UnityEngine
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern Array ExtractArrayFromList(object list);
+		private extern void SetFloatArrayImpl(int nameID, float[] values, int count);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void SetFloatArrayImpl(int nameID, float[] values);
+		private extern void SetVectorArrayImpl(int nameID, Vector4[] values, int count);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void SetVectorArrayImpl(int nameID, Vector4[] values);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void SetMatrixArrayImpl(int nameID, Matrix4x4[] values);
+		private extern void SetMatrixArrayImpl(int nameID, Matrix4x4[] values, int count);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -218,7 +214,7 @@ namespace UnityEngine
 
 		public void SetFloatArray(int nameID, List<float> values)
 		{
-			this.SetFloatArray(nameID, (float[])MaterialPropertyBlock.ExtractArrayFromList(values));
+			this.SetFloatArray(nameID, (float[])NoAllocHelpers.ExtractArrayFromList(values), values.Count);
 		}
 
 		public void SetFloatArray(string name, float[] values)
@@ -228,6 +224,11 @@ namespace UnityEngine
 
 		public void SetFloatArray(int nameID, float[] values)
 		{
+			this.SetFloatArray(nameID, values, values.Length);
+		}
+
+		private void SetFloatArray(int nameID, float[] values, int count)
+		{
 			if (values == null)
 			{
 				throw new ArgumentNullException("values");
@@ -236,7 +237,11 @@ namespace UnityEngine
 			{
 				throw new ArgumentException("Zero-sized array is not allowed.");
 			}
-			this.SetFloatArrayImpl(nameID, values);
+			if (values.Length < count)
+			{
+				throw new ArgumentException("array has less elements than passed count.");
+			}
+			this.SetFloatArrayImpl(nameID, values, count);
 		}
 
 		public void SetVectorArray(string name, List<Vector4> values)
@@ -246,7 +251,7 @@ namespace UnityEngine
 
 		public void SetVectorArray(int nameID, List<Vector4> values)
 		{
-			this.SetVectorArray(nameID, (Vector4[])MaterialPropertyBlock.ExtractArrayFromList(values));
+			this.SetVectorArray(nameID, (Vector4[])NoAllocHelpers.ExtractArrayFromList(values), values.Count);
 		}
 
 		public void SetVectorArray(string name, Vector4[] values)
@@ -256,6 +261,11 @@ namespace UnityEngine
 
 		public void SetVectorArray(int nameID, Vector4[] values)
 		{
+			this.SetVectorArray(nameID, values, values.Length);
+		}
+
+		private void SetVectorArray(int nameID, Vector4[] values, int count)
+		{
 			if (values == null)
 			{
 				throw new ArgumentNullException("values");
@@ -264,7 +274,11 @@ namespace UnityEngine
 			{
 				throw new ArgumentException("Zero-sized array is not allowed.");
 			}
-			this.SetVectorArrayImpl(nameID, values);
+			if (values.Length < count)
+			{
+				throw new ArgumentException("array has less elements than passed count.");
+			}
+			this.SetVectorArrayImpl(nameID, values, count);
 		}
 
 		public void SetMatrixArray(string name, List<Matrix4x4> values)
@@ -274,7 +288,7 @@ namespace UnityEngine
 
 		public void SetMatrixArray(int nameID, List<Matrix4x4> values)
 		{
-			this.SetMatrixArray(nameID, (Matrix4x4[])MaterialPropertyBlock.ExtractArrayFromList(values));
+			this.SetMatrixArray(nameID, (Matrix4x4[])NoAllocHelpers.ExtractArrayFromList(values), values.Count);
 		}
 
 		public void SetMatrixArray(string name, Matrix4x4[] values)
@@ -284,6 +298,11 @@ namespace UnityEngine
 
 		public void SetMatrixArray(int nameID, Matrix4x4[] values)
 		{
+			this.SetMatrixArray(nameID, values, values.Length);
+		}
+
+		private void SetMatrixArray(int nameID, Matrix4x4[] values, int count)
+		{
 			if (values == null)
 			{
 				throw new ArgumentNullException("values");
@@ -292,7 +311,11 @@ namespace UnityEngine
 			{
 				throw new ArgumentException("Zero-sized array is not allowed.");
 			}
-			this.SetMatrixArrayImpl(nameID, values);
+			if (values.Length < count)
+			{
+				throw new ArgumentException("array has less elements than passed count.");
+			}
+			this.SetMatrixArrayImpl(nameID, values, count);
 		}
 
 		public float GetFloat(string name)

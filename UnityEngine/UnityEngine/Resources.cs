@@ -59,9 +59,17 @@ namespace UnityEngine
 			return Resources.LoadAsync(path, typeof(T));
 		}
 
+		public static ResourceRequest LoadAsync(string path, Type type)
+		{
+			ResourceRequest resourceRequest = Resources.LoadAsyncInternal(path, type);
+			resourceRequest.m_Path = path;
+			resourceRequest.m_Type = type;
+			return resourceRequest;
+		}
+
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern ResourceRequest LoadAsync(string path, Type type);
+		internal static extern ResourceRequest LoadAsyncInternal(string path, Type type);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]

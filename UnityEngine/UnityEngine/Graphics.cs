@@ -42,6 +42,13 @@ namespace UnityEngine
 			set;
 		}
 
+		public static extern ColorGamut activeColorGamut
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+		}
+
 		[EditorBrowsable(EditorBrowsableState.Never), Obsolete("Property deviceName has been deprecated. Use SystemInfo.graphicsDeviceName instead (UnityUpgradable) -> UnityEngine.SystemInfo.graphicsDeviceName", true)]
 		public static string deviceName
 		{
@@ -68,10 +75,6 @@ namespace UnityEngine
 				return SystemInfo.graphicsDeviceVersion;
 			}
 		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern Array ExtractArrayFromList(object list);
 
 		[ExcludeFromDocs]
 		public static void DrawMesh(Mesh mesh, Vector3 position, Quaternion rotation, Material material, int layer, Camera camera, int submeshIndex, MaterialPropertyBlock properties, bool castShadows, bool receiveShadows)
@@ -575,9 +578,60 @@ namespace UnityEngine
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern void Internal_DrawTexture(ref Internal_DrawTextureArguments args);
 
+		[ExcludeFromDocs]
+		public static GPUFence CreateGPUFence()
+		{
+			SynchronisationStage stage = SynchronisationStage.PixelProcessing;
+			return Graphics.CreateGPUFence(stage);
+		}
+
+		public static GPUFence CreateGPUFence([UnityEngine.Internal.DefaultValue("SynchronisationStage.PixelProcessing")] SynchronisationStage stage)
+		{
+			GPUFence result = default(GPUFence);
+			result.m_Ptr = Graphics.Internal_CreateGPUFence(stage);
+			result.InitPostAllocation();
+			result.Validate();
+			return result;
+		}
+
+		private static IntPtr Internal_CreateGPUFence(SynchronisationStage stage)
+		{
+			IntPtr result;
+			Graphics.INTERNAL_CALL_Internal_CreateGPUFence(stage, out result);
+			return result;
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void INTERNAL_CALL_Internal_CreateGPUFence(SynchronisationStage stage, out IntPtr value);
+
+		[ExcludeFromDocs]
+		public static void WaitOnGPUFence(GPUFence fence)
+		{
+			SynchronisationStage stage = SynchronisationStage.VertexProcessing;
+			Graphics.WaitOnGPUFence(fence, stage);
+		}
+
+		public static void WaitOnGPUFence(GPUFence fence, [UnityEngine.Internal.DefaultValue("SynchronisationStage.VertexProcessing")] SynchronisationStage stage)
+		{
+			fence.Validate();
+			if (fence.IsFencePending())
+			{
+				Graphics.WaitOnGPUFence_Internal(fence.m_Ptr, stage);
+			}
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void WaitOnGPUFence_Internal(IntPtr fencePtr, SynchronisationStage stage);
+
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void ExecuteCommandBuffer(CommandBuffer buffer);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern void ExecuteCommandBufferAsync(CommandBuffer buffer, ComputeQueueType queueType);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -984,7 +1038,7 @@ namespace UnityEngine
 			{
 				throw new ArgumentOutOfRangeException("matrices", string.Format("Matrix list count must be in the range of 0 to {0}.", Graphics.kMaxDrawMeshInstanceCount));
 			}
-			Graphics.DrawMeshInstancedImpl(mesh, submeshIndex, material, (Matrix4x4[])Graphics.ExtractArrayFromList(matrices), matrices.Count, properties, castShadows, receiveShadows, layer, camera);
+			Graphics.DrawMeshInstancedImpl(mesh, submeshIndex, material, (Matrix4x4[])NoAllocHelpers.ExtractArrayFromList(matrices), matrices.Count, properties, castShadows, receiveShadows, layer, camera);
 		}
 
 		private static void DrawMeshInstancedIndirectImpl(Mesh mesh, int submeshIndex, Material material, Bounds bounds, ComputeBuffer bufferWithArgs, int argsOffset, MaterialPropertyBlock properties, ShadowCastingMode castShadows, bool receiveShadows, int layer, Camera camera)

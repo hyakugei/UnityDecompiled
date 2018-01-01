@@ -60,6 +60,8 @@ namespace UnityEngine
 		ETC_RGBA8_3DS,
 		RG16,
 		R8,
+		ETC_RGB4Crunched,
+		ETC2_RGBA8Crunched,
 		[EditorBrowsable(EditorBrowsableState.Never), Obsolete("Enum member TextureFormat.PVRTC_2BPP_RGB has been deprecated. Use PVRTC_RGB2 instead (UnityUpgradable) -> PVRTC_RGB2", true)]
 		PVRTC_2BPP_RGB = -127,
 		[EditorBrowsable(EditorBrowsableState.Never), Obsolete("Enum member TextureFormat.PVRTC_2BPP_RGBA has been deprecated. Use PVRTC_RGBA2 instead (UnityUpgradable) -> PVRTC_RGBA2", true)]

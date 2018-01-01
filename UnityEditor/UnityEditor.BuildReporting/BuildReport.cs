@@ -69,6 +69,13 @@ namespace UnityEditor.BuildReporting
 			get;
 		}
 
+		public extern BuildResult buildResult
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+		}
+
 		public extern string outputPath
 		{
 			[GeneratedByOldBindingsGenerator]

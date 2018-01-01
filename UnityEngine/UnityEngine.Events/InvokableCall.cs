@@ -51,6 +51,14 @@ namespace UnityEngine.Events
 			}
 		}
 
+		public void Invoke()
+		{
+			if (BaseInvokableCall.AllowInvoke(this.Delegate))
+			{
+				this.Delegate();
+			}
+		}
+
 		public override bool Find(object targetObj, MethodInfo method)
 		{
 			return this.Delegate.Target == targetObj && this.Delegate.GetMethodInfo().Equals(method);
@@ -104,6 +112,14 @@ namespace UnityEngine.Events
 			if (BaseInvokableCall.AllowInvoke(this.Delegate))
 			{
 				this.Delegate((T1)((object)args[0]));
+			}
+		}
+
+		public virtual void Invoke(T1 args0)
+		{
+			if (BaseInvokableCall.AllowInvoke(this.Delegate))
+			{
+				this.Delegate(args0);
 			}
 		}
 
@@ -161,6 +177,14 @@ namespace UnityEngine.Events
 			if (BaseInvokableCall.AllowInvoke(this.Delegate))
 			{
 				this.Delegate((T1)((object)args[0]), (T2)((object)args[1]));
+			}
+		}
+
+		public void Invoke(T1 args0, T2 args1)
+		{
+			if (BaseInvokableCall.AllowInvoke(this.Delegate))
+			{
+				this.Delegate(args0, args1);
 			}
 		}
 
@@ -222,6 +246,14 @@ namespace UnityEngine.Events
 			}
 		}
 
+		public void Invoke(T1 args0, T2 args1, T3 args2)
+		{
+			if (BaseInvokableCall.AllowInvoke(this.Delegate))
+			{
+				this.Delegate(args0, args1, args2);
+			}
+		}
+
 		public override bool Find(object targetObj, MethodInfo method)
 		{
 			return this.Delegate.Target == targetObj && this.Delegate.GetMethodInfo().Equals(method);
@@ -278,6 +310,14 @@ namespace UnityEngine.Events
 			if (BaseInvokableCall.AllowInvoke(this.Delegate))
 			{
 				this.Delegate((T1)((object)args[0]), (T2)((object)args[1]), (T3)((object)args[2]), (T4)((object)args[3]));
+			}
+		}
+
+		public void Invoke(T1 args0, T2 args1, T3 args2, T4 args3)
+		{
+			if (BaseInvokableCall.AllowInvoke(this.Delegate))
+			{
+				this.Delegate(args0, args1, args2, args3);
 			}
 		}
 

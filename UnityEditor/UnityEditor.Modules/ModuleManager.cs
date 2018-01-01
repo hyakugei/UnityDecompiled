@@ -13,6 +13,7 @@ using UnityEditor.Hardware;
 using UnityEditor.Utils;
 using UnityEditorInternal;
 using UnityEngine;
+using UnityEngine.Scripting;
 
 namespace UnityEditor.Modules
 {
@@ -52,11 +53,19 @@ namespace UnityEditor.Modules
 		[CompilerGenerated]
 		private static Func<Assembly, IEnumerable<IPlatformSupportModule>> <>f__mg$cache0;
 
+		internal static bool EnableLogging
+		{
+			get
+			{
+				return (bool)(UnityEngine.Debug.GetDiagnosticSwitch("ModuleManagerLogging") ?? false);
+			}
+		}
+
 		internal static IPackageManagerModule packageManager
 		{
 			get
 			{
-				ModuleManager.Initialize();
+				ModuleManager.InitializeModuleManager();
 				return ModuleManager.s_PackageManager;
 			}
 		}
@@ -65,7 +74,7 @@ namespace UnityEditor.Modules
 		{
 			get
 			{
-				ModuleManager.Initialize();
+				ModuleManager.InitializeModuleManager();
 				if (ModuleManager.s_PlatformModules == null)
 				{
 					ModuleManager.RegisterPlatformSupportModules();
@@ -142,6 +151,7 @@ namespace UnityEditor.Modules
 			return ModuleManager.s_PackageManager != null && ModuleManager.s_PackageManager.GetType().Assembly.Location.NormalizePath() == file.NormalizePath();
 		}
 
+		[RequiredByNativeCode]
 		internal static bool IsPlatformSupportLoaded(string target)
 		{
 			bool result;
@@ -157,6 +167,7 @@ namespace UnityEditor.Modules
 			return result;
 		}
 
+		[RequiredByNativeCode]
 		internal static void RegisterAdditionalUnityExtensions()
 		{
 			foreach (IPlatformSupportModule current in ModuleManager.platformSupportModules)
@@ -165,7 +176,8 @@ namespace UnityEditor.Modules
 			}
 		}
 
-		internal static void Initialize()
+		[RequiredByNativeCode]
+		internal static void InitializeModuleManager()
 		{
 			if (ModuleManager.s_PackageManager == null)
 			{
@@ -208,13 +220,16 @@ namespace UnityEditor.Modules
 		{
 			foreach (Unity.DataContract.PackageInfo current in ModuleManager.s_PackageManager.unityExtensions)
 			{
-				Console.WriteLine("Setting {0} v{1} for Unity v{2} to {3}", new object[]
+				if (ModuleManager.EnableLogging)
 				{
-					current.name,
-					current.version,
-					current.unityVersion,
-					current.basePath
-				});
+					Console.WriteLine("Setting {0} v{1} for Unity v{2} to {3}", new object[]
+					{
+						current.name,
+						current.version,
+						current.unityVersion,
+						current.basePath
+					});
+				}
 				foreach (KeyValuePair<string, PackageFileData> current2 in from f in current.files
 				where f.Value.type == PackageFileType.Dll
 				select f)
@@ -231,7 +246,10 @@ namespace UnityEditor.Modules
 					else
 					{
 						bool flag = !string.IsNullOrEmpty(current2.Value.guid);
-						Console.WriteLine("  {0} ({1}) GUID: {2}", current2.Key, (!flag) ? "Custom" : "Extension", current2.Value.guid);
+						if (ModuleManager.EnableLogging)
+						{
+							Console.WriteLine("  {0} ({1}) GUID: {2}", current2.Key, (!flag) ? "Custom" : "Extension", current2.Value.guid);
+						}
 						if (flag)
 						{
 							InternalEditorUtility.RegisterExtensionDll(text.Replace('\\', '/'), current2.Value.guid);
@@ -246,6 +264,7 @@ namespace UnityEditor.Modules
 			}
 		}
 
+		[RequiredByNativeCode]
 		internal static void InitializePlatformSupportModules()
 		{
 			if (ModuleManager.s_PlatformModulesInitialized)
@@ -254,7 +273,7 @@ namespace UnityEditor.Modules
 			}
 			else
 			{
-				ModuleManager.Initialize();
+				ModuleManager.InitializeModuleManager();
 				ModuleManager.RegisterPlatformSupportModules();
 				foreach (IPlatformSupportModule current in ModuleManager.platformSupportModules)
 				{
@@ -278,6 +297,7 @@ namespace UnityEditor.Modules
 			}
 		}
 
+		[RequiredByNativeCode]
 		internal static void ShutdownPlatformSupportModules()
 		{
 			ModuleManager.DeactivateActivePlatformModule();
@@ -290,7 +310,8 @@ namespace UnityEditor.Modules
 			}
 		}
 
-		internal static void Shutdown()
+		[RequiredByNativeCode(true)]
+		internal static void ShutdownModuleManager()
 		{
 			if (ModuleManager.s_PackageManager != null)
 			{
@@ -324,11 +345,17 @@ namespace UnityEditor.Modules
 			select a.GetType("Unity.PackageManager.Locator")).FirstOrDefault<Type>();
 			try
 			{
+				string unityPath = FileUtil.CombinePaths(new string[]
+				{
+					Directory.GetParent(EditorApplication.applicationPath).ToString(),
+					"PlaybackEngines"
+				});
 				type.InvokeMember("Scan", BindingFlags.Static | BindingFlags.Public | BindingFlags.InvokeMethod, null, null, new object[]
 				{
 					new string[]
 					{
-						FileUtil.NiceWinPath(EditorApplication.applicationContentsPath)
+						FileUtil.NiceWinPath(EditorApplication.applicationContentsPath),
+						FileUtil.NiceWinPath(unityPath)
 					},
 					Application.unityVersion
 				});
@@ -421,14 +448,17 @@ namespace UnityEditor.Modules
 					BuildTarget buildTarget;
 					if (ModuleManager.TryParseBuildTarget(current.name, out buildTargetGroup, out buildTarget))
 					{
-						Console.WriteLine("Setting {4}:{0} v{1} for Unity v{2} to {3}", new object[]
+						if (ModuleManager.EnableLogging)
 						{
-							buildTarget,
-							current.version,
-							current.unityVersion,
-							current.basePath,
-							buildTargetGroup
-						});
+							Console.WriteLine("Setting {4}:{0} v{1} for Unity v{2} to {3}", new object[]
+							{
+								buildTarget,
+								current.version,
+								current.unityVersion,
+								current.basePath,
+								buildTargetGroup
+							});
+						}
 						foreach (KeyValuePair<string, PackageFileData> current2 in from f in current.files
 						where f.Value.type == PackageFileType.Dll
 						select f)
@@ -858,12 +888,13 @@ namespace UnityEditor.Modules
 			case (BuildTarget)23:
 			case BuildTarget.WP8Player:
 			case BuildTarget.BlackBerry:
+			case BuildTarget.SamsungTV:
 				IL_62:
 				switch (target)
 				{
-				case BuildTarget.StandaloneOSXUniversal:
+				case BuildTarget.StandaloneOSX:
 				case BuildTarget.StandaloneOSXIntel:
-					goto IL_147;
+					goto IL_13C;
 				case (BuildTarget)3:
 				case BuildTarget.WebPlayer:
 				case BuildTarget.WebPlayerStreamed:
@@ -877,14 +908,14 @@ namespace UnityEditor.Modules
 					result = "Android";
 					return result;
 				case BuildTarget.StandaloneWindows:
-					goto IL_13C;
+					goto IL_131;
 				case BuildTarget.iOS:
 					result = "iOS";
 					return result;
 				}
 				goto IL_8A;
 			case BuildTarget.StandaloneWindows64:
-				goto IL_13C;
+				goto IL_131;
 			case BuildTarget.WebGL:
 				result = "WebGL";
 				return result;
@@ -892,7 +923,7 @@ namespace UnityEditor.Modules
 				result = "Metro";
 				return result;
 			case BuildTarget.StandaloneOSXIntel64:
-				goto IL_147;
+				goto IL_13C;
 			case BuildTarget.Tizen:
 				result = "Tizen";
 				return result;
@@ -908,9 +939,6 @@ namespace UnityEditor.Modules
 			case BuildTarget.XboxOne:
 				result = "XboxOne";
 				return result;
-			case BuildTarget.SamsungTV:
-				result = "SamsungTV";
-				return result;
 			case BuildTarget.N3DS:
 				result = "N3DS";
 				return result;
@@ -925,10 +953,10 @@ namespace UnityEditor.Modules
 				return result;
 			}
 			goto IL_62;
-			IL_13C:
+			IL_131:
 			result = "WindowsStandalone";
 			return result;
-			IL_147:
+			IL_13C:
 			result = "OSXStandalone";
 			return result;
 		}
@@ -949,6 +977,7 @@ namespace UnityEditor.Modules
 			}
 			case BuildTargetGroup.WP8:
 			case BuildTargetGroup.BlackBerry:
+			case BuildTargetGroup.SamsungTV:
 			{
 				IL_46:
 				string result;
@@ -987,11 +1016,6 @@ namespace UnityEditor.Modules
 			case BuildTargetGroup.XboxOne:
 			{
 				string result = "XboxOne";
-				return result;
-			}
-			case BuildTargetGroup.SamsungTV:
-			{
-				string result = "SamsungTV";
 				return result;
 			}
 			case BuildTargetGroup.N3DS:

@@ -114,7 +114,7 @@ namespace UnityEditor
 			EditorGUILayout.PropertyField(this.m_IsTransparent, LightmapParametersEditor.Styles.isTransparent, new GUILayoutOption[0]);
 			EditorGUILayout.PropertyField(this.m_SystemTag, LightmapParametersEditor.Styles.systemTagContent, new GUILayoutOption[0]);
 			EditorGUILayout.Space();
-			bool disabled = LightmapEditorSettings.giBakeBackend == LightmapEditorSettings.GIBakeBackend.PathTracer;
+			bool disabled = LightmapEditorSettings.lightmapper == LightmapEditorSettings.Lightmapper.PathTracer;
 			GUILayout.Label(LightmapParametersEditor.Styles.bakedGIContent, EditorStyles.boldLabel, new GUILayoutOption[0]);
 			using (new EditorGUI.DisabledScope(disabled))
 			{

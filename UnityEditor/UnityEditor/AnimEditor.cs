@@ -50,9 +50,6 @@ namespace UnityEditor
 		private bool m_TriggerFraming;
 
 		[NonSerialized]
-		private bool m_StylesInitialized;
-
-		[NonSerialized]
 		private bool m_Initialized;
 
 		internal static PrefColor kEulerXColor = new PrefColor("Animation/EulerX", 1f, 0f, 1f, 1f);
@@ -1018,14 +1015,14 @@ namespace UnityEditor
 						if (dictionary.TryGetValue(curveWrapper.animationClip, out value))
 						{
 							value.bindings.Add(curveWrapper.binding);
-							value.curves.Add(curveWrapper.curve);
+							value.curves.Add((curveWrapper.curve.length <= 0) ? null : curveWrapper.curve);
 						}
 						else
 						{
 							value.bindings = new List<EditorCurveBinding>();
 							value.curves = new List<AnimationCurve>();
 							value.bindings.Add(curveWrapper.binding);
-							value.curves.Add(curveWrapper.curve);
+							value.curves.Add((curveWrapper.curve.length <= 0) ? null : curveWrapper.curve);
 							dictionary.Add(curveWrapper.animationClip, value);
 						}
 					}

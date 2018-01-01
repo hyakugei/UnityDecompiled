@@ -469,7 +469,7 @@ namespace UnityEditor
 					Rect rect = new Rect(r.x, r.y, (float)num * num3, (float)num2 * num3);
 					PreviewGUI.BeginScrollView(r, this.m_Pos, rect, "PreHorizontalScrollbar", "PreHorizontalScrollbarThumb");
 					float mipMapBias = texture.mipMapBias;
-					TextureUtil.SetMipMapBiasNoDirty(texture, mipLevelForRendering - this.Log2((float)num / rect.width));
+					TextureUtil.SetMipMapBiasNoDirty(texture, mipLevelForRendering - this.Log2(Mathf.Abs((float)num / rect.width)));
 					FilterMode filterMode = texture.filterMode;
 					TextureUtil.SetFilterModeNoDirty(texture, FilterMode.Point);
 					if (this.m_ShowAlpha)
@@ -566,6 +566,11 @@ namespace UnityEditor
 					TextureImporter textureImporter = AssetImporter.GetAtPath(assetPath) as TextureImporter;
 					if (textureImporter != null && textureImporter.textureType == TextureImporterType.Sprite && textureImporter.spriteImportMode == SpriteImportMode.Polygon)
 					{
+						if (subAssets.Length <= 0)
+						{
+							result = null;
+							return result;
+						}
 						Sprite sprite = subAssets[0] as Sprite;
 						if (sprite)
 						{

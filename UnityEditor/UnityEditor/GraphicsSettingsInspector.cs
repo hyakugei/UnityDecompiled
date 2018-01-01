@@ -1,5 +1,6 @@
 using System;
 using UnityEditor.AnimatedValues;
+using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Experimental.Rendering;
@@ -8,7 +9,7 @@ using UnityEngine.Rendering;
 namespace UnityEditor
 {
 	[CustomEditor(typeof(GraphicsSettings))]
-	internal class GraphicsSettingsInspector : Editor
+	internal class GraphicsSettingsInspector : ProjectSettingsBaseEditor
 	{
 		internal class Styles
 		{
@@ -26,9 +27,9 @@ namespace UnityEditor
 
 			public static readonly GUIContent cameraSettings = EditorGUIUtility.TextContent("Camera Settings");
 
-			public static readonly GUIContent renderLoopSettings = EditorGUIUtility.TextContent("Scriptable RenderLoop Settings");
+			public static readonly GUIContent renderPipeSettings = EditorGUIUtility.TextContent("Scriptable Render Pipeline Settings");
 
-			public static readonly GUIContent renderLoopLabel = EditorGUIUtility.TextContent("Scriptable Render Loop");
+			public static readonly GUIContent renderPipeLabel = EditorGUIUtility.TextContent("Scriptable Render Pipeline");
 		}
 
 		private Editor m_TierSettingsEditor;
@@ -162,19 +163,30 @@ namespace UnityEditor
 		public override void OnInspectorGUI()
 		{
 			base.serializedObject.Update();
-			GUILayout.Label(GraphicsSettingsInspector.Styles.renderLoopSettings, EditorStyles.boldLabel, new GUILayoutOption[0]);
+			GUILayout.Label(GraphicsSettingsInspector.Styles.renderPipeSettings, EditorStyles.boldLabel, new GUILayoutOption[0]);
 			Rect controlRect = EditorGUILayout.GetControlRect(true, EditorGUI.GetPropertyHeight(this.m_ScriptableRenderLoop), new GUILayoutOption[0]);
-			EditorGUI.BeginProperty(controlRect, GraphicsSettingsInspector.Styles.renderLoopLabel, this.m_ScriptableRenderLoop);
+			EditorGUI.BeginProperty(controlRect, GraphicsSettingsInspector.Styles.renderPipeLabel, this.m_ScriptableRenderLoop);
 			this.m_ScriptableRenderLoop.objectReferenceValue = EditorGUI.ObjectField(controlRect, this.m_ScriptableRenderLoop.objectReferenceValue, typeof(RenderPipelineAsset), false);
 			EditorGUI.EndProperty();
 			EditorGUILayout.Space();
-			GUILayout.Label(GraphicsSettingsInspector.Styles.cameraSettings, EditorStyles.boldLabel, new GUILayoutOption[0]);
-			EditorGUILayout.PropertyField(this.m_TransparencySortMode, new GUILayoutOption[0]);
-			EditorGUILayout.PropertyField(this.m_TransparencySortAxis, new GUILayoutOption[0]);
-			EditorGUILayout.Space();
-			this.TierSettingsGUI();
+			bool flag = GraphicsSettings.renderPipelineAsset != null;
+			if (flag)
+			{
+				EditorGUILayout.HelpBox("A Scriptable Render Pipeline is in use, some settings will not be used and are hidden", MessageType.Info);
+			}
+			if (!flag)
+			{
+				GUILayout.Label(GraphicsSettingsInspector.Styles.cameraSettings, EditorStyles.boldLabel, new GUILayoutOption[0]);
+				EditorGUILayout.PropertyField(this.m_TransparencySortMode, new GUILayoutOption[0]);
+				EditorGUILayout.PropertyField(this.m_TransparencySortAxis, new GUILayoutOption[0]);
+				EditorGUILayout.Space();
+				this.TierSettingsGUI();
+			}
 			GUILayout.Label(GraphicsSettingsInspector.Styles.builtinSettings, EditorStyles.boldLabel, new GUILayoutOption[0]);
-			this.builtinShadersEditor.OnInspectorGUI();
+			if (!flag)
+			{
+				this.builtinShadersEditor.OnInspectorGUI();
+			}
 			this.alwaysIncludedShadersEditor.OnInspectorGUI();
 			EditorGUILayout.Space();
 			GUILayout.Label(GraphicsSettingsInspector.Styles.shaderStrippingSettings, EditorStyles.boldLabel, new GUILayoutOption[0]);

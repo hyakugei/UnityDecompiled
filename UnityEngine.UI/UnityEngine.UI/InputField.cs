@@ -2624,7 +2624,7 @@ namespace UnityEngine.UI
 			case InputField.ContentType.Name:
 				this.m_LineType = InputField.LineType.SingleLine;
 				this.m_InputType = InputField.InputType.Standard;
-				this.m_KeyboardType = TouchScreenKeyboardType.Default;
+				this.m_KeyboardType = TouchScreenKeyboardType.NamePhonePad;
 				this.m_CharacterValidation = InputField.CharacterValidation.Name;
 				break;
 			case InputField.ContentType.EmailAddress:

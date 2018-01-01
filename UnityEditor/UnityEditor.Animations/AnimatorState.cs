@@ -118,6 +118,16 @@ namespace UnityEditor.Animations
 			set;
 		}
 
+		public extern string timeParameter
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
 		public extern bool speedParameterActive
 		{
 			[GeneratedByOldBindingsGenerator]
@@ -139,6 +149,16 @@ namespace UnityEditor.Animations
 		}
 
 		public extern bool mirrorParameterActive
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public extern bool timeParameterActive
 		{
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]

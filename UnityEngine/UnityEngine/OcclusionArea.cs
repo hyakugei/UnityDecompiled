@@ -1,6 +1,5 @@
 using System;
 using System.Runtime.CompilerServices;
-using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
@@ -11,12 +10,12 @@ namespace UnityEngine
 			get
 			{
 				Vector3 result;
-				this.INTERNAL_get_center(out result);
+				this.get_center_Injected(out result);
 				return result;
 			}
 			set
 			{
-				this.INTERNAL_set_center(ref value);
+				this.set_center_Injected(ref value);
 			}
 		}
 
@@ -25,29 +24,25 @@ namespace UnityEngine
 			get
 			{
 				Vector3 result;
-				this.INTERNAL_get_size(out result);
+				this.get_size_Injected(out result);
 				return result;
 			}
 			set
 			{
-				this.INTERNAL_set_size(ref value);
+				this.set_size_Injected(ref value);
 			}
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void INTERNAL_get_center(out Vector3 value);
+		private extern void get_center_Injected(out Vector3 ret);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void INTERNAL_set_center(ref Vector3 value);
+		private extern void set_center_Injected(ref Vector3 value);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void INTERNAL_get_size(out Vector3 value);
+		private extern void get_size_Injected(out Vector3 ret);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void INTERNAL_set_size(ref Vector3 value);
+		private extern void set_size_Injected(ref Vector3 value);
 	}
 }

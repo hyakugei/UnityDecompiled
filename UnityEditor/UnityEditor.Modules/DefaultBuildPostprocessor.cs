@@ -19,6 +19,11 @@ namespace UnityEditor.Modules
 			return false;
 		}
 
+		public virtual bool SupportsLz4Compression()
+		{
+			return false;
+		}
+
 		public virtual void PostProcessScriptsOnly(BuildPostProcessArgs args)
 		{
 			if (!this.SupportsScriptsOnlyBuild())
@@ -39,6 +44,18 @@ namespace UnityEditor.Modules
 
 		public virtual void UpdateBootConfig(BuildTarget target, BootConfigData config, BuildOptions options)
 		{
+			config.Set("wait-for-native-debugger", "0");
+			if (config.Get("player-connection-debug") == "1")
+			{
+				if (EditorUserBuildSettings.GetPlatformSettings(BuildPipeline.GetBuildTargetName(target), "WaitForManagedDebugger") == "true")
+				{
+					config.Set("wait-for-managed-debugger", "1");
+				}
+				else
+				{
+					config.Set("wait-for-managed-debugger", "0");
+				}
+			}
 		}
 
 		public virtual string GetExtension(BuildTarget target, BuildOptions options)

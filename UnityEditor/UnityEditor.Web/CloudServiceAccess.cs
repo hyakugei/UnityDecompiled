@@ -22,6 +22,11 @@ namespace UnityEditor.Web
 			return this.GetServiceName();
 		}
 
+		public virtual string GetPackageName()
+		{
+			return string.Empty;
+		}
+
 		public virtual bool IsServiceEnabled()
 		{
 			return PlayerSettings.GetCloudServiceEnabled(this.GetServiceName());
@@ -30,6 +35,21 @@ namespace UnityEditor.Web
 		public virtual void EnableService(bool enabled)
 		{
 			PlayerSettings.SetCloudServiceEnabled(this.GetServiceName(), enabled);
+		}
+
+		public virtual string GetCurrentPackageVersion()
+		{
+			return PackageUtils.instance.GetCurrentVersion(this.GetPackageName());
+		}
+
+		public virtual string GetLatestPackageVersion()
+		{
+			return PackageUtils.instance.GetLatestVersion(this.GetPackageName());
+		}
+
+		public virtual void UpdateLatestPackage()
+		{
+			PackageUtils.instance.UpdateLatest(this.GetPackageName());
 		}
 
 		public virtual void OnProjectUnbound()

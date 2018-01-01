@@ -4,6 +4,7 @@ using UnityEditor.AnimatedValues;
 using UnityEditor.IMGUI.Controls;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.Audio;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 
@@ -22,8 +23,6 @@ namespace UnityEditor
 			public GUIStyle tab = "ObjectPickerTab";
 
 			public GUIStyle bottomResize = "WindowBottomResize";
-
-			public GUIStyle background = "ObjectPickerBackground";
 
 			public GUIStyle previewBackground = "PopupCurveSwatchBackground";
 
@@ -45,6 +44,8 @@ namespace UnityEditor
 		private SavedInt m_StartGridSize = new SavedInt("ObjectSelector.GridSize", 64);
 
 		internal int objectSelectorID = 0;
+
+		private ObjectSelectorReceiver m_ObjectSelectorReceiver;
 
 		private int m_ModalUndoGroup = -1;
 
@@ -143,6 +144,18 @@ namespace UnityEditor
 			}
 		}
 
+		public ObjectSelectorReceiver objectSelectorReceiver
+		{
+			get
+			{
+				return this.m_ObjectSelectorReceiver;
+			}
+			set
+			{
+				this.m_ObjectSelectorReceiver = value;
+			}
+		}
+
 		private bool IsUsingTreeView()
 		{
 			return this.m_ObjectTreeWithSearch.IsInitialized();
@@ -178,6 +191,10 @@ namespace UnityEditor
 
 		private void OnDisable()
 		{
+			if (this.m_ObjectSelectorReceiver != null)
+			{
+				this.m_ObjectSelectorReceiver.OnSelectionClosed(ObjectSelector.GetCurrentObject());
+			}
 			this.SendEvent("ObjectSelectorClosed", false);
 			if (this.m_ListArea != null)
 			{
@@ -218,57 +235,12 @@ namespace UnityEditor
 			else
 			{
 				this.m_FocusSearchFilter = false;
+				if (this.m_ObjectSelectorReceiver != null)
+				{
+					this.m_ObjectSelectorReceiver.OnSelectionChanged(ObjectSelector.GetCurrentObject());
+				}
 				this.SendEvent("ObjectSelectorUpdated", true);
 			}
-		}
-
-		private static bool GuessIfUserIsLookingForAnAsset(string requiredClassName, bool checkGameObject)
-		{
-			string[] array = new string[]
-			{
-				"AnimationClip",
-				"AnimatorController",
-				"AnimatorOverrideController",
-				"AudioClip",
-				"Avatar",
-				"Flare",
-				"Font",
-				"Material",
-				"ProceduralMaterial",
-				"Mesh",
-				"PhysicMaterial",
-				"GUISkin",
-				"Shader",
-				"TerrainData",
-				"Texture",
-				"Cubemap",
-				"MovieTexture",
-				"RenderTexture",
-				"Texture2D",
-				"ProceduralTexture",
-				"Sprite",
-				"AudioMixerGroup",
-				"AudioMixerSnapshot",
-				"VideoClip"
-			};
-			bool result;
-			if (checkGameObject && requiredClassName == "GameObject")
-			{
-				result = true;
-			}
-			else
-			{
-				for (int i = 0; i < array.Length; i++)
-				{
-					if (array[i] == requiredClassName)
-					{
-						result = true;
-						return result;
-					}
-				}
-				result = false;
-			}
-			return result;
 		}
 
 		private Scene GetSceneFromObject(UnityEngine.Object obj)
@@ -298,7 +270,7 @@ namespace UnityEditor
 		{
 			SearchFilter searchFilter = new SearchFilter();
 			searchFilter.SearchFieldStringToFilter(this.m_SearchFilter);
-			if (!string.IsNullOrEmpty(this.m_RequiredType))
+			if (!string.IsNullOrEmpty(this.m_RequiredType) && searchFilter.classNames.Length == 0)
 			{
 				searchFilter.classNames = new string[]
 				{
@@ -320,9 +292,9 @@ namespace UnityEditor
 			this.m_ListArea.Init(this.listPosition, hierarchyType, searchFilter, true);
 		}
 
-		private static bool ShouldTreeViewBeUsed(string className)
+		private static bool ShouldTreeViewBeUsed(Type type)
 		{
-			return className == "AudioMixerGroup";
+			return type == typeof(AudioMixerGroup);
 		}
 
 		public void Show(UnityEngine.Object obj, Type requiredType, SerializedProperty property, bool allowSceneObjects)
@@ -332,17 +304,13 @@ namespace UnityEditor
 
 		internal void Show(UnityEngine.Object obj, Type requiredType, SerializedProperty property, bool allowSceneObjects, List<int> allowedInstanceIDs)
 		{
+			this.m_ObjectSelectorReceiver = null;
 			this.m_AllowSceneObjects = allowSceneObjects;
 			this.m_IsShowingAssets = true;
 			this.m_AllowedIDs = allowedInstanceIDs;
-			string text = "";
-			if (requiredType != null)
+			if (property != null)
 			{
-				text = requiredType.Name;
-			}
-			else if (property != null)
-			{
-				text = property.objectReferenceTypeString;
+				ScriptAttributeUtility.GetFieldInfoFromProperty(property, out requiredType);
 				obj = property.objectReferenceValue;
 				this.m_ObjectBeingEdited = property.serializedObject.targetObject;
 				if (this.m_ObjectBeingEdited != null && EditorUtility.IsPersistent(this.m_ObjectBeingEdited))
@@ -358,11 +326,11 @@ namespace UnityEditor
 					{
 						obj = ((Component)obj).gameObject;
 					}
-					this.m_IsShowingAssets = (EditorUtility.IsPersistent(obj) || ObjectSelector.GuessIfUserIsLookingForAnAsset(text, false));
+					this.m_IsShowingAssets = EditorUtility.IsPersistent(obj);
 				}
 				else
 				{
-					this.m_IsShowingAssets = ObjectSelector.GuessIfUserIsLookingForAnAsset(text, true);
+					this.m_IsShowingAssets = (requiredType != typeof(GameObject) && !typeof(Component).IsAssignableFrom(requiredType));
 				}
 			}
 			else
@@ -370,13 +338,13 @@ namespace UnityEditor
 				this.m_IsShowingAssets = true;
 			}
 			this.m_DelegateView = GUIView.current;
-			this.m_RequiredType = text;
+			this.m_RequiredType = ((!typeof(ScriptableObject).IsAssignableFrom(requiredType) && !typeof(MonoBehaviour).IsAssignableFrom(requiredType)) ? requiredType.Name : requiredType.FullName);
 			this.m_SearchFilter = "";
 			this.m_OriginalSelection = obj;
 			this.m_ModalUndoGroup = Undo.GetCurrentGroup();
 			ContainerWindow.SetFreezeDisplay(true);
 			base.ShowWithMode(ShowMode.AuxWindow);
-			base.titleContent = new GUIContent("Select " + text);
+			base.titleContent = new GUIContent("Select " + requiredType.Name);
 			Rect position = this.m_Parent.window.position;
 			position.width = EditorPrefs.GetFloat("ObjectSelectorWidth", 200f);
 			position.height = EditorPrefs.GetFloat("ObjectSelectorHeight", 390f);
@@ -393,7 +361,7 @@ namespace UnityEditor
 			{
 				num = 0;
 			}
-			if (ObjectSelector.ShouldTreeViewBeUsed(text))
+			if (ObjectSelector.ShouldTreeViewBeUsed(requiredType))
 			{
 				this.m_ObjectTreeWithSearch.Init(base.position, this, new UnityAction<ObjectTreeForSelector.TreeSelectorData>(this.CreateAndSetTreeView), new UnityAction<TreeViewItem>(this.TreeViewSelection), new UnityAction(this.ItemWasDoubleClicked), num, 0);
 			}
@@ -424,6 +392,10 @@ namespace UnityEditor
 
 		private void TreeViewSelection(TreeViewItem item)
 		{
+			if (this.m_ObjectSelectorReceiver != null)
+			{
+				this.m_ObjectSelectorReceiver.OnSelectionChanged(ObjectSelector.GetCurrentObject());
+			}
 			this.SendEvent("ObjectSelectorUpdated", true);
 		}
 

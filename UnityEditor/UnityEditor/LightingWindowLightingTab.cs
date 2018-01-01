@@ -169,7 +169,7 @@ namespace UnityEditor
 			if (this.m_ShowDebugSettings)
 			{
 				EditorGUI.indentLevel++;
-				this.m_ShowProbeDebugSettings = EditorGUILayout.Foldout(this.m_ShowProbeDebugSettings, LightingWindowLightingTab.Styles.LightProbeVisualization);
+				this.m_ShowProbeDebugSettings = EditorGUILayout.Foldout(this.m_ShowProbeDebugSettings, LightingWindowLightingTab.Styles.LightProbeVisualization, true);
 				if (this.m_ShowProbeDebugSettings)
 				{
 					EditorGUI.BeginChangeCheck();

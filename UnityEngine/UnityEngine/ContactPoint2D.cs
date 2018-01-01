@@ -6,27 +6,27 @@ namespace UnityEngine
 	[UsedByNativeCode]
 	public struct ContactPoint2D
 	{
-		internal Vector2 m_Point;
+		private Vector2 m_Point;
 
-		internal Vector2 m_Normal;
+		private Vector2 m_Normal;
 
-		internal Vector2 m_RelativeVelocity;
+		private Vector2 m_RelativeVelocity;
 
-		internal float m_Separation;
+		private float m_Separation;
 
-		internal float m_NormalImpulse;
+		private float m_NormalImpulse;
 
-		internal float m_TangentImpulse;
+		private float m_TangentImpulse;
 
-		internal int m_Collider;
+		private int m_Collider;
 
-		internal int m_OtherCollider;
+		private int m_OtherCollider;
 
-		internal int m_Rigidbody;
+		private int m_Rigidbody;
 
-		internal int m_OtherRigidbody;
+		private int m_OtherRigidbody;
 
-		internal int m_Enabled;
+		private int m_Enabled;
 
 		public Vector2 point
 		{

@@ -243,8 +243,6 @@ namespace UnityEditor
 
 			public GUIStyle menuItemMixed = "MenuItemMixed";
 
-			public GUIStyle label = "PR Label";
-
 			public GUIStyle background = "grey_border";
 
 			public GUIStyle customTextField;
@@ -271,25 +269,11 @@ namespace UnityEditor
 
 		private PopupList.InputData m_Data;
 
-		private const float scrollBarWidth = 14f;
-
-		private const float listElementHeight = 18f;
-
-		private const float gizmoRightAlign = 23f;
-
-		private const float iconRightAlign = 64f;
-
-		private const float frameWidth = 1f;
-
 		private const float k_LineHeight = 16f;
 
 		private const float k_TextFieldHeight = 16f;
 
 		private const float k_Margin = 10f;
-
-		private Vector2 m_ScrollPosition;
-
-		private Vector2 m_ScreenPos;
 
 		private PopupList.Gravity m_Gravity;
 

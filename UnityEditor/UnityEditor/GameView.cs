@@ -121,8 +121,6 @@ namespace UnityEditor
 
 		private int m_SizeChangeID = -2147483648;
 
-		private static GUIStyle s_ResolutionWarningStyle;
-
 		private static List<GameView> s_GameViews = new List<GameView>();
 
 		private static GameView s_LastFocusedGameView = null;

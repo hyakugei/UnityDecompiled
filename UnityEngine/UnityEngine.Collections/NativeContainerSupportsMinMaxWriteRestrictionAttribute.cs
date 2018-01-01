@@ -4,7 +4,7 @@ using UnityEngine.Scripting;
 namespace UnityEngine.Collections
 {
 	[AttributeUsage(AttributeTargets.Struct), RequiredByNativeCode]
-	internal class NativeContainerSupportsMinMaxWriteRestrictionAttribute : Attribute
+	public class NativeContainerSupportsMinMaxWriteRestrictionAttribute : Attribute
 	{
 	}
 }

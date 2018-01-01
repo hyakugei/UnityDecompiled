@@ -5,7 +5,7 @@ using UnityEditor.Modules;
 using UnityEditorInternal;
 using UnityEngine;
 
-internal abstract class DesktopStandalonePostProcessor
+internal abstract class DesktopStandalonePostProcessor : DefaultBuildPostprocessor
 {
 	internal class ScriptingImplementations : IScriptingImplementations
 	{
@@ -128,15 +128,20 @@ internal abstract class DesktopStandalonePostProcessor
 		this.CopyStagingAreaIntoDestination();
 	}
 
-	public void UpdateBootConfig(BuildTarget target, BootConfigData config, BuildOptions options)
+	public override void UpdateBootConfig(BuildTarget target, BootConfigData config, BuildOptions options)
 	{
+		base.UpdateBootConfig(target, config, options);
 		if (PlayerSettings.forceSingleInstance)
 		{
 			config.AddKey("single-instance");
 		}
-		if (PlayerSettings.scriptingRuntimeVersion == ScriptingRuntimeVersion.Latest)
+		if (EditorApplication.scriptingRuntimeVersion == ScriptingRuntimeVersion.Latest)
 		{
 			config.Set("scripting-runtime-version", "latest");
+		}
+		if (IL2CPPUtils.UseIl2CppCodegenWithMonoBackend(BuildPipeline.GetBuildTargetGroup(target)))
+		{
+			config.Set("mono-codegen", "il2cpp");
 		}
 	}
 
@@ -178,14 +183,14 @@ internal abstract class DesktopStandalonePostProcessor
 							{
 								if (platformData == "None")
 								{
-									goto IL_20A;
+									goto IL_1F8;
 								}
 							}
 							else
 							{
-								if (target != BuildTarget.StandaloneOSXIntel64 && target != BuildTarget.StandaloneOSXUniversal && target != BuildTarget.StandaloneWindows64 && target != BuildTarget.StandaloneLinux64 && target != BuildTarget.StandaloneLinuxUniversal)
+								if (target != BuildTarget.StandaloneOSX && target != BuildTarget.StandaloneWindows64 && target != BuildTarget.StandaloneLinux64 && target != BuildTarget.StandaloneLinuxUniversal)
 								{
-									goto IL_20A;
+									goto IL_1F8;
 								}
 								if (!flag3)
 								{
@@ -196,9 +201,9 @@ internal abstract class DesktopStandalonePostProcessor
 						}
 						else
 						{
-							if (target == BuildTarget.StandaloneOSXIntel64 || target == BuildTarget.StandaloneWindows64 || target == BuildTarget.StandaloneLinux64)
+							if (target == BuildTarget.StandaloneWindows64 || target == BuildTarget.StandaloneLinux64)
 							{
-								goto IL_20A;
+								goto IL_1F8;
 							}
 							if (!flag2)
 							{
@@ -222,7 +227,7 @@ internal abstract class DesktopStandalonePostProcessor
 					}
 				}
 			}
-			IL_20A:;
+			IL_1F8:;
 		}
 		foreach (PluginDesc current in PluginImporter.GetExtensionPlugins(this.m_PostProcessArgs.target))
 		{
@@ -270,6 +275,10 @@ internal abstract class DesktopStandalonePostProcessor
 			FileUtil.CreateOrCleanDirectory(text4);
 			IL2CPPUtils.CopyMetadataFiles(text, text4);
 			IL2CPPUtils.CopySymmapFile(text + "/Native/Data", text2);
+			if (IL2CPPUtils.UseIl2CppCodegenWithMonoBackend(BuildPipeline.GetBuildTargetGroup(this.m_PostProcessArgs.target)))
+			{
+				DesktopStandalonePostProcessor.StripAssembliesToLeaveOnlyMetadata(this.m_PostProcessArgs.target, text2);
+			}
 		}
 		if (this.InstallingIntoBuildsFolder)
 		{
@@ -287,6 +296,14 @@ internal abstract class DesktopStandalonePostProcessor
 		}
 	}
 
+	private static void StripAssembliesToLeaveOnlyMetadata(BuildTarget target, string stagingAreaDataManaged)
+	{
+		AssemblyReferenceChecker assemblyReferenceChecker = new AssemblyReferenceChecker();
+		assemblyReferenceChecker.CollectReferences(stagingAreaDataManaged, true, 0f, false);
+		EditorUtility.DisplayProgressBar("Removing bytecode from assemblies", "Stripping assemblies so that only metadata remains", 0.95f);
+		MonoAssemblyStripping.MonoCilStrip(target, stagingAreaDataManaged, assemblyReferenceChecker.GetAssemblyFileNames());
+	}
+
 	protected void CreateApplicationData()
 	{
 		File.WriteAllText(Path.Combine(this.DataFolder, "app.info"), string.Join("\n", new string[]
@@ -298,7 +315,11 @@ internal abstract class DesktopStandalonePostProcessor
 
 	protected virtual bool CopyFilter(string path)
 	{
-		bool flag = !path.Contains("UnityEngine.mdb");
+		bool flag = true;
+		if (Path.GetExtension(path) == ".mdb" && Path.GetFileName(path).StartsWith("UnityEngine."))
+		{
+			flag = false;
+		}
 		return flag & !path.Contains("UnityEngine.xml");
 	}
 
@@ -327,6 +348,19 @@ internal abstract class DesktopStandalonePostProcessor
 	}
 
 	protected abstract void DeleteDestination();
+
+	protected void DeleteUnusedMono(string dataFolder)
+	{
+		bool flag = IL2CPPUtils.UseIl2CppCodegenWithMonoBackend(BuildTargetGroup.Standalone);
+		if (flag || EditorApplication.scriptingRuntimeVersion == ScriptingRuntimeVersion.Latest)
+		{
+			FileUtil.DeleteFileOrDirectory(Path.Combine(dataFolder, "Mono"));
+		}
+		if (flag || EditorApplication.scriptingRuntimeVersion == ScriptingRuntimeVersion.Legacy)
+		{
+			FileUtil.DeleteFileOrDirectory(Path.Combine(dataFolder, "MonoBleedingEdge"));
+		}
+	}
 
 	protected abstract void CopyDataForBuildsFolder();
 

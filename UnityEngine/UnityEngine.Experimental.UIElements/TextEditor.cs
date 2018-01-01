@@ -2,8 +2,10 @@ using System;
 
 namespace UnityEngine.Experimental.UIElements
 {
-	public class TextEditor : UnityEngine.TextEditor, IManipulator, IEventHandler
+	public class TextEditor : UnityEngine.TextEditor, IManipulator
 	{
+		private VisualElement m_Target;
+
 		public int maxLength
 		{
 			get;
@@ -44,51 +46,50 @@ namespace UnityEngine.Experimental.UIElements
 
 		public VisualElement target
 		{
-			get;
-			set;
-		}
-
-		public EventPhase phaseInterest
-		{
-			get;
-			set;
-		}
-
-		public IPanel panel
-		{
 			get
 			{
-				IPanel result;
+				return this.m_Target;
+			}
+			set
+			{
 				if (this.target != null)
 				{
-					result = this.target.panel;
+					this.UnregisterCallbacksFromTarget();
 				}
-				else
+				this.m_Target = value;
+				if (this.target != null)
 				{
-					result = null;
+					this.RegisterCallbacksOnTarget();
 				}
-				return result;
 			}
 		}
 
 		protected TextEditor(TextField textField)
 		{
-			this.phaseInterest = EventPhase.BubbleUp;
 			this.textField = textField;
 			this.SyncTextEditor();
 		}
 
-		public virtual EventPropagation HandleEvent(Event evt, VisualElement finalTarget)
+		protected virtual void RegisterCallbacksOnTarget()
 		{
-			return EventPropagation.Continue;
+			this.target.RegisterCallback<FocusEvent>(new EventCallback<FocusEvent>(this.OnFocus), Capture.NoCapture);
+			this.target.RegisterCallback<BlurEvent>(new EventCallback<BlurEvent>(this.OnBlur), Capture.NoCapture);
 		}
 
-		public virtual void OnLostCapture()
+		protected virtual void UnregisterCallbacksFromTarget()
 		{
+			this.target.UnregisterCallback<FocusEvent>(new EventCallback<FocusEvent>(this.OnFocus), Capture.NoCapture);
+			this.target.UnregisterCallback<BlurEvent>(new EventCallback<BlurEvent>(this.OnBlur), Capture.NoCapture);
 		}
 
-		public virtual void OnLostKeyboardFocus()
+		private void OnFocus(FocusEvent evt)
 		{
+			base.OnFocus();
+		}
+
+		private void OnBlur(BlurEvent evt)
+		{
+			base.OnLostFocus();
 		}
 
 		protected void SyncTextEditor()
@@ -100,8 +101,7 @@ namespace UnityEngine.Experimental.UIElements
 			}
 			base.text = text;
 			base.SaveBackup();
-			this.style = this.textField.style;
-			base.position = this.textField.position;
+			base.position = this.textField.layout;
 			this.maxLength = this.textField.maxLength;
 			this.multiline = this.textField.multiline;
 			this.isPasswordField = this.textField.isPasswordField;

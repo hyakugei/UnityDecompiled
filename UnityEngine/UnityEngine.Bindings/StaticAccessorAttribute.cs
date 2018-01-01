@@ -11,7 +11,7 @@ namespace UnityEngine.Bindings
 			set;
 		}
 
-		public bool Pointer
+		public StaticAccessorType Type
 		{
 			get;
 			set;
@@ -26,15 +26,15 @@ namespace UnityEngine.Bindings
 			this.Name = name;
 		}
 
-		public StaticAccessorAttribute(bool pointer)
+		public StaticAccessorAttribute(StaticAccessorType type)
 		{
-			this.Pointer = pointer;
+			this.Type = type;
 		}
 
-		public StaticAccessorAttribute(string name, bool pointer)
+		public StaticAccessorAttribute(string name, StaticAccessorType type)
 		{
 			this.Name = name;
-			this.Pointer = pointer;
+			this.Type = type;
 		}
 	}
 }

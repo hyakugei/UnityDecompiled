@@ -17,5 +17,15 @@ namespace UnityEngineInternal.Input
 
 		[FieldOffset(28)]
 		public double scaledValue;
+
+		public static NativeGenericEvent Value(int deviceId, double time, int controlIndex, int rawValue, double scaledValue)
+		{
+			NativeGenericEvent result;
+			result.baseEvent = new NativeInputEvent(NativeInputEventType.Generic, 36, deviceId, time);
+			result.controlIndex = controlIndex;
+			result.rawValue = rawValue;
+			result.scaledValue = scaledValue;
+			return result;
+		}
 	}
 }

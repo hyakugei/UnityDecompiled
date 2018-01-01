@@ -73,7 +73,7 @@ namespace UnityEditor
 		{
 			if (Event.current != null)
 			{
-				this.DropDown(new Rect(Event.current.mousePosition.x, Event.current.mousePosition.y, 0f, 0f));
+				this.DropDown(new Rect(Event.current.mousePosition, Vector2.zero));
 			}
 		}
 
@@ -99,14 +99,7 @@ namespace UnityEditor
 
 		internal void Popup(Rect position, int selectedIndex)
 		{
-			if (Application.platform == RuntimePlatform.WindowsEditor)
-			{
-				this.DropDown(position);
-			}
-			else
-			{
-				this.DropDown(position);
-			}
+			this.DropDown(position);
 		}
 
 		private void CatchMenu(object userData, string[] options, int selected)

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
@@ -63,20 +64,28 @@ namespace UnityEditorInternal
 			}
 		}
 
-		private void OnPropertyContextMenu(GenericMenu menu, MaterialProperty property, Renderer targetObject)
+		private void OnPropertyContextMenu(GenericMenu menu, MaterialProperty property, Renderer[] renderers)
 		{
 			if (this.m_Responder != null)
 			{
 				if (property.targets != null && property.targets.Length != 0)
 				{
-					PropertyModification[] modifications = MaterialAnimationUtility.MaterialPropertyToPropertyModifications(property, targetObject);
-					if (this.m_Responder.IsEditable(targetObject))
+					if (renderers != null && renderers.Length != 0)
 					{
-						this.OnPropertyContextMenu(menu, modifications);
-					}
-					else
-					{
-						this.OnDisabledPropertyContextMenu(menu);
+						List<PropertyModification> list = new List<PropertyModification>();
+						for (int i = 0; i < renderers.Length; i++)
+						{
+							Renderer target = renderers[i];
+							list.AddRange(MaterialAnimationUtility.MaterialPropertyToPropertyModifications(property, target));
+						}
+						if (this.m_Responder.IsEditable(renderers[0]))
+						{
+							this.OnPropertyContextMenu(menu, list.ToArray());
+						}
+						else
+						{
+							this.OnDisabledPropertyContextMenu(menu);
+						}
 					}
 				}
 			}

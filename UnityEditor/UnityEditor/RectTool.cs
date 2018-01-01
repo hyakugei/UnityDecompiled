@@ -199,10 +199,14 @@ namespace UnityEditor
 			TransformManipulator.EndManipulationHandling();
 			TransformManipulator.BeginManipulationHandling(false);
 			EditorGUI.BeginChangeCheck();
-			Vector3 a2 = RectTool.MoveHandlesGUI(handleRect, handlePosition, handleRectRotation);
+			Vector3 vector5 = RectTool.MoveHandlesGUI(handleRect, handlePosition, handleRectRotation);
 			if (EditorGUI.EndChangeCheck() && !isStatic)
 			{
-				Vector3 positionDelta = a2 - TransformManipulator.mouseDownHandlePosition;
+				if (GridSnapping.active)
+				{
+					vector5 = GridSnapping.Snap(vector5);
+				}
+				Vector3 positionDelta = vector5 - TransformManipulator.mouseDownHandlePosition;
 				TransformManipulator.SetPositionDelta(positionDelta);
 			}
 			TransformManipulator.EndManipulationHandling();

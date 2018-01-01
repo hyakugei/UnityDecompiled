@@ -79,10 +79,10 @@ namespace UnityEditor.Collaboration
 		private static CollabSettingsManager.SettingStatusChanged <>f__mg$cache2;
 
 		[CompilerGenerated]
-		private static CollabSettingsManager.SettingStatusChanged <>f__mg$cache3;
+		private static UnityEditor.Connect.StateChangedDelegate <>f__mg$cache3;
 
 		[CompilerGenerated]
-		private static UnityEditor.Connect.StateChangedDelegate <>f__mg$cache4;
+		private static CollabSettingsManager.SettingStatusChanged <>f__mg$cache4;
 
 		[CompilerGenerated]
 		private static CollabSettingsManager.SettingStatusChanged <>f__mg$cache5;
@@ -92,9 +92,6 @@ namespace UnityEditor.Collaboration
 
 		[CompilerGenerated]
 		private static CollabSettingsManager.SettingStatusChanged <>f__mg$cache7;
-
-		[CompilerGenerated]
-		private static CollabSettingsManager.SettingStatusChanged <>f__mg$cache8;
 
 		public event StateChangedDelegate StateChanged
 		{
@@ -172,23 +169,26 @@ namespace UnityEditor.Collaboration
 				Collab.<>f__mg$cache1 = new AssetsTreeViewGUI.OnAssetIconDrawDelegate(CollabProjectHook.OnProjectBrowserNavPanelIconOverlay);
 			}
 			AssetsTreeViewGUI.postAssetIconDrawCallback += Collab.<>f__mg$cache1;
-			if (!Collab.InitializeSoftlocksViewController())
+			Collab.InitializeSoftlocksViewController();
+			Dictionary<CollabSettingType, CollabSettingsManager.SettingStatusChanged> statusNotifier;
+			Dictionary<CollabSettingType, CollabSettingsManager.SettingStatusChanged> expr_B7 = statusNotifier = CollabSettingsManager.statusNotifier;
+			CollabSettingType arg_E8_1 = CollabSettingType.InProgressEnabled;
+			Delegate arg_DE_0 = statusNotifier[CollabSettingType.InProgressEnabled];
+			if (Collab.<>f__mg$cache2 == null)
 			{
-				Dictionary<CollabSettingType, CollabSettingsManager.SettingStatusChanged> statusNotifier;
-				Dictionary<CollabSettingType, CollabSettingsManager.SettingStatusChanged> expr_BC = statusNotifier = CollabSettingsManager.statusNotifier;
-				CollabSettingType arg_ED_1 = CollabSettingType.InProgressEnabled;
-				Delegate arg_E3_0 = statusNotifier[CollabSettingType.InProgressEnabled];
-				if (Collab.<>f__mg$cache2 == null)
-				{
-					Collab.<>f__mg$cache2 = new CollabSettingsManager.SettingStatusChanged(Collab.OnSettingStatusChanged);
-				}
-				expr_BC[arg_ED_1] = (CollabSettingsManager.SettingStatusChanged)Delegate.Combine(arg_E3_0, Collab.<>f__mg$cache2);
+				Collab.<>f__mg$cache2 = new CollabSettingsManager.SettingStatusChanged(Collab.OnSettingStatusChanged);
 			}
+			expr_B7[arg_E8_1] = (CollabSettingsManager.SettingStatusChanged)Delegate.Combine(arg_DE_0, Collab.<>f__mg$cache2);
+			(statusNotifier = CollabSettingsManager.statusNotifier)[CollabSettingType.InProgressEnabled] = (CollabSettingsManager.SettingStatusChanged)Delegate.Combine(statusNotifier[CollabSettingType.InProgressEnabled], new CollabSettingsManager.SettingStatusChanged(SoftlockViewController.Instance.softLockFilters.OnSettingStatusChanged));
 		}
 
 		[GeneratedByOldBindingsGenerator, ThreadAndSerializationSafe]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern string GetProjectPath();
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public extern string GetProjectGUID();
 
 		[GeneratedByOldBindingsGenerator, ThreadAndSerializationSafe]
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -215,14 +215,28 @@ namespace UnityEditor.Collaboration
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern ProgressInfo GetJobProgressByType(int jobType);
 
+		[ExcludeFromDocs]
 		public void CancelJob(int jobId)
 		{
-			this.CancelJobByType(jobId);
+			bool forceCancel = false;
+			this.CancelJob(jobId, forceCancel);
+		}
+
+		public void CancelJob(int jobId, [DefaultValue("false")] bool forceCancel)
+		{
+			this.CancelJobByType(jobId, forceCancel);
 		}
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern void CancelJobByType(int jobType);
+		public extern void CancelJobByType(int jobType, [DefaultValue("false")] bool forceCancel);
+
+		[ExcludeFromDocs]
+		public void CancelJobByType(int jobType)
+		{
+			bool forceCancel = false;
+			this.CancelJobByType(jobType, forceCancel);
+		}
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -235,6 +249,10 @@ namespace UnityEditor.Collaboration
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern void DoInitialCommit();
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public extern void SetSeat(bool value);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -423,6 +441,14 @@ namespace UnityEditor.Collaboration
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern void NewGUIDForTests();
 
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public extern void TestPostSoftLockAsCollaborator(string projectGuid, string projectPath, string machineGuid, string assetGuid);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public extern void TestClearSoftLockAsCollaborator(string projectGuid, string projectPath, string machineGuid, string softLockHash);
+
 		public static string GetProjectClientType()
 		{
 			string configValue = EditorUserSettings.GetConfigValue(Collab.editorPrefCollabClientType);
@@ -458,19 +484,7 @@ namespace UnityEditor.Collaboration
 
 		public static void OnSettingStatusChanged(CollabSettingType type, CollabSettingStatus status)
 		{
-			if (Collab.InitializeSoftlocksViewController())
-			{
-				Dictionary<CollabSettingType, CollabSettingsManager.SettingStatusChanged> statusNotifier;
-				Dictionary<CollabSettingType, CollabSettingsManager.SettingStatusChanged> expr_11 = statusNotifier = CollabSettingsManager.statusNotifier;
-				CollabSettingType arg_42_1 = CollabSettingType.InProgressEnabled;
-				Delegate arg_38_0 = statusNotifier[CollabSettingType.InProgressEnabled];
-				if (Collab.<>f__mg$cache3 == null)
-				{
-					Collab.<>f__mg$cache3 = new CollabSettingsManager.SettingStatusChanged(Collab.OnSettingStatusChanged);
-				}
-				expr_11[arg_42_1] = (CollabSettingsManager.SettingStatusChanged)Delegate.Remove(arg_38_0, Collab.<>f__mg$cache3);
-				(statusNotifier = CollabSettingsManager.statusNotifier)[CollabSettingType.InProgressEnabled] = (CollabSettingsManager.SettingStatusChanged)Delegate.Combine(statusNotifier[CollabSettingType.InProgressEnabled], new CollabSettingsManager.SettingStatusChanged(SoftlockViewController.Instance.softLockFilters.OnSettingStatusChanged));
-			}
+			Collab.InitializeSoftlocksViewController();
 		}
 
 		public static bool InitializeSoftlocksViewController()
@@ -581,11 +595,11 @@ namespace UnityEditor.Collaboration
 			{
 				Collab.s_IsFirstStateChange = false;
 				UnityConnect arg_34_0 = UnityConnect.instance;
-				if (Collab.<>f__mg$cache4 == null)
+				if (Collab.<>f__mg$cache3 == null)
 				{
-					Collab.<>f__mg$cache4 = new UnityEditor.Connect.StateChangedDelegate(Collab.OnUnityConnectStateChanged);
+					Collab.<>f__mg$cache3 = new UnityEditor.Connect.StateChangedDelegate(Collab.OnUnityConnectStateChanged);
 				}
-				arg_34_0.StateChanged += Collab.<>f__mg$cache4;
+				arg_34_0.StateChanged += Collab.<>f__mg$cache3;
 			}
 			StateChangedDelegate stateChanged = Collab.instance.StateChanged;
 			if (stateChanged != null)
@@ -628,11 +642,11 @@ namespace UnityEditor.Collaboration
 				Dictionary<CollabSettingType, CollabSettingsManager.SettingStatusChanged> expr_2F = statusNotifier = CollabSettingsManager.statusNotifier;
 				CollabSettingType arg_60_1 = CollabSettingType.InProgressEnabled;
 				Delegate arg_56_0 = statusNotifier[CollabSettingType.InProgressEnabled];
-				if (Collab.<>f__mg$cache5 == null)
+				if (Collab.<>f__mg$cache4 == null)
 				{
-					Collab.<>f__mg$cache5 = new CollabSettingsManager.SettingStatusChanged(Collab.OnProgressEnabledSettingStatusChanged);
+					Collab.<>f__mg$cache4 = new CollabSettingsManager.SettingStatusChanged(Collab.OnProgressEnabledSettingStatusChanged);
 				}
-				expr_2F[arg_60_1] = (CollabSettingsManager.SettingStatusChanged)Delegate.Remove(arg_56_0, Collab.<>f__mg$cache5);
+				expr_2F[arg_60_1] = (CollabSettingsManager.SettingStatusChanged)Delegate.Remove(arg_56_0, Collab.<>f__mg$cache4);
 			}
 		}
 
@@ -656,19 +670,19 @@ namespace UnityEditor.Collaboration
 					Dictionary<CollabSettingType, CollabSettingsManager.SettingStatusChanged> expr_69 = statusNotifier = CollabSettingsManager.statusNotifier;
 					CollabSettingType arg_9A_1 = CollabSettingType.InProgressEnabled;
 					Delegate arg_90_0 = statusNotifier[CollabSettingType.InProgressEnabled];
+					if (Collab.<>f__mg$cache5 == null)
+					{
+						Collab.<>f__mg$cache5 = new CollabSettingsManager.SettingStatusChanged(Collab.OnProgressEnabledSettingStatusChanged);
+					}
+					expr_69[arg_9A_1] = (CollabSettingsManager.SettingStatusChanged)Delegate.Remove(arg_90_0, Collab.<>f__mg$cache5);
+					Dictionary<CollabSettingType, CollabSettingsManager.SettingStatusChanged> expr_A4 = statusNotifier = CollabSettingsManager.statusNotifier;
+					CollabSettingType arg_D5_1 = CollabSettingType.InProgressEnabled;
+					Delegate arg_CB_0 = statusNotifier[CollabSettingType.InProgressEnabled];
 					if (Collab.<>f__mg$cache6 == null)
 					{
 						Collab.<>f__mg$cache6 = new CollabSettingsManager.SettingStatusChanged(Collab.OnProgressEnabledSettingStatusChanged);
 					}
-					expr_69[arg_9A_1] = (CollabSettingsManager.SettingStatusChanged)Delegate.Remove(arg_90_0, Collab.<>f__mg$cache6);
-					Dictionary<CollabSettingType, CollabSettingsManager.SettingStatusChanged> expr_A4 = statusNotifier = CollabSettingsManager.statusNotifier;
-					CollabSettingType arg_D5_1 = CollabSettingType.InProgressEnabled;
-					Delegate arg_CB_0 = statusNotifier[CollabSettingType.InProgressEnabled];
-					if (Collab.<>f__mg$cache7 == null)
-					{
-						Collab.<>f__mg$cache7 = new CollabSettingsManager.SettingStatusChanged(Collab.OnProgressEnabledSettingStatusChanged);
-					}
-					expr_A4[arg_D5_1] = (CollabSettingsManager.SettingStatusChanged)Delegate.Combine(arg_CB_0, Collab.<>f__mg$cache7);
+					expr_A4[arg_D5_1] = (CollabSettingsManager.SettingStatusChanged)Delegate.Combine(arg_CB_0, Collab.<>f__mg$cache6);
 				}
 			}
 			else
@@ -680,11 +694,11 @@ namespace UnityEditor.Collaboration
 				Dictionary<CollabSettingType, CollabSettingsManager.SettingStatusChanged> expr_124 = statusNotifier = CollabSettingsManager.statusNotifier;
 				CollabSettingType arg_155_1 = CollabSettingType.InProgressEnabled;
 				Delegate arg_14B_0 = statusNotifier[CollabSettingType.InProgressEnabled];
-				if (Collab.<>f__mg$cache8 == null)
+				if (Collab.<>f__mg$cache7 == null)
 				{
-					Collab.<>f__mg$cache8 = new CollabSettingsManager.SettingStatusChanged(Collab.OnProgressEnabledSettingStatusChanged);
+					Collab.<>f__mg$cache7 = new CollabSettingsManager.SettingStatusChanged(Collab.OnProgressEnabledSettingStatusChanged);
 				}
-				expr_124[arg_155_1] = (CollabSettingsManager.SettingStatusChanged)Delegate.Remove(arg_14B_0, Collab.<>f__mg$cache8);
+				expr_124[arg_155_1] = (CollabSettingsManager.SettingStatusChanged)Delegate.Remove(arg_14B_0, Collab.<>f__mg$cache7);
 				if (ProjectBrowser.s_LastInteractedProjectBrowser != null)
 				{
 					if (ProjectBrowser.s_LastInteractedProjectBrowser.Initialized() && ProjectBrowser.s_LastInteractedProjectBrowser.IsTwoColumns())

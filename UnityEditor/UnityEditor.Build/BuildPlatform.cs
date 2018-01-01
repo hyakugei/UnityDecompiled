@@ -37,6 +37,7 @@ namespace UnityEditor.Build
 				case BuildTargetGroup.WP8:
 				case BuildTargetGroup.BlackBerry:
 				case BuildTargetGroup.PSM:
+				case BuildTargetGroup.SamsungTV:
 					IL_4D:
 					switch (buildTargetGroup)
 					{
@@ -83,11 +84,6 @@ namespace UnityEditor.Build
 				case BuildTargetGroup.XboxOne:
 				{
 					BuildTarget result = BuildTarget.XboxOne;
-					return result;
-				}
-				case BuildTargetGroup.SamsungTV:
-				{
-					BuildTarget result = BuildTarget.SamsungTV;
 					return result;
 				}
 				case BuildTargetGroup.N3DS:

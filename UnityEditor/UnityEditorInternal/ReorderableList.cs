@@ -52,8 +52,6 @@ namespace UnityEditorInternal
 
 			public GUIStyle elementBackground = new GUIStyle("RL Element");
 
-			private const int buttonWidth = 25;
-
 			public const int padding = 6;
 
 			public const int dragHandleWidth = 20;

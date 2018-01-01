@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace UnityEditor
 {
@@ -23,29 +24,31 @@ namespace UnityEditor
 
 		internal class Texts
 		{
-			public GUIContent previewSpeed = new GUIContent("Playback Speed");
+			public GUIContent previewSpeed = EditorGUIUtility.TextContent("Playback Speed");
 
-			public GUIContent previewTime = new GUIContent("Playback Time");
+			public GUIContent previewTime = EditorGUIUtility.TextContent("Playback Time");
 
-			public GUIContent particleCount = new GUIContent("Particles");
+			public GUIContent particleCount = EditorGUIUtility.TextContent("Particles");
 
-			public GUIContent subEmitterParticleCount = new GUIContent("Sub Emitter Particles");
+			public GUIContent subEmitterParticleCount = EditorGUIUtility.TextContent("Sub Emitter Particles");
 
-			public GUIContent particleSpeeds = new GUIContent("Speed Range");
+			public GUIContent particleSpeeds = EditorGUIUtility.TextContent("Speed Range");
 
-			public GUIContent play = new GUIContent("Simulate");
+			public GUIContent play = EditorGUIUtility.TextContent("Play");
 
-			public GUIContent stop = new GUIContent("Stop");
+			public GUIContent stop = EditorGUIUtility.TextContent("Stop");
 
-			public GUIContent pause = new GUIContent("Pause");
+			public GUIContent pause = EditorGUIUtility.TextContent("Pause");
 
-			public GUIContent addParticleSystem = new GUIContent("", "Create Particle System");
+			public GUIContent restart = EditorGUIUtility.TextContent("Restart");
 
-			public GUIContent wireframe = new GUIContent("Selection", "Show particles with the selection outline/wireframe, based on the selection options in the Gizmos menu");
+			public GUIContent addParticleSystem = EditorGUIUtility.TextContent("|Create Particle System");
 
-			public GUIContent bounds = new GUIContent("Bounds", "Show world space bounding boxes");
+			public GUIContent showBounds = EditorGUIUtility.TextContent("Show Bounds|Show world space bounding boxes");
 
-			public GUIContent resimulation = new GUIContent("Resimulate", "If resimulate is enabled the particle system will show changes made to the system immediately (including changes made to the particle system transform)");
+			public GUIContent resimulation = EditorGUIUtility.TextContent("Resimulate|If resimulate is enabled, the Particle System will show changes made to the system immediately (including changes made to the Particle System Transform)");
+
+			public GUIContent previewAll = EditorGUIUtility.TextContent("Simulate All|Choose whether to preview all Particle Systems in Edit Mode, or just the selected ones.");
 
 			public string secondsFloatFieldFormatString = "f2";
 
@@ -65,8 +68,6 @@ namespace UnityEditor
 		private bool m_ShowOnlySelectedMode;
 
 		private TimeHelper m_TimeHelper = default(TimeHelper);
-
-		public static bool m_ShowWireframe = false;
 
 		public static bool m_ShowBounds = false;
 
@@ -470,10 +471,19 @@ namespace UnityEditor
 				}
 				SessionState.SetFloat("CurrentEmitterAreaScroll", this.m_EmitterAreaScrollPos.x);
 				ParticleSystemRenderer component2 = gameObject.GetComponent<ParticleSystemRenderer>();
-				Renderer arg_AF_0 = component2;
-				Material[] expr_A2 = new Material[2];
-				expr_A2[0] = AssetDatabase.GetBuiltinExtraResource<Material>("Default-Particle.mat");
-				arg_AF_0.materials = expr_A2;
+				Material material = null;
+				if (GraphicsSettings.renderPipelineAsset != null)
+				{
+					material = GraphicsSettings.renderPipelineAsset.GetDefaultParticleMaterial();
+				}
+				if (material == null)
+				{
+					material = AssetDatabase.GetBuiltinExtraResource<Material>("Default-Particle.mat");
+				}
+				Renderer arg_DF_0 = component2;
+				Material[] expr_DA = new Material[2];
+				expr_DA[0] = material;
+				arg_DF_0.materials = expr_DA;
 				Undo.RegisterCreatedObjectUndo(gameObject, "Create ParticleSystem");
 				result = gameObject;
 			}
@@ -499,7 +509,7 @@ namespace UnityEditor
 			ParticleSystem root = ParticleSystemEditorUtils.GetRoot(this.m_SelectedParticleSystems[0]);
 			if (root && root.gameObject.activeInHierarchy)
 			{
-				SceneViewOverlay.Window(ParticleSystemInspector.playBackTitle, new SceneViewOverlay.WindowFunction(this.SceneViewGUICallback), 400, SceneViewOverlay.WindowDisplayOption.OneWindowPerTitle);
+				SceneViewOverlay.Window(ParticleSystemInspector.playBackTitle, new SceneViewOverlay.WindowFunction(this.SceneViewGUICallback), 600, SceneViewOverlay.WindowDisplayOption.OneWindowPerTitle);
 			}
 			ParticleSystemUI[] emitters = this.m_Emitters;
 			for (int i = 0; i < emitters.Length; i++)
@@ -509,51 +519,54 @@ namespace UnityEditor
 			}
 		}
 
-		internal void PlayBackTimeGUI()
+		internal void PlayBackInfoGUI(bool isPlayMode)
 		{
 			EventType type = Event.current.type;
 			int hotControl = GUIUtility.hotControl;
 			string kFloatFieldFormatString = EditorGUI.kFloatFieldFormatString;
 			EditorGUIUtility.labelWidth = 110f;
-			EditorGUI.kFloatFieldFormatString = ParticleEffectUI.s_Texts.secondsFloatFieldFormatString;
-			ParticleSystemEditorUtils.editorSimulationSpeed = Mathf.Clamp(EditorGUILayout.FloatField(ParticleEffectUI.s_Texts.previewSpeed, ParticleSystemEditorUtils.editorSimulationSpeed, new GUILayoutOption[0]), 0f, 10f);
-			EditorGUI.kFloatFieldFormatString = kFloatFieldFormatString;
-			EditorGUI.BeginChangeCheck();
-			EditorGUI.kFloatFieldFormatString = ParticleEffectUI.s_Texts.secondsFloatFieldFormatString;
-			float num = EditorGUILayout.FloatField(ParticleEffectUI.s_Texts.previewTime, ParticleSystemEditorUtils.editorPlaybackTime, new GUILayoutOption[0]);
-			EditorGUI.kFloatFieldFormatString = kFloatFieldFormatString;
-			if (EditorGUI.EndChangeCheck())
+			if (!isPlayMode)
 			{
-				if (type == EventType.MouseDrag)
+				EditorGUI.kFloatFieldFormatString = ParticleEffectUI.s_Texts.secondsFloatFieldFormatString;
+				ParticleSystemEditorUtils.editorSimulationSpeed = Mathf.Clamp(EditorGUILayout.FloatField(ParticleEffectUI.s_Texts.previewSpeed, ParticleSystemEditorUtils.editorSimulationSpeed, new GUILayoutOption[0]), 0f, 10f);
+				EditorGUI.kFloatFieldFormatString = kFloatFieldFormatString;
+				EditorGUI.BeginChangeCheck();
+				EditorGUI.kFloatFieldFormatString = ParticleEffectUI.s_Texts.secondsFloatFieldFormatString;
+				float num = EditorGUILayout.FloatField(ParticleEffectUI.s_Texts.previewTime, ParticleSystemEditorUtils.editorPlaybackTime, new GUILayoutOption[0]);
+				EditorGUI.kFloatFieldFormatString = kFloatFieldFormatString;
+				if (EditorGUI.EndChangeCheck())
 				{
-					ParticleSystemEditorUtils.editorIsScrubbing = true;
-					float editorSimulationSpeed = ParticleSystemEditorUtils.editorSimulationSpeed;
-					float editorPlaybackTime = ParticleSystemEditorUtils.editorPlaybackTime;
-					float num2 = num - editorPlaybackTime;
-					num = editorPlaybackTime + num2 * (0.05f * editorSimulationSpeed);
-				}
-				num = Mathf.Max(num, 0f);
-				ParticleSystemEditorUtils.editorPlaybackTime = num;
-				foreach (ParticleSystem current in this.m_SelectedParticleSystems)
-				{
-					ParticleSystem root = ParticleSystemEditorUtils.GetRoot(current);
-					if (root.isStopped)
+					if (type == EventType.MouseDrag)
 					{
-						root.Play();
-						root.Pause();
+						ParticleSystemEditorUtils.editorIsScrubbing = true;
+						float editorSimulationSpeed = ParticleSystemEditorUtils.editorSimulationSpeed;
+						float editorPlaybackTime = ParticleSystemEditorUtils.editorPlaybackTime;
+						float num2 = num - editorPlaybackTime;
+						num = editorPlaybackTime + num2 * (0.05f * editorSimulationSpeed);
 					}
+					num = Mathf.Max(num, 0f);
+					ParticleSystemEditorUtils.editorPlaybackTime = num;
+					foreach (ParticleSystem current in this.m_SelectedParticleSystems)
+					{
+						ParticleSystem root = ParticleSystemEditorUtils.GetRoot(current);
+						if (root.isStopped)
+						{
+							root.Play();
+							root.Pause();
+						}
+					}
+					ParticleSystemEditorUtils.PerformCompleteResimulation();
 				}
-				ParticleSystemEditorUtils.PerformCompleteResimulation();
-			}
-			if (type == EventType.MouseDown && GUIUtility.hotControl != hotControl)
-			{
-				this.m_IsDraggingTimeHotControlID = GUIUtility.hotControl;
-				ParticleSystemEditorUtils.editorIsScrubbing = true;
-			}
-			if (this.m_IsDraggingTimeHotControlID != -1 && GUIUtility.hotControl != this.m_IsDraggingTimeHotControlID)
-			{
-				this.m_IsDraggingTimeHotControlID = -1;
-				ParticleSystemEditorUtils.editorIsScrubbing = false;
+				if (type == EventType.MouseDown && GUIUtility.hotControl != hotControl)
+				{
+					this.m_IsDraggingTimeHotControlID = GUIUtility.hotControl;
+					ParticleSystemEditorUtils.editorIsScrubbing = true;
+				}
+				if (this.m_IsDraggingTimeHotControlID != -1 && GUIUtility.hotControl != this.m_IsDraggingTimeHotControlID)
+				{
+					this.m_IsDraggingTimeHotControlID = -1;
+					ParticleSystemEditorUtils.editorIsScrubbing = false;
+				}
 			}
 			int num3 = 0;
 			float num4 = 0f;
@@ -586,6 +599,9 @@ namespace UnityEditor
 			{
 				EditorGUILayout.LabelField(ParticleEffectUI.s_Texts.particleSpeeds, GUIContent.Temp("0.0 - 0.0"), new GUILayoutOption[0]);
 			}
+			ParticleSystemEditorUtils.editorPreviewAll = GUILayout.Toggle(ParticleSystemEditorUtils.editorPreviewAll, ParticleEffectUI.s_Texts.previewAll, EditorStyles.toggle, new GUILayoutOption[0]);
+			ParticleSystemEditorUtils.editorResimulation = GUILayout.Toggle(ParticleSystemEditorUtils.editorResimulation, ParticleEffectUI.s_Texts.resimulation, EditorStyles.toggle, new GUILayoutOption[0]);
+			ParticleEffectUI.m_ShowBounds = GUILayout.Toggle(ParticleEffectUI.m_ShowBounds, ParticleEffectUI.texts.showBounds, EditorStyles.toggle, new GUILayoutOption[0]);
 			EditorGUIUtility.labelWidth = 0f;
 		}
 
@@ -726,7 +742,7 @@ namespace UnityEditor
 			{
 				GUILayout.BeginHorizontal(new GUILayoutOption[]
 				{
-					GUILayout.Width(200f)
+					GUILayout.Width(210f)
 				});
 				bool flag = ParticleSystemEditorUtils.editorIsPlaying && !ParticleSystemEditorUtils.editorIsPaused;
 				if (GUILayout.Button((!flag) ? ParticleEffectUI.s_Texts.play : ParticleEffectUI.s_Texts.pause, "ButtonLeft", new GUILayoutOption[0]))
@@ -740,12 +756,16 @@ namespace UnityEditor
 						this.Play();
 					}
 				}
+				if (GUILayout.Button(ParticleEffectUI.s_Texts.restart, "ButtonMid", new GUILayoutOption[0]))
+				{
+					this.Stop();
+					this.Play();
+				}
 				if (GUILayout.Button(ParticleEffectUI.s_Texts.stop, "ButtonRight", new GUILayoutOption[0]))
 				{
 					this.Stop();
 				}
 				GUILayout.EndHorizontal();
-				this.PlayBackTimeGUI();
 			}
 			else
 			{
@@ -761,6 +781,7 @@ namespace UnityEditor
 				}
 				GUILayout.EndHorizontal();
 			}
+			this.PlayBackInfoGUI(EditorApplication.isPlaying);
 			this.HandleKeyboardShortcuts();
 		}
 
@@ -778,12 +799,6 @@ namespace UnityEditor
 				}
 			}
 			GUILayout.EndVertical();
-			GUILayout.BeginHorizontal(new GUILayoutOption[0]);
-			GUILayout.FlexibleSpace();
-			ParticleSystemEditorUtils.editorResimulation = GUILayout.Toggle(ParticleSystemEditorUtils.editorResimulation, ParticleEffectUI.s_Texts.resimulation, EditorStyles.toggle, new GUILayoutOption[0]);
-			ParticleEffectUI.m_ShowWireframe = GUILayout.Toggle(ParticleEffectUI.m_ShowWireframe, ParticleEffectUI.texts.wireframe, EditorStyles.toggle, new GUILayoutOption[0]);
-			ParticleEffectUI.m_ShowBounds = GUILayout.Toggle(ParticleEffectUI.m_ShowBounds, ParticleEffectUI.texts.bounds, EditorStyles.toggle, new GUILayoutOption[0]);
-			GUILayout.EndHorizontal();
 			GUILayout.FlexibleSpace();
 			this.HandleKeyboardShortcuts();
 		}
@@ -889,12 +904,11 @@ namespace UnityEditor
 			this.m_ParticleSystemCurveEditor.OnGUI(rect);
 		}
 
-		private Rect ResizeHandling(bool verticalLayout)
+		private void ResizeHandling(bool verticalLayout)
 		{
-			Rect lastRect;
 			if (verticalLayout)
 			{
-				lastRect = GUILayoutUtility.GetLastRect();
+				Rect lastRect = GUILayoutUtility.GetLastRect();
 				lastRect.y += -5f;
 				lastRect.height = 5f;
 				float y = EditorGUI.MouseDeltaReader(lastRect, true).y;
@@ -911,7 +925,7 @@ namespace UnityEditor
 			}
 			else
 			{
-				lastRect = new Rect(this.m_EmitterAreaWidth - 5f, 0f, 5f, GUIClip.visibleRect.height);
+				Rect lastRect = new Rect(this.m_EmitterAreaWidth - 5f, 0f, 5f, GUIClip.visibleRect.height);
 				float x = EditorGUI.MouseDeltaReader(lastRect, true).x;
 				if (x != 0f)
 				{
@@ -924,7 +938,6 @@ namespace UnityEditor
 					EditorGUIUtility.AddCursorRect(lastRect, MouseCursor.SplitResizeLeftRight);
 				}
 			}
-			return lastRect;
 		}
 
 		private void ClampWindowContentSizes()
@@ -1061,35 +1074,23 @@ namespace UnityEditor
 
 		internal void RefreshShowOnlySelected()
 		{
-			if (this.IsShowOnlySelectedMode())
+			int[] instanceIDs = Selection.instanceIDs;
+			ParticleSystemUI[] emitters = this.m_Emitters;
+			for (int i = 0; i < emitters.Length; i++)
 			{
-				int[] instanceIDs = Selection.instanceIDs;
-				ParticleSystemUI[] emitters = this.m_Emitters;
-				for (int i = 0; i < emitters.Length; i++)
+				ParticleSystemUI particleSystemUI = emitters[i];
+				if (particleSystemUI.m_ParticleSystems[0] != null)
 				{
-					ParticleSystemUI particleSystemUI = emitters[i];
-					if (particleSystemUI.m_ParticleSystems[0] != null)
+					ParticleSystemRenderer component = particleSystemUI.m_ParticleSystems[0].GetComponent<ParticleSystemRenderer>();
+					if (component != null)
 					{
-						ParticleSystemRenderer component = particleSystemUI.m_ParticleSystems[0].GetComponent<ParticleSystemRenderer>();
-						if (component != null)
+						if (this.IsShowOnlySelectedMode())
 						{
 							component.editorEnabled = instanceIDs.Contains(component.gameObject.GetInstanceID());
 						}
-					}
-				}
-			}
-			else
-			{
-				ParticleSystemUI[] emitters2 = this.m_Emitters;
-				for (int j = 0; j < emitters2.Length; j++)
-				{
-					ParticleSystemUI particleSystemUI2 = emitters2[j];
-					if (particleSystemUI2.m_ParticleSystems[0] != null)
-					{
-						ParticleSystemRenderer component2 = particleSystemUI2.m_ParticleSystems[0].GetComponent<ParticleSystemRenderer>();
-						if (component2 != null)
+						else
 						{
-							component2.editorEnabled = true;
+							component.editorEnabled = true;
 						}
 					}
 				}

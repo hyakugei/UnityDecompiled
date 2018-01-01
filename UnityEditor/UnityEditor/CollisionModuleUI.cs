@@ -65,13 +65,6 @@ namespace UnityEditor
 
 			public GUIContent quality = EditorGUIUtility.TextContent("Collision Quality|Quality of world collisions. Medium and low quality are approximate and may leak particles.");
 
-			public string[] qualitySettings = new string[]
-			{
-				"High",
-				"Medium (Static Colliders)",
-				"Low (Static Colliders)"
-			};
-
 			public GUIContent voxelSize = EditorGUIUtility.TextContent("Voxel Size|Size of voxels in the collision cache. Smaller values improve accuracy, but require higher memory usage and are less efficient.");
 
 			public GUIContent collisionMessages = EditorGUIUtility.TextContent("Send Collision Messages|Send collision callback messages.");
@@ -88,6 +81,31 @@ namespace UnityEditor
 
 			public GUIContent multiplyColliderForceByParticleSize = EditorGUIUtility.TextContent("Multiply by Particle Size|Should the force be proportional to the particle size?");
 
+			public GUIContent[] collisionTypes = new GUIContent[]
+			{
+				EditorGUIUtility.TextContent("Planes"),
+				EditorGUIUtility.TextContent("World")
+			};
+
+			public GUIContent[] collisionModes = new GUIContent[]
+			{
+				EditorGUIUtility.TextContent("3D"),
+				EditorGUIUtility.TextContent("2D")
+			};
+
+			public GUIContent[] qualitySettings = new GUIContent[]
+			{
+				EditorGUIUtility.TextContent("High"),
+				EditorGUIUtility.TextContent("Medium (Static Colliders)"),
+				EditorGUIUtility.TextContent("Low (Static Colliders)")
+			};
+
+			public GUIContent[] planeVizTypes = new GUIContent[]
+			{
+				EditorGUIUtility.TextContent("Grid"),
+				EditorGUIUtility.TextContent("Solid")
+			};
+
 			public GUIContent[] toolContents = new GUIContent[]
 			{
 				EditorGUIUtility.IconContent("MoveTool", "|Move plane editing mode."),
@@ -102,12 +120,6 @@ namespace UnityEditor
 		}
 
 		private const int k_MaxNumPlanes = 6;
-
-		private string[] m_PlaneVizTypeNames = new string[]
-		{
-			"Grid",
-			"Solid"
-		};
 
 		private SerializedProperty m_Type;
 
@@ -159,7 +171,7 @@ namespace UnityEditor
 
 		private static Transform s_SelectedTransform;
 
-		private static CollisionModuleUI.Texts s_Texts = new CollisionModuleUI.Texts();
+		private static CollisionModuleUI.Texts s_Texts;
 
 		[CompilerGenerated]
 		private static Handles.CapFunction <>f__mg$cache0;
@@ -189,6 +201,10 @@ namespace UnityEditor
 		{
 			if (this.m_Type == null)
 			{
+				if (CollisionModuleUI.s_Texts == null)
+				{
+					CollisionModuleUI.s_Texts = new CollisionModuleUI.Texts();
+				}
 				this.m_Type = base.GetProperty("type");
 				List<SerializedProperty> list = new List<SerializedProperty>();
 				for (int i = 0; i < this.m_Planes.Length; i++)
@@ -250,25 +266,26 @@ namespace UnityEditor
 		private Bounds GetBounds()
 		{
 			Bounds result = default(Bounds);
+			bool flag = false;
 			ParticleSystem[] particleSystems = this.m_ParticleSystemUI.m_ParticleSystems;
 			for (int i = 0; i < particleSystems.Length; i++)
 			{
 				ParticleSystem particleSystem = particleSystems[i];
 				ParticleSystemRenderer component = particleSystem.GetComponent<ParticleSystemRenderer>();
+				if (!flag)
+				{
+					result = component.bounds;
+				}
 				result.Encapsulate(component.bounds);
+				flag = true;
 			}
 			return result;
 		}
 
 		public override void OnInspectorGUI(InitialModuleUI initial)
 		{
-			string[] options = new string[]
-			{
-				"Planes",
-				"World"
-			};
 			EditorGUI.BeginChangeCheck();
-			CollisionModuleUI.CollisionTypes collisionTypes = (CollisionModuleUI.CollisionTypes)ModuleUI.GUIPopup(CollisionModuleUI.s_Texts.collisionType, this.m_Type, options, new GUILayoutOption[0]);
+			CollisionModuleUI.CollisionTypes collisionTypes = (CollisionModuleUI.CollisionTypes)ModuleUI.GUIPopup(CollisionModuleUI.s_Texts.collisionType, this.m_Type, CollisionModuleUI.s_Texts.collisionTypes, new GUILayoutOption[0]);
 			if (EditorGUI.EndChangeCheck())
 			{
 				this.SyncVisualization();
@@ -277,7 +294,7 @@ namespace UnityEditor
 			{
 				this.DoListOfPlanesGUI();
 				EditorGUI.BeginChangeCheck();
-				CollisionModuleUI.m_PlaneVisualizationType = (CollisionModuleUI.PlaneVizType)ModuleUI.GUIPopup(CollisionModuleUI.s_Texts.visualization, (int)CollisionModuleUI.m_PlaneVisualizationType, this.m_PlaneVizTypeNames, new GUILayoutOption[0]);
+				CollisionModuleUI.m_PlaneVisualizationType = (CollisionModuleUI.PlaneVizType)ModuleUI.GUIPopup(CollisionModuleUI.s_Texts.visualization, (int)CollisionModuleUI.m_PlaneVisualizationType, CollisionModuleUI.s_Texts.planeVizTypes, new GUILayoutOption[0]);
 				if (EditorGUI.EndChangeCheck())
 				{
 					EditorPrefs.SetInt("PlaneColisionVizType", (int)CollisionModuleUI.m_PlaneVisualizationType);
@@ -289,15 +306,11 @@ namespace UnityEditor
 					CollisionModuleUI.m_ScaleGrid = Mathf.Max(0f, CollisionModuleUI.m_ScaleGrid);
 					EditorPrefs.SetFloat("ScalePlaneColision", CollisionModuleUI.m_ScaleGrid);
 				}
-				ModuleUI.GUIButtonGroup(CollisionModuleUI.s_Texts.sceneViewEditModes, CollisionModuleUI.s_Texts.toolContents, this.GetBounds(), this.m_ParticleSystemUI.m_ParticleEffectUI.m_Owner.customEditor);
+				ModuleUI.GUIButtonGroup(CollisionModuleUI.s_Texts.sceneViewEditModes, CollisionModuleUI.s_Texts.toolContents, new Func<Bounds>(this.GetBounds), this.m_ParticleSystemUI.m_ParticleEffectUI.m_Owner.customEditor);
 			}
 			else
 			{
-				ModuleUI.GUIPopup(CollisionModuleUI.s_Texts.collisionMode, this.m_CollisionMode, new string[]
-				{
-					"3D",
-					"2D"
-				}, new GUILayoutOption[0]);
+				ModuleUI.GUIPopup(CollisionModuleUI.s_Texts.collisionMode, this.m_CollisionMode, CollisionModuleUI.s_Texts.collisionModes, new GUILayoutOption[0]);
 			}
 			ModuleUI.GUIMinMaxCurve(CollisionModuleUI.s_Texts.dampen, this.m_Dampen, new GUILayoutOption[0]);
 			ModuleUI.GUIMinMaxCurve(CollisionModuleUI.s_Texts.bounce, this.m_Bounce, new GUILayoutOption[0]);
@@ -501,11 +514,6 @@ namespace UnityEditor
 			if (this.m_ScenePlanes.Count != 0)
 			{
 				Event current = Event.current;
-				EventType eventType = current.type;
-				if (current.type == EventType.Ignore && current.rawType == EventType.MouseUp)
-				{
-					eventType = current.rawType;
-				}
 				Color color = Handles.color;
 				Color color2 = new Color(1f, 1f, 1f, 0.5f);
 				for (int i = 0; i < this.m_ScenePlanes.Count; i++)
@@ -551,21 +559,24 @@ namespace UnityEditor
 							}
 							else
 							{
-								int keyboardControl = GUIUtility.keyboardControl;
 								float num = HandleUtility.GetHandleSize(position) * 0.6f;
-								Vector3 arg_1FA_0 = position;
-								Quaternion arg_1FA_1 = Quaternion.identity;
-								float arg_1FA_2 = num;
-								Vector3 arg_1FA_3 = Vector3.zero;
+								EventType eventType = current.type;
+								if (current.type == EventType.Ignore && current.rawType == EventType.MouseUp)
+								{
+									eventType = current.rawType;
+								}
+								Vector3 arg_1F3_0 = position;
+								Quaternion arg_1F3_1 = Quaternion.identity;
+								float arg_1F3_2 = num;
+								Vector3 arg_1F3_3 = Vector3.zero;
 								if (CollisionModuleUI.<>f__mg$cache0 == null)
 								{
 									CollisionModuleUI.<>f__mg$cache0 = new Handles.CapFunction(Handles.RectangleHandleCap);
 								}
-								Handles.FreeMoveHandle(arg_1FA_0, arg_1FA_1, arg_1FA_2, arg_1FA_3, CollisionModuleUI.<>f__mg$cache0);
-								if (eventType == EventType.MouseDown && current.type == EventType.Used && keyboardControl != GUIUtility.keyboardControl)
+								Handles.FreeMoveHandle(arg_1F3_0, arg_1F3_1, arg_1F3_2, arg_1F3_3, CollisionModuleUI.<>f__mg$cache0);
+								if (eventType == EventType.MouseDown && current.type == EventType.Used)
 								{
 									CollisionModuleUI.s_SelectedTransform = transform;
-									eventType = EventType.Used;
 									GUIUtility.hotControl = 0;
 								}
 							}

@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace UnityEditor
 {
@@ -13,6 +15,8 @@ namespace UnityEditor
 
 			public Type m_InspectorType;
 
+			public Type m_RenderPipelineType;
+
 			public bool m_EditorForChildClasses;
 
 			public bool m_IsFallback;
@@ -21,10 +25,6 @@ namespace UnityEditor
 		private static readonly List<CustomEditorAttributes.MonoEditorType> kSCustomEditors = new List<CustomEditorAttributes.MonoEditorType>();
 
 		private static readonly List<CustomEditorAttributes.MonoEditorType> kSCustomMultiEditors = new List<CustomEditorAttributes.MonoEditorType>();
-
-		private static readonly Dictionary<Type, Type> kCachedEditorForType = new Dictionary<Type, Type>();
-
-		private static readonly Dictionary<Type, Type> kCachedMultiEditorForType = new Dictionary<Type, Type>();
 
 		private static bool s_Initialized;
 
@@ -51,34 +51,37 @@ namespace UnityEditor
 			}
 			else
 			{
-				Dictionary<Type, Type> dictionary = (!multiEdit) ? CustomEditorAttributes.kCachedEditorForType : CustomEditorAttributes.kCachedMultiEditorForType;
-				Type inspectorType;
-				if (dictionary.TryGetValue(type, out inspectorType))
+				List<CustomEditorAttributes.MonoEditorType> source = (!multiEdit) ? CustomEditorAttributes.kSCustomEditors : CustomEditorAttributes.kSCustomMultiEditors;
+				for (int j = 0; j < 2; j++)
 				{
-					result = inspectorType;
-				}
-				else
-				{
-					List<CustomEditorAttributes.MonoEditorType> list = (!multiEdit) ? CustomEditorAttributes.kSCustomEditors : CustomEditorAttributes.kSCustomMultiEditors;
-					for (int j = 0; j < 2; j++)
+					for (Type type2 = type; type2 != null; type2 = type2.BaseType)
 					{
-						for (Type type2 = type; type2 != null; type2 = type2.BaseType)
+						Type inspected1 = type2;
+						int pass1 = j;
+						IEnumerable<CustomEditorAttributes.MonoEditorType> enumerable = from x in source
+						where CustomEditorAttributes.IsAppropriateEditor(x, inspected1, type != inspected1, pass1 == 1)
+						select x;
+						if (GraphicsSettings.renderPipelineAsset != null)
 						{
-							for (int k = 0; k < list.Count; k++)
+							Type type3 = GraphicsSettings.renderPipelineAsset.GetType();
+							foreach (CustomEditorAttributes.MonoEditorType current in enumerable)
 							{
-								if (CustomEditorAttributes.IsAppropriateEditor(list[k], type2, type != type2, j == 1))
+								if (current.m_RenderPipelineType == type3)
 								{
-									inspectorType = list[k].m_InspectorType;
-									dictionary.Add(type, inspectorType);
-									result = inspectorType;
+									result = current.m_InspectorType;
 									return result;
 								}
 							}
 						}
+						CustomEditorAttributes.MonoEditorType monoEditorType = enumerable.FirstOrDefault((CustomEditorAttributes.MonoEditorType x) => x.m_RenderPipelineType == null);
+						if (monoEditorType != null)
+						{
+							result = monoEditorType.m_InspectorType;
+							return result;
+						}
 					}
-					dictionary.Add(type, null);
-					result = null;
 				}
+				result = null;
 			}
 			return result;
 		}
@@ -119,16 +122,21 @@ namespace UnityEditor
 						monoEditorType.m_InspectorType = type;
 						monoEditorType.m_EditorForChildClasses = customEditor.m_EditorForChildClasses;
 						monoEditorType.m_IsFallback = customEditor.isFallback;
+						CustomEditorForRenderPipelineAttribute customEditorForRenderPipelineAttribute = customEditor as CustomEditorForRenderPipelineAttribute;
+						if (customEditorForRenderPipelineAttribute != null)
+						{
+							monoEditorType.m_RenderPipelineType = customEditorForRenderPipelineAttribute.renderPipelineType;
+						}
 						CustomEditorAttributes.kSCustomEditors.Add(monoEditorType);
 						if (type.GetCustomAttributes(typeof(CanEditMultipleObjects), false).Length > 0)
 						{
 							CustomEditorAttributes.kSCustomMultiEditors.Add(monoEditorType);
 						}
 					}
-					IL_14D:
+					IL_16B:
 					j++;
 					continue;
-					goto IL_14D;
+					goto IL_16B;
 				}
 			}
 		}

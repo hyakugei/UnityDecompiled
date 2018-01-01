@@ -4,7 +4,7 @@ using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
-	[RequireComponent(typeof(Camera))]
+	[Obsolete("This component is part of the legacy UI system and will be removed in a future release."), RequireComponent(typeof(Camera))]
 	public sealed class GUILayer : Behaviour
 	{
 		public GUIElement HitTest(Vector3 screenPosition)

@@ -1,9 +1,11 @@
 using System;
 using System.Runtime.CompilerServices;
 using UnityEngine;
+using UnityEngine.Bindings;
 
 namespace UnityEditor.Experimental.Animations
 {
+	[NativeType]
 	public class GameObjectRecorder : UnityEngine.Object
 	{
 		public extern GameObject root

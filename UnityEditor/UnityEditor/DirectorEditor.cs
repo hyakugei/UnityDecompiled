@@ -52,6 +52,8 @@ namespace UnityEditor
 
 		private GUIContent m_AudioContent;
 
+		private GUIContent m_VideoContent;
+
 		private GUIContent m_ScriptContent;
 
 		private Texture m_DefaultScriptContentTexture;
@@ -70,6 +72,7 @@ namespace UnityEditor
 			this.m_SceneBindings = base.serializedObject.FindProperty("m_SceneBindings");
 			this.m_AnimatorContent = new GUIContent(AssetPreview.GetMiniTypeThumbnail(typeof(Animator)));
 			this.m_AudioContent = new GUIContent(AssetPreview.GetMiniTypeThumbnail(typeof(AudioSource)));
+			this.m_VideoContent = new GUIContent(AssetPreview.GetMiniTypeThumbnail(typeof(RenderTexture)));
 			this.m_ScriptContent = new GUIContent(EditorGUIUtility.LoadIcon("ScriptableObject Icon"));
 			this.m_DefaultScriptContentTexture = this.m_ScriptContent.image;
 		}
@@ -98,16 +101,7 @@ namespace UnityEditor
 				this.m_InitialState.enumValueIndex = ((!flag) ? 0 : 1);
 			}
 			EditorGUI.EndProperty();
-			EditorGUI.BeginChangeCheck();
 			EditorGUILayout.PropertyField(this.m_WrapMode, DirectorEditor.Styles.WrapModeContent, new GUILayoutOption[0]);
-			if (EditorGUI.EndChangeCheck())
-			{
-				DirectorWrapMode enumValueIndex = (DirectorWrapMode)this.m_WrapMode.enumValueIndex;
-				foreach (PlayableDirector current in base.targets.OfType<PlayableDirector>())
-				{
-					current.extrapolationMode = enumValueIndex;
-				}
-			}
 			DirectorEditor.PropertyFieldAsFloat(this.m_InitialTime, DirectorEditor.Styles.InitialTimeContent);
 			if (Application.isPlaying)
 			{
@@ -148,13 +142,19 @@ namespace UnityEditor
 				{
 					this.m_AudioContent.text = binding.streamName;
 					this.m_AudioContent.tooltip = ((!(objectReferenceValue == null)) ? string.Empty : DirectorEditor.Styles.NoBindingsContent.text);
-					DirectorEditor.PropertyFieldAsObject(bindingProperty, this.m_AudioContent, typeof(AudioSource), false, false);
+					DirectorEditor.PropertyFieldAsObject(bindingProperty, this.m_AudioContent, typeof(AudioSource), true, false);
 				}
 				else if (binding.streamType == DataStreamType.Animation)
 				{
 					this.m_AnimatorContent.text = binding.streamName;
 					this.m_AnimatorContent.tooltip = ((!(objectReferenceValue is GameObject)) ? string.Empty : DirectorEditor.Styles.NoBindingsContent.text);
 					DirectorEditor.PropertyFieldAsObject(bindingProperty, this.m_AnimatorContent, typeof(Animator), true, true);
+				}
+				if (binding.streamType == DataStreamType.Texture)
+				{
+					this.m_VideoContent.text = binding.streamName;
+					this.m_VideoContent.tooltip = ((!(objectReferenceValue == null)) ? string.Empty : DirectorEditor.Styles.NoBindingsContent.text);
+					DirectorEditor.PropertyFieldAsObject(bindingProperty, this.m_VideoContent, typeof(RenderTexture), false, false);
 				}
 				else if (binding.streamType == DataStreamType.None)
 				{
@@ -208,19 +208,25 @@ namespace UnityEditor
 						}
 					}
 					base.serializedObject.Update();
-					PlayableBinding[] synchedPlayableBindings2 = this.m_SynchedPlayableBindings;
-					for (int j = 0; j < synchedPlayableBindings2.Length; j++)
+					SerializedProperty[] array = new SerializedProperty[this.m_SceneBindings.arraySize];
+					for (int j = 0; j < this.m_SceneBindings.arraySize; j++)
 					{
-						PlayableBinding binding = synchedPlayableBindings2[j];
-						for (int k = 0; k < this.m_SceneBindings.arraySize; k++)
+						array[j] = this.m_SceneBindings.GetArrayElementAtIndex(j);
+					}
+					PlayableBinding[] synchedPlayableBindings2 = this.m_SynchedPlayableBindings;
+					for (int k = 0; k < synchedPlayableBindings2.Length; k++)
+					{
+						PlayableBinding binding = synchedPlayableBindings2[k];
+						SerializedProperty[] array2 = array;
+						for (int l = 0; l < array2.Length; l++)
 						{
-							SerializedProperty arrayElementAtIndex = this.m_SceneBindings.GetArrayElementAtIndex(k);
-							if (arrayElementAtIndex.FindPropertyRelative("key").objectReferenceValue == binding.sourceObject)
+							SerializedProperty serializedProperty = array2[l];
+							if (serializedProperty.FindPropertyRelative("key").objectReferenceValue == binding.sourceObject)
 							{
 								this.m_BindingPropertiesCache.Add(new DirectorEditor.BindingPropertyPair
 								{
 									binding = binding,
-									property = arrayElementAtIndex.FindPropertyRelative("value")
+									property = serializedProperty.FindPropertyRelative("value")
 								});
 								break;
 							}

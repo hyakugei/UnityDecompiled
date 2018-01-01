@@ -24,7 +24,7 @@ namespace UnityEditorInternal
 
 		internal static Vector3 Do(int id, Vector3 position, Vector3 direction, float size, Handles.CapFunction capFunction, float snap)
 		{
-			return Slider1D.Do(id, position, direction, direction, size, capFunction, snap);
+			return Slider1D.Do(id, position, Vector3.zero, direction, direction, size, capFunction, snap);
 		}
 
 		[Obsolete("DrawCapFunction is obsolete. Use the version with CapFunction instead. Example: Change SphereCap to SphereHandleCap.")]
@@ -34,9 +34,8 @@ namespace UnityEditorInternal
 			switch (current.GetTypeForControl(id))
 			{
 			case EventType.MouseDown:
-				if (((HandleUtility.nearestControl == id && current.button == 0) || (GUIUtility.keyboardControl == id && current.button == 2)) && GUIUtility.hotControl == 0)
+				if (HandleUtility.nearestControl == id && current.button == 0 && GUIUtility.hotControl == 0)
 				{
-					GUIUtility.keyboardControl = id;
 					GUIUtility.hotControl = id;
 					Slider1D.s_CurrentMousePosition = (Slider1D.s_StartMousePosition = current.mousePosition);
 					Slider1D.s_StartPosition = position;
@@ -50,6 +49,12 @@ namespace UnityEditorInternal
 					GUIUtility.hotControl = 0;
 					current.Use();
 					EditorGUIUtility.SetWantsMouseJumping(0);
+				}
+				break;
+			case EventType.MouseMove:
+				if (id == HandleUtility.nearestControl)
+				{
+					HandleUtility.Repaint();
 				}
 				break;
 			case EventType.MouseDrag:
@@ -68,13 +73,18 @@ namespace UnityEditorInternal
 			case EventType.Repaint:
 			{
 				Color color = Color.white;
-				if (id == GUIUtility.keyboardControl && GUI.enabled)
+				if (id == GUIUtility.hotControl)
 				{
 					color = Handles.color;
 					Handles.color = Handles.selectedColor;
 				}
+				else if (id == HandleUtility.nearestControl && GUIUtility.hotControl == 0)
+				{
+					color = Handles.color;
+					Handles.color = Handles.preselectionColor;
+				}
 				drawFunc(id, position, Quaternion.LookRotation(handleDirection), size);
-				if (id == GUIUtility.keyboardControl)
+				if (id == GUIUtility.hotControl || (id == HandleUtility.nearestControl && GUIUtility.hotControl == 0))
 				{
 					Handles.color = color;
 				}
@@ -99,15 +109,14 @@ namespace UnityEditorInternal
 			return position;
 		}
 
-		internal static Vector3 Do(int id, Vector3 position, Vector3 handleDirection, Vector3 slideDirection, float size, Handles.CapFunction capFunction, float snap)
+		internal static Vector3 Do(int id, Vector3 position, Vector3 offset, Vector3 handleDirection, Vector3 slideDirection, float size, Handles.CapFunction capFunction, float snap)
 		{
 			Event current = Event.current;
 			switch (current.GetTypeForControl(id))
 			{
 			case EventType.MouseDown:
-				if (((HandleUtility.nearestControl == id && current.button == 0) || (GUIUtility.keyboardControl == id && current.button == 2)) && GUIUtility.hotControl == 0)
+				if (HandleUtility.nearestControl == id && current.button == 0 && GUIUtility.hotControl == 0)
 				{
-					GUIUtility.keyboardControl = id;
 					GUIUtility.hotControl = id;
 					Slider1D.s_CurrentMousePosition = (Slider1D.s_StartMousePosition = current.mousePosition);
 					Slider1D.s_StartPosition = position;
@@ -121,6 +130,12 @@ namespace UnityEditorInternal
 					GUIUtility.hotControl = 0;
 					current.Use();
 					EditorGUIUtility.SetWantsMouseJumping(0);
+				}
+				break;
+			case EventType.MouseMove:
+				if (id == HandleUtility.nearestControl)
+				{
+					HandleUtility.Repaint();
 				}
 				break;
 			case EventType.MouseDrag:
@@ -139,13 +154,18 @@ namespace UnityEditorInternal
 			case EventType.Repaint:
 			{
 				Color color = Color.white;
-				if (id == GUIUtility.keyboardControl && GUI.enabled)
+				if (id == GUIUtility.hotControl)
 				{
 					color = Handles.color;
 					Handles.color = Handles.selectedColor;
 				}
-				capFunction(id, position, Quaternion.LookRotation(handleDirection), size, EventType.Repaint);
-				if (id == GUIUtility.keyboardControl)
+				else if (id == HandleUtility.nearestControl && GUIUtility.hotControl == 0)
+				{
+					color = Handles.color;
+					Handles.color = Handles.preselectionColor;
+				}
+				capFunction(id, position + offset, Quaternion.LookRotation(handleDirection), size, EventType.Repaint);
+				if (id == GUIUtility.hotControl || (id == HandleUtility.nearestControl && GUIUtility.hotControl == 0))
 				{
 					Handles.color = color;
 				}
@@ -154,11 +174,11 @@ namespace UnityEditorInternal
 			case EventType.Layout:
 				if (capFunction != null)
 				{
-					capFunction(id, position, Quaternion.LookRotation(handleDirection), size, EventType.Layout);
+					capFunction(id, position + offset, Quaternion.LookRotation(handleDirection), size, EventType.Layout);
 				}
 				else
 				{
-					HandleUtility.AddControl(id, HandleUtility.DistanceToCircle(position, size * 0.2f));
+					HandleUtility.AddControl(id, HandleUtility.DistanceToCircle(position + offset, size * 0.2f));
 				}
 				break;
 			}

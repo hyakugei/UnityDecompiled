@@ -110,7 +110,7 @@ namespace UnityEngine
 			this.CheckConsistency();
 		}
 
-		public bool IsFilteringTrigger(Collider2D collider)
+		public bool IsFilteringTrigger([Writable] Collider2D collider)
 		{
 			return !this.useTriggers && collider.isTrigger;
 		}

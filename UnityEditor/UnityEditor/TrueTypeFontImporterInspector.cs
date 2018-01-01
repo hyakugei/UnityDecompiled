@@ -23,6 +23,8 @@ namespace UnityEditor
 
 		private SerializedProperty m_AscentCalculationMode;
 
+		private SerializedProperty m_FallbackFontReferencesArraySize;
+
 		private string m_FontNamesString = "";
 
 		private string m_DefaultFontNamesString = "";
@@ -94,11 +96,26 @@ namespace UnityEditor
 			this.m_CustomCharacters = base.serializedObject.FindProperty("m_CustomCharacters");
 			this.m_FontRenderingMode = base.serializedObject.FindProperty("m_FontRenderingMode");
 			this.m_AscentCalculationMode = base.serializedObject.FindProperty("m_AscentCalculationMode");
+			this.m_FallbackFontReferencesArraySize = base.serializedObject.FindProperty("m_FallbackFontReferences.Array.size");
 			if (base.targets.Length == 1)
 			{
 				this.m_DefaultFontNamesString = this.GetDefaultFontNames();
 				this.m_FontNamesString = this.GetFontNames();
+				TrueTypeFontImporter trueTypeFontImporter = (TrueTypeFontImporter)base.target;
+				this.m_FallbackFontReferences = trueTypeFontImporter.fontReferences;
 			}
+		}
+
+		protected override void Apply()
+		{
+			this.m_FallbackFontReferencesArraySize.intValue = this.m_FallbackFontReferences.Length;
+			SerializedProperty serializedProperty = this.m_FallbackFontReferencesArraySize.Copy();
+			for (int i = 0; i < this.m_FallbackFontReferences.Length; i++)
+			{
+				serializedProperty.Next(false);
+				serializedProperty.objectReferenceValue = this.m_FallbackFontReferences[i];
+			}
+			base.Apply();
 		}
 
 		private string GetDefaultFontNames()

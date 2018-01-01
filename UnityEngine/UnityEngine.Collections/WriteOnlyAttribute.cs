@@ -4,7 +4,7 @@ using UnityEngine.Scripting;
 namespace UnityEngine.Collections
 {
 	[AttributeUsage(AttributeTargets.Field), RequiredByNativeCode]
-	internal class WriteOnlyAttribute : Attribute
+	public class WriteOnlyAttribute : Attribute
 	{
 	}
 }

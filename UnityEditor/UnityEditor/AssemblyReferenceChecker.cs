@@ -275,7 +275,7 @@ namespace UnityEditor
 
 		public static bool IsIgnoredSystemDll(string name)
 		{
-			return name.StartsWith("System") || name.Equals("UnityEngine") || name.Equals("UnityEngine.Networking") || name.Equals("Mono.Posix") || name.Equals("Moq");
+			return name.StartsWith("System") || name.Equals("UnityEngine") || (name.StartsWith("UnityEngine.") && name.EndsWith("Module")) || name.Equals("UnityEngine.Networking") || name.Equals("Mono.Posix") || name.Equals("Moq");
 		}
 
 		public static bool GetScriptsHaveMouseEvents(string path)

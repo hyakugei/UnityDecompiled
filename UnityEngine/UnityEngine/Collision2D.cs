@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using UnityEngine.Scripting;
 
@@ -74,6 +75,10 @@ namespace UnityEngine
 		{
 			get
 			{
+				if (this.m_Contacts == null)
+				{
+					this.m_Contacts = Collision2D.CreateCollisionContacts(this.collider, this.otherCollider, this.rigidbody, this.otherRigidbody, this.enabled);
+				}
 				return this.m_Contacts;
 			}
 		}
@@ -92,6 +97,15 @@ namespace UnityEngine
 			{
 				return this.m_Enabled == 1;
 			}
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern ContactPoint2D[] CreateCollisionContacts(Collider2D collider, Collider2D otherCollider, Rigidbody2D rigidbody, Rigidbody2D otherRigidbody, bool enabled);
+
+		public int GetContacts(ContactPoint2D[] contacts)
+		{
+			return Physics2D.GetContacts(this.collider, this.otherCollider, default(ContactFilter2D).NoFilter(), contacts);
 		}
 	}
 }

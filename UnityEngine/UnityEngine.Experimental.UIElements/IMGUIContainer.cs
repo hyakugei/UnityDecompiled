@@ -23,14 +23,33 @@ namespace UnityEngine.Experimental.UIElements
 
 		private readonly Action m_OnGUIHandler;
 
+		private ObjectGUIState m_ObjectGUIState;
+
+		internal bool useOwnerObjectGUIState;
+
 		private GUILayoutUtility.LayoutCache m_Cache = null;
+
+		private bool lostFocus = false;
+
+		private bool receivedFocus = false;
+
+		private FocusChangeDirection focusChangeDirection = FocusChangeDirection.unspecified;
+
+		private bool hasFocusableControls = false;
 
 		private IMGUIContainer.GUIGlobals m_GUIGlobals;
 
-		public int executionContext
+		internal ObjectGUIState guiState
 		{
-			get;
-			set;
+			get
+			{
+				Debug.Assert(!this.useOwnerObjectGUIState);
+				if (this.m_ObjectGUIState == null)
+				{
+					this.m_ObjectGUIState = new ObjectGUIState();
+				}
+				return this.m_ObjectGUIState;
+			}
 		}
 
 		internal Rect lastWorldClip
@@ -63,17 +82,26 @@ namespace UnityEngine.Experimental.UIElements
 			private set;
 		}
 
+		public override bool canGrabFocus
+		{
+			get
+			{
+				return base.canGrabFocus && this.hasFocusableControls;
+			}
+		}
+
 		public IMGUIContainer(Action onGUIHandler)
 		{
 			this.m_OnGUIHandler = onGUIHandler;
 			this.contextType = ContextType.Editor;
+			base.focusIndex = 0;
 		}
 
 		internal override void DoRepaint(IStylePainter painter)
 		{
-			base.DoRepaint(painter);
+			base.DoRepaint();
 			this.lastWorldClip = painter.currentWorldClip;
-			this.HandleEvent(painter.repaintEvent, this);
+			this.HandleIMGUIEvent(painter.repaintEvent);
 		}
 
 		internal override void ChangePanel(BaseVisualElementPanel p)
@@ -111,19 +139,42 @@ namespace UnityEngine.Experimental.UIElements
 			Event.current.displayIndex = this.m_GUIGlobals.displayIndex;
 		}
 
-		private bool DoOnGUI(Event evt)
+		private void DoOnGUI(Event evt)
 		{
-			bool result;
-			if (this.m_OnGUIHandler == null || base.panel == null)
-			{
-				result = false;
-			}
-			else
+			if (this.m_OnGUIHandler != null && base.panel != null)
 			{
 				int num = GUIClip.Internal_GetCount();
 				this.SaveGlobals();
-				int instanceID = (this.executionContext == 0) ? base.elementPanel.instanceID : this.executionContext;
-				UIElementsUtility.BeginContainerGUI(this.cache, instanceID, evt, this);
+				UIElementsUtility.BeginContainerGUI(this.cache, evt, this);
+				if (this.lostFocus)
+				{
+					GUIUtility.keyboardControl = 0;
+					if (this.focusController != null)
+					{
+						this.focusController.imguiKeyboardControl = 0;
+					}
+					this.lostFocus = false;
+				}
+				if (this.receivedFocus)
+				{
+					if (this.focusChangeDirection != FocusChangeDirection.unspecified && this.focusChangeDirection != FocusChangeDirection.none)
+					{
+						if (this.focusChangeDirection == VisualElementFocusChangeDirection.left)
+						{
+							GUIUtility.SetKeyboardControlToLastControlId();
+						}
+						else if (this.focusChangeDirection == VisualElementFocusChangeDirection.right)
+						{
+							GUIUtility.SetKeyboardControlToFirstControlId();
+						}
+					}
+					this.receivedFocus = false;
+					this.focusChangeDirection = FocusChangeDirection.unspecified;
+					if (this.focusController != null)
+					{
+						this.focusController.imguiKeyboardControl = GUIUtility.keyboardControl;
+					}
+				}
 				this.GUIDepth = GUIUtility.Internal_GetGUIDepth();
 				EventType type = Event.current.type;
 				bool flag = false;
@@ -143,7 +194,57 @@ namespace UnityEngine.Experimental.UIElements
 						Debug.LogException(exception);
 					}
 				}
-				GUIUtility.CheckForTabEvent(evt);
+				finally
+				{
+					int num2 = GUIUtility.CheckForTabEvent(evt);
+					if (this.focusController != null)
+					{
+						if (num2 < 0)
+						{
+							KeyDownEvent keyDownEvent = null;
+							if (num2 == -1)
+							{
+								keyDownEvent = KeyboardEventBase<KeyDownEvent>.GetPooled('\t', KeyCode.Tab, EventModifiers.None);
+							}
+							else if (num2 == -2)
+							{
+								keyDownEvent = KeyboardEventBase<KeyDownEvent>.GetPooled('\t', KeyCode.Tab, EventModifiers.Shift);
+							}
+							Focusable focusedElement = this.focusController.focusedElement;
+							this.focusController.SwitchFocusOnEvent(keyDownEvent);
+							EventBase<KeyDownEvent>.ReleasePooled(keyDownEvent);
+							if (focusedElement == this)
+							{
+								if (this.focusController.focusedElement == this)
+								{
+									if (num2 == -2)
+									{
+										GUIUtility.SetKeyboardControlToLastControlId();
+									}
+									else if (num2 == -1)
+									{
+										GUIUtility.SetKeyboardControlToFirstControlId();
+									}
+									this.focusController.imguiKeyboardControl = GUIUtility.keyboardControl;
+								}
+								else
+								{
+									GUIUtility.keyboardControl = 0;
+									this.focusController.imguiKeyboardControl = 0;
+								}
+							}
+						}
+						else if (num2 > 0)
+						{
+							this.focusController.imguiKeyboardControl = GUIUtility.keyboardControl;
+						}
+						else if (num2 == 0 && type == EventType.MouseDown)
+						{
+							this.focusController.SyncIMGUIFocus(this);
+						}
+					}
+					this.hasFocusableControls = GUIUtility.HasFocusableControls();
+				}
 				EventType type2 = Event.current.type;
 				UIElementsUtility.EndContainerGUI();
 				this.RestoreGlobals();
@@ -151,12 +252,12 @@ namespace UnityEngine.Experimental.UIElements
 				{
 					if (type2 != EventType.Ignore && type2 != EventType.Used)
 					{
-						int num2 = GUIClip.Internal_GetCount();
-						if (num2 > num)
+						int num3 = GUIClip.Internal_GetCount();
+						if (num3 > num)
 						{
 							Debug.LogError("GUI Error: You are pushing more GUIClips than you are popping. Make sure they are balanced)");
 						}
-						else if (num2 < num)
+						else if (num3 < num)
 						{
 							Debug.LogError("GUI Error: You are popping more GUIClips than you are pushing. Make sure they are balanced)");
 						}
@@ -169,53 +270,75 @@ namespace UnityEngine.Experimental.UIElements
 				if (type2 == EventType.Used)
 				{
 					base.Dirty(ChangeType.Repaint);
-					result = true;
-				}
-				else
-				{
-					result = false;
 				}
 			}
-			return result;
 		}
 
-		public override void OnLostKeyboardFocus()
+		public override void HandleEvent(EventBase evt)
 		{
-			GUIUtility.keyboardControl = 0;
-		}
-
-		public override EventPropagation HandleEvent(Event evt, VisualElement finalTarget)
-		{
-			EventPropagation result;
-			if (this.m_OnGUIHandler == null || base.elementPanel == null || !base.elementPanel.IMGUIEventInterests.WantsEvent(evt.type))
+			base.HandleEvent(evt);
+			if (evt.propagationPhase != PropagationPhase.DefaultAction)
 			{
-				result = EventPropagation.Continue;
+				if (evt.imguiEvent != null)
+				{
+					if (!evt.isPropagationStopped)
+					{
+						if (this.m_OnGUIHandler != null && base.elementPanel != null && base.elementPanel.IMGUIEventInterests.WantsEvent(evt.imguiEvent.type))
+						{
+							if (this.HandleIMGUIEvent(evt.imguiEvent))
+							{
+								evt.StopPropagation();
+								evt.PreventDefault();
+							}
+						}
+					}
+				}
+			}
+		}
+
+		internal bool HandleIMGUIEvent(Event e)
+		{
+			EventType type = e.type;
+			e.type = EventType.Layout;
+			this.DoOnGUI(e);
+			e.type = type;
+			this.DoOnGUI(e);
+			bool result;
+			if (e.type == EventType.Used)
+			{
+				result = true;
 			}
 			else
 			{
-				EventType type = evt.type;
-				evt.type = EventType.Layout;
-				bool flag = this.DoOnGUI(evt);
-				evt.type = type;
-				flag |= this.DoOnGUI(evt);
-				if (flag)
+				if (e.type == EventType.MouseUp && this.HasCapture())
 				{
-					result = EventPropagation.Stop;
+					GUIUtility.hotControl = 0;
 				}
-				else
+				if (base.elementPanel == null)
 				{
-					if (evt.type == EventType.MouseUp && this.HasCapture())
-					{
-						GUIUtility.hotControl = 0;
-					}
-					if (base.elementPanel == null)
-					{
-						GUIUtility.ExitGUI();
-					}
-					result = EventPropagation.Continue;
+					GUIUtility.ExitGUI();
 				}
+				result = false;
 			}
 			return result;
+		}
+
+		protected internal override void ExecuteDefaultAction(EventBase evt)
+		{
+			if (evt.GetEventTypeId() == EventBase<BlurEvent>.TypeId())
+			{
+				BlurEvent blurEvent = evt as BlurEvent;
+				if (blurEvent.relatedTarget == null || !blurEvent.relatedTarget.canGrabFocus)
+				{
+					this.lostFocus = true;
+				}
+			}
+			else if (evt.GetEventTypeId() == EventBase<FocusEvent>.TypeId())
+			{
+				FocusEvent focusEvent = evt as FocusEvent;
+				this.receivedFocus = true;
+				this.focusChangeDirection = focusEvent.direction;
+			}
 		}
 
 		protected internal override Vector2 DoMeasure(float desiredWidth, VisualElement.MeasureMode widthMode, float desiredHeight, VisualElement.MeasureMode heightMode)

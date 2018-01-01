@@ -157,7 +157,7 @@ namespace UnityEngine
 			get;
 		}
 
-		public extern SpriteMaskInteraction maskInteraction
+		internal extern bool editorEnabled
 		{
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
@@ -167,7 +167,7 @@ namespace UnityEngine
 			set;
 		}
 
-		internal extern bool editorEnabled
+		public extern SpriteMaskInteraction maskInteraction
 		{
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]

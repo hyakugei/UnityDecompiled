@@ -74,15 +74,6 @@ namespace UnityEngine.Animations
 			return this.Equals(other.GetHandle());
 		}
 
-		private static bool CreateHandleInternal(PlayableGraph graph, Vector3 position, Quaternion rotation, ref PlayableHandle handle)
-		{
-			return AnimationOffsetPlayable.INTERNAL_CALL_CreateHandleInternal(ref graph, ref position, ref rotation, ref handle);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern bool INTERNAL_CALL_CreateHandleInternal(ref PlayableGraph graph, ref Vector3 position, ref Quaternion rotation, ref PlayableHandle handle);
-
 		public Vector3 GetPosition()
 		{
 			return AnimationOffsetPlayable.GetPositionInternal(ref this.m_Handle);
@@ -103,44 +94,48 @@ namespace UnityEngine.Animations
 			AnimationOffsetPlayable.SetRotationInternal(ref this.m_Handle, value);
 		}
 
+		private static bool CreateHandleInternal(PlayableGraph graph, Vector3 position, Quaternion rotation, ref PlayableHandle handle)
+		{
+			return AnimationOffsetPlayable.CreateHandleInternal_Injected(ref graph, ref position, ref rotation, ref handle);
+		}
+
 		private static Vector3 GetPositionInternal(ref PlayableHandle handle)
 		{
 			Vector3 result;
-			AnimationOffsetPlayable.INTERNAL_CALL_GetPositionInternal(ref handle, out result);
+			AnimationOffsetPlayable.GetPositionInternal_Injected(ref handle, out result);
 			return result;
 		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_GetPositionInternal(ref PlayableHandle handle, out Vector3 value);
-
 		private static void SetPositionInternal(ref PlayableHandle handle, Vector3 value)
 		{
-			AnimationOffsetPlayable.INTERNAL_CALL_SetPositionInternal(ref handle, ref value);
+			AnimationOffsetPlayable.SetPositionInternal_Injected(ref handle, ref value);
 		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_SetPositionInternal(ref PlayableHandle handle, ref Vector3 value);
 
 		private static Quaternion GetRotationInternal(ref PlayableHandle handle)
 		{
 			Quaternion result;
-			AnimationOffsetPlayable.INTERNAL_CALL_GetRotationInternal(ref handle, out result);
+			AnimationOffsetPlayable.GetRotationInternal_Injected(ref handle, out result);
 			return result;
 		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_GetRotationInternal(ref PlayableHandle handle, out Quaternion value);
-
 		private static void SetRotationInternal(ref PlayableHandle handle, Quaternion value)
 		{
-			AnimationOffsetPlayable.INTERNAL_CALL_SetRotationInternal(ref handle, ref value);
+			AnimationOffsetPlayable.SetRotationInternal_Injected(ref handle, ref value);
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_SetRotationInternal(ref PlayableHandle handle, ref Quaternion value);
+		private static extern bool CreateHandleInternal_Injected(ref PlayableGraph graph, ref Vector3 position, ref Quaternion rotation, ref PlayableHandle handle);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void GetPositionInternal_Injected(ref PlayableHandle handle, out Vector3 ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void SetPositionInternal_Injected(ref PlayableHandle handle, ref Vector3 value);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void GetRotationInternal_Injected(ref PlayableHandle handle, out Quaternion ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void SetRotationInternal_Injected(ref PlayableHandle handle, ref Quaternion value);
 	}
 }

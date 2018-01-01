@@ -191,27 +191,38 @@ namespace UnityEditorInternal
 					animationWindowKeyframe2.curve = curve;
 					curve.AddKeyframe(animationWindowKeyframe2, time);
 				}
-				else if (type == typeof(bool) || type == typeof(float))
+				else if (type == typeof(bool) || type == typeof(float) || type == typeof(int))
 				{
 					animationWindowKeyframe2 = new AnimationWindowKeyframe();
 					AnimationCurve animationCurve = curve.ToAnimationCurve();
 					Keyframe key = new Keyframe(time.time, (float)value);
-					if (type == typeof(bool))
+					if (type == typeof(bool) || type == typeof(int))
 					{
-						AnimationUtility.SetKeyLeftTangentMode(ref key, AnimationUtility.TangentMode.Constant);
-						AnimationUtility.SetKeyRightTangentMode(ref key, AnimationUtility.TangentMode.Constant);
+						if (type == typeof(int) && !curve.isDiscreteCurve)
+						{
+							AnimationUtility.SetKeyLeftTangentMode(ref key, AnimationUtility.TangentMode.Linear);
+							AnimationUtility.SetKeyRightTangentMode(ref key, AnimationUtility.TangentMode.Linear);
+						}
+						else
+						{
+							AnimationUtility.SetKeyLeftTangentMode(ref key, AnimationUtility.TangentMode.Constant);
+							AnimationUtility.SetKeyRightTangentMode(ref key, AnimationUtility.TangentMode.Constant);
+						}
 						AnimationUtility.SetKeyBroken(ref key, true);
 						animationWindowKeyframe2.m_TangentMode = key.tangentMode;
-						animationWindowKeyframe2.m_InTangent = float.PositiveInfinity;
-						animationWindowKeyframe2.m_OutTangent = float.PositiveInfinity;
 					}
 					else
 					{
 						int num = animationCurve.AddKey(key);
 						if (num != -1)
 						{
+							AnimationUtility.SetKeyLeftTangentMode(animationCurve, num, AnimationUtility.TangentMode.ClampedAuto);
+							AnimationUtility.SetKeyRightTangentMode(animationCurve, num, AnimationUtility.TangentMode.ClampedAuto);
+							AnimationUtility.UpdateTangentsFromModeSurrounding(animationCurve, num);
 							CurveUtility.SetKeyModeFromContext(animationCurve, num);
 							animationWindowKeyframe2.m_TangentMode = animationCurve[num].tangentMode;
+							animationWindowKeyframe2.m_InTangent = animationCurve[num].inTangent;
+							animationWindowKeyframe2.m_OutTangent = animationCurve[num].outTangent;
 						}
 					}
 					animationWindowKeyframe2.time = time.time;
@@ -500,7 +511,8 @@ namespace UnityEditorInternal
 				bool flag2 = serializedProperty4.propertyType == SerializedPropertyType.Float;
 				bool flag3 = serializedProperty4.propertyType == SerializedPropertyType.Boolean;
 				bool flag4 = serializedProperty4.propertyType == SerializedPropertyType.Integer;
-				if (flag || flag2 || flag3 || flag4)
+				bool flag5 = serializedProperty4.propertyType == SerializedPropertyType.Enum;
+				if (flag || flag2 || flag3 || flag4 || flag5)
 				{
 					SerializedObject serializedObject2 = serializedProperty4.serializedObject;
 					UnityEngine.Object[] targetObjects = serializedObject2.targetObjects;
@@ -523,6 +535,10 @@ namespace UnityEditorInternal
 							else if (flag4)
 							{
 								value = serializedProperty5.intValue.ToString();
+							}
+							else if (flag5)
+							{
+								value = serializedProperty5.enumValueIndex.ToString();
 							}
 							else
 							{
@@ -787,43 +803,45 @@ namespace UnityEditorInternal
 		public static float GetNextKeyframeTime(AnimationWindowCurve[] curves, float currentTime, float frameRate)
 		{
 			float num = 3.40282347E+38f;
-			float num2 = currentTime + 1f / frameRate;
+			AnimationKeyTime animationKeyTime = AnimationKeyTime.Time(currentTime, frameRate);
+			AnimationKeyTime animationKeyTime2 = AnimationKeyTime.Frame(animationKeyTime.frame + 1, frameRate);
 			bool flag = false;
 			for (int i = 0; i < curves.Length; i++)
 			{
 				AnimationWindowCurve animationWindowCurve = curves[i];
 				foreach (AnimationWindowKeyframe current in animationWindowCurve.m_Keyframes)
 				{
-					float num3 = current.time + animationWindowCurve.timeOffset;
-					if (num3 < num && num3 >= num2)
+					float num2 = current.time + animationWindowCurve.timeOffset;
+					if (num2 < num && num2 >= animationKeyTime2.time)
 					{
-						num = num3;
+						num = num2;
 						flag = true;
 					}
 				}
 			}
-			return (!flag) ? currentTime : num;
+			return (!flag) ? animationKeyTime.time : num;
 		}
 
 		public static float GetPreviousKeyframeTime(AnimationWindowCurve[] curves, float currentTime, float frameRate)
 		{
 			float num = -3.40282347E+38f;
-			float num2 = Mathf.Max(0f, currentTime - 1f / frameRate);
+			AnimationKeyTime animationKeyTime = AnimationKeyTime.Time(currentTime, frameRate);
+			AnimationKeyTime animationKeyTime2 = AnimationKeyTime.Frame(animationKeyTime.frame - 1, frameRate);
 			bool flag = false;
 			for (int i = 0; i < curves.Length; i++)
 			{
 				AnimationWindowCurve animationWindowCurve = curves[i];
 				foreach (AnimationWindowKeyframe current in animationWindowCurve.m_Keyframes)
 				{
-					float num3 = current.time + animationWindowCurve.timeOffset;
-					if (num3 > num && num3 <= num2)
+					float num2 = current.time + animationWindowCurve.timeOffset;
+					if (num2 > num && num2 <= animationKeyTime2.time)
 					{
-						num = num3;
+						num = num2;
 						flag = true;
 					}
 				}
 			}
-			return (!flag) ? currentTime : num;
+			return (!flag) ? animationKeyTime.time : num;
 		}
 
 		public static bool InitializeGameobjectForAnimation(GameObject animatedObject)
@@ -1136,10 +1154,61 @@ namespace UnityEditorInternal
 			}
 		}
 
+		private static CurveRenderer CreateRendererForCurve(AnimationWindowCurve curve)
+		{
+			TypeCode typeCode = Type.GetTypeCode(curve.valueType);
+			CurveRenderer result;
+			if (typeCode != TypeCode.Int32)
+			{
+				if (typeCode != TypeCode.Boolean)
+				{
+					result = new NormalCurveRenderer(curve.ToAnimationCurve());
+				}
+				else
+				{
+					result = new BoolCurveRenderer(curve.ToAnimationCurve());
+				}
+			}
+			else
+			{
+				result = new IntCurveRenderer(curve.ToAnimationCurve());
+			}
+			return result;
+		}
+
+		private static CurveWrapper.PreProcessKeyMovement CreateKeyPreprocessorForCurve(AnimationWindowCurve curve)
+		{
+			TypeCode typeCode = Type.GetTypeCode(curve.valueType);
+			CurveWrapper.PreProcessKeyMovement result;
+			if (typeCode != TypeCode.Int32)
+			{
+				if (typeCode != TypeCode.Boolean)
+				{
+					result = null;
+				}
+				else
+				{
+					result = delegate(ref Keyframe key)
+					{
+						key.value = ((key.value <= 0.5f) ? 0f : 1f);
+					};
+				}
+			}
+			else
+			{
+				result = delegate(ref Keyframe key)
+				{
+					key.value = Mathf.Floor(key.value + 0.5f);
+				};
+			}
+			return result;
+		}
+
 		public static CurveWrapper GetCurveWrapper(AnimationWindowCurve curve, AnimationClip clip)
 		{
 			CurveWrapper curveWrapper = new CurveWrapper();
-			curveWrapper.renderer = new NormalCurveRenderer(curve.ToAnimationCurve());
+			curveWrapper.renderer = AnimationWindowUtility.CreateRendererForCurve(curve);
+			curveWrapper.preProcessKeyMovementDelegate = AnimationWindowUtility.CreateKeyPreprocessorForCurve(curve);
 			curveWrapper.renderer.SetWrap(WrapMode.Once, (!clip.isLooping) ? WrapMode.Once : WrapMode.Loop);
 			curveWrapper.renderer.SetCustomRange(clip.startTime, clip.stopTime);
 			curveWrapper.binding = curve.binding;

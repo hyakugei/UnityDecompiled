@@ -13,6 +13,10 @@ namespace UnityEditor
 
 		private readonly BoxBoundsHandle m_BoundsHandle = new BoxBoundsHandle();
 
+		protected GUIContent centerContent = EditorGUIUtility.TextContent("Center|The position of the Collider in the object’s local space.");
+
+		protected GUIContent sizeContent = EditorGUIUtility.TextContent("Size|The size of the Collider in the X, Y, Z directions.");
+
 		protected override PrimitiveBoundsHandle boundsHandle
 		{
 			get
@@ -32,10 +36,10 @@ namespace UnityEditor
 		{
 			base.serializedObject.Update();
 			base.InspectorEditButtonGUI();
-			EditorGUILayout.PropertyField(this.m_IsTrigger, new GUILayoutOption[0]);
-			EditorGUILayout.PropertyField(this.m_Material, new GUILayoutOption[0]);
-			EditorGUILayout.PropertyField(this.m_Center, new GUILayoutOption[0]);
-			EditorGUILayout.PropertyField(this.m_Size, new GUILayoutOption[0]);
+			EditorGUILayout.PropertyField(this.m_IsTrigger, this.triggerContent, new GUILayoutOption[0]);
+			EditorGUILayout.PropertyField(this.m_Material, this.materialContent, new GUILayoutOption[0]);
+			EditorGUILayout.PropertyField(this.m_Center, this.centerContent, new GUILayoutOption[0]);
+			EditorGUILayout.PropertyField(this.m_Size, this.sizeContent, new GUILayoutOption[0]);
 			base.serializedObject.ApplyModifiedProperties();
 		}
 

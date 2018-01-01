@@ -79,18 +79,21 @@ namespace UnityEditor
 			using (new EditorGUI.DisabledScope(false))
 			{
 				GUI.enabled = true;
-				GUILayout.BeginHorizontal(new GUILayoutOption[0]);
-				GUILayout.FlexibleSpace();
-				EditorGUI.BeginChangeCheck();
-				this.m_ActiveEditorIndex = GUILayout.Toolbar(this.m_ActiveEditorIndex, this.m_TabNames, new GUILayoutOption[0]);
-				if (EditorGUI.EndChangeCheck())
+				using (new GUILayout.HorizontalScope(new GUILayoutOption[0]))
 				{
-					EditorPrefs.SetInt(base.GetType().Name + "ActiveEditorIndex", this.m_ActiveEditorIndex);
-					this.activeTab = this.m_Tabs[this.m_ActiveEditorIndex];
-					this.activeTab.OnInspectorGUI();
+					GUILayout.FlexibleSpace();
+					using (EditorGUI.ChangeCheckScope changeCheckScope = new EditorGUI.ChangeCheckScope())
+					{
+						this.m_ActiveEditorIndex = GUILayout.Toolbar(this.m_ActiveEditorIndex, this.m_TabNames, "LargeButton", GUI.ToolbarButtonSize.FitToContents, new GUILayoutOption[0]);
+						if (changeCheckScope.changed)
+						{
+							EditorPrefs.SetInt(base.GetType().Name + "ActiveEditorIndex", this.m_ActiveEditorIndex);
+							this.activeTab = this.m_Tabs[this.m_ActiveEditorIndex];
+							this.activeTab.OnInspectorGUI();
+						}
+					}
+					GUILayout.FlexibleSpace();
 				}
-				GUILayout.FlexibleSpace();
-				GUILayout.EndHorizontal();
 			}
 			if (this.activeTab != null)
 			{

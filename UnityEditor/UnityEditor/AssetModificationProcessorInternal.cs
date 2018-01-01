@@ -336,6 +336,10 @@ namespace UnityEditor
 			{
 				result = true;
 			}
+			else if (AssetDatabase.IsPackagedAssetPath(assetPath))
+			{
+				result = false;
+			}
 			else
 			{
 				bool flag = AssetModificationHook.IsOpenForEdit(assetPath, out message, statusOptions);

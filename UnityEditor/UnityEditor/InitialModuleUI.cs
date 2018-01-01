@@ -38,7 +38,7 @@ namespace UnityEditor
 
 			public GUIContent gravity = EditorGUIUtility.TextContent("Gravity Modifier|Scales the gravity defined in Physics Manager");
 
-			public GUIContent scalingMode = EditorGUIUtility.TextContent("Scaling Mode|Should we use the combined scale from our entire hierarchy, just this particle node, or just apply scale to the shape module?");
+			public GUIContent scalingMode = EditorGUIUtility.TextContent("Scaling Mode|Use the combined scale from our entire hierarchy, just this local particle node, or only apply scale to the shape module.");
 
 			public GUIContent simulationSpace = EditorGUIUtility.TextContent("Simulation Space|Makes particle positions simulate in world, local or custom space. In local space they stay relative to their own Transform, and in custom space they are relative to the custom Transform.");
 
@@ -54,11 +54,34 @@ namespace UnityEditor
 
 			public GUIContent emitterVelocity = EditorGUIUtility.TextContent("Emitter Velocity|When the Particle System is moving, should we use its Transform, or Rigidbody Component, to calculate its velocity?");
 
+			public GUIContent stopAction = EditorGUIUtility.TextContent("Stop Action|When the Particle System is stopped and all particles have died, should the GameObject automatically disable/destroy itself?");
+
 			public GUIContent x = EditorGUIUtility.TextContent("X");
 
 			public GUIContent y = EditorGUIUtility.TextContent("Y");
 
 			public GUIContent z = EditorGUIUtility.TextContent("Z");
+
+			public GUIContent[] simulationSpaces = new GUIContent[]
+			{
+				EditorGUIUtility.TextContent("Local"),
+				EditorGUIUtility.TextContent("World"),
+				EditorGUIUtility.TextContent("Custom")
+			};
+
+			public GUIContent[] scalingModes = new GUIContent[]
+			{
+				EditorGUIUtility.TextContent("Hierarchy"),
+				EditorGUIUtility.TextContent("Local"),
+				EditorGUIUtility.TextContent("Shape")
+			};
+
+			public GUIContent[] stopActions = new GUIContent[]
+			{
+				EditorGUIUtility.TextContent("None"),
+				EditorGUIUtility.TextContent("Disable"),
+				EditorGUIUtility.TextContent("Destroy")
+			};
 		}
 
 		public SerializedProperty m_LengthInSec;
@@ -115,6 +138,8 @@ namespace UnityEditor
 
 		public SerializedProperty m_RandomSeed;
 
+		public SerializedProperty m_StopAction;
+
 		private static InitialModuleUI.Texts s_Texts;
 
 		public InitialModuleUI(ParticleSystemUI owner, SerializedObject o, string displayName) : base(owner, o, "InitialModule", displayName, ModuleUI.VisibilityState.VisibleAndFoldedOut)
@@ -129,12 +154,12 @@ namespace UnityEditor
 
 		protected override void Init()
 		{
-			if (InitialModuleUI.s_Texts == null)
-			{
-				InitialModuleUI.s_Texts = new InitialModuleUI.Texts();
-			}
 			if (this.m_LengthInSec == null)
 			{
+				if (InitialModuleUI.s_Texts == null)
+				{
+					InitialModuleUI.s_Texts = new InitialModuleUI.Texts();
+				}
 				this.m_LengthInSec = base.GetProperty0("lengthInSec");
 				this.m_Looping = base.GetProperty0("looping");
 				this.m_Prewarm = base.GetProperty0("prewarm");
@@ -149,6 +174,7 @@ namespace UnityEditor
 				this.m_EmitterVelocity = base.GetProperty0("useRigidbodyForVelocity");
 				this.m_AutoRandomSeed = base.GetProperty0("autoRandomSeed");
 				this.m_RandomSeed = base.GetProperty0("randomSeed");
+				this.m_StopAction = base.GetProperty0("stopAction");
 				this.m_LifeTime = new SerializedMinMaxCurve(this, InitialModuleUI.s_Texts.lifetime, "startLifetime");
 				this.m_Speed = new SerializedMinMaxCurve(this, InitialModuleUI.s_Texts.speed, "startSpeed", ModuleUI.kUseSignedRange);
 				this.m_Color = new SerializedMinMaxGradient(this, "startColor");
@@ -175,10 +201,6 @@ namespace UnityEditor
 
 		public override void OnInspectorGUI(InitialModuleUI initial)
 		{
-			if (InitialModuleUI.s_Texts == null)
-			{
-				InitialModuleUI.s_Texts = new InitialModuleUI.Texts();
-			}
 			ModuleUI.GUIFloat(InitialModuleUI.s_Texts.duration, this.m_LengthInSec, "f2", new GUILayoutOption[0]);
 			EditorGUI.BeginChangeCheck();
 			bool flag = ModuleUI.GUIToggle(InitialModuleUI.s_Texts.looping, this.m_Looping, new GUILayoutOption[0]);
@@ -208,13 +230,8 @@ namespace UnityEditor
 			bool flag2 = ModuleUI.GUIToggle(InitialModuleUI.s_Texts.size3D, this.m_Size3D, new GUILayoutOption[0]);
 			if (EditorGUI.EndChangeCheck())
 			{
-				if (flag2)
+				if (!flag2)
 				{
-					this.m_SizeX.RemoveCurveFromEditor();
-				}
-				else
-				{
-					this.m_SizeX.RemoveCurveFromEditor();
 					this.m_SizeY.RemoveCurveFromEditor();
 					this.m_SizeZ.RemoveCurveFromEditor();
 				}
@@ -238,15 +255,10 @@ namespace UnityEditor
 			bool flag3 = ModuleUI.GUIToggle(InitialModuleUI.s_Texts.rotation3D, this.m_Rotation3D, new GUILayoutOption[0]);
 			if (EditorGUI.EndChangeCheck())
 			{
-				if (flag3)
-				{
-					this.m_RotationZ.RemoveCurveFromEditor();
-				}
-				else
+				if (!flag3)
 				{
 					this.m_RotationX.RemoveCurveFromEditor();
 					this.m_RotationY.RemoveCurveFromEditor();
-					this.m_RotationZ.RemoveCurveFromEditor();
 				}
 			}
 			if (!this.m_RotationZ.stateHasMultipleDifferentValues)
@@ -267,12 +279,7 @@ namespace UnityEditor
 			ModuleUI.GUIFloat(InitialModuleUI.s_Texts.randomizeRotationDirection, this.m_RandomizeRotationDirection, new GUILayoutOption[0]);
 			base.GUIMinMaxGradient(InitialModuleUI.s_Texts.color, this.m_Color, false, new GUILayoutOption[0]);
 			ModuleUI.GUIMinMaxCurve(InitialModuleUI.s_Texts.gravity, this.m_GravityModifier, new GUILayoutOption[0]);
-			int num = ModuleUI.GUIPopup(InitialModuleUI.s_Texts.simulationSpace, this.m_SimulationSpace, new string[]
-			{
-				"Local",
-				"World",
-				"Custom"
-			}, new GUILayoutOption[0]);
+			int num = ModuleUI.GUIPopup(InitialModuleUI.s_Texts.simulationSpace, this.m_SimulationSpace, InitialModuleUI.s_Texts.simulationSpaces, new GUILayoutOption[0]);
 			if (num == 2 && this.m_CustomSimulationSpace != null)
 			{
 				ModuleUI.GUIObject(InitialModuleUI.s_Texts.customSimulationSpace, this.m_CustomSimulationSpace, new GUILayoutOption[0]);
@@ -283,15 +290,10 @@ namespace UnityEditor
 				"Scaled",
 				"Unscaled"
 			}, new GUILayoutOption[0]);
-			bool flag4 = this.m_ParticleSystemUI.m_ParticleSystems.FirstOrDefault((ParticleSystem o) => o.shape.shapeType != ParticleSystemShapeType.SkinnedMeshRenderer && o.shape.shapeType != ParticleSystemShapeType.MeshRenderer) != null;
+			bool flag4 = this.m_ParticleSystemUI.m_ParticleSystems.FirstOrDefault((ParticleSystem o) => !o.shape.enabled || (o.shape.shapeType != ParticleSystemShapeType.SkinnedMeshRenderer && o.shape.shapeType != ParticleSystemShapeType.MeshRenderer)) != null;
 			if (flag4)
 			{
-				ModuleUI.GUIPopup(InitialModuleUI.s_Texts.scalingMode, this.m_ScalingMode, new string[]
-				{
-					"Hierarchy",
-					"Local",
-					"Shape"
-				}, new GUILayoutOption[0]);
+				ModuleUI.GUIPopup(InitialModuleUI.s_Texts.scalingMode, this.m_ScalingMode, InitialModuleUI.s_Texts.scalingModes, new GUILayoutOption[0]);
 			}
 			bool boolValue = this.m_PlayOnAwake.boolValue;
 			bool flag5 = ModuleUI.GUIToggle(InitialModuleUI.s_Texts.autoplay, this.m_PlayOnAwake, new GUILayoutOption[0]);
@@ -330,6 +332,7 @@ namespace UnityEditor
 					}
 				}
 			}
+			ModuleUI.GUIPopup(InitialModuleUI.s_Texts.stopAction, this.m_StopAction, InitialModuleUI.s_Texts.stopActions, new GUILayoutOption[0]);
 		}
 
 		public override void UpdateCullingSupportedString(ref string text)

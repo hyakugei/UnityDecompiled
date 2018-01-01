@@ -1,6 +1,5 @@
 using System;
 using System.Runtime.CompilerServices;
-using UnityEngine.Scripting;
 
 namespace UnityEngine.iOS
 {
@@ -8,18 +7,16 @@ namespace UnityEngine.iOS
 	{
 		public static extern bool enabled
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
 
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern OnDemandResourcesRequest PreloadAsyncImpl(string[] tags);
+
 		public static OnDemandResourcesRequest PreloadAsync(string[] tags)
 		{
-			return OnDemandResources.PreloadAsyncInternal(tags);
+			return OnDemandResources.PreloadAsyncImpl(tags);
 		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern OnDemandResourcesRequest PreloadAsyncInternal(string[] tags);
 	}
 }

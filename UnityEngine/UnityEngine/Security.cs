@@ -11,14 +11,14 @@ namespace UnityEngine
 	{
 		private static readonly string kSignatureExtension = ".signature";
 
-		[Obsolete("Security.PrefetchSocketPolicy is no longer supported, since the Unity Web Player is no longer supported by Unity."), ExcludeFromDocs]
+		[Obsolete("Security.PrefetchSocketPolicy is no longer supported, since the Unity Web Player is no longer supported by Unity.", true), ExcludeFromDocs]
 		public static bool PrefetchSocketPolicy(string ip, int atPort)
 		{
 			int timeout = 3000;
 			return Security.PrefetchSocketPolicy(ip, atPort, timeout);
 		}
 
-		[Obsolete("Security.PrefetchSocketPolicy is no longer supported, since the Unity Web Player is no longer supported by Unity.")]
+		[Obsolete("Security.PrefetchSocketPolicy is no longer supported, since the Unity Web Player is no longer supported by Unity.", true)]
 		public static bool PrefetchSocketPolicy(string ip, int atPort, [DefaultValue("3000")] int timeout)
 		{
 			return false;

@@ -5,19 +5,19 @@ namespace UnityEditor.Experimental.AssetImporters
 {
 	internal class ImportedObject
 	{
-		public bool mainAsset
+		public bool mainAssetObject
 		{
 			get;
 			set;
 		}
 
-		public UnityEngine.Object asset
+		public UnityEngine.Object obj
 		{
 			get;
 			set;
 		}
 
-		public string identifier
+		public string localIdentifier
 		{
 			get;
 			set;

@@ -127,7 +127,7 @@ namespace UnityEditor
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern HierarchyProperty(HierarchyType hierarchytType);
+		public extern HierarchyProperty(HierarchyType hierarchyType);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]

@@ -55,7 +55,7 @@ namespace UnityEditor
 			{
 				get
 				{
-					return InternalEditorUtility.GetEngineAssemblyPath();
+					return InternalEditorUtility.GetMonolithicEngineAssemblyPath();
 				}
 			}
 
@@ -298,15 +298,17 @@ namespace UnityEditor
 						disposable.Dispose();
 					}
 				}
-				string[] array = VisualStudioUtil.FindVisualStudioDevEnvPaths(15, "Microsoft.VisualStudio.Workload.ManagedGame");
-				if (array != null && array.Length > 0)
+				string[] requiredWorkloads = new string[]
 				{
-					VisualStudioPath[] array2 = new VisualStudioPath[array.Length / 2];
-					for (int i = 0; i < array.Length / 2; i++)
-					{
-						array2[i] = new VisualStudioPath(array[i * 2], array[i * 2 + 1]);
-					}
-					dictionary[VisualStudioVersion.VisualStudio2017] = array2;
+					"Microsoft.VisualStudio.Workload.ManagedGame"
+				};
+				string[] rawDevEnvPaths = VisualStudioUtil.FindVisualStudioDevEnvPaths(15, requiredWorkloads);
+				VisualStudioPath[] array = (from vs in VisualStudioUtil.ParseRawDevEnvPaths(rawDevEnvPaths)
+				where !requiredWorkloads.Except(vs.Workloads).Any<string>()
+				select new VisualStudioPath(vs.DevEnvPath, vs.Edition)).ToArray<VisualStudioPath>();
+				if (array.Length != 0)
+				{
+					dictionary[VisualStudioVersion.VisualStudio2017] = array;
 				}
 			}
 			return dictionary;

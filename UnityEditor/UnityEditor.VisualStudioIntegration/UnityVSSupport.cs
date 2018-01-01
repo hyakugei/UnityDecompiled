@@ -10,6 +10,7 @@ using System.Text.RegularExpressions;
 using UnityEditor.Utils;
 using UnityEditorInternal;
 using UnityEngine;
+using UnityEngine.Scripting;
 
 namespace UnityEditor.VisualStudioIntegration
 {
@@ -22,6 +23,12 @@ namespace UnityEditor.VisualStudioIntegration
 		private static bool? s_IsUnityVSEnabled;
 
 		private static string s_AboutLabel;
+
+		[RequiredByNativeCode]
+		public static void InitializeUnityVSSupport()
+		{
+			UnityVSSupport.Initialize(null);
+		}
 
 		public static void Initialize()
 		{
@@ -282,6 +289,7 @@ namespace UnityEditor.VisualStudioIntegration
 			return result;
 		}
 
+		[RequiredByNativeCode]
 		public static bool IsUnityVSEnabled()
 		{
 			if (!UnityVSSupport.s_IsUnityVSEnabled.HasValue)
@@ -372,7 +380,7 @@ namespace UnityEditor.VisualStudioIntegration
 			}
 			else
 			{
-				Assembly assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault((Assembly a) => a.Location == UnityVSSupport.s_UnityVSBridgeToLoad);
+				Assembly assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault((Assembly a) => UnityVSSupport.GetAssemblyLocation(a) == UnityVSSupport.s_UnityVSBridgeToLoad);
 				if (assembly == null)
 				{
 					result = "";

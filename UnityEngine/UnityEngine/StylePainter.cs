@@ -14,6 +14,12 @@ namespace UnityEngine
 
 		private Color m_OpacityColor = Color.white;
 
+		public Matrix4x4 currentTransform
+		{
+			get;
+			set;
+		}
+
 		public Vector2 mousePosition
 		{
 			get;
@@ -54,12 +60,29 @@ namespace UnityEngine
 			this.mousePosition = pos;
 		}
 
-		public void DrawTexture(Rect screenRect, Texture texture, Color color, ScaleMode scaleMode = ScaleMode.StretchToFill, float borderWidth = 0f, float borderRadius = 0f, int leftBorder = 0, int topBorder = 0, int rightBorder = 0, int bottomBorder = 0)
+		public void DrawRect(RectStylePainterParameters painterParams)
 		{
-			Rect screenRect2 = screenRect;
+			Rect layout = painterParams.layout;
+			Color color = painterParams.color;
+			Vector4 borderWidths = new Vector4(painterParams.borderLeftWidth, painterParams.borderTopWidth, painterParams.borderRightWidth, painterParams.borderBottomWidth);
+			Vector4 borderRadiuses = new Vector4(painterParams.borderTopLeftRadius, painterParams.borderTopRightRadius, painterParams.borderBottomRightRadius, painterParams.borderBottomLeftRadius);
+			this.DrawRect_Internal(layout, color * this.m_OpacityColor, borderWidths, borderRadiuses);
+		}
+
+		public void DrawTexture(TextureStylePainterParameters painterParams)
+		{
+			Rect layout = painterParams.layout;
+			Texture texture = painterParams.texture;
+			Color color = painterParams.color;
+			ScaleMode scaleMode = painterParams.scaleMode;
+			int sliceLeft = painterParams.sliceLeft;
+			int sliceTop = painterParams.sliceTop;
+			int sliceRight = painterParams.sliceRight;
+			int sliceBottom = painterParams.sliceBottom;
+			Rect screenRect = layout;
 			Rect sourceRect = new Rect(0f, 0f, 1f, 1f);
 			float num = (float)texture.width / (float)texture.height;
-			float num2 = screenRect.width / screenRect.height;
+			float num2 = layout.width / layout.height;
 			if (scaleMode != ScaleMode.StretchToFill)
 			{
 				if (scaleMode != ScaleMode.ScaleAndCrop)
@@ -69,12 +92,12 @@ namespace UnityEngine
 						if (num2 > num)
 						{
 							float num3 = num / num2;
-							screenRect2 = new Rect(screenRect.xMin + screenRect.width * (1f - num3) * 0.5f, screenRect.yMin, num3 * screenRect.width, screenRect.height);
+							screenRect = new Rect(layout.xMin + layout.width * (1f - num3) * 0.5f, layout.yMin, num3 * layout.width, layout.height);
 						}
 						else
 						{
 							float num4 = num2 / num;
-							screenRect2 = new Rect(screenRect.xMin, screenRect.yMin + screenRect.height * (1f - num4) * 0.5f, screenRect.width, num4 * screenRect.height);
+							screenRect = new Rect(layout.xMin, layout.yMin + layout.height * (1f - num4) * 0.5f, layout.width, num4 * layout.height);
 						}
 					}
 				}
@@ -89,42 +112,100 @@ namespace UnityEngine
 					sourceRect = new Rect(0.5f - num6 * 0.5f, 0f, num6, 1f);
 				}
 			}
-			this.DrawTexture_Internal(screenRect2, texture, sourceRect, color * this.m_OpacityColor, borderWidth, borderRadius, leftBorder, topBorder, rightBorder, bottomBorder);
+			Vector4 borderWidths = new Vector4(painterParams.borderLeftWidth, painterParams.borderTopWidth, painterParams.borderRightWidth, painterParams.borderBottomWidth);
+			Vector4 borderRadiuses = new Vector4(painterParams.borderTopLeftRadius, painterParams.borderTopRightRadius, painterParams.borderBottomRightRadius, painterParams.borderBottomLeftRadius);
+			this.DrawTexture_Internal(screenRect, texture, sourceRect, color * this.m_OpacityColor, borderWidths, borderRadiuses, sliceLeft, sliceTop, sliceRight, sliceBottom);
 		}
 
-		public void DrawRect(Rect screenRect, Color color, float borderWidth = 0f, float borderRadius = 0f)
+		public void DrawText(TextStylePainterParameters painterParams)
 		{
-			this.DrawRect_Internal(screenRect, color * this.m_OpacityColor, borderWidth, borderRadius);
+			Rect layout = painterParams.layout;
+			string text = painterParams.text;
+			Font font = painterParams.font;
+			int fontSize = painterParams.fontSize;
+			FontStyle fontStyle = painterParams.fontStyle;
+			Color fontColor = painterParams.fontColor;
+			TextAnchor anchor = painterParams.anchor;
+			bool wordWrap = painterParams.wordWrap;
+			float wordWrapWidth = painterParams.wordWrapWidth;
+			bool richText = painterParams.richText;
+			TextClipping clipping = painterParams.clipping;
+			this.DrawText_Internal(layout, text, font, fontSize, fontStyle, fontColor * this.m_OpacityColor, anchor, wordWrap, wordWrapWidth, richText, clipping);
 		}
 
-		public void DrawText(Rect screenRect, string text, Font font, int fontSize, FontStyle fontStyle, Color fontColor, TextAnchor anchor, bool wordWrap, float wordWrapWidth, bool richText, TextClipping clipping)
+		public Vector2 GetCursorPosition(CursorPositionStylePainterParameters painterParams)
 		{
-			this.DrawText_Internal(screenRect, text, font, fontSize, fontStyle, fontColor * this.m_OpacityColor, anchor, wordWrap, wordWrapWidth, richText, clipping);
+			Font font = painterParams.font;
+			Vector2 result;
+			if (font == null)
+			{
+				Debug.LogError("StylePainter: Can't process a null font.");
+				result = Vector2.zero;
+			}
+			else
+			{
+				string text = painterParams.text;
+				int fontSize = painterParams.fontSize;
+				FontStyle fontStyle = painterParams.fontStyle;
+				TextAnchor anchor = painterParams.anchor;
+				float wordWrapWidth = painterParams.wordWrapWidth;
+				bool richText = painterParams.richText;
+				Rect layout = painterParams.layout;
+				int cursorIndex = painterParams.cursorIndex;
+				result = this.GetCursorPosition_Internal(text, font, fontSize, fontStyle, anchor, wordWrapWidth, richText, layout, cursorIndex);
+			}
+			return result;
+		}
+
+		public float ComputeTextWidth(TextStylePainterParameters painterParams)
+		{
+			string text = painterParams.text;
+			float wordWrapWidth = painterParams.wordWrapWidth;
+			bool wordWrap = painterParams.wordWrap;
+			Font font = painterParams.font;
+			int fontSize = painterParams.fontSize;
+			FontStyle fontStyle = painterParams.fontStyle;
+			TextAnchor anchor = painterParams.anchor;
+			bool richText = painterParams.richText;
+			return this.ComputeTextWidth_Internal(text, wordWrapWidth, wordWrap, font, fontSize, fontStyle, anchor, richText);
+		}
+
+		public float ComputeTextHeight(TextStylePainterParameters painterParams)
+		{
+			string text = painterParams.text;
+			float wordWrapWidth = painterParams.wordWrapWidth;
+			bool wordWrap = painterParams.wordWrap;
+			Font font = painterParams.font;
+			int fontSize = painterParams.fontSize;
+			FontStyle fontStyle = painterParams.fontStyle;
+			TextAnchor anchor = painterParams.anchor;
+			bool richText = painterParams.richText;
+			return this.ComputeTextHeight_Internal(text, wordWrapWidth, wordWrap, font, fontSize, fontStyle, anchor, richText);
 		}
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern void Init();
 
-		public void DrawRect_Internal(Rect screenRect, Color color, float borderWidth, float borderRadius)
+		internal void DrawRect_Internal(Rect screenRect, Color color, Vector4 borderWidths, Vector4 borderRadiuses)
 		{
-			StylePainter.INTERNAL_CALL_DrawRect_Internal(this, ref screenRect, ref color, borderWidth, borderRadius);
+			StylePainter.INTERNAL_CALL_DrawRect_Internal(this, ref screenRect, ref color, ref borderWidths, ref borderRadiuses);
 		}
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_DrawRect_Internal(StylePainter self, ref Rect screenRect, ref Color color, float borderWidth, float borderRadius);
+		private static extern void INTERNAL_CALL_DrawRect_Internal(StylePainter self, ref Rect screenRect, ref Color color, ref Vector4 borderWidths, ref Vector4 borderRadiuses);
 
-		public void DrawTexture_Internal(Rect screenRect, Texture texture, Rect sourceRect, Color color, float borderWidth, float borderRadius, int leftBorder, int topBorder, int rightBorder, int bottomBorder)
+		internal void DrawTexture_Internal(Rect screenRect, Texture texture, Rect sourceRect, Color color, Vector4 borderWidths, Vector4 borderRadiuses, int leftBorder, int topBorder, int rightBorder, int bottomBorder)
 		{
-			StylePainter.INTERNAL_CALL_DrawTexture_Internal(this, ref screenRect, texture, ref sourceRect, ref color, borderWidth, borderRadius, leftBorder, topBorder, rightBorder, bottomBorder);
+			StylePainter.INTERNAL_CALL_DrawTexture_Internal(this, ref screenRect, texture, ref sourceRect, ref color, ref borderWidths, ref borderRadiuses, leftBorder, topBorder, rightBorder, bottomBorder);
 		}
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_DrawTexture_Internal(StylePainter self, ref Rect screenRect, Texture texture, ref Rect sourceRect, ref Color color, float borderWidth, float borderRadius, int leftBorder, int topBorder, int rightBorder, int bottomBorder);
+		private static extern void INTERNAL_CALL_DrawTexture_Internal(StylePainter self, ref Rect screenRect, Texture texture, ref Rect sourceRect, ref Color color, ref Vector4 borderWidths, ref Vector4 borderRadiuses, int leftBorder, int topBorder, int rightBorder, int bottomBorder);
 
-		public void DrawText_Internal(Rect screenRect, string text, Font font, int fontSize, FontStyle fontStyle, Color fontColor, TextAnchor anchor, bool wordWrap, float wordWrapWidth, bool richText, TextClipping textClipping)
+		internal void DrawText_Internal(Rect screenRect, string text, Font font, int fontSize, FontStyle fontStyle, Color fontColor, TextAnchor anchor, bool wordWrap, float wordWrapWidth, bool richText, TextClipping textClipping)
 		{
 			StylePainter.INTERNAL_CALL_DrawText_Internal(this, ref screenRect, text, font, fontSize, fontStyle, ref fontColor, anchor, wordWrap, wordWrapWidth, richText, textClipping);
 		}
@@ -135,10 +216,21 @@ namespace UnityEngine
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern float ComputeTextWidth(string text, Font font, int fontSize, FontStyle fontStyle, TextAnchor anchor, bool richText);
+		public extern float ComputeTextWidth_Internal(string text, float width, bool wordWrap, Font font, int fontSize, FontStyle fontStyle, TextAnchor anchor, bool richText);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern float ComputeTextHeight(string text, float width, bool wordWrap, Font font, int fontSize, FontStyle fontStyle, TextAnchor anchor, bool richText);
+		public extern float ComputeTextHeight_Internal(string text, float width, bool wordWrap, Font font, int fontSize, FontStyle fontStyle, TextAnchor anchor, bool richText);
+
+		public Vector2 GetCursorPosition_Internal(string text, Font font, int fontSize, FontStyle fontStyle, TextAnchor anchor, float wordWrapWidth, bool richText, Rect screenRect, int cursorPosition)
+		{
+			Vector2 result;
+			StylePainter.INTERNAL_CALL_GetCursorPosition_Internal(this, text, font, fontSize, fontStyle, anchor, wordWrapWidth, richText, ref screenRect, cursorPosition, out result);
+			return result;
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void INTERNAL_CALL_GetCursorPosition_Internal(StylePainter self, string text, Font font, int fontSize, FontStyle fontStyle, TextAnchor anchor, float wordWrapWidth, bool richText, ref Rect screenRect, int cursorPosition, out Vector2 value);
 	}
 }

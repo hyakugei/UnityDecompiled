@@ -363,7 +363,10 @@ namespace UnityEditorInternal
 						}
 						else
 						{
-							AnimationRecording.AddRotationKey(state, editorCurveBinding, type, localRotation.eulerAngles, localRotation2.eulerAngles);
+							Vector3 localEulerAngles = transform.GetLocalEulerAngles(RotationOrder.OrderZXY);
+							Vector3 closestEuler = AnimationUtility.GetClosestEuler(localRotation, localEulerAngles, RotationOrder.OrderZXY);
+							Vector3 closestEuler2 = AnimationUtility.GetClosestEuler(localRotation2, localEulerAngles, RotationOrder.OrderZXY);
+							AnimationRecording.AddRotationKey(state, editorCurveBinding, type, closestEuler, closestEuler2);
 						}
 					}
 				}

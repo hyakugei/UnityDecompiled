@@ -80,6 +80,14 @@ namespace UnityEngine.Profiling
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void AddFramesFromFile(string file);
 
+		[Conditional("ENABLE_PROFILER"), GeneratedByOldBindingsGenerator, ThreadAndSerializationSafe]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern void BeginThreadProfiling(string threadGroupName, string threadName);
+
+		[Conditional("ENABLE_PROFILER"), GeneratedByOldBindingsGenerator, ThreadAndSerializationSafe]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern void EndThreadProfiling();
+
 		[Conditional("ENABLE_PROFILER")]
 		public static void BeginSample(string name)
 		{

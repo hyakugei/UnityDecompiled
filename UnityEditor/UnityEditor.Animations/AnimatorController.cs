@@ -340,6 +340,7 @@ namespace UnityEditor.Animations
 			this.parameters = parameters;
 		}
 
+		[RequiredByNativeCode]
 		public AnimatorState AddMotion(Motion motion)
 		{
 			return this.AddMotion(motion, 0);
@@ -392,6 +393,7 @@ namespace UnityEditor.Animations
 			return animationClip;
 		}
 
+		[RequiredByNativeCode]
 		internal static AnimatorController CreateAnimatorControllerForClip(AnimationClip clip, GameObject animatedObject)
 		{
 			string text = AssetDatabase.GetAssetPath(clip);

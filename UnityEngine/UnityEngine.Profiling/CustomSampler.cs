@@ -24,7 +24,7 @@ namespace UnityEngine.Profiling
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern CustomSampler CreateInternal(string name);
 
-		[Conditional("ENABLE_PROFILER"), GeneratedByOldBindingsGenerator]
+		[Conditional("ENABLE_PROFILER"), GeneratedByOldBindingsGenerator, ThreadAndSerializationSafe]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern void Begin();
 
@@ -34,11 +34,11 @@ namespace UnityEngine.Profiling
 			this.BeginWithObject(targetObject);
 		}
 
-		[GeneratedByOldBindingsGenerator]
+		[GeneratedByOldBindingsGenerator, ThreadAndSerializationSafe]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern void BeginWithObject(UnityEngine.Object targetObject);
 
-		[Conditional("ENABLE_PROFILER"), GeneratedByOldBindingsGenerator]
+		[Conditional("ENABLE_PROFILER"), GeneratedByOldBindingsGenerator, ThreadAndSerializationSafe]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern void End();
 	}

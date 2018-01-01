@@ -4,10 +4,11 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
+using UnityEditor.Collaboration;
 using UnityEditor.Connect;
 using UnityEditor.Modules;
 using UnityEditor.VisualStudioIntegration;
-using UnityEditor.Web;
 using UnityEditorInternal;
 using UnityEngine;
 
@@ -186,6 +187,10 @@ namespace UnityEditor
 
 		private bool m_AllowAttachedDebuggingOfEditorStateChangedThisSession;
 
+		private string m_GpuDevice;
+
+		private string[] m_CachedGpuDevices;
+
 		private PreferencesWindow.GICacheSettings m_GICacheSettings;
 
 		private PreferencesWindow.RefString m_ScriptEditorPath = new PreferencesWindow.RefString("");
@@ -203,6 +208,13 @@ namespace UnityEditor
 		private SystemLanguage m_SelectedLanguage = SystemLanguage.English;
 
 		private string[] m_EditorLanguageNames;
+
+		private bool m_EnableEditorLocalization;
+
+		private SystemLanguage[] m_stableLanguages = new SystemLanguage[]
+		{
+			SystemLanguage.English
+		};
 
 		private bool m_AllowAlphaNumericHierarchy = false;
 
@@ -238,8 +250,6 @@ namespace UnityEditor
 
 		private SortedDictionary<string, List<KeyValuePair<string, PrefColor>>> s_CachedColors = null;
 
-		private int currentPage;
-
 		private static Vector2 s_ScrollPosition = Vector2.zero;
 
 		private int m_SpriteAtlasCacheSize;
@@ -251,6 +261,8 @@ namespace UnityEditor
 		private bool m_ValidKeyChange = true;
 
 		private string m_InvalidKeyMessage = string.Empty;
+
+		private static Regex s_VersionPattern = new Regex("(?<shortVersion>\\d+\\.\\d+\\.\\d+(?<suffix>((?<alphabeta>[abx])|[fp])[^\\s]*))( \\((?<revision>[a-fA-F\\d]+)\\))?", RegexOptions.Compiled);
 
 		private static int s_KeysControlHash = "KeysControlHash".GetHashCode();
 
@@ -315,28 +327,23 @@ namespace UnityEditor
 
 		private void AddCustomSections()
 		{
-			Assembly[] loadedAssemblies = EditorAssemblies.loadedAssemblies;
-			for (int i = 0; i < loadedAssemblies.Length; i++)
+			AttributeHelper.MethodInfoSorter methodsWithAttribute = AttributeHelper.GetMethodsWithAttribute<PreferenceItem>(BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.NonPublic);
+			List<AttributeHelper.MethodWithAttribute> methodsWithAttributes = methodsWithAttribute.MethodsWithAttributes;
+			foreach (AttributeHelper.MethodWithAttribute current in methodsWithAttributes)
 			{
-				Assembly assembly = loadedAssemblies[i];
-				Type[] typesFromAssembly = AssemblyHelper.GetTypesFromAssembly(assembly);
-				Type[] array = typesFromAssembly;
-				for (int j = 0; j < array.Length; j++)
+				PreferencesWindow.OnGUIDelegate onGUIDelegate = Delegate.CreateDelegate(typeof(PreferencesWindow.OnGUIDelegate), current.info) as PreferencesWindow.OnGUIDelegate;
+				if (onGUIDelegate != null)
 				{
-					Type type = array[j];
-					MethodInfo[] methods = type.GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
-					for (int k = 0; k < methods.Length; k++)
+					string attributeName = (current.attribute as PreferenceItem).name;
+					int num = this.m_Sections.FindIndex((PreferencesWindow.Section section) => section.content.text.Equals(attributeName));
+					if (num >= 0)
 					{
-						MethodInfo methodInfo = methods[k];
-						PreferenceItem preferenceItem = Attribute.GetCustomAttribute(methodInfo, typeof(PreferenceItem)) as PreferenceItem;
-						if (preferenceItem != null)
-						{
-							PreferencesWindow.OnGUIDelegate onGUIDelegate = Delegate.CreateDelegate(typeof(PreferencesWindow.OnGUIDelegate), methodInfo) as PreferencesWindow.OnGUIDelegate;
-							if (onGUIDelegate != null)
-							{
-								this.m_Sections.Add(new PreferencesWindow.Section(preferenceItem.name, onGUIDelegate));
-							}
-						}
+						PreferencesWindow.Section expr_98 = this.m_Sections[num];
+						expr_98.guiFunc = (PreferencesWindow.OnGUIDelegate)Delegate.Combine(expr_98.guiFunc, onGUIDelegate);
+					}
+					else
+					{
+						this.m_Sections.Add(new PreferencesWindow.Section(attributeName, onGUIDelegate));
 					}
 				}
 			}
@@ -415,6 +422,51 @@ namespace UnityEditor
 			}
 		}
 
+		private string GetMonoDevelopInstallerURL()
+		{
+			string fullUnityVersion = InternalEditorUtility.GetFullUnityVersion();
+			string text = "";
+			Match match = PreferencesWindow.s_VersionPattern.Match(fullUnityVersion);
+			if (!match.Success || !match.Groups["suffix"].Success)
+			{
+				Debug.LogWarningFormat("Error parsing version '{0}'", new object[]
+				{
+					fullUnityVersion
+				});
+			}
+			if (match.Groups["revision"].Success)
+			{
+				text = match.Groups["revision"].Value;
+			}
+			string text2 = "download";
+			string text3 = "download_unity";
+			string text4 = "Unknown";
+			if (match.Groups["alphabeta"].Success)
+			{
+				text2 = "beta";
+				text3 = "download";
+			}
+			string text5 = "Unsupported";
+			if (Application.platform == RuntimePlatform.WindowsEditor)
+			{
+				text4 = "WindowsMonoDevelopInstaller";
+				text5 = "UnityMonoDevelopSetup.exe";
+			}
+			else if (Application.platform == RuntimePlatform.OSXEditor)
+			{
+				text4 = "MacMonoDevelopInstaller";
+				text5 = "UnityMonoDevelop.pkg";
+			}
+			return string.Format("http://{0}.unity3d.com/{1}/{2}/{3}/{4}", new object[]
+			{
+				text2,
+				text3,
+				text,
+				text4,
+				text5
+			});
+		}
+
 		private void ShowExternalApplications()
 		{
 			this.FilePopup("External Script Editor", this.m_ScriptEditorPath, ref this.m_ScriptAppDisplayNames, ref this.m_ScriptApps, this.m_ScriptEditorPath, "internal", new Action(this.OnScriptEditorChanged));
@@ -425,6 +477,21 @@ namespace UnityEditor
 				if (scriptEditorArgs != this.m_ScriptEditorArgs)
 				{
 					this.OnScriptEditorArgsChanged();
+				}
+			}
+			else
+			{
+				string internalEditorPath = EditorUtility.GetInternalEditorPath();
+				if (internalEditorPath != null && !Directory.Exists(internalEditorPath) && !File.Exists(internalEditorPath))
+				{
+					if (GUILayout.Button("Download MonoDevelop Installer", new GUILayoutOption[]
+					{
+						GUILayout.Width(220f)
+					}))
+					{
+						string monoDevelopInstallerURL = this.GetMonoDevelopInstallerURL();
+						Help.BrowseURL(monoDevelopInstallerURL);
+					}
 				}
 			}
 			this.DoUnityProjCheckbox();
@@ -525,7 +592,7 @@ namespace UnityEditor
 
 		private void ShowGeneral()
 		{
-			bool flag = CollabAccess.Instance.IsServiceEnabled();
+			bool flag = Collab.instance.IsCollabEnabledForCurrentProject();
 			using (new EditorGUI.DisabledScope(flag))
 			{
 				if (flag)
@@ -580,38 +647,28 @@ namespace UnityEditor
 			}
 			bool allowAlphaNumericHierarchy = this.m_AllowAlphaNumericHierarchy;
 			this.m_AllowAlphaNumericHierarchy = EditorGUILayout.Toggle("Enable Alpha Numeric Sorting", this.m_AllowAlphaNumericHierarchy, new GUILayoutOption[0]);
-			bool flag4 = false;
-			SystemLanguage selectedLanguage = this.m_SelectedLanguage;
-			SystemLanguage[] availableEditorLanguages = LocalizationDatabase.GetAvailableEditorLanguages();
-			if (availableEditorLanguages.Length > 1)
+			if (InternalEditorUtility.IsGpuDeviceSelectionSupported())
 			{
-				if (this.m_EditorLanguageNames == null)
+				if (this.m_CachedGpuDevices == null)
 				{
-					this.m_EditorLanguageNames = new string[availableEditorLanguages.Length];
-					for (int i = 0; i < availableEditorLanguages.Length; i++)
-					{
-						this.m_EditorLanguageNames[i] = availableEditorLanguages[i].ToString();
-					}
-					string item = string.Format("Default ( {0} )", LocalizationDatabase.GetDefaultEditorLanguage().ToString());
-					ArrayUtility.Insert<string>(ref this.m_EditorLanguageNames, 0, "");
-					ArrayUtility.Insert<string>(ref this.m_EditorLanguageNames, 0, item);
+					string[] gpuDevices = InternalEditorUtility.GetGpuDevices();
+					this.m_CachedGpuDevices = new string[gpuDevices.Length + 1];
+					this.m_CachedGpuDevices[0] = "Automatic";
+					Array.Copy(gpuDevices, 0, this.m_CachedGpuDevices, 1, gpuDevices.Length);
 				}
-				EditorGUI.BeginChangeCheck();
-				selectedLanguage = this.m_SelectedLanguage;
-				int selectedIndex = 2 + Array.IndexOf<SystemLanguage>(availableEditorLanguages, this.m_SelectedLanguage);
-				int num2 = EditorGUILayout.Popup("Language", selectedIndex, this.m_EditorLanguageNames, new GUILayoutOption[0]);
-				this.m_SelectedLanguage = ((num2 != 0) ? availableEditorLanguages[num2 - 2] : LocalizationDatabase.GetDefaultEditorLanguage());
-				if (EditorGUI.EndChangeCheck() && selectedLanguage != this.m_SelectedLanguage)
+				int num2 = Array.FindIndex<string>(this.m_CachedGpuDevices, (string gpuDevice) => this.m_GpuDevice == gpuDevice);
+				if (num2 == -1)
 				{
-					flag4 = true;
+					num2 = 0;
+				}
+				int num3 = EditorGUILayout.Popup("Device To Use", num2, this.m_CachedGpuDevices, new GUILayoutOption[0]);
+				if (num2 != num3)
+				{
+					this.m_GpuDevice = this.m_CachedGpuDevices[num3];
+					InternalEditorUtility.SetGpuDeviceAndRecreateGraphics(num3 - 1, this.m_GpuDevice);
 				}
 			}
 			this.ApplyChangesToPrefs(false);
-			if (flag4)
-			{
-				EditorGUIUtility.NotifyLanguageChanged(this.m_SelectedLanguage);
-				InternalEditorUtility.RequestScriptReload();
-			}
 			if (allowAlphaNumericHierarchy != this.m_AllowAlphaNumericHierarchy)
 			{
 				EditorApplication.DirtyHierarchyWindowSorting();
@@ -965,6 +1022,86 @@ namespace UnityEditor
 			}
 		}
 
+		private void ShowLanguage()
+		{
+			bool flag = false;
+			bool enableEditorLocalization = this.m_EnableEditorLocalization;
+			this.m_EnableEditorLocalization = EditorGUILayout.Toggle("Editor Language(Experimental)", this.m_EnableEditorLocalization, new GUILayoutOption[0]);
+			if (!this.m_EnableEditorLocalization)
+			{
+				if (this.m_SelectedLanguage != SystemLanguage.English)
+				{
+					this.m_SelectedLanguage = SystemLanguage.English;
+					flag = true;
+				}
+			}
+			EditorGUI.BeginDisabledGroup(!this.m_EnableEditorLocalization);
+			SystemLanguage selectedLanguage = this.m_SelectedLanguage;
+			SystemLanguage[] editorLanguages = LocalizationDatabase.GetAvailableEditorLanguages();
+			if (this.m_EditorLanguageNames == null || this.m_EditorLanguageNames.Length != editorLanguages.Length)
+			{
+				this.m_EditorLanguageNames = new string[editorLanguages.Length];
+				int i;
+				for (i = 0; i < editorLanguages.Length; i++)
+				{
+					if (ArrayUtility.FindIndex<SystemLanguage>(this.m_stableLanguages, (SystemLanguage v) => v == editorLanguages[i]) < 0)
+					{
+						this.m_EditorLanguageNames[i] = string.Format("{0} (Experimental)", editorLanguages[i].ToString());
+					}
+					else
+					{
+						this.m_EditorLanguageNames[i] = editorLanguages[i].ToString();
+					}
+				}
+				string item = string.Format("Default ( {0} )", LocalizationDatabase.GetDefaultEditorLanguage().ToString());
+				ArrayUtility.Insert<string>(ref this.m_EditorLanguageNames, 0, "");
+				ArrayUtility.Insert<string>(ref this.m_EditorLanguageNames, 0, item);
+			}
+			EditorGUI.BeginChangeCheck();
+			selectedLanguage = this.m_SelectedLanguage;
+			int selectedIndex = 2 + Array.IndexOf<SystemLanguage>(editorLanguages, this.m_SelectedLanguage);
+			int num = EditorGUILayout.Popup("Editor language", selectedIndex, this.m_EditorLanguageNames, new GUILayoutOption[0]);
+			this.m_SelectedLanguage = ((num != 0) ? editorLanguages[num - 2] : LocalizationDatabase.GetDefaultEditorLanguage());
+			if (EditorGUI.EndChangeCheck() && selectedLanguage != this.m_SelectedLanguage)
+			{
+				flag = true;
+			}
+			GUILayout.Space(20f);
+			EditorGUILayout.BeginVertical(GUI.skin.box, new GUILayoutOption[0]);
+			GUILayout.Space(8f);
+			EditorGUILayout.BeginHorizontal(new GUILayoutOption[0]);
+			GUILayout.Space(8f);
+			EditorGUILayout.LabelField("Do you wish to disable experimental languages?", new GUILayoutOption[0]);
+			GUILayout.Space(8f);
+			if (GUILayout.Button("Disable", new GUILayoutOption[0]))
+			{
+				this.m_EnableEditorLocalization = false;
+				this.m_SelectedLanguage = SystemLanguage.English;
+				flag = true;
+			}
+			GUILayout.Space(8f);
+			EditorGUILayout.EndHorizontal();
+			GUILayout.Space(8f);
+			EditorGUILayout.EndVertical();
+			if (editorLanguages.Length <= 1)
+			{
+				GUILayout.Space(20f);
+				EditorGUILayout.HelpBox("Internet connection is required to enable non-English languages.", MessageType.Info);
+			}
+			EditorGUI.EndDisabledGroup();
+			this.ApplyChangesToPrefs(false);
+			if (enableEditorLocalization != this.m_EnableEditorLocalization && this.m_EnableEditorLocalization)
+			{
+				LocalizationDatabase.ReadEditorLocalizationResources();
+			}
+			if (flag)
+			{
+				EditorGUIUtility.NotifyLanguageChanged(this.m_SelectedLanguage);
+				InternalEditorUtility.RequestScriptReload();
+				LocalizedEditorFontManager.UpdateSkinFont(this.m_SelectedLanguage);
+			}
+		}
+
 		private void WriteRecentAppsList(string[] paths, string path, string prefsKey)
 		{
 			int num = 0;
@@ -1010,8 +1147,10 @@ namespace UnityEditor
 			EditorPrefs.SetBool("ShowAssetStoreSearchHits", this.m_ShowAssetStoreSearchHits);
 			EditorPrefs.SetBool("VerifySavingAssets", this.m_VerifySavingAssets);
 			EditorPrefs.SetBool("AllowAttachedDebuggingOfEditor", this.m_AllowAttachedDebuggingOfEditor);
+			LocalizationDatabase.enableEditorLocalization = this.m_EnableEditorLocalization;
 			LocalizationDatabase.SetCurrentEditorLanguage(this.m_SelectedLanguage);
 			EditorPrefs.SetBool("AllowAlphaNumericHierarchy", this.m_AllowAlphaNumericHierarchy);
+			EditorPrefs.SetString("GpuDevice", this.m_GpuDevice);
 			EditorPrefs.SetBool("GICacheEnableCustomPath", this.m_GICacheSettings.m_EnableCustomPath);
 			EditorPrefs.SetInt("GICacheMaximumSizeGB", this.m_GICacheSettings.m_MaximumSize);
 			EditorPrefs.SetString("GICacheFolder", this.m_GICacheSettings.m_CachePath);
@@ -1106,9 +1245,11 @@ namespace UnityEditor
 			this.m_GICacheSettings.m_CompressionLevel = EditorPrefs.GetInt("GICacheCompressionLevel");
 			this.m_SpriteAtlasCacheSize = EditorPrefs.GetInt("SpritePackerCacheMaximumSizeGB");
 			this.m_AllowAttachedDebuggingOfEditor = EditorPrefs.GetBool("AllowAttachedDebuggingOfEditor", true);
+			this.m_EnableEditorLocalization = LocalizationDatabase.enableEditorLocalization;
 			this.m_SelectedLanguage = LocalizationDatabase.GetCurrentEditorLanguage();
 			this.m_AllowAlphaNumericHierarchy = EditorPrefs.GetBool("AllowAlphaNumericHierarchy", false);
 			this.m_CompressAssetsOnImport = Unsupported.GetApplicationSettingCompressAssetsOnImport();
+			this.m_GpuDevice = EditorPrefs.GetString("GpuDevice");
 			foreach (IPreferenceWindowExtension current2 in this.prefWinExtensions)
 			{
 				current2.ReadPreferences();

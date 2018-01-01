@@ -73,10 +73,6 @@ namespace UnityEditor
 
 		public override void OnInspectorGUI(InitialModuleUI initial)
 		{
-			if (LightsModuleUI.s_Texts == null)
-			{
-				LightsModuleUI.s_Texts = new LightsModuleUI.Texts();
-			}
 			ModuleUI.GUIObject(LightsModuleUI.s_Texts.light, this.m_Light, new GUILayoutOption[0]);
 			ModuleUI.GUIFloat(LightsModuleUI.s_Texts.ratio, this.m_Ratio, new GUILayoutOption[0]);
 			ModuleUI.GUIToggle(LightsModuleUI.s_Texts.randomDistribution, this.m_RandomDistribution, new GUILayoutOption[0]);

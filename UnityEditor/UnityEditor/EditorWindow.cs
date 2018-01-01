@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using UnityEditor.Experimental.UIElements;
 using UnityEngine;
 using UnityEngine.Experimental.UIElements;
 using UnityEngine.Internal;
@@ -29,7 +30,12 @@ namespace UnityEditor
 		[HideInInspector, SerializeField]
 		internal Rect m_Pos = new Rect(0f, 0f, 320f, 240f);
 
-		private VisualContainer m_RootVisualContainer;
+		private VisualElement m_RootVisualContainer;
+
+		[SerializeField]
+		private SerializableJsonDictionary m_PersistentViewDataDictionary;
+
+		private bool m_EnableViewDataPersistence;
 
 		private Rect m_GameViewRect;
 
@@ -54,19 +60,33 @@ namespace UnityEditor
 
 		internal float m_FadeoutTime = 0f;
 
-		internal VisualContainer rootVisualContainer
+		internal VisualElement rootVisualContainer
 		{
 			get
 			{
 				if (this.m_RootVisualContainer == null)
 				{
-					this.m_RootVisualContainer = new VisualContainer
+					this.m_RootVisualContainer = new VisualElement
 					{
 						name = VisualElementUtils.GetUniqueName("rootVisualContainer"),
-						pickingMode = PickingMode.Ignore
+						pickingMode = PickingMode.Ignore,
+						persistenceKey = "rootVisualContainer"
 					};
 				}
 				return this.m_RootVisualContainer;
+			}
+		}
+
+		internal SerializableJsonDictionary viewDataDictionary
+		{
+			get
+			{
+				if (this.m_EnableViewDataPersistence && this.m_PersistentViewDataDictionary == null)
+				{
+					string preferencesFileName = base.GetType().ToString();
+					this.m_PersistentViewDataDictionary = ScriptableSingletonDictionary<EditorWindowPersistentViewData, SerializableJsonDictionary>.instance[preferencesFileName];
+				}
+				return this.m_PersistentViewDataDictionary;
 			}
 		}
 
@@ -320,6 +340,7 @@ namespace UnityEditor
 
 		public EditorWindow()
 		{
+			this.m_EnableViewDataPersistence = true;
 			this.titleContent.text = base.GetType().ToString();
 		}
 
@@ -376,6 +397,33 @@ namespace UnityEditor
 			return EditorWindow.GetWindowWithRectPrivate(t, rect, utility, title);
 		}
 
+		internal void SavePersistentViewData()
+		{
+			if (this.m_EnableViewDataPersistence && this.m_PersistentViewDataDictionary != null)
+			{
+				string preferencesFileName = base.GetType().ToString();
+				ScriptableSingletonDictionary<EditorWindowPersistentViewData, SerializableJsonDictionary>.instance.Save(preferencesFileName, this.m_PersistentViewDataDictionary);
+			}
+		}
+
+		internal ISerializableJsonDictionary GetViewDataDictionary()
+		{
+			return this.viewDataDictionary;
+		}
+
+		internal void DisableViewDataPersistence()
+		{
+			this.m_EnableViewDataPersistence = false;
+		}
+
+		internal void ClearPersistentViewData()
+		{
+			string preferencesFileName = base.GetType().ToString();
+			ScriptableSingletonDictionary<EditorWindowPersistentViewData, SerializableJsonDictionary>.instance.Clear(preferencesFileName);
+			UnityEngine.Object.DestroyImmediate(this.m_PersistentViewDataDictionary);
+			this.m_PersistentViewDataDictionary = null;
+		}
+
 		public void BeginWindows()
 		{
 			EditorGUIInternal.BeginWindowsForward(1, base.GetInstanceID());
@@ -428,11 +476,11 @@ namespace UnityEditor
 				}
 				if (!string.IsNullOrEmpty(text))
 				{
-					result = EditorGUIUtility.TextContentWithIcon(editorWindowTitleAttribute.title, text);
+					result = EditorGUIUtility.TrTextContentWithIcon(editorWindowTitleAttribute.title, text);
 				}
 				else
 				{
-					result = EditorGUIUtility.TextContent(editorWindowTitleAttribute.title);
+					result = EditorGUIUtility.TrTextContent(editorWindowTitleAttribute.title);
 				}
 			}
 			else

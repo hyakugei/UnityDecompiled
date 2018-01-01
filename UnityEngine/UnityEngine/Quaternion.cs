@@ -1,11 +1,12 @@
 using System;
 using System.Runtime.CompilerServices;
+using UnityEngine.Bindings;
 using UnityEngine.Internal;
 using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
-	[UsedByNativeCode]
+	[NativeType(Header = "Runtime/Math/Quaternion.h"), UsedByNativeCode]
 	public struct Quaternion
 	{
 		public float x;

@@ -5,8 +5,18 @@ using UnityEngine.Scripting;
 
 namespace UnityEditor
 {
-	public sealed class LocalizationDatabase
+	internal sealed class LocalizationDatabase
 	{
+		internal static extern bool enableEditorLocalization
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern SystemLanguage GetDefaultEditorLanguage();
@@ -21,7 +31,12 @@ namespace UnityEditor
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern void ReadEditorLocalizationResources();
+		internal static extern void ReadNativeEditorLocalizationResources();
+
+		internal static void ReadEditorLocalizationResources()
+		{
+			LocalizationDatabase.ReadNativeEditorLocalizationResources();
+		}
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -30,6 +45,10 @@ namespace UnityEditor
 		[GeneratedByOldBindingsGenerator, ThreadAndSerializationSafe]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern string GetLocalizedString(string original);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern string GetLocalizationResourceFolder();
 
 		public static string MarkForTranslation(string value)
 		{

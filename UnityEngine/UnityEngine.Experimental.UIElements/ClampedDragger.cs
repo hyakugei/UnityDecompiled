@@ -73,51 +73,47 @@ namespace UnityEngine.Experimental.UIElements
 			this.dragging += dragHandler;
 		}
 
-		public override EventPropagation HandleEvent(Event evt, VisualElement finalTarget)
+		protected override void RegisterCallbacksOnTarget()
 		{
-			EventType type = evt.type;
-			EventPropagation result;
-			if (type != EventType.MouseDown)
+			base.target.RegisterCallback<MouseDownEvent>(new EventCallback<MouseDownEvent>(this.OnMouseDown), Capture.NoCapture);
+			base.target.RegisterCallback<MouseMoveEvent>(new EventCallback<MouseMoveEvent>(this.OnMouseMove), Capture.NoCapture);
+			base.target.RegisterCallback<MouseUpEvent>(new EventCallback<MouseUpEvent>(base.OnMouseUp), Capture.NoCapture);
+		}
+
+		protected override void UnregisterCallbacksFromTarget()
+		{
+			base.target.UnregisterCallback<MouseDownEvent>(new EventCallback<MouseDownEvent>(this.OnMouseDown), Capture.NoCapture);
+			base.target.UnregisterCallback<MouseMoveEvent>(new EventCallback<MouseMoveEvent>(this.OnMouseMove), Capture.NoCapture);
+			base.target.UnregisterCallback<MouseUpEvent>(new EventCallback<MouseUpEvent>(base.OnMouseUp), Capture.NoCapture);
+		}
+
+		private new void OnMouseDown(MouseDownEvent evt)
+		{
+			if (base.CanStartManipulation(evt))
 			{
-				if (type != EventType.MouseDrag)
-				{
-					if (type == EventType.MouseUp)
-					{
-						if (base.CanStopManipulation(evt))
-						{
-							result = base.HandleEvent(evt, finalTarget);
-							return result;
-						}
-					}
-				}
-				else if (this.HasCapture())
-				{
-					base.HandleEvent(evt, finalTarget);
-					if (this.dragDirection == ClampedDragger.DragDirection.None)
-					{
-						this.dragDirection = ClampedDragger.DragDirection.Free;
-					}
-					if (this.dragDirection == ClampedDragger.DragDirection.Free)
-					{
-						if (this.dragging != null)
-						{
-							this.dragging();
-						}
-					}
-					result = EventPropagation.Stop;
-					return result;
-				}
-			}
-			else if (base.CanStartManipulation(evt))
-			{
-				this.startMousePosition = evt.mousePosition;
+				this.startMousePosition = evt.localMousePosition;
 				this.dragDirection = ClampedDragger.DragDirection.None;
-				base.HandleEvent(evt, finalTarget);
-				result = EventPropagation.Stop;
-				return result;
+				base.OnMouseDown(evt);
 			}
-			result = EventPropagation.Continue;
-			return result;
+		}
+
+		private new void OnMouseMove(MouseMoveEvent evt)
+		{
+			if (base.target.HasCapture())
+			{
+				base.OnMouseMove(evt);
+				if (this.dragDirection == ClampedDragger.DragDirection.None)
+				{
+					this.dragDirection = ClampedDragger.DragDirection.Free;
+				}
+				if (this.dragDirection == ClampedDragger.DragDirection.Free)
+				{
+					if (this.dragging != null)
+					{
+						this.dragging();
+					}
+				}
+			}
 		}
 	}
 }

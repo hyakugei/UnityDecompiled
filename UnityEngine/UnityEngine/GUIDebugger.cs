@@ -27,5 +27,18 @@ namespace UnityEngine
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void LogLayoutEndGroup();
+
+		public static void LogBeginProperty(string targetTypeAssemblyQualifiedName, string path, Rect position)
+		{
+			GUIDebugger.INTERNAL_CALL_LogBeginProperty(targetTypeAssemblyQualifiedName, path, ref position);
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void INTERNAL_CALL_LogBeginProperty(string targetTypeAssemblyQualifiedName, string path, ref Rect position);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern void LogEndProperty();
 	}
 }

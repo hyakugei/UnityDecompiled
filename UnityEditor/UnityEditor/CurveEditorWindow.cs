@@ -47,6 +47,8 @@ namespace UnityEditor
 		[SerializeField]
 		private GUIView delegateView;
 
+		private Action<AnimationCurve> m_OnCurveChanged;
+
 		internal static CurveEditorWindow.Styles ms_Styles;
 
 		public static CurveEditorWindow instance
@@ -189,6 +191,9 @@ namespace UnityEditor
 				vertically = false;
 			}
 			this.m_CurveEditor.FrameSelected(horizontally, vertically);
+			base.titleContent = new GUIContent("Curve");
+			base.minSize = new Vector2(240f, 286f);
+			base.maxSize = new Vector2(10000f, 10000f);
 		}
 
 		private bool GetNormalizationRect(out Rect normalizationRect)
@@ -286,7 +291,10 @@ namespace UnityEditor
 
 		private void OnDestroy()
 		{
-			this.m_CurvePresets.GetPresetLibraryEditor().UnloadUsedLibraries();
+			if (this.m_CurvePresets != null)
+			{
+				this.m_CurvePresets.GetPresetLibraryEditor().UnloadUsedLibraries();
+			}
 		}
 
 		private void OnDisable()
@@ -310,11 +318,17 @@ namespace UnityEditor
 		public void Show(GUIView viewToUpdate, CurveEditorSettings settings)
 		{
 			this.delegateView = viewToUpdate;
+			this.m_OnCurveChanged = null;
 			this.Init(settings);
 			base.ShowAuxWindow();
-			base.titleContent = new GUIContent("Curve");
-			base.minSize = new Vector2(240f, 286f);
-			base.maxSize = new Vector2(10000f, 10000f);
+		}
+
+		public void Show(Action<AnimationCurve> onCurveChanged, CurveEditorSettings settings)
+		{
+			this.m_OnCurveChanged = onCurveChanged;
+			this.delegateView = null;
+			this.Init(settings);
+			base.ShowAuxWindow();
 		}
 
 		private CurveWrapper[] GetCurveWrapperArray()
@@ -479,7 +493,7 @@ namespace UnityEditor
 		private void OnGUI()
 		{
 			bool flag = Event.current.type == EventType.MouseUp;
-			if (this.delegateView == null)
+			if (this.delegateView == null && this.m_OnCurveChanged == null)
 			{
 				this.m_Curve = null;
 			}
@@ -603,6 +617,10 @@ namespace UnityEditor
 				{
 					GUIUtility.ExitGUI();
 				}
+			}
+			if (this.m_OnCurveChanged != null)
+			{
+				this.m_OnCurveChanged(CurveEditorWindow.curve);
 			}
 			GUI.changed = true;
 		}

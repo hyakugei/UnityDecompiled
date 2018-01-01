@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.Events;
@@ -42,6 +43,7 @@ namespace UnityEditor
 
 		public static EditorApplication.CallbackFunction modifierKeysChanged;
 
+		[Obsolete("Use EditorApplication.playModeStateChanged and/or EditorApplication.pauseStateChanged")]
 		public static EditorApplication.CallbackFunction playmodeStateChanged;
 
 		internal static EditorApplication.CallbackFunction globalEventHandler;
@@ -59,6 +61,58 @@ namespace UnityEditor
 
 		[CompilerGenerated]
 		private static EditorApplication.CallbackFunction <>f__mg$cache1;
+
+		public static event Action<PauseState> pauseStateChanged
+		{
+			add
+			{
+				Action<PauseState> action = EditorApplication.pauseStateChanged;
+				Action<PauseState> action2;
+				do
+				{
+					action2 = action;
+					action = Interlocked.CompareExchange<Action<PauseState>>(ref EditorApplication.pauseStateChanged, (Action<PauseState>)Delegate.Combine(action2, value), action);
+				}
+				while (action != action2);
+			}
+			remove
+			{
+				Action<PauseState> action = EditorApplication.pauseStateChanged;
+				Action<PauseState> action2;
+				do
+				{
+					action2 = action;
+					action = Interlocked.CompareExchange<Action<PauseState>>(ref EditorApplication.pauseStateChanged, (Action<PauseState>)Delegate.Remove(action2, value), action);
+				}
+				while (action != action2);
+			}
+		}
+
+		public static event Action<PlayModeStateChange> playModeStateChanged
+		{
+			add
+			{
+				Action<PlayModeStateChange> action = EditorApplication.playModeStateChanged;
+				Action<PlayModeStateChange> action2;
+				do
+				{
+					action2 = action;
+					action = Interlocked.CompareExchange<Action<PlayModeStateChange>>(ref EditorApplication.playModeStateChanged, (Action<PlayModeStateChange>)Delegate.Combine(action2, value), action);
+				}
+				while (action != action2);
+			}
+			remove
+			{
+				Action<PlayModeStateChange> action = EditorApplication.playModeStateChanged;
+				Action<PlayModeStateChange> action2;
+				do
+				{
+					action2 = action;
+					action = Interlocked.CompareExchange<Action<PlayModeStateChange>>(ref EditorApplication.playModeStateChanged, (Action<PlayModeStateChange>)Delegate.Remove(action2, value), action);
+				}
+				while (action != action2);
+			}
+		}
 
 		public static extern bool isPlaying
 		{
@@ -109,6 +163,13 @@ namespace UnityEditor
 		}
 
 		public static extern ScriptingRuntimeVersion scriptingRuntimeVersion
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+		}
+
+		internal static extern bool useLibmonoBackendForIl2cpp
 		{
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
@@ -269,6 +330,11 @@ namespace UnityEditor
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern void SetSceneRepaintDirty();
 
+		public static void QueuePlayerLoopUpdate()
+		{
+			EditorApplication.SetSceneRepaintDirty();
+		}
+
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern void UpdateSceneIfNeeded();
@@ -428,11 +494,27 @@ namespace UnityEditor
 			}
 		}
 
-		private static void Internal_PlaymodeStateChanged()
+		private static void Internal_PauseStateChanged(PauseState state)
 		{
 			if (EditorApplication.playmodeStateChanged != null)
 			{
 				EditorApplication.playmodeStateChanged();
+			}
+			if (EditorApplication.pauseStateChanged != null)
+			{
+				EditorApplication.pauseStateChanged(state);
+			}
+		}
+
+		private static void Internal_PlayModeStateChanged(PlayModeStateChange state)
+		{
+			if (EditorApplication.playmodeStateChanged != null)
+			{
+				EditorApplication.playmodeStateChanged();
+			}
+			if (EditorApplication.playModeStateChanged != null)
+			{
+				EditorApplication.playModeStateChanged(state);
 			}
 		}
 

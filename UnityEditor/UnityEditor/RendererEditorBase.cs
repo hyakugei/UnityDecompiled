@@ -36,12 +36,6 @@ namespace UnityEditor
 
 			private GUIContent m_LightProbeVolumeUnsupportedOnTreesNote = EditorGUIUtility.TextContent("The Light Probe Proxy Volume feature is not supported on tree rendering. Simple 'Blend Probes' mode will be used instead.");
 
-			private string[] m_ReflectionProbeUsageNames = (from x in Enum.GetNames(typeof(ReflectionProbeUsage))
-			select ObjectNames.NicifyVariableName(x)).ToArray<string>();
-
-			private string[] m_LightProbeUsageNames = (from x in Enum.GetNames(typeof(LightProbeUsage))
-			select ObjectNames.NicifyVariableName(x)).ToArray<string>();
-
 			private GUIContent[] m_ReflectionProbeUsageOptions = (from x in (from x in Enum.GetNames(typeof(ReflectionProbeUsage))
 			select ObjectNames.NicifyVariableName(x)).ToArray<string>()
 			select new GUIContent(x)).ToArray<GUIContent>();
@@ -80,7 +74,7 @@ namespace UnityEditor
 					{
 						LightProbeProxyVolume component = renderer.GetComponent<LightProbeProxyVolume>();
 						bool flag = renderer.lightProbeProxyVolumeOverride == null || renderer.lightProbeProxyVolumeOverride.GetComponent<LightProbeProxyVolume>() == null;
-						if (component == null && flag)
+						if (component == null && flag && LightProbes.AreLightProbesAllowed(renderer))
 						{
 							EditorGUILayout.HelpBox(this.m_LightProbeVolumeNote.text, MessageType.Warning);
 						}
@@ -109,26 +103,22 @@ namespace UnityEditor
 					}
 					else if (isDeferredReflections)
 					{
-						ModuleUI.GUIPopup(this.m_ReflectionProbeUsageStyle, 3, this.m_ReflectionProbeUsageNames, new GUILayoutOption[0]);
+						ModuleUI.GUIPopup(this.m_ReflectionProbeUsageStyle, 3, this.m_ReflectionProbeUsageOptions, new GUILayoutOption[0]);
 					}
 					else
 					{
-						ModuleUI.GUIPopup(this.m_ReflectionProbeUsageStyle, this.m_ReflectionProbeUsage, this.m_ReflectionProbeUsageNames, new GUILayoutOption[0]);
+						ModuleUI.GUIPopup(this.m_ReflectionProbeUsageStyle, this.m_ReflectionProbeUsage, this.m_ReflectionProbeUsageOptions, new GUILayoutOption[0]);
 					}
 				}
 			}
 
-			internal void RenderLightProbeUsage(int selectionCount, Renderer renderer, bool useMiniStyle, bool usesLightMaps)
+			internal void RenderLightProbeUsage(int selectionCount, Renderer renderer, bool useMiniStyle, bool lightProbeAllowed)
 			{
-				using (new EditorGUI.DisabledScope(usesLightMaps))
+				using (new EditorGUI.DisabledScope(!lightProbeAllowed))
 				{
 					if (!useMiniStyle)
 					{
-						if (usesLightMaps)
-						{
-							EditorGUILayout.EnumPopup(this.m_LightProbeUsageStyle, LightProbeUsage.Off, new GUILayoutOption[0]);
-						}
-						else
+						if (lightProbeAllowed)
 						{
 							EditorGUILayout.Popup(this.m_LightProbeUsage, this.m_LightProbeBlendModeOptions, this.m_LightProbeUsageStyle, new GUILayoutOption[0]);
 							if (!this.m_LightProbeUsage.hasMultipleDifferentValues && this.m_LightProbeUsage.intValue == 2)
@@ -138,20 +128,24 @@ namespace UnityEditor
 								EditorGUI.indentLevel--;
 							}
 						}
+						else
+						{
+							EditorGUILayout.EnumPopup(this.m_LightProbeUsageStyle, LightProbeUsage.Off, new GUILayoutOption[0]);
+						}
 					}
-					else if (usesLightMaps)
+					else if (lightProbeAllowed)
 					{
-						ModuleUI.GUIPopup(this.m_LightProbeUsageStyle, 0, this.m_LightProbeUsageNames, new GUILayoutOption[0]);
-					}
-					else
-					{
-						ModuleUI.GUIPopup(this.m_LightProbeUsageStyle, this.m_LightProbeUsage, this.m_LightProbeUsageNames, new GUILayoutOption[0]);
+						ModuleUI.GUIPopup(this.m_LightProbeUsageStyle, this.m_LightProbeUsage, this.m_LightProbeBlendModeOptions, new GUILayoutOption[0]);
 						if (!this.m_LightProbeUsage.hasMultipleDifferentValues && this.m_LightProbeUsage.intValue == 2)
 						{
 							EditorGUI.indentLevel++;
 							ModuleUI.GUIObject(this.m_LightProbeVolumeOverrideStyle, this.m_LightProbeVolumeOverride, new GUILayoutOption[0]);
 							EditorGUI.indentLevel--;
 						}
+					}
+					else
+					{
+						ModuleUI.GUIPopup(this.m_LightProbeUsageStyle, 0, this.m_LightProbeBlendModeOptions, new GUILayoutOption[0]);
 					}
 				}
 				Tree component = renderer.GetComponent<Tree>();
@@ -187,21 +181,22 @@ namespace UnityEditor
 				int selectionCount = 1;
 				bool flag = SceneView.IsUsingDeferredRenderingPath();
 				bool flag2 = flag && GraphicsSettings.GetShaderMode(BuiltinShaderType.DeferredReflections) != BuiltinShaderMode.Disabled;
-				bool usesLightMaps = false;
+				bool lightProbeAllowed = true;
 				if (selection != null)
 				{
 					for (int i = 0; i < selection.Length; i++)
 					{
 						UnityEngine.Object @object = selection[i];
-						if (LightmapEditorSettings.IsLightmappedOrDynamicLightmappedForRendering((Renderer)@object))
+						if (!LightProbes.AreLightProbesAllowed((Renderer)@object))
 						{
-							usesLightMaps = true;
+							lightProbeAllowed = false;
 							break;
 						}
 					}
 					selectionCount = selection.Length;
 				}
-				this.RenderLightProbeUsage(selectionCount, renderer, useMiniStyle, usesLightMaps);
+				this.RenderLightProbeUsage(selectionCount, renderer, useMiniStyle, lightProbeAllowed);
+				this.RenderLightProbeProxyVolumeWarningNote(renderer, selectionCount);
 				this.RenderReflectionProbeUsage(useMiniStyle, flag, flag2);
 				bool flag3 = this.RenderProbeAnchor(useMiniStyle);
 				if (flag3)
@@ -221,7 +216,6 @@ namespace UnityEditor
 				{
 					EditorGUILayout.HelpBox(this.m_DeferredNote.text, MessageType.Info);
 				}
-				this.RenderLightProbeProxyVolumeWarningNote(renderer, selectionCount);
 			}
 
 			internal static void ShowClosestReflectionProbes(List<ReflectionProbeBlendInfo> blendInfos)
@@ -260,9 +254,13 @@ namespace UnityEditor
 			}
 		}
 
+		private GUIContent m_DynamicOccludeeLabel = EditorGUIUtility.TextContent("Dynamic Occluded|Controls if dynamic occlusion culling should be performed for this renderer.");
+
 		private SerializedProperty m_SortingOrder;
 
 		private SerializedProperty m_SortingLayerID;
+
+		private SerializedProperty m_DynamicOccludee;
 
 		protected RendererEditorBase.Probes m_Probes;
 
@@ -270,6 +268,7 @@ namespace UnityEditor
 		{
 			this.m_SortingOrder = base.serializedObject.FindProperty("m_SortingOrder");
 			this.m_SortingLayerID = base.serializedObject.FindProperty("m_SortingLayerID");
+			this.m_DynamicOccludee = base.serializedObject.FindProperty("m_DynamicOccludee");
 		}
 
 		protected void RenderSortingLayerFields()
@@ -287,6 +286,11 @@ namespace UnityEditor
 		protected void RenderProbeFields()
 		{
 			this.m_Probes.OnGUI(base.targets, (Renderer)base.target, false);
+		}
+
+		protected void CullDynamicFieldGUI()
+		{
+			EditorGUILayout.PropertyField(this.m_DynamicOccludee, this.m_DynamicOccludeeLabel, new GUILayoutOption[0]);
 		}
 
 		protected void RenderCommonProbeFields(bool useMiniStyle)

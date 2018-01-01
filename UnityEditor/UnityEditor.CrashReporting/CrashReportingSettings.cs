@@ -27,5 +27,17 @@ namespace UnityEditor.CrashReporting
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern string GetEventUrl();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void SetEventUrl(string eventUrl);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern string GetNativeEventUrl();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void SetNativeEventUrl(string eventUrl);
 	}
 }

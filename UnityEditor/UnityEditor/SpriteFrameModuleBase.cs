@@ -304,7 +304,7 @@ namespace UnityEditor
 
 		public virtual void OnModuleActivate()
 		{
-			this.spriteImportMode = SpriteUtility.GetSpriteImportMode(this.assetDatabase, this.spriteEditor.selectedTexture);
+			this.spriteImportMode = SpriteUtility.GetSpriteImportMode(this.spriteEditor.spriteEditorDataProvider);
 		}
 
 		public abstract void OnModuleDeactivate();

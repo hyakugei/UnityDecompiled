@@ -26,7 +26,9 @@ namespace UnityEditorInternal
 
 		private readonly LinkXmlReader m_linkXmlReader = new LinkXmlReader();
 
-		public IL2CPPBuilder(string tempFolder, string stagingAreaData, IIl2CppPlatformProvider platformProvider, Action<string> modifyOutputBeforeCompile, RuntimeClassRegistry runtimeClassRegistry, bool debugBuild)
+		private readonly bool m_BuildForMonoRuntime;
+
+		public IL2CPPBuilder(string tempFolder, string stagingAreaData, IIl2CppPlatformProvider platformProvider, Action<string> modifyOutputBeforeCompile, RuntimeClassRegistry runtimeClassRegistry, bool debugBuild, bool buildForMonoRuntime)
 		{
 			this.m_TempFolder = tempFolder;
 			this.m_StagingAreaData = stagingAreaData;
@@ -34,6 +36,7 @@ namespace UnityEditorInternal
 			this.m_ModifyOutputBeforeCompile = modifyOutputBeforeCompile;
 			this.m_RuntimeClassRegistry = runtimeClassRegistry;
 			this.m_DebugBuild = debugBuild;
+			this.m_BuildForMonoRuntime = buildForMonoRuntime;
 		}
 
 		public void Run()
@@ -156,6 +159,10 @@ namespace UnityEditorInternal
 				{
 					list.Add("--development-mode");
 				}
+				if (this.m_BuildForMonoRuntime)
+				{
+					list.Add("--mono-runtime");
+				}
 				BuildTargetGroup buildTargetGroup = BuildPipeline.GetBuildTargetGroup(this.m_PlatformProvider.target);
 				if (PlayerSettings.GetApiCompatibilityLevel(buildTargetGroup) == ApiCompatibilityLevel.NET_4_6)
 				{
@@ -239,7 +246,8 @@ namespace UnityEditorInternal
 				if (SystemInfo.operatingSystem.StartsWith("Mac OS X 10."))
 				{
 					string version = SystemInfo.operatingSystem.Substring(9);
-					if (new Version(version) >= new Version(10, 9))
+					Version v = new Version(version);
+					if (v >= new Version(10, 9) && v < new Version(10, 13))
 					{
 						flag = true;
 					}

@@ -28,9 +28,9 @@ internal class DesktopStandaloneBuildWindowExtension : DefaultBuildWindowExtensi
 			list.Add(BuildTarget.StandaloneWindows);
 			list2.Add(EditorGUIUtility.TextContent("Windows"));
 		}
-		if (ModuleManager.IsPlatformSupportLoaded(ModuleManager.GetTargetStringFromBuildTarget(BuildTarget.StandaloneOSXIntel)))
+		if (ModuleManager.IsPlatformSupportLoaded(ModuleManager.GetTargetStringFromBuildTarget(BuildTarget.StandaloneOSX)))
 		{
-			list.Add(BuildTarget.StandaloneOSXIntel);
+			list.Add(BuildTarget.StandaloneOSX);
 			list2.Add(EditorGUIUtility.TextContent("Mac OS X"));
 		}
 		if (ModuleManager.IsPlatformSupportLoaded(ModuleManager.GetTargetStringFromBuildTarget(BuildTarget.StandaloneLinux)))
@@ -53,13 +53,13 @@ internal class DesktopStandaloneBuildWindowExtension : DefaultBuildWindowExtensi
 		{
 			result = BuildTarget.StandaloneWindows;
 		}
-		else if (Application.platform == RuntimePlatform.OSXEditor && ModuleManager.IsPlatformSupportLoaded(ModuleManager.GetTargetStringFromBuildTarget(BuildTarget.StandaloneOSXIntel)))
+		else if (Application.platform == RuntimePlatform.OSXEditor && ModuleManager.IsPlatformSupportLoaded(ModuleManager.GetTargetStringFromBuildTarget(BuildTarget.StandaloneOSX)))
 		{
-			result = BuildTarget.StandaloneOSXIntel;
+			result = BuildTarget.StandaloneOSX;
 		}
-		else if (ModuleManager.IsPlatformSupportLoaded(ModuleManager.GetTargetStringFromBuildTarget(BuildTarget.StandaloneOSXIntel)))
+		else if (ModuleManager.IsPlatformSupportLoaded(ModuleManager.GetTargetStringFromBuildTarget(BuildTarget.StandaloneOSX)))
 		{
-			result = BuildTarget.StandaloneOSXIntel;
+			result = BuildTarget.StandaloneOSX;
 		}
 		else if (ModuleManager.IsPlatformSupportLoaded(ModuleManager.GetTargetStringFromBuildTarget(BuildTarget.StandaloneLinux)))
 		{
@@ -77,53 +77,25 @@ internal class DesktopStandaloneBuildWindowExtension : DefaultBuildWindowExtensi
 		Dictionary<GUIContent, BuildTarget> result;
 		switch (target)
 		{
-		case BuildTarget.StandaloneOSXUniversal:
-		case BuildTarget.StandaloneOSXIntel:
-			goto IL_BF;
-		case (BuildTarget)3:
-			IL_19:
-			switch (target)
+		case BuildTarget.StandaloneLinux:
+			goto IL_62;
+		case (BuildTarget)18:
+			IL_16:
+			if (target == BuildTarget.StandaloneLinux64 || target == BuildTarget.StandaloneLinuxUniversal)
 			{
-			case BuildTarget.StandaloneLinux64:
-			case BuildTarget.StandaloneLinuxUniversal:
-				goto IL_7C;
-			case BuildTarget.WP8Player:
-				IL_32:
-				switch (target)
-				{
-				case BuildTarget.StandaloneLinux:
-					goto IL_7C;
-				case BuildTarget.StandaloneWindows64:
-					goto IL_4C;
-				}
+				goto IL_62;
+			}
+			if (target != BuildTarget.StandaloneWindows)
+			{
 				result = null;
 				return result;
-			case BuildTarget.StandaloneOSXIntel64:
-				goto IL_BF;
 			}
 			goto IL_32;
-			IL_7C:
-			result = new Dictionary<GUIContent, BuildTarget>
-			{
-				{
-					EditorGUIUtility.TextContent("x86"),
-					BuildTarget.StandaloneLinux
-				},
-				{
-					EditorGUIUtility.TextContent("x86_64"),
-					BuildTarget.StandaloneLinux64
-				},
-				{
-					EditorGUIUtility.TextContent("x86 + x86_64 (Universal)"),
-					BuildTarget.StandaloneLinuxUniversal
-				}
-			};
-			return result;
-		case BuildTarget.StandaloneWindows:
-			goto IL_4C;
+		case BuildTarget.StandaloneWindows64:
+			goto IL_32;
 		}
-		goto IL_19;
-		IL_4C:
+		goto IL_16;
+		IL_32:
 		result = new Dictionary<GUIContent, BuildTarget>
 		{
 			{
@@ -136,20 +108,20 @@ internal class DesktopStandaloneBuildWindowExtension : DefaultBuildWindowExtensi
 			}
 		};
 		return result;
-		IL_BF:
+		IL_62:
 		result = new Dictionary<GUIContent, BuildTarget>
 		{
 			{
 				EditorGUIUtility.TextContent("x86"),
-				BuildTarget.StandaloneOSXIntel
+				BuildTarget.StandaloneLinux
 			},
 			{
 				EditorGUIUtility.TextContent("x86_64"),
-				BuildTarget.StandaloneOSXIntel64
+				BuildTarget.StandaloneLinux64
 			},
 			{
-				EditorGUIUtility.TextContent("Universal"),
-				BuildTarget.StandaloneOSXUniversal
+				EditorGUIUtility.TextContent("x86 + x86_64 (Universal)"),
+				BuildTarget.StandaloneLinuxUniversal
 			}
 		};
 		return result;
@@ -160,7 +132,7 @@ internal class DesktopStandaloneBuildWindowExtension : DefaultBuildWindowExtensi
 		BuildTarget result;
 		switch (target)
 		{
-		case BuildTarget.StandaloneOSXUniversal:
+		case BuildTarget.StandaloneOSX:
 		case BuildTarget.StandaloneOSXIntel:
 			goto IL_5B;
 		case (BuildTarget)3:
@@ -196,7 +168,7 @@ internal class DesktopStandaloneBuildWindowExtension : DefaultBuildWindowExtensi
 		result = BuildTarget.StandaloneWindows;
 		return result;
 		IL_5B:
-		result = BuildTarget.StandaloneOSXIntel;
+		result = BuildTarget.StandaloneOSX;
 		return result;
 	}
 

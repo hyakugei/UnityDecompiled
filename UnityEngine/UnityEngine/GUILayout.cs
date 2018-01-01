@@ -478,9 +478,9 @@ namespace UnityEngine
 			return GUILayout.Toolbar(selected, GUIContent.Temp(images), GUI.skin.button, options);
 		}
 
-		public static int Toolbar(int selected, GUIContent[] content, params GUILayoutOption[] options)
+		public static int Toolbar(int selected, GUIContent[] contents, params GUILayoutOption[] options)
 		{
-			return GUILayout.Toolbar(selected, content, GUI.skin.button, options);
+			return GUILayout.Toolbar(selected, contents, GUI.skin.button, options);
 		}
 
 		public static int Toolbar(int selected, string[] texts, GUIStyle style, params GUILayoutOption[] options)
@@ -493,7 +493,22 @@ namespace UnityEngine
 			return GUILayout.Toolbar(selected, GUIContent.Temp(images), style, options);
 		}
 
+		public static int Toolbar(int selected, string[] texts, GUIStyle style, GUI.ToolbarButtonSize buttonSize, params GUILayoutOption[] options)
+		{
+			return GUILayout.Toolbar(selected, GUIContent.Temp(texts), style, buttonSize, options);
+		}
+
+		public static int Toolbar(int selected, Texture[] images, GUIStyle style, GUI.ToolbarButtonSize buttonSize, params GUILayoutOption[] options)
+		{
+			return GUILayout.Toolbar(selected, GUIContent.Temp(images), style, buttonSize, options);
+		}
+
 		public static int Toolbar(int selected, GUIContent[] contents, GUIStyle style, params GUILayoutOption[] options)
+		{
+			return GUILayout.Toolbar(selected, contents, style, GUI.ToolbarButtonSize.Fixed, options);
+		}
+
+		public static int Toolbar(int selected, GUIContent[] contents, GUIStyle style, GUI.ToolbarButtonSize buttonSize, params GUILayoutOption[] options)
 		{
 			GUIStyle gUIStyle;
 			GUIStyle gUIStyle2;
@@ -504,20 +519,22 @@ namespace UnityEngine
 			GUIStyle gUIStyle4 = (num <= 1) ? style : gUIStyle;
 			GUIStyle gUIStyle5 = (num <= 1) ? style : gUIStyle2;
 			GUIStyle gUIStyle6 = (num <= 1) ? style : gUIStyle3;
-			int num2 = gUIStyle4.margin.left;
+			float num2 = 0f;
 			for (int i = 0; i < contents.Length; i++)
 			{
 				if (i == num - 2)
 				{
-					gUIStyle4 = gUIStyle5;
 					gUIStyle5 = gUIStyle6;
 				}
-				if (i == num - 1)
-				{
-					gUIStyle4 = gUIStyle6;
-				}
 				Vector2 vector2 = gUIStyle4.CalcSize(contents[i]);
-				if (vector2.x > vector.x)
+				if (buttonSize != GUI.ToolbarButtonSize.Fixed)
+				{
+					if (buttonSize == GUI.ToolbarButtonSize.FitToContents)
+					{
+						vector.x += vector2.x;
+					}
+				}
+				else if (vector2.x > vector.x)
 				{
 					vector.x = vector2.x;
 				}
@@ -527,15 +544,26 @@ namespace UnityEngine
 				}
 				if (i == num - 1)
 				{
-					num2 += gUIStyle4.margin.right;
+					num2 += (float)gUIStyle4.margin.right;
 				}
 				else
 				{
-					num2 += Mathf.Max(gUIStyle4.margin.right, gUIStyle5.margin.left);
+					num2 += (float)Mathf.Max(gUIStyle4.margin.right, gUIStyle5.margin.left);
+				}
+				gUIStyle4 = gUIStyle5;
+			}
+			if (buttonSize != GUI.ToolbarButtonSize.Fixed)
+			{
+				if (buttonSize == GUI.ToolbarButtonSize.FitToContents)
+				{
+					vector.x += num2;
 				}
 			}
-			vector.x = vector.x * (float)contents.Length + (float)num2;
-			return GUI.Toolbar(GUILayoutUtility.GetRect(vector.x, vector.y, style, options), selected, contents, style);
+			else
+			{
+				vector.x = vector.x * (float)contents.Length + num2;
+			}
+			return GUI.Toolbar(GUILayoutUtility.GetRect(vector.x, vector.y, style, options), selected, contents, style, buttonSize);
 		}
 
 		public static int SelectionGrid(int selected, string[] texts, int xCount, params GUILayoutOption[] options)

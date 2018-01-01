@@ -34,10 +34,32 @@ namespace UnityEditor.Scripting.ScriptCompilation
 			set;
 		}
 
+		public EditorScriptCompilationOptions CompilationOptions
+		{
+			get;
+			set;
+		}
+
 		public string FilenameSuffix
 		{
 			get;
 			set;
+		}
+
+		public bool BuildingForEditor
+		{
+			get
+			{
+				return (this.CompilationOptions & EditorScriptCompilationOptions.BuildingForEditor) == EditorScriptCompilationOptions.BuildingForEditor;
+			}
+		}
+
+		public bool BuildingDevelopmentBuild
+		{
+			get
+			{
+				return (this.CompilationOptions & EditorScriptCompilationOptions.BuildingDevelopmentBuild) == EditorScriptCompilationOptions.BuildingDevelopmentBuild;
+			}
 		}
 
 		public ScriptAssemblySettings()

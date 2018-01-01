@@ -852,15 +852,33 @@ namespace UnityEditor
 			}
 			else
 			{
-				Bounds selectionBounds = this.selectionBounds;
-				selectionBounds.size = new Vector3(Mathf.Max(selectionBounds.size.x, 0.1f), Mathf.Max(selectionBounds.size.y, 0.1f), 0f);
+				Bounds bounds = default(Bounds);
+				if (this.selectedCurves.Count == 1)
+				{
+					CurveSelection curveSelection = this.selectedCurves[0];
+					CurveWrapper curveWrapperFromSelection = this.GetCurveWrapperFromSelection(curveSelection);
+					bounds = new Bounds(new Vector2(curveWrapperFromSelection.curve[curveSelection.key].time, curveWrapperFromSelection.curve[curveSelection.key].value), Vector2.zero);
+					if (curveSelection.key - 1 >= 0)
+					{
+						bounds.Encapsulate(new Vector2(curveWrapperFromSelection.curve[curveSelection.key - 1].time, curveWrapperFromSelection.curve[curveSelection.key - 1].value));
+					}
+					if (curveSelection.key + 1 < curveWrapperFromSelection.curve.length)
+					{
+						bounds.Encapsulate(new Vector2(curveWrapperFromSelection.curve[curveSelection.key + 1].time, curveWrapperFromSelection.curve[curveSelection.key + 1].value));
+					}
+				}
+				else
+				{
+					bounds = this.selectionBounds;
+				}
+				bounds.size = new Vector3(Mathf.Max(bounds.size.x, 0.1f), Mathf.Max(bounds.size.y, 0.1f), 0f);
 				if (horizontally)
 				{
-					base.SetShownHRangeInsideMargins(selectionBounds.min.x, selectionBounds.max.x);
+					base.SetShownHRangeInsideMargins(bounds.min.x, bounds.max.x);
 				}
 				if (vertically)
 				{
-					base.SetShownVRangeInsideMargins(selectionBounds.min.y, selectionBounds.max.y);
+					base.SetShownVRangeInsideMargins(bounds.min.y, bounds.max.y);
 				}
 			}
 		}
@@ -1243,7 +1261,7 @@ namespace UnityEditor
 								AnimationUtility.SetKeyLeftTangentMode(ref keyframeFromSelection, AnimationUtility.TangentMode.Free);
 							}
 						}
-						selectedTangentPoint.key = curveWrapperFromSelection2.curve.MoveKey(selectedTangentPoint.key, keyframeFromSelection);
+						selectedTangentPoint.key = curveWrapperFromSelection2.MoveKey(selectedTangentPoint.key, ref keyframeFromSelection);
 						AnimationUtility.UpdateTangentsFromModeSurrounding(curveWrapperFromSelection2.curve, selectedTangentPoint.key);
 						curveWrapperFromSelection2.changed = true;
 						GUI.changed = true;
@@ -1532,6 +1550,7 @@ namespace UnityEditor
 							if (current2.selected == CurveWrapper.SelectionMode.None)
 							{
 								CurveEditor.SavedCurve.SavedKeyFrame savedKeyFrame = action(current2, current);
+								curveWrapperFromID.PreProcessKey(ref savedKeyFrame.key);
 								sortedList[savedKeyFrame.key.time] = savedKeyFrame;
 							}
 						}
@@ -1540,6 +1559,7 @@ namespace UnityEditor
 							if (current3.selected != CurveWrapper.SelectionMode.None)
 							{
 								CurveEditor.SavedCurve.SavedKeyFrame savedKeyFrame2 = action(current3, current);
+								curveWrapperFromID.PreProcessKey(ref savedKeyFrame2.key);
 								sortedList[savedKeyFrame2.key.time] = savedKeyFrame2;
 							}
 						}
@@ -1904,7 +1924,7 @@ namespace UnityEditor
 			}
 			else
 			{
-				int num = cw.curve.AddKey(key);
+				int num = cw.AddKey(key);
 				CurveUtility.SetKeyModeFromContext(cw.curve, num);
 				AnimationUtility.UpdateTangentsFromModeSurrounding(cw.curve, num);
 				CurveSelection curveSelection = new CurveSelection(cw.id, num);
@@ -2601,15 +2621,18 @@ namespace UnityEditor
 						this.m_FocusedPointField = null;
 					}
 				}
-				if (current.type == EventType.KeyDown && (current.character == '\t' || current.character == '\u0019'))
+				if (current.type == EventType.KeyDown)
 				{
-					if (this.m_TimeWasEdited || this.m_ValueWasEdited)
+					if (current.character == '\t' || current.character == '\u0019')
 					{
-						this.SetSelectedKeyPositions(this.m_NewTime, this.m_NewValue, this.m_TimeWasEdited, this.m_ValueWasEdited);
-						this.m_PointEditingFieldPosition = this.GetPointEditionFieldPosition();
+						if (this.m_TimeWasEdited || this.m_ValueWasEdited)
+						{
+							this.SetSelectedKeyPositions(this.m_NewTime, this.m_NewValue, this.m_TimeWasEdited, this.m_ValueWasEdited);
+							this.m_PointEditingFieldPosition = this.GetPointEditionFieldPosition();
+						}
+						this.m_FocusedPointField = ((!(GUI.GetNameOfFocusedControl() == "pointValueField")) ? "pointValueField" : "pointTimeField");
+						current.Use();
 					}
-					this.m_FocusedPointField = ((!(GUI.GetNameOfFocusedControl() == "pointValueField")) ? "pointValueField" : "pointTimeField");
-					current.Use();
 				}
 				if (current.type == EventType.MouseDown)
 				{

@@ -3,7 +3,6 @@ using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
-	[RequiredByNativeCode]
 	internal class SliderState
 	{
 		public float dragStartPos;
@@ -11,5 +10,10 @@ namespace UnityEngine
 		public float dragStartValue;
 
 		public bool isDragging;
+
+		[RequiredByNativeCode]
+		public SliderState()
+		{
+		}
 	}
 }

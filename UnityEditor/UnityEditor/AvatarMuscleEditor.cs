@@ -698,6 +698,27 @@ namespace UnityEditor
 			int num = HumanTrait.BoneFromMuscle(muscleId);
 			if (num != -1)
 			{
+				if (!this.m_Modified[num].boolValue)
+				{
+					int num2 = HumanTrait.MuscleFromBone(num, 0);
+					int num3 = HumanTrait.MuscleFromBone(num, 1);
+					int num4 = HumanTrait.MuscleFromBone(num, 2);
+					if (num2 != -1 && num2 != muscleId)
+					{
+						this.m_MuscleMin[num2].floatValue = HumanTrait.GetMuscleDefaultMin(num2);
+						this.m_MuscleMax[num2].floatValue = HumanTrait.GetMuscleDefaultMax(num2);
+					}
+					if (num3 != -1 && num3 != muscleId)
+					{
+						this.m_MuscleMin[num3].floatValue = HumanTrait.GetMuscleDefaultMin(num3);
+						this.m_MuscleMax[num3].floatValue = HumanTrait.GetMuscleDefaultMax(num3);
+					}
+					if (num4 != -1 && num4 != muscleId)
+					{
+						this.m_MuscleMin[num4].floatValue = HumanTrait.GetMuscleDefaultMin(num4);
+						this.m_MuscleMax[num4].floatValue = HumanTrait.GetMuscleDefaultMax(num4);
+					}
+				}
 				this.m_Modified[num].boolValue = true;
 			}
 			this.m_FocusedMuscle = muscleId;

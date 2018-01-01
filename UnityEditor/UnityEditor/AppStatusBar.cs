@@ -15,10 +15,9 @@ namespace UnityEditor
 
 		private static GUIStyle background;
 
-		private static GUIStyle resize;
-
-		private void OnEnable()
+		protected override void OnEnable()
 		{
+			base.OnEnable();
 			AppStatusBar.s_AppStatusBar = this;
 			AppStatusBar.s_StatusWheel = new GUIContent[12];
 			for (int i = 0; i < 12; i++)
@@ -46,7 +45,7 @@ namespace UnityEditor
 			}
 		}
 
-		private void OnGUI()
+		protected override void OldOnGUI()
 		{
 			ConsoleWindow.LoadIcons();
 			if (AppStatusBar.background == null)

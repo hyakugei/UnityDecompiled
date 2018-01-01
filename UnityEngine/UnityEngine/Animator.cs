@@ -1070,81 +1070,117 @@ namespace UnityEngine
 		}
 
 		[ExcludeFromDocs]
-		public void CrossFadeInFixedTime(string stateName, float transitionDuration, int layer)
+		public void CrossFadeInFixedTime(string stateName, float fixedTransitionDuration, int layer, float fixedTimeOffset)
 		{
-			float fixedTime = 0f;
-			this.CrossFadeInFixedTime(stateName, transitionDuration, layer, fixedTime);
+			float normalizedTransitionTime = 0f;
+			this.CrossFadeInFixedTime(stateName, fixedTransitionDuration, layer, fixedTimeOffset, normalizedTransitionTime);
 		}
 
 		[ExcludeFromDocs]
-		public void CrossFadeInFixedTime(string stateName, float transitionDuration)
+		public void CrossFadeInFixedTime(string stateName, float fixedTransitionDuration, int layer)
 		{
-			float fixedTime = 0f;
-			int layer = -1;
-			this.CrossFadeInFixedTime(stateName, transitionDuration, layer, fixedTime);
+			float normalizedTransitionTime = 0f;
+			float fixedTimeOffset = 0f;
+			this.CrossFadeInFixedTime(stateName, fixedTransitionDuration, layer, fixedTimeOffset, normalizedTransitionTime);
 		}
 
-		public void CrossFadeInFixedTime(string stateName, float transitionDuration, [UnityEngine.Internal.DefaultValue("-1")] int layer, [UnityEngine.Internal.DefaultValue("0.0f")] float fixedTime)
+		[ExcludeFromDocs]
+		public void CrossFadeInFixedTime(string stateName, float fixedTransitionDuration)
 		{
-			this.CrossFadeInFixedTime(Animator.StringToHash(stateName), transitionDuration, layer, fixedTime);
+			float normalizedTransitionTime = 0f;
+			float fixedTimeOffset = 0f;
+			int layer = -1;
+			this.CrossFadeInFixedTime(stateName, fixedTransitionDuration, layer, fixedTimeOffset, normalizedTransitionTime);
+		}
+
+		public void CrossFadeInFixedTime(string stateName, float fixedTransitionDuration, [UnityEngine.Internal.DefaultValue("-1")] int layer, [UnityEngine.Internal.DefaultValue("0.0f")] float fixedTimeOffset, [UnityEngine.Internal.DefaultValue("0.0f")] float normalizedTransitionTime)
+		{
+			this.CrossFadeInFixedTime(Animator.StringToHash(stateName), fixedTransitionDuration, layer, fixedTimeOffset, normalizedTransitionTime);
 		}
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern void CrossFadeInFixedTime(int stateNameHash, float transitionDuration, [UnityEngine.Internal.DefaultValue("-1")] int layer, [UnityEngine.Internal.DefaultValue("0.0f")] float fixedTime);
+		public extern void CrossFadeInFixedTime(int stateHashName, float fixedTransitionDuration, [UnityEngine.Internal.DefaultValue("-1")] int layer, [UnityEngine.Internal.DefaultValue("0.0f")] float fixedTimeOffset, [UnityEngine.Internal.DefaultValue("0.0f")] float normalizedTransitionTime);
 
 		[ExcludeFromDocs]
-		public void CrossFadeInFixedTime(int stateNameHash, float transitionDuration, int layer)
+		public void CrossFadeInFixedTime(int stateHashName, float fixedTransitionDuration, int layer, float fixedTimeOffset)
 		{
-			float fixedTime = 0f;
-			this.CrossFadeInFixedTime(stateNameHash, transitionDuration, layer, fixedTime);
+			float normalizedTransitionTime = 0f;
+			this.CrossFadeInFixedTime(stateHashName, fixedTransitionDuration, layer, fixedTimeOffset, normalizedTransitionTime);
 		}
 
 		[ExcludeFromDocs]
-		public void CrossFadeInFixedTime(int stateNameHash, float transitionDuration)
+		public void CrossFadeInFixedTime(int stateHashName, float fixedTransitionDuration, int layer)
 		{
-			float fixedTime = 0f;
+			float normalizedTransitionTime = 0f;
+			float fixedTimeOffset = 0f;
+			this.CrossFadeInFixedTime(stateHashName, fixedTransitionDuration, layer, fixedTimeOffset, normalizedTransitionTime);
+		}
+
+		[ExcludeFromDocs]
+		public void CrossFadeInFixedTime(int stateHashName, float fixedTransitionDuration)
+		{
+			float normalizedTransitionTime = 0f;
+			float fixedTimeOffset = 0f;
 			int layer = -1;
-			this.CrossFadeInFixedTime(stateNameHash, transitionDuration, layer, fixedTime);
+			this.CrossFadeInFixedTime(stateHashName, fixedTransitionDuration, layer, fixedTimeOffset, normalizedTransitionTime);
 		}
 
 		[ExcludeFromDocs]
-		public void CrossFade(string stateName, float transitionDuration, int layer)
+		public void CrossFade(string stateName, float normalizedTransitionDuration, int layer, float normalizedTimeOffset)
 		{
-			float normalizedTime = float.NegativeInfinity;
-			this.CrossFade(stateName, transitionDuration, layer, normalizedTime);
+			float normalizedTransitionTime = 0f;
+			this.CrossFade(stateName, normalizedTransitionDuration, layer, normalizedTimeOffset, normalizedTransitionTime);
 		}
 
 		[ExcludeFromDocs]
-		public void CrossFade(string stateName, float transitionDuration)
+		public void CrossFade(string stateName, float normalizedTransitionDuration, int layer)
 		{
-			float normalizedTime = float.NegativeInfinity;
+			float normalizedTransitionTime = 0f;
+			float normalizedTimeOffset = float.NegativeInfinity;
+			this.CrossFade(stateName, normalizedTransitionDuration, layer, normalizedTimeOffset, normalizedTransitionTime);
+		}
+
+		[ExcludeFromDocs]
+		public void CrossFade(string stateName, float normalizedTransitionDuration)
+		{
+			float normalizedTransitionTime = 0f;
+			float normalizedTimeOffset = float.NegativeInfinity;
 			int layer = -1;
-			this.CrossFade(stateName, transitionDuration, layer, normalizedTime);
+			this.CrossFade(stateName, normalizedTransitionDuration, layer, normalizedTimeOffset, normalizedTransitionTime);
 		}
 
-		public void CrossFade(string stateName, float transitionDuration, [UnityEngine.Internal.DefaultValue("-1")] int layer, [UnityEngine.Internal.DefaultValue("float.NegativeInfinity")] float normalizedTime)
+		public void CrossFade(string stateName, float normalizedTransitionDuration, [UnityEngine.Internal.DefaultValue("-1")] int layer, [UnityEngine.Internal.DefaultValue("float.NegativeInfinity")] float normalizedTimeOffset, [UnityEngine.Internal.DefaultValue("0.0f")] float normalizedTransitionTime)
 		{
-			this.CrossFade(Animator.StringToHash(stateName), transitionDuration, layer, normalizedTime);
+			this.CrossFade(Animator.StringToHash(stateName), normalizedTransitionDuration, layer, normalizedTimeOffset, normalizedTransitionTime);
 		}
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern void CrossFade(int stateNameHash, float transitionDuration, [UnityEngine.Internal.DefaultValue("-1")] int layer, [UnityEngine.Internal.DefaultValue("float.NegativeInfinity")] float normalizedTime);
+		public extern void CrossFade(int stateHashName, float normalizedTransitionDuration, [UnityEngine.Internal.DefaultValue("-1")] int layer, [UnityEngine.Internal.DefaultValue("float.NegativeInfinity")] float normalizedTimeOffset, [UnityEngine.Internal.DefaultValue("0.0f")] float normalizedTransitionTime);
 
 		[ExcludeFromDocs]
-		public void CrossFade(int stateNameHash, float transitionDuration, int layer)
+		public void CrossFade(int stateHashName, float normalizedTransitionDuration, int layer, float normalizedTimeOffset)
 		{
-			float normalizedTime = float.NegativeInfinity;
-			this.CrossFade(stateNameHash, transitionDuration, layer, normalizedTime);
+			float normalizedTransitionTime = 0f;
+			this.CrossFade(stateHashName, normalizedTransitionDuration, layer, normalizedTimeOffset, normalizedTransitionTime);
 		}
 
 		[ExcludeFromDocs]
-		public void CrossFade(int stateNameHash, float transitionDuration)
+		public void CrossFade(int stateHashName, float normalizedTransitionDuration, int layer)
 		{
-			float normalizedTime = float.NegativeInfinity;
+			float normalizedTransitionTime = 0f;
+			float normalizedTimeOffset = float.NegativeInfinity;
+			this.CrossFade(stateHashName, normalizedTransitionDuration, layer, normalizedTimeOffset, normalizedTransitionTime);
+		}
+
+		[ExcludeFromDocs]
+		public void CrossFade(int stateHashName, float normalizedTransitionDuration)
+		{
+			float normalizedTransitionTime = 0f;
+			float normalizedTimeOffset = float.NegativeInfinity;
 			int layer = -1;
-			this.CrossFade(stateNameHash, transitionDuration, layer, normalizedTime);
+			this.CrossFade(stateHashName, normalizedTransitionDuration, layer, normalizedTimeOffset, normalizedTransitionTime);
 		}
 
 		[ExcludeFromDocs]

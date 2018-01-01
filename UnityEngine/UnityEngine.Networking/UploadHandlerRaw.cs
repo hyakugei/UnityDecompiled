@@ -1,7 +1,6 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using UnityEngine.Scripting;
 
 namespace UnityEngine.Networking
 {
@@ -10,22 +9,25 @@ namespace UnityEngine.Networking
 	{
 		public UploadHandlerRaw(byte[] data)
 		{
-			base.InternalCreateRaw(data);
+			if (data != null && data.Length == 0)
+			{
+				throw new ArgumentException("Cannot create a data handler without payload data");
+			}
+			this.m_Ptr = UploadHandlerRaw.Create(this, data);
 		}
 
-		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern IntPtr Create(UploadHandlerRaw self, byte[] data);
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern string InternalGetContentType();
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern void InternalSetContentType(string newContentType);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern byte[] InternalGetData();
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern float InternalGetProgress();
 

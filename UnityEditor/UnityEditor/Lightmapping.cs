@@ -267,6 +267,10 @@ namespace UnityEditor
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void OnUpdateLightmapEncoding(BuildTargetGroup target);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void GetTerrainGIChunks(Terrain terrain, ref int numChunksX, ref int numChunksY);
 
 		public static void BakeMultipleScenes(string[] paths)

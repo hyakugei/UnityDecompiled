@@ -7,7 +7,7 @@ namespace UnityEngine.Experimental.UIElements.StyleSheets
 	{
 		public int specificity;
 
-		public StyleValueHandle handle;
+		public StyleValueHandle[] handles;
 
 		public StyleSheet data;
 	}

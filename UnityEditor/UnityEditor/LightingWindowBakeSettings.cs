@@ -1,5 +1,7 @@
 using System;
+using System.Linq;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngineInternal;
 
 namespace UnityEditor
@@ -107,7 +109,7 @@ namespace UnityEditor
 
 			public static readonly GUIContent NoDirectionalInSM2AndGLES2 = EditorGUIUtility.TextContent("Directional lightmaps cannot be decoded on SM2.0 hardware nor when using GLES2.0. They will fallback to Non-Directional lightmaps.");
 
-			public static readonly GUIContent NoShadowMaskInProgressive = EditorGUIUtility.TextContent("'Shadowmask' and 'Distance Shadowmask' modes are not supported in this preview version of the Progressive Lightmapper.");
+			public static readonly GUIContent NoRealtimeGIInSM2AndGLES2 = EditorGUIUtility.TextContent("Realtime Global Illumination is not supported on SM2.0 hardware nor when using GLES2.0.");
 
 			public static readonly GUIContent ConcurrentJobs = EditorGUIUtility.TextContent("Concurrent Jobs|The amount of simultaneously scheduled jobs.");
 
@@ -143,7 +145,7 @@ namespace UnityEditor
 
 			public static readonly GUIContent SubtractiveShadowColor = EditorGUIUtility.TextContent("Realtime Shadow Color|The color used for mixing realtime shadows with baked lightmaps in Subtractive lighting mode. The color defines the darkest point of the realtime shadow.");
 
-			public static readonly GUIContent MixedLightMode = EditorGUIUtility.TextContent("Lighting Mode|Specifies which Scene lighting mode will be used for all Mixed lights in the Scene. Options are Baked Indirect, Distance Shadowmask, Shadowmask and Subtractive.");
+			public static readonly GUIContent MixedLightMode = EditorGUIUtility.TextContent("Lighting Mode|Specifies which Scene lighting mode will be used for all Mixed lights in the Scene. Options are Baked Indirect, Shadowmask and Subtractive.");
 
 			public static readonly GUIContent UseRealtimeGI = EditorGUIUtility.TextContent("Realtime Global Illumination|Controls whether Realtime lights in the Scene contribute indirect light. If enabled, Realtime lights contribute both direct and indirect light. If disabled, Realtime lights only contribute direct light. This can be disabled on a per-light basis in the light component Inspector by setting Indirect Multiplier to 0.");
 
@@ -159,9 +161,15 @@ namespace UnityEditor
 
 			public static readonly GUIContent PVRFilteringMode = EditorGUIUtility.TextContent("Filtering|Specifies the method used to reduce noise in baked lightmaps. Options are None, Automatic, or Advanced.");
 
-			public static readonly GUIContent PVRFiltering = EditorGUIUtility.TextContent("Filtering|Choose which filter kernel to apply to the lightmap.");
+			public static readonly GUIContent PVRFiltering = EditorGUIUtility.TextContent("Filtering|Specifies the filter kernel used to reduce the amount of noise in baked lightmaps.");
 
 			public static readonly GUIContent PVRFilteringAdvanced = EditorGUIUtility.TextContent("Advanced Filter Settings|Show advanced settings to configure filtering on lightmaps.");
+
+			public static readonly GUIContent PVRFilterTypeDirect = EditorGUIUtility.TextContent("Direct Filter|Specifies the filter kernel applied to the direct light stored in the lightmap. Gaussian will blur the lightmap with some loss of detail. A-Trous will reduce noise based on a threshold while maintaining edge detail.");
+
+			public static readonly GUIContent PVRFilterTypeIndirect = EditorGUIUtility.TextContent("Indirect Filter|Specifies the filter kernel applied to the indirect light stored in the lightmap. Gaussian will blur the lightmap with some loss of detail. A-Trous will reduce noise based on a threshold while maintaining edge detail.");
+
+			public static readonly GUIContent PVRFilterTypeAO = EditorGUIUtility.TextContent("Ambient Occlusion Filter|Specifies the filter kernel applied to the ambient occlusion stored in the lightmap. Gaussian will blur the lightmap with some loss of detail. A-Trous will reduce noise based on a threshold while maintaining edge detail.");
 
 			public static readonly GUIContent PVRFilteringGaussRadiusDirect = EditorGUIUtility.TextContent("Direct Radius|Controls the radius of the filter for direct light stored in the lightmap. A higher value will increase the strength of the blur, reducing noise from direct light in the lightmap.");
 
@@ -169,11 +177,11 @@ namespace UnityEditor
 
 			public static readonly GUIContent PVRFilteringGaussRadiusAO = EditorGUIUtility.TextContent("Ambient Occlusion Radius|The radius of the filter for ambient occlusion in the lightmap. A higher radius will increase the blur strength, reducing sampling noise from ambient occlusion in the lightmap.");
 
-			public static readonly GUIContent PVRFilteringAtrousColorSigma = EditorGUIUtility.TextContent("Color Sigma|How to weigh the color channel in the filter edge stopping condition.");
+			public static readonly GUIContent PVRFilteringAtrousPositionSigmaDirect = EditorGUIUtility.TextContent("Direct Sigma|Controls the threshold of the filter for direct light stored in the lightmap. A higher value will increase the threshold, reducing noise in the direct layer of the lightmap. Too high of a value can cause a loss of detail in the lightmap.");
 
-			public static readonly GUIContent PVRFilteringAtrousNormalSigma = EditorGUIUtility.TextContent("Normal Sigma|How to weigh the normal channel in the filter edge stopping condition.");
+			public static readonly GUIContent PVRFilteringAtrousPositionSigmaIndirect = EditorGUIUtility.TextContent("Indirect Sigma|Controls the threshold of the filter for indirect light stored in the lightmap. A higher value will increase the threshold, reducing noise in the indirect layer of the lightmap. Too high of a value can cause a loss of detail in the lightmap.");
 
-			public static readonly GUIContent PVRFilteringAtrousPositionSigma = EditorGUIUtility.TextContent("Position Sigma|How to weigh the position channel in the filter edge stopping condition.");
+			public static readonly GUIContent PVRFilteringAtrousPositionSigmaAO = EditorGUIUtility.TextContent("Ambient Occlusion Sigma|Controls the threshold of the filter for ambient occlusion stored in the lightmap. A higher value will increase the threshold, reducing noise in the ambient occlusion layer of the lightmap. Too high of a value can cause a loss of detail in the lightmap.");
 
 			public static readonly GUIContent PVRCulling = EditorGUIUtility.TextContent("Prioritize View|Specifies whether the lightmapper should prioritize baking texels within the scene view. When disabled, objects outside the scene view will have the same priority as those in the scene view.");
 		}
@@ -244,11 +252,23 @@ namespace UnityEditor
 
 		private SerializedProperty m_PVRFilteringMode;
 
+		private SerializedProperty m_PVRFilterTypeDirect;
+
+		private SerializedProperty m_PVRFilterTypeIndirect;
+
+		private SerializedProperty m_PVRFilterTypeAO;
+
 		private SerializedProperty m_PVRFilteringGaussRadiusDirect;
 
 		private SerializedProperty m_PVRFilteringGaussRadiusIndirect;
 
 		private SerializedProperty m_PVRFilteringGaussRadiusAO;
+
+		private SerializedProperty m_PVRFilteringAtrousPositionSigmaDirect;
+
+		private SerializedProperty m_PVRFilteringAtrousPositionSigmaIndirect;
+
+		private SerializedProperty m_PVRFilteringAtrousPositionSigmaAO;
 
 		private SerializedProperty m_BounceScale;
 
@@ -257,6 +277,12 @@ namespace UnityEditor
 		public LightingWindowBakeSettings()
 		{
 			this.m_LightModeUtil = LightModeUtil.Get();
+		}
+
+		private static bool PlayerHasSM20Support()
+		{
+			GraphicsDeviceType[] graphicsAPIs = PlayerSettings.GetGraphicsAPIs(EditorUserBuildSettings.activeBuildTarget);
+			return graphicsAPIs.Contains(GraphicsDeviceType.OpenGLES2) || graphicsAPIs.Contains(GraphicsDeviceType.N3DS);
 		}
 
 		private void InitSettings()
@@ -288,9 +314,15 @@ namespace UnityEditor
 			this.m_PVRBounces = serializedObject2.FindProperty("m_LightmapEditorSettings.m_PVRBounces");
 			this.m_PVRCulling = serializedObject2.FindProperty("m_LightmapEditorSettings.m_PVRCulling");
 			this.m_PVRFilteringMode = serializedObject2.FindProperty("m_LightmapEditorSettings.m_PVRFilteringMode");
+			this.m_PVRFilterTypeDirect = serializedObject2.FindProperty("m_LightmapEditorSettings.m_PVRFilterTypeDirect");
+			this.m_PVRFilterTypeIndirect = serializedObject2.FindProperty("m_LightmapEditorSettings.m_PVRFilterTypeIndirect");
+			this.m_PVRFilterTypeAO = serializedObject2.FindProperty("m_LightmapEditorSettings.m_PVRFilterTypeAO");
 			this.m_PVRFilteringGaussRadiusDirect = serializedObject2.FindProperty("m_LightmapEditorSettings.m_PVRFilteringGaussRadiusDirect");
 			this.m_PVRFilteringGaussRadiusIndirect = serializedObject2.FindProperty("m_LightmapEditorSettings.m_PVRFilteringGaussRadiusIndirect");
 			this.m_PVRFilteringGaussRadiusAO = serializedObject2.FindProperty("m_LightmapEditorSettings.m_PVRFilteringGaussRadiusAO");
+			this.m_PVRFilteringAtrousPositionSigmaDirect = serializedObject2.FindProperty("m_LightmapEditorSettings.m_PVRFilteringAtrousPositionSigmaDirect");
+			this.m_PVRFilteringAtrousPositionSigmaIndirect = serializedObject2.FindProperty("m_LightmapEditorSettings.m_PVRFilteringAtrousPositionSigmaIndirect");
+			this.m_PVRFilteringAtrousPositionSigmaAO = serializedObject2.FindProperty("m_LightmapEditorSettings.m_PVRFilteringAtrousPositionSigmaAO");
 			this.m_BounceScale = serializedObject2.FindProperty("m_GISettings.m_BounceScale");
 			this.m_UpdateThreshold = serializedObject2.FindProperty("m_GISettings.m_TemporalCoherenceThreshold");
 		}
@@ -324,6 +356,25 @@ namespace UnityEditor
 			EditorGUILayout.PropertyField(resolution, label, new GUILayoutOption[0]);
 			GUILayout.Label(" texels per unit", LightingWindowBakeSettings.Styles.LabelStyle, new GUILayoutOption[0]);
 			GUILayout.EndHorizontal();
+		}
+
+		private static void DrawFilterSettingField(SerializedProperty gaussSetting, SerializedProperty atrousSetting, GUIContent gaussLabel, GUIContent atrousLabel, LightmapEditorSettings.FilterType type)
+		{
+			if (type != LightmapEditorSettings.FilterType.None)
+			{
+				GUILayout.BeginHorizontal(new GUILayoutOption[0]);
+				if (type == LightmapEditorSettings.FilterType.Gaussian)
+				{
+					EditorGUILayout.IntSlider(gaussSetting, 0, 5, gaussLabel, new GUILayoutOption[0]);
+					GUILayout.Label(" texels", LightingWindowBakeSettings.Styles.LabelStyle, new GUILayoutOption[0]);
+				}
+				else if (type == LightmapEditorSettings.FilterType.ATrous)
+				{
+					EditorGUILayout.Slider(atrousSetting, 0f, 2f, atrousLabel, new GUILayoutOption[0]);
+					GUILayout.Label(" sigma", LightingWindowBakeSettings.Styles.LabelStyle, new GUILayoutOption[0]);
+				}
+				GUILayout.EndHorizontal();
+			}
 		}
 
 		private static bool isBuiltIn(SerializedProperty prop)
@@ -392,6 +443,10 @@ namespace UnityEditor
 				{
 					this.m_LightModeUtil.Store((!flag) ? 1 : 0, mixedMode);
 				}
+				if (flag && LightingWindowBakeSettings.PlayerHasSM20Support())
+				{
+					EditorGUILayout.HelpBox(LightingWindowBakeSettings.Styles.NoRealtimeGIInSM2AndGLES2.text, MessageType.Warning);
+				}
 				EditorGUI.indentLevel--;
 				EditorGUILayout.Space();
 			}
@@ -414,10 +469,6 @@ namespace UnityEditor
 					int num;
 					this.m_LightModeUtil.GetModes(out realtimeMode, out num);
 					int num2 = EditorGUILayout.IntPopup(LightingWindowBakeSettings.Styles.MixedLightMode, num, LightingWindowBakeSettings.Styles.MixedModeStrings, LightingWindowBakeSettings.Styles.MixedModeValues, new GUILayoutOption[0]);
-					if (LightmapEditorSettings.giBakeBackend == LightmapEditorSettings.GIBakeBackend.PathTracer && num2 != 0)
-					{
-						EditorGUILayout.HelpBox(LightingWindowBakeSettings.Styles.NoShadowMaskInProgressive.text, MessageType.Warning);
-					}
 					if (LightModeUtil.Get().AreBakedLightmapsEnabled())
 					{
 						EditorGUILayout.HelpBox(LightingWindowBakeSettings.Styles.HelpStringsMixed[num].text, MessageType.Info);
@@ -496,11 +547,11 @@ namespace UnityEditor
 						{
 							InspectorWindow.RepaintAllInspectors();
 						}
-						if (LightmapEditorSettings.giBakeBackend == LightmapEditorSettings.GIBakeBackend.PathTracer)
+						if (LightmapEditorSettings.lightmapper == LightmapEditorSettings.Lightmapper.PathTracer)
 						{
 							EditorGUI.indentLevel++;
 							EditorGUILayout.PropertyField(this.m_PVRCulling, LightingWindowBakeSettings.Styles.PVRCulling, new GUILayoutOption[0]);
-							if (LightmapEditorSettings.giPathTracerSampling != LightmapEditorSettings.PathTracerSampling.Auto)
+							if (LightmapEditorSettings.sampling != LightmapEditorSettings.Sampling.Auto)
 							{
 								EditorGUILayout.PropertyField(this.m_PVRDirectSampleCount, LightingWindowBakeSettings.Styles.PVRDirectSampleCount, new GUILayoutOption[0]);
 								EditorGUILayout.PropertyField(this.m_PVRSampleCount, LightingWindowBakeSettings.Styles.PVRIndirectSampleCount, new GUILayoutOption[0]);
@@ -514,25 +565,24 @@ namespace UnityEditor
 							if (this.m_PVRFilteringMode.enumValueIndex == 2)
 							{
 								EditorGUI.indentLevel++;
-								GUILayout.BeginHorizontal(new GUILayoutOption[0]);
-								EditorGUILayout.IntSlider(this.m_PVRFilteringGaussRadiusDirect, 0, 5, LightingWindowBakeSettings.Styles.PVRFilteringGaussRadiusDirect, new GUILayoutOption[0]);
-								GUILayout.Label(" texels", LightingWindowBakeSettings.Styles.LabelStyle, new GUILayoutOption[0]);
-								GUILayout.EndHorizontal();
-								GUILayout.BeginHorizontal(new GUILayoutOption[0]);
-								EditorGUILayout.IntSlider(this.m_PVRFilteringGaussRadiusIndirect, 0, 5, LightingWindowBakeSettings.Styles.PVRFilteringGaussRadiusIndirect, new GUILayoutOption[0]);
-								GUILayout.Label(" texels", LightingWindowBakeSettings.Styles.LabelStyle, new GUILayoutOption[0]);
-								GUILayout.EndHorizontal();
-								GUILayout.BeginHorizontal(new GUILayoutOption[0]);
-								EditorGUILayout.IntSlider(this.m_PVRFilteringGaussRadiusAO, 0, 5, LightingWindowBakeSettings.Styles.PVRFilteringGaussRadiusAO, new GUILayoutOption[0]);
-								GUILayout.Label(" texels", LightingWindowBakeSettings.Styles.LabelStyle, new GUILayoutOption[0]);
-								GUILayout.EndHorizontal();
+								EditorGUILayout.PropertyField(this.m_PVRFilterTypeDirect, LightingWindowBakeSettings.Styles.PVRFilterTypeDirect, new GUILayoutOption[0]);
+								LightingWindowBakeSettings.DrawFilterSettingField(this.m_PVRFilteringGaussRadiusDirect, this.m_PVRFilteringAtrousPositionSigmaDirect, LightingWindowBakeSettings.Styles.PVRFilteringGaussRadiusDirect, LightingWindowBakeSettings.Styles.PVRFilteringAtrousPositionSigmaDirect, LightmapEditorSettings.filterTypeDirect);
+								EditorGUILayout.Space();
+								EditorGUILayout.PropertyField(this.m_PVRFilterTypeIndirect, LightingWindowBakeSettings.Styles.PVRFilterTypeIndirect, new GUILayoutOption[0]);
+								LightingWindowBakeSettings.DrawFilterSettingField(this.m_PVRFilteringGaussRadiusIndirect, this.m_PVRFilteringAtrousPositionSigmaIndirect, LightingWindowBakeSettings.Styles.PVRFilteringGaussRadiusIndirect, LightingWindowBakeSettings.Styles.PVRFilteringAtrousPositionSigmaIndirect, LightmapEditorSettings.filterTypeIndirect);
+								using (new EditorGUI.DisabledScope(!this.m_AmbientOcclusion.boolValue))
+								{
+									EditorGUILayout.Space();
+									EditorGUILayout.PropertyField(this.m_PVRFilterTypeAO, LightingWindowBakeSettings.Styles.PVRFilterTypeAO, new GUILayoutOption[0]);
+									LightingWindowBakeSettings.DrawFilterSettingField(this.m_PVRFilteringGaussRadiusAO, this.m_PVRFilteringAtrousPositionSigmaAO, LightingWindowBakeSettings.Styles.PVRFilteringGaussRadiusAO, LightingWindowBakeSettings.Styles.PVRFilteringAtrousPositionSigmaAO, LightmapEditorSettings.filterTypeAO);
+								}
 								EditorGUI.indentLevel--;
 							}
 							EditorGUI.indentLevel--;
 							EditorGUILayout.Space();
 						}
 					}
-					using (new EditorGUI.DisabledScope(LightmapEditorSettings.giBakeBackend == LightmapEditorSettings.GIBakeBackend.PathTracer && !LightModeUtil.Get().IsRealtimeGIEnabled()))
+					using (new EditorGUI.DisabledScope(LightmapEditorSettings.lightmapper == LightmapEditorSettings.Lightmapper.PathTracer && !LightModeUtil.Get().IsRealtimeGIEnabled()))
 					{
 						LightingWindowBakeSettings.DrawResolutionField(this.m_Resolution, LightingWindowBakeSettings.Styles.IndirectResolution);
 					}
@@ -558,7 +608,7 @@ namespace UnityEditor
 							EditorGUILayout.Slider(this.m_CompAOExponentDirect, 0f, 10f, LightingWindowBakeSettings.Styles.AmbientOcclusionContributionDirect, new GUILayoutOption[0]);
 							EditorGUI.indentLevel--;
 						}
-						if (LightmapEditorSettings.giBakeBackend == LightmapEditorSettings.GIBakeBackend.Radiosity)
+						if (LightmapEditorSettings.lightmapper == LightmapEditorSettings.Lightmapper.Radiosity)
 						{
 							EditorGUILayout.PropertyField(this.m_FinalGather, LightingWindowBakeSettings.Styles.FinalGather, new GUILayoutOption[0]);
 							if (this.m_FinalGather.boolValue)
@@ -571,7 +621,7 @@ namespace UnityEditor
 						}
 					}
 					EditorGUILayout.IntPopup(this.m_LightmapDirectionalMode, LightingWindowBakeSettings.Styles.LightmapDirectionalModeStrings, LightingWindowBakeSettings.Styles.LightmapDirectionalModeValues, LightingWindowBakeSettings.Styles.LightmapDirectionalMode, new GUILayoutOption[0]);
-					if (this.m_LightmapDirectionalMode.intValue == 1)
+					if (this.m_LightmapDirectionalMode.intValue == 1 && LightingWindowBakeSettings.PlayerHasSM20Support())
 					{
 						EditorGUILayout.HelpBox(LightingWindowBakeSettings.Styles.NoDirectionalInSM2AndGLES2.text, MessageType.Warning);
 					}

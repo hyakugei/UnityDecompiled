@@ -370,6 +370,7 @@ namespace UnityEditorInternal
 								}
 							}
 						}
+						this.m_ActiveCurvesCache.Sort();
 					}
 				}
 				return this.m_ActiveCurvesCache;
@@ -385,7 +386,7 @@ namespace UnityEditorInternal
 					List<CurveWrapper> list = new List<CurveWrapper>();
 					foreach (AnimationWindowCurve current in this.activeCurves)
 					{
-						if (!current.isPPtrCurve)
+						if (!current.isDiscreteCurve)
 						{
 							list.Add(AnimationWindowUtility.GetCurveWrapper(current, current.clip));
 						}
@@ -394,7 +395,7 @@ namespace UnityEditorInternal
 					{
 						foreach (AnimationWindowCurve current2 in this.allCurves)
 						{
-							if (!current2.isPPtrCurve)
+							if (!current2.isDiscreteCurve)
 							{
 								list.Add(AnimationWindowUtility.GetCurveWrapper(current2, current2.clip));
 							}

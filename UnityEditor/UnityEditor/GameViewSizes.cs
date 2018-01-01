@@ -2,7 +2,7 @@ using System;
 using UnityEditor.Build;
 using UnityEditorInternal;
 using UnityEngine;
-using UnityEngine.VR;
+using UnityEngine.XR;
 
 namespace UnityEditor
 {
@@ -153,9 +153,9 @@ namespace UnityEditor
 				this.m_LastRemoteScreenSize = new Vector2(InternalEditorUtility.remoteScreenWidth, InternalEditorUtility.remoteScreenHeight);
 				this.RefreshRemoteScreenSize((int)this.m_LastRemoteScreenSize.x, (int)this.m_LastRemoteScreenSize.y);
 			}
-			if (VRSettings.isDeviceActive && this.m_Remote.width != VRSettings.eyeTextureWidth && this.m_Remote.height != VRSettings.eyeTextureHeight)
+			if (XRSettings.isDeviceActive && this.m_Remote.width != XRSettings.eyeTextureWidth && this.m_Remote.height != XRSettings.eyeTextureHeight)
 			{
-				this.RefreshRemoteScreenSize(VRSettings.eyeTextureWidth, VRSettings.eyeTextureHeight);
+				this.RefreshRemoteScreenSize(XRSettings.eyeTextureWidth, XRSettings.eyeTextureHeight);
 			}
 		}
 
@@ -312,20 +312,23 @@ namespace UnityEditor
 			}
 		}
 
+		internal static bool DefaultLowResolutionSettingForStandalone()
+		{
+			BuildTarget activeBuildTarget = EditorUserBuildSettings.activeBuildTarget;
+			return activeBuildTarget != BuildTarget.StandaloneOSX || !PlayerSettings.macRetinaSupport;
+		}
+
 		internal static bool DefaultLowResolutionSettingForSizeGroupType(GameViewSizeGroupType sizeGroupType)
 		{
 			bool result;
 			switch (sizeGroupType)
 			{
 			case GameViewSizeGroupType.Standalone:
+				result = GameViewSizes.DefaultLowResolutionSettingForStandalone();
+				return result;
 			case GameViewSizeGroupType.WiiU:
 			case GameViewSizeGroupType.N3DS:
 				result = true;
-				return result;
-			case GameViewSizeGroupType.iOS:
-			case GameViewSizeGroupType.Android:
-			case GameViewSizeGroupType.Tizen:
-				result = false;
 				return result;
 			}
 			result = false;
@@ -343,10 +346,10 @@ namespace UnityEditor
 			{
 				int num;
 				int num2;
-				if (VRSettings.isDeviceActive)
+				if (XRSettings.isDeviceActive)
 				{
-					num = VRSettings.eyeTextureWidth;
-					num2 = VRSettings.eyeTextureHeight;
+					num = XRSettings.eyeTextureWidth;
+					num2 = XRSettings.eyeTextureHeight;
 				}
 				else
 				{
@@ -469,7 +472,7 @@ namespace UnityEditor
 			float num3 = vector.x * vector.y;
 			if (num3 > num2)
 			{
-				float num4 = vector.x / vector.y;
+				float num4 = vector.y / vector.x;
 				vector.x = Mathf.Sqrt(num2 * num4);
 				vector.y = num4 * vector.x;
 				clamped = true;
@@ -500,7 +503,7 @@ namespace UnityEditor
 		public static GameViewSizeGroupType BuildTargetGroupToGameViewSizeGroup(BuildTargetGroup buildTargetGroup)
 		{
 			GameViewSizeGroupType result;
-			if (!VRSettings.enabled || !VRSettings.showDeviceView)
+			if (!XRSettings.enabled || !XRSettings.showDeviceView)
 			{
 				switch (buildTargetGroup)
 				{

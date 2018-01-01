@@ -8,32 +8,58 @@ namespace UnityEditor
 {
 	public sealed class LightmapEditorSettings
 	{
-		public enum GIBakeBackend
+		public enum Lightmapper
 		{
+			[Obsolete("Use Lightmapper.Enlighten instead. (UnityUpgradable) -> UnityEditor.LightmapEditorSettings/Lightmapper.Enlighten", true)]
 			Radiosity,
-			PathTracer
+			Enlighten = 0,
+			[Obsolete("Use Lightmapper.ProgressiveCPU instead. (UnityUpgradable) -> UnityEditor.LightmapEditorSettings/Lightmapper.ProgressiveCPU", true)]
+			PathTracer,
+			ProgressiveCPU = 1
 		}
 
-		public enum PathTracerSampling
+		public enum Sampling
 		{
 			Auto,
 			Fixed
 		}
 
-		public enum PathTracerFilterMode
+		public enum FilterMode
 		{
 			None,
 			Auto,
 			Advanced
 		}
 
+		public enum FilterType
+		{
+			Gaussian,
+			ATrous,
+			None
+		}
+
+		[Obsolete("GIBakeBackend has been renamed to Lightmapper. (UnityUpgradable)", true)]
+		public enum GIBakeBackend
+		{
+			Radiosity,
+			PathTracer
+		}
+
+		[Obsolete("PathTracerSampling has been renamed to Sampling. (UnityUpgradable) -> UnityEditor.LightmapEditorSettings/Sampling", false)]
+		public enum PathTracerSampling
+		{
+			Auto,
+			Fixed
+		}
+
+		[Obsolete("PathTracerFilter has been renamed to FilterType. (UnityUpgradable) -> UnityEditor.LightmapEditorSettings/FilterType", false)]
 		public enum PathTracerFilter
 		{
 			Gaussian,
 			ATrous
 		}
 
-		public static extern LightmapEditorSettings.GIBakeBackend giBakeBackend
+		public static extern LightmapEditorSettings.Lightmapper lightmapper
 		{
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
@@ -43,7 +69,7 @@ namespace UnityEditor
 			set;
 		}
 
-		public static extern LightmapEditorSettings.PathTracerSampling giPathTracerSampling
+		public static extern LightmapEditorSettings.Sampling sampling
 		{
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
@@ -53,7 +79,27 @@ namespace UnityEditor
 			set;
 		}
 
-		public static extern LightmapEditorSettings.PathTracerFilter giPathTracerFilter
+		public static extern LightmapEditorSettings.FilterType filterTypeDirect
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public static extern LightmapEditorSettings.FilterType filterTypeIndirect
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public static extern LightmapEditorSettings.FilterType filterTypeAO
 		{
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
@@ -351,6 +397,88 @@ namespace UnityEditor
 			set
 			{
 				LightmapEditorSettings.realtimeResolution = value;
+			}
+		}
+
+		[Obsolete("The giBakeBackend property has been renamed to lightmapper. (UnityUpgradable) -> lightmapper", false)]
+		public static LightmapEditorSettings.GIBakeBackend giBakeBackend
+		{
+			get
+			{
+				LightmapEditorSettings.GIBakeBackend result;
+				if (LightmapEditorSettings.lightmapper == LightmapEditorSettings.Lightmapper.PathTracer)
+				{
+					result = LightmapEditorSettings.GIBakeBackend.PathTracer;
+				}
+				else
+				{
+					result = LightmapEditorSettings.GIBakeBackend.Radiosity;
+				}
+				return result;
+			}
+			set
+			{
+				if (value == LightmapEditorSettings.GIBakeBackend.PathTracer)
+				{
+					LightmapEditorSettings.lightmapper = LightmapEditorSettings.Lightmapper.PathTracer;
+				}
+				else
+				{
+					LightmapEditorSettings.lightmapper = LightmapEditorSettings.Lightmapper.Radiosity;
+				}
+			}
+		}
+
+		[Obsolete("The giPathTracerSampling property has been renamed to sampling. (UnityUpgradable) -> sampling", false)]
+		public static LightmapEditorSettings.PathTracerSampling giPathTracerSampling
+		{
+			get
+			{
+				LightmapEditorSettings.PathTracerSampling result;
+				if (LightmapEditorSettings.sampling == LightmapEditorSettings.Sampling.Auto)
+				{
+					result = LightmapEditorSettings.PathTracerSampling.Auto;
+				}
+				else
+				{
+					result = LightmapEditorSettings.PathTracerSampling.Fixed;
+				}
+				return result;
+			}
+			set
+			{
+				if (value == LightmapEditorSettings.PathTracerSampling.Auto)
+				{
+					LightmapEditorSettings.sampling = LightmapEditorSettings.Sampling.Auto;
+				}
+				else
+				{
+					LightmapEditorSettings.sampling = LightmapEditorSettings.Sampling.Fixed;
+				}
+			}
+		}
+
+		[Obsolete("The giPathTracerFilter property has been deprecated. There are three independent properties to set individual filter types for direct, indirect and AO GI textures: filterTypeDirect, filterTypeIndirect and filterTypeAO.")]
+		public static LightmapEditorSettings.PathTracerFilter giPathTracerFilter
+		{
+			get
+			{
+				LightmapEditorSettings.PathTracerFilter result;
+				if (LightmapEditorSettings.filterTypeDirect == LightmapEditorSettings.FilterType.Gaussian)
+				{
+					result = LightmapEditorSettings.PathTracerFilter.Gaussian;
+				}
+				else
+				{
+					result = LightmapEditorSettings.PathTracerFilter.ATrous;
+				}
+				return result;
+			}
+			set
+			{
+				LightmapEditorSettings.filterTypeDirect = LightmapEditorSettings.FilterType.Gaussian;
+				LightmapEditorSettings.filterTypeIndirect = LightmapEditorSettings.FilterType.Gaussian;
+				LightmapEditorSettings.filterTypeAO = LightmapEditorSettings.FilterType.Gaussian;
 			}
 		}
 

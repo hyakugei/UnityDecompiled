@@ -238,49 +238,52 @@ namespace UnityEditor
 						lightmaps[j].shadowMask = this.LightmapField(lightmaps[j].shadowMask, j);
 					}
 					GUILayout.Space(5f);
-					LightmapConvergence lightmapConvergence = Lightmapping.GetLightmapConvergence(j);
 					GUILayout.BeginVertical(new GUILayoutOption[0]);
 					GUILayout.Label("Index: " + j, EditorStyles.miniBoldLabel, new GUILayoutOption[0]);
-					if (lightmapConvergence.IsValid())
+					if (LightmapEditorSettings.lightmapper == LightmapEditorSettings.Lightmapper.PathTracer)
 					{
-						GUILayout.Label("Occupied: " + InternalEditorUtility.CountToString((ulong)((long)lightmapConvergence.occupiedTexelCount)), EditorStyles.miniLabel, new GUILayoutOption[0]);
-						GUIContent content = EditorGUIUtility.TextContent(string.Concat(new object[]
+						LightmapConvergence lightmapConvergence = Lightmapping.GetLightmapConvergence(j);
+						if (lightmapConvergence.IsValid())
 						{
-							"Direct: ",
-							lightmapConvergence.minDirectSamples,
-							" / ",
-							lightmapConvergence.maxDirectSamples,
-							" / ",
-							lightmapConvergence.avgDirectSamples,
-							"|min / max / avg samples per texel"
-						}));
-						GUILayout.Label(content, EditorStyles.miniLabel, new GUILayoutOption[0]);
-						GUIContent content2 = EditorGUIUtility.TextContent(string.Concat(new object[]
+							GUILayout.Label("Occupied: " + InternalEditorUtility.CountToString((ulong)((long)lightmapConvergence.occupiedTexelCount)), EditorStyles.miniLabel, new GUILayoutOption[0]);
+							GUIContent content = EditorGUIUtility.TextContent(string.Concat(new object[]
+							{
+								"Direct: ",
+								lightmapConvergence.minDirectSamples,
+								" / ",
+								lightmapConvergence.maxDirectSamples,
+								" / ",
+								lightmapConvergence.avgDirectSamples,
+								"|min / max / avg samples per texel"
+							}));
+							GUILayout.Label(content, EditorStyles.miniLabel, new GUILayoutOption[0]);
+							GUIContent content2 = EditorGUIUtility.TextContent(string.Concat(new object[]
+							{
+								"Global Illumination: ",
+								lightmapConvergence.minGISamples,
+								" / ",
+								lightmapConvergence.maxGISamples,
+								" / ",
+								lightmapConvergence.avgGISamples,
+								"|min / max / avg samples per texel"
+							}));
+							GUILayout.Label(content2, EditorStyles.miniLabel, new GUILayoutOption[0]);
+						}
+						else
 						{
-							"GI: ",
-							lightmapConvergence.minGISamples,
-							" / ",
-							lightmapConvergence.maxGISamples,
-							" / ",
-							lightmapConvergence.avgGISamples,
-							"|min / max / avg samples per texel"
-						}));
-						GUILayout.Label(content2, EditorStyles.miniLabel, new GUILayoutOption[0]);
-					}
-					else
-					{
-						GUILayout.Label("Occupied: N/A", EditorStyles.miniLabel, new GUILayoutOption[0]);
-						GUILayout.Label("Direct: N/A", EditorStyles.miniLabel, new GUILayoutOption[0]);
-						GUILayout.Label("GI: N/A", EditorStyles.miniLabel, new GUILayoutOption[0]);
-					}
-					float lightmapBakePerformance = Lightmapping.GetLightmapBakePerformance(j);
-					if ((double)lightmapBakePerformance >= 0.0)
-					{
-						GUILayout.Label(lightmapBakePerformance.ToString("0.00") + " mrays/sec", EditorStyles.miniLabel, new GUILayoutOption[0]);
-					}
-					else
-					{
-						GUILayout.Label("N/A mrays/sec", EditorStyles.miniLabel, new GUILayoutOption[0]);
+							GUILayout.Label("Occupied: N/A", EditorStyles.miniLabel, new GUILayoutOption[0]);
+							GUILayout.Label("Direct: N/A", EditorStyles.miniLabel, new GUILayoutOption[0]);
+							GUILayout.Label("Global Illumination: N/A", EditorStyles.miniLabel, new GUILayoutOption[0]);
+						}
+						float lightmapBakePerformance = Lightmapping.GetLightmapBakePerformance(j);
+						if ((double)lightmapBakePerformance >= 0.0)
+						{
+							GUILayout.Label(lightmapBakePerformance.ToString("0.00") + " mrays/sec", EditorStyles.miniLabel, new GUILayoutOption[0]);
+						}
+						else
+						{
+							GUILayout.Label("N/A mrays/sec", EditorStyles.miniLabel, new GUILayoutOption[0]);
+						}
 					}
 					GUILayout.EndVertical();
 					GUILayout.FlexibleSpace();

@@ -127,7 +127,7 @@ namespace UnityEditor
 
 		private void OnSceneViewGUI(SceneView view)
 		{
-			SceneViewOverlay.Window(PhysicsDebugWindow.Contents.physicsDebug, new SceneViewOverlay.WindowFunction(this.DisplayControls), 350, SceneViewOverlay.WindowDisplayOption.OneWindowPerTarget);
+			SceneViewOverlay.Window(PhysicsDebugWindow.Contents.physicsDebug, new SceneViewOverlay.WindowFunction(this.DisplayControls), 450, SceneViewOverlay.WindowDisplayOption.OneWindowPerTarget);
 		}
 
 		private void AddMouseLeaveListener()

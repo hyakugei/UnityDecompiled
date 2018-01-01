@@ -74,7 +74,7 @@ namespace UnityEngine.SocialPlatforms.GameCenter
 			{
 				if (GameCenterPlatform.s_adCache.Length == 0)
 				{
-					Debug.Log("No achivevement descriptions returned");
+					Debug.Log("No achievement descriptions returned");
 				}
 				callback(GameCenterPlatform.s_adCache);
 			}

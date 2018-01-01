@@ -9,6 +9,8 @@ namespace UnityEditor
 
 		public GUIStyle label = ParticleSystemStyles.FindStyle("ShurikenLabel");
 
+		public GUIStyle editableLabel = ParticleSystemStyles.FindStyle("ShurikenEditableLabel");
+
 		public GUIStyle numberField = ParticleSystemStyles.FindStyle("ShurikenValue");
 
 		public GUIStyle objectField = ParticleSystemStyles.FindStyle("ShurikenObjectField");

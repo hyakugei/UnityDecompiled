@@ -26,6 +26,12 @@ namespace UnityEditor
 				"Local",
 				"World"
 			};
+
+			public GUIContent drag = EditorGUIUtility.TextContent("Drag|Control the amount of drag applied to each particle during its lifetime.");
+
+			public GUIContent multiplyDragByParticleSize = EditorGUIUtility.TextContent("Multiply by Size|Adjust the drag based on the size of the particles.");
+
+			public GUIContent multiplyDragByParticleVelocity = EditorGUIUtility.TextContent("Multiply by Velocity|Adjust the drag based on the velocity of the particles.");
 		}
 
 		private SerializedMinMaxCurve m_X;
@@ -41,6 +47,12 @@ namespace UnityEditor
 		private SerializedProperty m_InWorldSpace;
 
 		private SerializedProperty m_Dampen;
+
+		private SerializedMinMaxCurve m_Drag;
+
+		private SerializedProperty m_MultiplyDragByParticleSize;
+
+		private SerializedProperty m_MultiplyDragByParticleVelocity;
 
 		private static ClampVelocityModuleUI.Texts s_Texts;
 
@@ -64,6 +76,9 @@ namespace UnityEditor
 				this.m_SeparateAxes = base.GetProperty("separateAxis");
 				this.m_InWorldSpace = base.GetProperty("inWorldSpace");
 				this.m_Dampen = base.GetProperty("dampen");
+				this.m_Drag = new SerializedMinMaxCurve(this, ClampVelocityModuleUI.s_Texts.drag, "drag");
+				this.m_MultiplyDragByParticleSize = base.GetProperty("multiplyDragByParticleSize");
+				this.m_MultiplyDragByParticleVelocity = base.GetProperty("multiplyDragByParticleVelocity");
 			}
 		}
 
@@ -92,13 +107,22 @@ namespace UnityEditor
 			if (flag)
 			{
 				base.GUITripleMinMaxCurve(GUIContent.none, ClampVelocityModuleUI.s_Texts.x, this.m_X, ClampVelocityModuleUI.s_Texts.y, this.m_Y, ClampVelocityModuleUI.s_Texts.z, this.m_Z, null, new GUILayoutOption[0]);
+				EditorGUI.indentLevel++;
 				ModuleUI.GUIBoolAsPopup(ClampVelocityModuleUI.s_Texts.space, this.m_InWorldSpace, ClampVelocityModuleUI.s_Texts.spaces, new GUILayoutOption[0]);
+				EditorGUI.indentLevel--;
 			}
 			else
 			{
 				ModuleUI.GUIMinMaxCurve(ClampVelocityModuleUI.s_Texts.magnitude, this.m_Magnitude, new GUILayoutOption[0]);
 			}
+			EditorGUI.indentLevel++;
 			ModuleUI.GUIFloat(ClampVelocityModuleUI.s_Texts.dampen, this.m_Dampen, new GUILayoutOption[0]);
+			EditorGUI.indentLevel--;
+			ModuleUI.GUIMinMaxCurve(ClampVelocityModuleUI.s_Texts.drag, this.m_Drag, new GUILayoutOption[0]);
+			EditorGUI.indentLevel++;
+			ModuleUI.GUIToggle(ClampVelocityModuleUI.s_Texts.multiplyDragByParticleSize, this.m_MultiplyDragByParticleSize, new GUILayoutOption[0]);
+			ModuleUI.GUIToggle(ClampVelocityModuleUI.s_Texts.multiplyDragByParticleVelocity, this.m_MultiplyDragByParticleVelocity, new GUILayoutOption[0]);
+			EditorGUI.indentLevel--;
 		}
 
 		public override void UpdateCullingSupportedString(ref string text)

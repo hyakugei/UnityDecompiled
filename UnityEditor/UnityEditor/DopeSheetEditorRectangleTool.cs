@@ -13,41 +13,9 @@ namespace UnityEditor
 
 			public Rect selectionRect;
 
-			public Rect hBarRect;
-
-			public Rect hBarOverlayRect;
-
-			public Rect hBarLeftRect;
-
-			public Rect hBarRightRect;
-
-			public bool displayHScale;
-
-			public Rect vBarRect;
-
-			public Rect vBarOverlayRect;
-
-			public Rect vBarBottomRect;
-
-			public Rect vBarTopRect;
-
-			public bool displayVScale;
-
-			public Rect selectionLeftRect;
-
-			public Rect selectionTopRect;
-
-			public Rect underlayTopRect;
-
-			public Rect underlayLeftRect;
-
 			public Rect scaleLeftRect;
 
 			public Rect scaleRightRect;
-
-			public Rect scaleTopRect;
-
-			public Rect scaleBottomRect;
 
 			public Vector2 leftLabelAnchor;
 
@@ -93,8 +61,6 @@ namespace UnityEditor
 		private float m_RippleTimeStart;
 
 		private float m_RippleTimeEnd;
-
-		private bool m_IncrementalUpdate;
 
 		private AreaManipulator[] m_SelectionBoxes;
 

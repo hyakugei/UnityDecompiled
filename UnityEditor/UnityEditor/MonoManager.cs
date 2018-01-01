@@ -1,9 +1,9 @@
 using System;
-using UnityEngine;
+using UnityEditorInternal;
 
 namespace UnityEditor
 {
-	internal sealed class MonoManager : UnityEngine.Object
+	internal sealed class MonoManager : ProjectSettingsBase
 	{
 	}
 }

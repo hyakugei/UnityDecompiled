@@ -12,6 +12,10 @@ namespace UnityEngine
 
 		private int m_Name;
 
+		private bool m_HasFixedDuration;
+
+		private float m_Duration;
+
 		private float m_NormalizedTime;
 
 		private bool m_AnyState;
@@ -39,6 +43,22 @@ namespace UnityEngine
 			get
 			{
 				return this.m_UserName;
+			}
+		}
+
+		public DurationUnit durationUnit
+		{
+			get
+			{
+				return (!this.m_HasFixedDuration) ? DurationUnit.Normalized : DurationUnit.Fixed;
+			}
+		}
+
+		public float duration
+		{
+			get
+			{
+				return this.m_Duration;
 			}
 		}
 

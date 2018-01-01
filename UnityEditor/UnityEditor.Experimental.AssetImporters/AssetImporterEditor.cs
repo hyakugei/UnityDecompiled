@@ -28,7 +28,20 @@ namespace UnityEditor.Experimental.AssetImporters
 		{
 			get
 			{
-				return string.Format("{0} Import Settings", (!(this.assetEditor == null)) ? this.assetEditor.targetTitle : string.Empty);
+				string arg = string.Empty;
+				if (this.assetEditor != null && this.assetEditor.target == null)
+				{
+					this.assetEditor.InternalSetTargets(this.assetEditor.serializedObject.targetObjects);
+				}
+				if (this.assetEditor == null || this.assetEditor.target == null)
+				{
+					Debug.LogError("AssetImporterEditor: assetEditor has null targets!");
+				}
+				else
+				{
+					arg = this.assetEditor.targetTitle;
+				}
+				return string.Format("{0} Import Settings", arg);
 			}
 		}
 

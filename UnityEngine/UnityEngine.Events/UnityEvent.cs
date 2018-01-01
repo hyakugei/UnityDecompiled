@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine.Scripting;
 using UnityEngineInternal;
@@ -8,7 +9,7 @@ namespace UnityEngine.Events
 	[Serializable]
 	public class UnityEvent : UnityEventBase
 	{
-		private readonly object[] m_InvokeArray = new object[0];
+		private object[] m_InvokeArray = null;
 
 		[RequiredByNativeCode]
 		public UnityEvent()
@@ -42,7 +43,23 @@ namespace UnityEngine.Events
 
 		public void Invoke()
 		{
-			base.Invoke(this.m_InvokeArray);
+			List<BaseInvokableCall> list = base.PrepareInvoke();
+			for (int i = 0; i < list.Count; i++)
+			{
+				InvokableCall invokableCall = list[i] as InvokableCall;
+				if (invokableCall != null)
+				{
+					invokableCall.Invoke();
+				}
+				else
+				{
+					if (this.m_InvokeArray == null)
+					{
+						this.m_InvokeArray = new object[0];
+					}
+					base.Invoke(this.m_InvokeArray);
+				}
+			}
 		}
 
 		internal void AddPersistentListener(UnityAction call)
@@ -73,7 +90,7 @@ namespace UnityEngine.Events
 	[Serializable]
 	public abstract class UnityEvent<T0> : UnityEventBase
 	{
-		private readonly object[] m_InvokeArray = new object[1];
+		private object[] m_InvokeArray = null;
 
 		[RequiredByNativeCode]
 		public UnityEvent()
@@ -110,8 +127,24 @@ namespace UnityEngine.Events
 
 		public void Invoke(T0 arg0)
 		{
-			this.m_InvokeArray[0] = arg0;
-			base.Invoke(this.m_InvokeArray);
+			List<BaseInvokableCall> list = base.PrepareInvoke();
+			for (int i = 0; i < list.Count; i++)
+			{
+				InvokableCall<T0> invokableCall = list[i] as InvokableCall<T0>;
+				if (invokableCall != null)
+				{
+					invokableCall.Invoke(arg0);
+				}
+				else
+				{
+					if (this.m_InvokeArray == null)
+					{
+						this.m_InvokeArray = new object[1];
+					}
+					this.m_InvokeArray[0] = arg0;
+					base.Invoke(this.m_InvokeArray);
+				}
+			}
 		}
 
 		internal void AddPersistentListener(UnityAction<T0> call)
@@ -142,7 +175,7 @@ namespace UnityEngine.Events
 	[Serializable]
 	public abstract class UnityEvent<T0, T1> : UnityEventBase
 	{
-		private readonly object[] m_InvokeArray = new object[2];
+		private object[] m_InvokeArray = null;
 
 		[RequiredByNativeCode]
 		public UnityEvent()
@@ -180,9 +213,25 @@ namespace UnityEngine.Events
 
 		public void Invoke(T0 arg0, T1 arg1)
 		{
-			this.m_InvokeArray[0] = arg0;
-			this.m_InvokeArray[1] = arg1;
-			base.Invoke(this.m_InvokeArray);
+			List<BaseInvokableCall> list = base.PrepareInvoke();
+			for (int i = 0; i < list.Count; i++)
+			{
+				InvokableCall<T0, T1> invokableCall = list[i] as InvokableCall<T0, T1>;
+				if (invokableCall != null)
+				{
+					invokableCall.Invoke(arg0, arg1);
+				}
+				else
+				{
+					if (this.m_InvokeArray == null)
+					{
+						this.m_InvokeArray = new object[2];
+					}
+					this.m_InvokeArray[0] = arg0;
+					this.m_InvokeArray[1] = arg1;
+					base.Invoke(this.m_InvokeArray);
+				}
+			}
 		}
 
 		internal void AddPersistentListener(UnityAction<T0, T1> call)
@@ -213,7 +262,7 @@ namespace UnityEngine.Events
 	[Serializable]
 	public abstract class UnityEvent<T0, T1, T2> : UnityEventBase
 	{
-		private readonly object[] m_InvokeArray = new object[3];
+		private object[] m_InvokeArray = null;
 
 		[RequiredByNativeCode]
 		public UnityEvent()
@@ -252,10 +301,26 @@ namespace UnityEngine.Events
 
 		public void Invoke(T0 arg0, T1 arg1, T2 arg2)
 		{
-			this.m_InvokeArray[0] = arg0;
-			this.m_InvokeArray[1] = arg1;
-			this.m_InvokeArray[2] = arg2;
-			base.Invoke(this.m_InvokeArray);
+			List<BaseInvokableCall> list = base.PrepareInvoke();
+			for (int i = 0; i < list.Count; i++)
+			{
+				InvokableCall<T0, T1, T2> invokableCall = list[i] as InvokableCall<T0, T1, T2>;
+				if (invokableCall != null)
+				{
+					invokableCall.Invoke(arg0, arg1, arg2);
+				}
+				else
+				{
+					if (this.m_InvokeArray == null)
+					{
+						this.m_InvokeArray = new object[3];
+					}
+					this.m_InvokeArray[0] = arg0;
+					this.m_InvokeArray[1] = arg1;
+					this.m_InvokeArray[2] = arg2;
+					base.Invoke(this.m_InvokeArray);
+				}
+			}
 		}
 
 		internal void AddPersistentListener(UnityAction<T0, T1, T2> call)
@@ -286,7 +351,7 @@ namespace UnityEngine.Events
 	[Serializable]
 	public abstract class UnityEvent<T0, T1, T2, T3> : UnityEventBase
 	{
-		private readonly object[] m_InvokeArray = new object[4];
+		private object[] m_InvokeArray = null;
 
 		[RequiredByNativeCode]
 		public UnityEvent()
@@ -326,11 +391,27 @@ namespace UnityEngine.Events
 
 		public void Invoke(T0 arg0, T1 arg1, T2 arg2, T3 arg3)
 		{
-			this.m_InvokeArray[0] = arg0;
-			this.m_InvokeArray[1] = arg1;
-			this.m_InvokeArray[2] = arg2;
-			this.m_InvokeArray[3] = arg3;
-			base.Invoke(this.m_InvokeArray);
+			List<BaseInvokableCall> list = base.PrepareInvoke();
+			for (int i = 0; i < list.Count; i++)
+			{
+				InvokableCall<T0, T1, T2, T3> invokableCall = list[i] as InvokableCall<T0, T1, T2, T3>;
+				if (invokableCall != null)
+				{
+					invokableCall.Invoke(arg0, arg1, arg2, arg3);
+				}
+				else
+				{
+					if (this.m_InvokeArray == null)
+					{
+						this.m_InvokeArray = new object[4];
+					}
+					this.m_InvokeArray[0] = arg0;
+					this.m_InvokeArray[1] = arg1;
+					this.m_InvokeArray[2] = arg2;
+					this.m_InvokeArray[3] = arg3;
+					base.Invoke(this.m_InvokeArray);
+				}
+			}
 		}
 
 		internal void AddPersistentListener(UnityAction<T0, T1, T2, T3> call)

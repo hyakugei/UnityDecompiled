@@ -26,7 +26,7 @@ namespace UnityEditor
 		[MenuItem("Window/Collab History", true)]
 		public static bool ValidateShowHistoryWindow()
 		{
-			return CollabAccess.Instance.IsServiceEnabled();
+			return Collab.instance.IsCollabEnabledForCurrentProject();
 		}
 
 		public void OnReceiveTitle(string title)
@@ -54,7 +54,7 @@ namespace UnityEditor
 
 		public void OnCollabStateChanged(CollabInfo info)
 		{
-			if (!CollabAccess.Instance.IsServiceEnabled())
+			if (!Collab.instance.IsCollabEnabledForCurrentProject())
 			{
 				CollabHistoryWindow.CloseHistoryWindows();
 			}

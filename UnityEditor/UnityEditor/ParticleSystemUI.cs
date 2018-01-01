@@ -38,7 +38,7 @@ namespace UnityEditor
 
 		private string m_SupportsCullingTextLabel;
 
-		private static ParticleSystemUI.Texts s_Texts = new ParticleSystemUI.Texts();
+		private static ParticleSystemUI.Texts s_Texts;
 
 		public bool multiEdit
 		{
@@ -53,6 +53,10 @@ namespace UnityEditor
 			if (ParticleSystemUI.s_ModuleNames == null)
 			{
 				ParticleSystemUI.s_ModuleNames = ParticleSystemUI.GetUIModuleNames();
+			}
+			if (ParticleSystemUI.s_Texts == null)
+			{
+				ParticleSystemUI.s_Texts = new ParticleSystemUI.Texts();
 			}
 			this.m_ParticleEffectUI = owner;
 			this.m_ParticleSystems = systems;
@@ -90,10 +94,6 @@ namespace UnityEditor
 			{
 				this.m_RendererSerializedObject = new SerializedObject(list.ToArray());
 				this.m_Modules[this.m_Modules.Length - 1] = new RendererModuleUI(this, this.m_RendererSerializedObject, ParticleSystemUI.s_ModuleNames[ParticleSystemUI.s_ModuleNames.Length - 1]);
-				foreach (ParticleSystemRenderer current in list)
-				{
-					EditorUtility.SetSelectedRenderState(current, (!ParticleEffectUI.m_ShowWireframe) ? EditorSelectedRenderState.Hidden : EditorSelectedRenderState.Wireframe);
-				}
 			}
 		}
 
@@ -126,11 +126,6 @@ namespace UnityEditor
 				result = -1f;
 			}
 			return result;
-		}
-
-		private ParticleSystem GetSelectedParticleSystem()
-		{
-			return Selection.activeGameObject.GetComponent<ParticleSystem>();
 		}
 
 		public void OnGUI(float width, bool fixedWidth)
@@ -328,12 +323,9 @@ namespace UnityEditor
 							GUI.Toggle(position3, moduleUI.enabled, GUIContent.none, style2);
 							EditorGUI.showMixedValue = false;
 						}
-						if (flag)
+						if (flag && flag2)
 						{
-							if (flag2)
-							{
-								GUI.Label(position4, GUIContent.none, ParticleSystemStyles.Get().plus);
-							}
+							GUI.Label(position4, GUIContent.none, ParticleSystemStyles.Get().plus);
 						}
 						if (flag2 && !string.IsNullOrEmpty(this.m_SupportsCullingTextLabel))
 						{
@@ -353,22 +345,20 @@ namespace UnityEditor
 		{
 			if (this.m_Modules != null)
 			{
-				ParticleSystem[] particleSystems = this.m_ParticleSystems;
-				for (int i = 0; i < particleSystems.Length; i++)
+				if (ParticleEffectUI.m_ShowBounds)
 				{
-					ParticleSystem particleSystem = particleSystems[i];
-					if (particleSystem.particleCount > 0)
+					ParticleSystem[] particleSystems = this.m_ParticleSystems;
+					for (int i = 0; i < particleSystems.Length; i++)
 					{
-						ParticleSystemRenderer component = particleSystem.GetComponent<ParticleSystemRenderer>();
-						if (ParticleEffectUI.m_ShowBounds)
+						ParticleSystem ps = particleSystems[i];
+						if (this.multiEdit)
 						{
-							Color color = Handles.color;
-							Handles.color = Color.yellow;
-							Bounds bounds = component.bounds;
-							Handles.DrawWireCube(bounds.center, bounds.size);
-							Handles.color = color;
+							this.ShowBounds(ParticleSystemEditorUtils.GetRoot(ps));
 						}
-						EditorUtility.SetSelectedRenderState(component, (!ParticleEffectUI.m_ShowWireframe) ? EditorSelectedRenderState.Hidden : EditorSelectedRenderState.Wireframe);
+						else
+						{
+							this.ShowBounds(ps);
+						}
 					}
 				}
 				this.UpdateProperties();
@@ -385,6 +375,35 @@ namespace UnityEditor
 					}
 				}
 				this.ApplyProperties();
+			}
+		}
+
+		private void ShowBounds(ParticleSystem ps)
+		{
+			if (ps.particleCount > 0)
+			{
+				ParticleSystemRenderer component = ps.GetComponent<ParticleSystemRenderer>();
+				Color color = Handles.color;
+				Handles.color = Color.yellow;
+				Bounds bounds = component.bounds;
+				Handles.DrawWireCube(bounds.center, bounds.size);
+				Handles.color = color;
+			}
+			if (this.multiEdit)
+			{
+				ParticleSystem[] componentsInChildren = ps.transform.GetComponentsInChildren<ParticleSystem>();
+				ParticleSystem[] array = componentsInChildren;
+				for (int i = 0; i < array.Length; i++)
+				{
+					ParticleSystem child = array[i];
+					if (child != ps)
+					{
+						if (!(this.m_ParticleSystems.FirstOrDefault((ParticleSystem o) => ParticleSystemEditorUtils.GetRoot(o) == child) != null))
+						{
+							this.ShowBounds(child);
+						}
+					}
+				}
 			}
 		}
 

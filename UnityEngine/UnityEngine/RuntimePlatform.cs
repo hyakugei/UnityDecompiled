@@ -8,10 +8,11 @@ namespace UnityEngine
 		OSXEditor,
 		OSXPlayer,
 		WindowsPlayer,
-		[Obsolete("WebPlayer export is no longer supported in Unity 5.4+.")]
+		[Obsolete("WebPlayer export is no longer supported in Unity 5.4+.", true)]
 		OSXWebPlayer,
+		[Obsolete("Dashboard widget on Mac OS X export is no longer supported in Unity 5.4+.", true)]
 		OSXDashboardPlayer,
-		[Obsolete("WebPlayer export is no longer supported in Unity 5.4+.")]
+		[Obsolete("WebPlayer export is no longer supported in Unity 5.4+.", true)]
 		WindowsWebPlayer,
 		WindowsEditor = 7,
 		IPhonePlayer,
@@ -47,6 +48,7 @@ namespace UnityEngine
 		PS4,
 		PSM,
 		XboxOne,
+		[Obsolete("SamsungTVPlayer export is no longer supported in Unity 2017.3+.")]
 		SamsungTVPlayer,
 		WiiU = 30,
 		tvOS,

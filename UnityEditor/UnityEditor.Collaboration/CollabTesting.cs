@@ -11,7 +11,7 @@ namespace UnityEditor.Collaboration
 		{
 			NotWaiting = 0,
 			WaitForJobComplete = 1,
-			WaitForAssetUpdate = 2
+			WaitForChannelMessageHandled = 2
 		}
 
 		private static IEnumerator<CollabTesting.AsyncState> _enumerator = null;
@@ -46,21 +46,19 @@ namespace UnityEditor.Collaboration
 
 		public static void OnCompleteJob()
 		{
-			if ((CollabTesting._nextState & CollabTesting.AsyncState.WaitForJobComplete) != CollabTesting.AsyncState.NotWaiting)
-			{
-				CollabTesting._nextState &= ~CollabTesting.AsyncState.WaitForJobComplete;
-				if (CollabTesting._nextState == CollabTesting.AsyncState.NotWaiting)
-				{
-					CollabTesting.Execute();
-				}
-			}
+			CollabTesting.OnAsyncSignalReceived(CollabTesting.AsyncState.WaitForJobComplete);
 		}
 
-		public static void OnAssetUpdate()
+		public static void OnChannelMessageHandled()
 		{
-			if ((CollabTesting._nextState & CollabTesting.AsyncState.WaitForAssetUpdate) != CollabTesting.AsyncState.NotWaiting)
+			CollabTesting.OnAsyncSignalReceived(CollabTesting.AsyncState.WaitForChannelMessageHandled);
+		}
+
+		private static void OnAsyncSignalReceived(CollabTesting.AsyncState stateToRemove)
+		{
+			if ((CollabTesting._nextState & stateToRemove) != CollabTesting.AsyncState.NotWaiting)
 			{
-				CollabTesting._nextState &= ~CollabTesting.AsyncState.WaitForAssetUpdate;
+				CollabTesting._nextState &= ~stateToRemove;
 				if (CollabTesting._nextState == CollabTesting.AsyncState.NotWaiting)
 				{
 					CollabTesting.Execute();

@@ -48,6 +48,20 @@ namespace UnityEngine.Video
 			get;
 		}
 
+		public extern uint pixelAspectRatioNumerator
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+		}
+
+		public extern uint pixelAspectRatioDenominator
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+		}
+
 		public extern ushort audioTrackCount
 		{
 			[GeneratedByOldBindingsGenerator]

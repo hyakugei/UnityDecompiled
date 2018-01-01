@@ -58,6 +58,8 @@ namespace UnityEditor
 		ASTC_RGBA_6x6,
 		ASTC_RGBA_8x8,
 		ASTC_RGBA_10x10,
-		ASTC_RGBA_12x12
+		ASTC_RGBA_12x12,
+		ETC_RGB4Crunched = 64,
+		ETC2_RGBA8Crunched
 	}
 }

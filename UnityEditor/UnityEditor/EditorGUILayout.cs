@@ -405,11 +405,9 @@ namespace UnityEditor
 		internal static bool LinkLabel(GUIContent label, params GUILayoutOption[] options)
 		{
 			Rect position = EditorGUILayout.s_LastRect = GUILayoutUtility.GetRect(label, EditorStyles.linkLabel, options);
-			Handles.BeginGUI();
 			Handles.color = EditorStyles.linkLabel.normal.textColor;
 			Handles.DrawLine(new Vector3(position.xMin, position.yMax), new Vector3(position.xMax, position.yMax));
 			Handles.color = Color.white;
-			Handles.EndGUI();
 			EditorGUIUtility.AddCursorRect(position, MouseCursor.Link);
 			return GUI.Button(position, label, EditorStyles.linkLabel);
 		}
@@ -1096,55 +1094,6 @@ namespace UnityEditor
 			return EditorGUI.EnumPopup(position, label, selected, style);
 		}
 
-		public static Enum EnumMaskPopup(string label, Enum selected, params GUILayoutOption[] options)
-		{
-			int num;
-			bool flag;
-			return EditorGUILayout.EnumMaskPopup(EditorGUIUtility.TempContent(label), selected, out num, out flag, options);
-		}
-
-		public static Enum EnumMaskPopup(string label, Enum selected, GUIStyle style, params GUILayoutOption[] options)
-		{
-			int num;
-			bool flag;
-			return EditorGUILayout.EnumMaskPopup(EditorGUIUtility.TempContent(label), selected, out num, out flag, style, options);
-		}
-
-		public static Enum EnumMaskPopup(GUIContent label, Enum selected, params GUILayoutOption[] options)
-		{
-			int num;
-			bool flag;
-			return EditorGUILayout.EnumMaskPopup(label, selected, out num, out flag, options);
-		}
-
-		public static Enum EnumMaskPopup(GUIContent label, Enum selected, GUIStyle style, params GUILayoutOption[] options)
-		{
-			int num;
-			bool flag;
-			return EditorGUILayout.EnumMaskPopup(label, selected, out num, out flag, style, options);
-		}
-
-		internal static Enum EnumMaskPopup(string label, Enum selected, out int changedFlags, out bool changedToValue, params GUILayoutOption[] options)
-		{
-			return EditorGUILayout.EnumMaskPopup(EditorGUIUtility.TempContent(label), selected, out changedFlags, out changedToValue, options);
-		}
-
-		internal static Enum EnumMaskPopup(string label, Enum selected, out int changedFlags, out bool changedToValue, GUIStyle style, params GUILayoutOption[] options)
-		{
-			return EditorGUILayout.EnumMaskPopup(EditorGUIUtility.TempContent(label), selected, out changedFlags, out changedToValue, style, options);
-		}
-
-		internal static Enum EnumMaskPopup(GUIContent label, Enum selected, out int changedFlags, out bool changedToValue, params GUILayoutOption[] options)
-		{
-			return EditorGUILayout.EnumMaskPopup(label, selected, out changedFlags, out changedToValue, EditorStyles.popup, options);
-		}
-
-		internal static Enum EnumMaskPopup(GUIContent label, Enum selected, out int changedFlags, out bool changedToValue, GUIStyle style, params GUILayoutOption[] options)
-		{
-			Rect position = EditorGUILayout.s_LastRect = EditorGUILayout.GetControlRect(true, 16f, style, options);
-			return EditorGUI.EnumMaskPopup(position, label, selected, out changedFlags, out changedToValue, style);
-		}
-
 		public static int IntPopup(int selectedValue, string[] displayedOptions, int[] optionValues, params GUILayoutOption[] options)
 		{
 			return EditorGUILayout.IntPopup(selectedValue, displayedOptions, optionValues, EditorStyles.popup, options);
@@ -1306,40 +1255,36 @@ namespace UnityEditor
 			return EditorGUI.MaskField(position, mask, displayedOptions, EditorStyles.popup);
 		}
 
-		public static Enum EnumMaskField(GUIContent label, Enum enumValue, GUIStyle style, params GUILayoutOption[] options)
+		public static Enum EnumFlagsField(Enum enumValue, params GUILayoutOption[] options)
 		{
-			Rect position = EditorGUILayout.s_LastRect = EditorGUILayout.GetControlRect(true, 16f, style, options);
-			return EditorGUI.EnumMaskField(position, label, enumValue, style);
+			return EditorGUILayout.EnumFlagsField(enumValue, EditorStyles.popup, options);
 		}
 
-		public static Enum EnumMaskField(string label, Enum enumValue, GUIStyle style, params GUILayoutOption[] options)
-		{
-			Rect position = EditorGUILayout.s_LastRect = EditorGUILayout.GetControlRect(true, 16f, style, options);
-			return EditorGUI.EnumMaskField(position, label, enumValue, style);
-		}
-
-		public static Enum EnumMaskField(GUIContent label, Enum enumValue, params GUILayoutOption[] options)
-		{
-			Rect position = EditorGUILayout.s_LastRect = EditorGUILayout.GetControlRect(true, 16f, EditorStyles.popup, options);
-			return EditorGUI.EnumMaskField(position, label, enumValue, EditorStyles.popup);
-		}
-
-		public static Enum EnumMaskField(string label, Enum enumValue, params GUILayoutOption[] options)
-		{
-			Rect position = EditorGUILayout.s_LastRect = EditorGUILayout.GetControlRect(true, 16f, EditorStyles.popup, options);
-			return EditorGUI.EnumMaskField(position, label, enumValue, EditorStyles.popup);
-		}
-
-		public static Enum EnumMaskField(Enum enumValue, GUIStyle style, params GUILayoutOption[] options)
+		public static Enum EnumFlagsField(Enum enumValue, GUIStyle style, params GUILayoutOption[] options)
 		{
 			Rect position = EditorGUILayout.s_LastRect = EditorGUILayout.GetControlRect(false, 16f, style, options);
-			return EditorGUI.EnumMaskField(position, enumValue, style);
+			return EditorGUI.EnumFlagsField(position, enumValue, style);
 		}
 
-		public static Enum EnumMaskField(Enum enumValue, params GUILayoutOption[] options)
+		public static Enum EnumFlagsField(string label, Enum enumValue, params GUILayoutOption[] options)
 		{
-			Rect position = EditorGUILayout.s_LastRect = EditorGUILayout.GetControlRect(false, 16f, EditorStyles.popup, options);
-			return EditorGUI.EnumMaskField(position, enumValue, EditorStyles.popup);
+			return EditorGUILayout.EnumFlagsField(label, enumValue, EditorStyles.popup, options);
+		}
+
+		public static Enum EnumFlagsField(string label, Enum enumValue, GUIStyle style, params GUILayoutOption[] options)
+		{
+			return EditorGUILayout.EnumFlagsField(EditorGUIUtility.TempContent(label), enumValue, style, options);
+		}
+
+		public static Enum EnumFlagsField(GUIContent label, Enum enumValue, params GUILayoutOption[] options)
+		{
+			return EditorGUILayout.EnumFlagsField(label, enumValue, EditorStyles.popup, options);
+		}
+
+		public static Enum EnumFlagsField(GUIContent label, Enum enumValue, GUIStyle style, params GUILayoutOption[] options)
+		{
+			Rect position = EditorGUILayout.s_LastRect = EditorGUILayout.GetControlRect(true, 16f, style, options);
+			return EditorGUI.EnumFlagsField(position, label, enumValue, style);
 		}
 
 		[Obsolete("Check the docs for the usage of the new parameter 'allowSceneObjects'.")]
@@ -1447,6 +1392,28 @@ namespace UnityEditor
 			return EditorGUI.Vector4Field(position, label, value);
 		}
 
+		public static Vector2Int Vector2IntField(string label, Vector2Int value, params GUILayoutOption[] options)
+		{
+			return EditorGUILayout.Vector2IntField(EditorGUIUtility.TempContent(label), value, options);
+		}
+
+		public static Vector2Int Vector2IntField(GUIContent label, Vector2Int value, params GUILayoutOption[] options)
+		{
+			Rect position = EditorGUILayout.s_LastRect = EditorGUILayout.GetControlRect(true, EditorGUI.GetPropertyHeight(SerializedPropertyType.Vector2Int, label), EditorStyles.numberField, options);
+			return EditorGUI.Vector2IntField(position, label, value);
+		}
+
+		public static Vector3Int Vector3IntField(string label, Vector3Int value, params GUILayoutOption[] options)
+		{
+			return EditorGUILayout.Vector3IntField(EditorGUIUtility.TempContent(label), value, options);
+		}
+
+		public static Vector3Int Vector3IntField(GUIContent label, Vector3Int value, params GUILayoutOption[] options)
+		{
+			Rect position = EditorGUILayout.s_LastRect = EditorGUILayout.GetControlRect(true, EditorGUI.GetPropertyHeight(SerializedPropertyType.Vector3Int, label), EditorStyles.numberField, options);
+			return EditorGUI.Vector3IntField(position, label, value);
+		}
+
 		public static Rect RectField(Rect value, params GUILayoutOption[] options)
 		{
 			Rect position = EditorGUILayout.s_LastRect = EditorGUILayout.GetControlRect(false, EditorGUI.GetPropertyHeight(SerializedPropertyType.Rect, GUIContent.none), EditorStyles.numberField, options);
@@ -1466,6 +1433,25 @@ namespace UnityEditor
 			return EditorGUI.RectField(position, label, value);
 		}
 
+		public static RectInt RectIntField(RectInt value, params GUILayoutOption[] options)
+		{
+			Rect position = EditorGUILayout.s_LastRect = EditorGUILayout.GetControlRect(false, EditorGUI.GetPropertyHeight(SerializedPropertyType.RectInt, GUIContent.none), EditorStyles.numberField, options);
+			return EditorGUI.RectIntField(position, value);
+		}
+
+		public static RectInt RectIntField(string label, RectInt value, params GUILayoutOption[] options)
+		{
+			return EditorGUILayout.RectIntField(EditorGUIUtility.TempContent(label), value, options);
+		}
+
+		public static RectInt RectIntField(GUIContent label, RectInt value, params GUILayoutOption[] options)
+		{
+			bool hasLabel = EditorGUI.LabelHasContent(label);
+			float propertyHeight = EditorGUI.GetPropertyHeight(SerializedPropertyType.RectInt, label);
+			Rect position = EditorGUILayout.s_LastRect = EditorGUILayout.GetControlRect(hasLabel, propertyHeight, EditorStyles.numberField, options);
+			return EditorGUI.RectIntField(position, label, value);
+		}
+
 		public static Bounds BoundsField(Bounds value, params GUILayoutOption[] options)
 		{
 			Rect position = EditorGUILayout.s_LastRect = EditorGUILayout.GetControlRect(false, EditorGUI.GetPropertyHeight(SerializedPropertyType.Bounds, GUIContent.none), EditorStyles.numberField, options);
@@ -1483,6 +1469,25 @@ namespace UnityEditor
 			float propertyHeight = EditorGUI.GetPropertyHeight(SerializedPropertyType.Bounds, label);
 			Rect position = EditorGUILayout.s_LastRect = EditorGUILayout.GetControlRect(hasLabel, propertyHeight, EditorStyles.numberField, options);
 			return EditorGUI.BoundsField(position, label, value);
+		}
+
+		public static BoundsInt BoundsIntField(BoundsInt value, params GUILayoutOption[] options)
+		{
+			Rect position = EditorGUILayout.s_LastRect = EditorGUILayout.GetControlRect(false, EditorGUI.GetPropertyHeight(SerializedPropertyType.BoundsInt, GUIContent.none), EditorStyles.numberField, options);
+			return EditorGUI.BoundsIntField(position, value);
+		}
+
+		public static BoundsInt BoundsIntField(string label, BoundsInt value, params GUILayoutOption[] options)
+		{
+			return EditorGUILayout.BoundsIntField(EditorGUIUtility.TempContent(label), value, options);
+		}
+
+		public static BoundsInt BoundsIntField(GUIContent label, BoundsInt value, params GUILayoutOption[] options)
+		{
+			bool hasLabel = EditorGUI.LabelHasContent(label);
+			float propertyHeight = EditorGUI.GetPropertyHeight(SerializedPropertyType.BoundsInt, label);
+			Rect position = EditorGUILayout.s_LastRect = EditorGUILayout.GetControlRect(hasLabel, propertyHeight, EditorStyles.numberField, options);
+			return EditorGUI.BoundsIntField(position, label, value);
 		}
 
 		internal static void PropertiesField(GUIContent label, SerializedProperty[] properties, GUIContent[] propertyLabels, float propertyLabelsWidth, params GUILayoutOption[] options)
@@ -2129,6 +2134,80 @@ namespace UnityEditor
 		{
 			EditorGUILayout.s_LastRect = GUILayoutUtility.GetRect(content, style, options);
 			return EditorGUI.DropdownButton(EditorGUILayout.s_LastRect, content, focusType, style);
+		}
+
+		[Obsolete("EnumMaskField has been deprecated. Use EnumFlagsField instead.")]
+		public static Enum EnumMaskField(Enum enumValue, params GUILayoutOption[] options)
+		{
+			return EditorGUILayout.EnumMaskField(enumValue, EditorStyles.popup, options);
+		}
+
+		[Obsolete("EnumMaskField has been deprecated. Use EnumFlagsField instead.")]
+		public static Enum EnumMaskField(Enum enumValue, GUIStyle style, params GUILayoutOption[] options)
+		{
+			Rect position = EditorGUILayout.s_LastRect = EditorGUILayout.GetControlRect(false, 16f, style, options);
+			return EditorGUI.EnumMaskField(position, enumValue, style);
+		}
+
+		[Obsolete("EnumMaskField has been deprecated. Use EnumFlagsField instead.")]
+		public static Enum EnumMaskField(string label, Enum enumValue, params GUILayoutOption[] options)
+		{
+			return EditorGUILayout.EnumMaskField(label, enumValue, EditorStyles.popup, options);
+		}
+
+		[Obsolete("EnumMaskField has been deprecated. Use EnumFlagsField instead.")]
+		public static Enum EnumMaskField(string label, Enum enumValue, GUIStyle style, params GUILayoutOption[] options)
+		{
+			Rect position = EditorGUILayout.s_LastRect = EditorGUILayout.GetControlRect(true, 16f, style, options);
+			return EditorGUI.EnumMaskField(position, label, enumValue, style);
+		}
+
+		[Obsolete("EnumMaskField has been deprecated. Use EnumFlagsField instead.")]
+		public static Enum EnumMaskField(GUIContent label, Enum enumValue, params GUILayoutOption[] options)
+		{
+			return EditorGUILayout.EnumMaskField(label, enumValue, EditorStyles.popup, options);
+		}
+
+		[Obsolete("EnumMaskField has been deprecated. Use EnumFlagsField instead.")]
+		public static Enum EnumMaskField(GUIContent label, Enum enumValue, GUIStyle style, params GUILayoutOption[] options)
+		{
+			Rect position = EditorGUILayout.s_LastRect = EditorGUILayout.GetControlRect(true, 16f, style, options);
+			return EditorGUI.EnumMaskField(position, label, enumValue, style);
+		}
+
+		[Obsolete("EnumMaskPopup has been deprecated. Use EnumFlagsField instead.")]
+		public static Enum EnumMaskPopup(string label, Enum selected, params GUILayoutOption[] options)
+		{
+			return EditorGUILayout.EnumMaskPopup(label, selected, EditorStyles.popup, options);
+		}
+
+		[Obsolete("EnumMaskPopup has been deprecated. Use EnumFlagsField instead.")]
+		public static Enum EnumMaskPopup(string label, Enum selected, GUIStyle style, params GUILayoutOption[] options)
+		{
+			int num;
+			bool flag;
+			return EditorGUILayout.EnumMaskPopup(EditorGUIUtility.TempContent(label), selected, out num, out flag, style, options);
+		}
+
+		[Obsolete("EnumMaskPopup has been deprecated. Use EnumFlagsField instead.")]
+		public static Enum EnumMaskPopup(GUIContent label, Enum selected, params GUILayoutOption[] options)
+		{
+			return EditorGUILayout.EnumMaskPopup(label, selected, EditorStyles.popup, options);
+		}
+
+		[Obsolete("EnumMaskPopup has been deprecated. Use EnumFlagsField instead.")]
+		public static Enum EnumMaskPopup(GUIContent label, Enum selected, GUIStyle style, params GUILayoutOption[] options)
+		{
+			int num;
+			bool flag;
+			return EditorGUILayout.EnumMaskPopup(label, selected, out num, out flag, style, options);
+		}
+
+		[Obsolete("EnumMaskPopup has been deprecated. Use EnumFlagsField instead.")]
+		private static Enum EnumMaskPopup(GUIContent label, Enum selected, out int changedFlags, out bool changedToValue, GUIStyle style, params GUILayoutOption[] options)
+		{
+			Rect position = EditorGUILayout.s_LastRect = EditorGUILayout.GetControlRect(true, 16f, style, options);
+			return EditorGUI.EnumMaskPopup(position, label, selected, out changedFlags, out changedToValue, style);
 		}
 
 		internal static Color ColorBrightnessField(GUIContent label, Color value, float minBrightness, float maxBrightness, params GUILayoutOption[] options)

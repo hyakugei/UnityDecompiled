@@ -18,7 +18,7 @@ namespace UnityEngine
 		{
 			get
 			{
-				return CombineInstanceHelper.GetMesh(this.m_MeshInstanceID);
+				return Mesh.FromInstanceID(this.m_MeshInstanceID);
 			}
 			set
 			{

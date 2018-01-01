@@ -159,6 +159,14 @@ namespace UnityEditor.Sprites
 			return string.Format("{0}::{1}", type.AssemblyQualifiedName, packerPolicy.GetVersion());
 		}
 
+		internal static bool AllowSequentialPacking()
+		{
+			Packer.RegenerateList();
+			Type type = Packer.m_policyTypeCache[Packer.m_selectedPolicy];
+			IPackerPolicy packerPolicy = Activator.CreateInstance(type) as IPackerPolicy;
+			return packerPolicy.AllowSequentialPacking;
+		}
+
 		internal static void ExecuteSelectedPolicy(BuildTarget target, int[] textureImporterInstanceIDs)
 		{
 			Packer.RegenerateList();

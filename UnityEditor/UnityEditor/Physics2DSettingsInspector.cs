@@ -1,13 +1,14 @@
 using System;
 using System.Runtime.CompilerServices;
 using UnityEditor.AnimatedValues;
+using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.Events;
 
 namespace UnityEditor
 {
 	[CustomEditor(typeof(Physics2DSettings))]
-	internal class Physics2DSettingsInspector : Editor
+	internal class Physics2DSettingsInspector : ProjectSettingsBaseEditor
 	{
 		private Vector2 m_LayerCollisionMatrixScrollPos;
 

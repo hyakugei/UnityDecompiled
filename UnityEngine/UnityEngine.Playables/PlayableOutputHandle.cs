@@ -22,62 +22,6 @@ namespace UnityEngine.Playables
 			}
 		}
 
-		internal bool IsValid()
-		{
-			return PlayableOutputHandle.IsValidInternal(ref this);
-		}
-
-		internal static bool IsValidInternal(ref PlayableOutputHandle handle)
-		{
-			return PlayableOutputHandle.INTERNAL_CALL_IsValidInternal(ref handle);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern bool INTERNAL_CALL_IsValidInternal(ref PlayableOutputHandle handle);
-
-		internal static Type GetPlayableOutputTypeOf(ref PlayableOutputHandle handle)
-		{
-			return PlayableOutputHandle.INTERNAL_CALL_GetPlayableOutputTypeOf(ref handle);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern Type INTERNAL_CALL_GetPlayableOutputTypeOf(ref PlayableOutputHandle handle);
-
-		internal bool IsPlayableOutputOfType<T>()
-		{
-			return PlayableOutputHandle.GetPlayableOutputTypeOf(ref this) == typeof(T);
-		}
-
-		internal UnityEngine.Object GetReferenceObject()
-		{
-			return PlayableOutputHandle.GetInternalReferenceObject(ref this);
-		}
-
-		internal void SetReferenceObject(UnityEngine.Object value)
-		{
-			PlayableOutputHandle.SetInternalReferenceObject(ref this, value);
-		}
-
-		internal static UnityEngine.Object GetInternalReferenceObject(ref PlayableOutputHandle handle)
-		{
-			return PlayableOutputHandle.INTERNAL_CALL_GetInternalReferenceObject(ref handle);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern UnityEngine.Object INTERNAL_CALL_GetInternalReferenceObject(ref PlayableOutputHandle handle);
-
-		internal static void SetInternalReferenceObject(ref PlayableOutputHandle handle, UnityEngine.Object target)
-		{
-			PlayableOutputHandle.INTERNAL_CALL_SetInternalReferenceObject(ref handle, target);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_SetInternalReferenceObject(ref PlayableOutputHandle handle, UnityEngine.Object target);
-
 		internal UnityEngine.Object GetUserData()
 		{
 			return PlayableOutputHandle.GetInternalUserData(ref this);
@@ -106,91 +50,10 @@ namespace UnityEngine.Playables
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern void INTERNAL_CALL_SetInternalUserData(ref PlayableOutputHandle handle, [Writable] UnityEngine.Object target);
 
-		internal PlayableHandle GetSourcePlayable()
+		internal bool IsPlayableOutputOfType<T>()
 		{
-			return PlayableOutputHandle.GetSourcePlayableInternal(ref this);
+			return this.GetPlayableOutputType() == typeof(T);
 		}
-
-		internal void SetSourcePlayable(PlayableHandle value)
-		{
-			PlayableOutputHandle.SetSourcePlayableInternal(ref this, ref value);
-		}
-
-		internal static PlayableHandle GetSourcePlayableInternal(ref PlayableOutputHandle handle)
-		{
-			PlayableHandle result;
-			PlayableOutputHandle.INTERNAL_CALL_GetSourcePlayableInternal(ref handle, out result);
-			return result;
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_GetSourcePlayableInternal(ref PlayableOutputHandle handle, out PlayableHandle value);
-
-		internal static void SetSourcePlayableInternal(ref PlayableOutputHandle handle, ref PlayableHandle target)
-		{
-			PlayableOutputHandle.INTERNAL_CALL_SetSourcePlayableInternal(ref handle, ref target);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_SetSourcePlayableInternal(ref PlayableOutputHandle handle, ref PlayableHandle target);
-
-		internal int GetSourceInputPort()
-		{
-			return PlayableOutputHandle.GetSourceInputPortInternal(ref this);
-		}
-
-		internal void SetSourceInputPort(int value)
-		{
-			PlayableOutputHandle.SetSourceInputPortInternal(ref this, value);
-		}
-
-		internal static int GetSourceInputPortInternal(ref PlayableOutputHandle handle)
-		{
-			return PlayableOutputHandle.INTERNAL_CALL_GetSourceInputPortInternal(ref handle);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern int INTERNAL_CALL_GetSourceInputPortInternal(ref PlayableOutputHandle handle);
-
-		internal static void SetSourceInputPortInternal(ref PlayableOutputHandle handle, int port)
-		{
-			PlayableOutputHandle.INTERNAL_CALL_SetSourceInputPortInternal(ref handle, port);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_SetSourceInputPortInternal(ref PlayableOutputHandle handle, int port);
-
-		internal float GetWeight()
-		{
-			return PlayableOutputHandle.GetWeightInternal(ref this);
-		}
-
-		internal void SetWeight(float value)
-		{
-			PlayableOutputHandle.SetWeightInternal(ref this, value);
-		}
-
-		internal static void SetWeightInternal(ref PlayableOutputHandle handle, float weight)
-		{
-			PlayableOutputHandle.INTERNAL_CALL_SetWeightInternal(ref handle, weight);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_SetWeightInternal(ref PlayableOutputHandle handle, float weight);
-
-		internal static float GetWeightInternal(ref PlayableOutputHandle handle)
-		{
-			return PlayableOutputHandle.INTERNAL_CALL_GetWeightInternal(ref handle);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern float INTERNAL_CALL_GetWeightInternal(ref PlayableOutputHandle handle);
 
 		public override int GetHashCode()
 		{
@@ -216,5 +79,87 @@ namespace UnityEngine.Playables
 		{
 			return lhs.m_Handle == rhs.m_Handle && lhs.m_Version == rhs.m_Version;
 		}
+
+		internal bool IsValid()
+		{
+			return PlayableOutputHandle.IsValid_Injected(ref this);
+		}
+
+		internal Type GetPlayableOutputType()
+		{
+			return PlayableOutputHandle.GetPlayableOutputType_Injected(ref this);
+		}
+
+		internal UnityEngine.Object GetReferenceObject()
+		{
+			return PlayableOutputHandle.GetReferenceObject_Injected(ref this);
+		}
+
+		internal void SetReferenceObject(UnityEngine.Object target)
+		{
+			PlayableOutputHandle.SetReferenceObject_Injected(ref this, target);
+		}
+
+		internal PlayableHandle GetSourcePlayable()
+		{
+			PlayableHandle result;
+			PlayableOutputHandle.GetSourcePlayable_Injected(ref this, out result);
+			return result;
+		}
+
+		internal void SetSourcePlayable(PlayableHandle target)
+		{
+			PlayableOutputHandle.SetSourcePlayable_Injected(ref this, ref target);
+		}
+
+		internal int GetSourceInputPort()
+		{
+			return PlayableOutputHandle.GetSourceInputPort_Injected(ref this);
+		}
+
+		internal void SetSourceInputPort(int port)
+		{
+			PlayableOutputHandle.SetSourceInputPort_Injected(ref this, port);
+		}
+
+		internal float GetWeight()
+		{
+			return PlayableOutputHandle.GetWeight_Injected(ref this);
+		}
+
+		internal void SetWeight(float weight)
+		{
+			PlayableOutputHandle.SetWeight_Injected(ref this, weight);
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern bool IsValid_Injected(ref PlayableOutputHandle _unity_self);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern Type GetPlayableOutputType_Injected(ref PlayableOutputHandle _unity_self);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern UnityEngine.Object GetReferenceObject_Injected(ref PlayableOutputHandle _unity_self);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void SetReferenceObject_Injected(ref PlayableOutputHandle _unity_self, UnityEngine.Object target);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void GetSourcePlayable_Injected(ref PlayableOutputHandle _unity_self, out PlayableHandle ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void SetSourcePlayable_Injected(ref PlayableOutputHandle _unity_self, ref PlayableHandle target);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern int GetSourceInputPort_Injected(ref PlayableOutputHandle _unity_self);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void SetSourceInputPort_Injected(ref PlayableOutputHandle _unity_self, int port);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern float GetWeight_Injected(ref PlayableOutputHandle _unity_self);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void SetWeight_Injected(ref PlayableOutputHandle _unity_self, float weight);
 	}
 }

@@ -2,18 +2,21 @@ using ExCSS;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using UnityEditor.Experimental.AssetImporters;
 using UnityEngine;
-using UnityEngine.Scripting;
+using UnityEngine.Experimental.UIElements.StyleSheets;
 using UnityEngine.StyleSheets;
 
 namespace UnityEditor.StyleSheets
 {
-	internal class StyleSheetImporter
+	[ScriptedImporter(3, "uss", -20)]
+	internal class StyleSheetImporter : ScriptedImporter
 	{
-		private Parser s_Parser;
+		private Parser m_Parser;
 
-		private const string kResourcePathFunctionName = "resource";
+		private const string k_ResourcePathFunctionName = "resource";
 
 		private StyleSheetBuilder m_Builder;
 
@@ -23,21 +26,26 @@ namespace UnityEditor.StyleSheets
 
 		public StyleSheetImporter()
 		{
-			this.s_Parser = new Parser();
+			this.m_Parser = new Parser();
 			this.m_Builder = new StyleSheetBuilder();
 			this.m_Errors = new StyleSheetImportErrors();
 		}
 
-		[RequiredByNativeCode]
-		public static void ImportStyleSheet(StyleSheet asset, string contents)
+		public override void OnImportAsset(AssetImportContext ctx)
 		{
 			StyleSheetImporter styleSheetImporter = new StyleSheetImporter();
-			styleSheetImporter.Import(asset, contents);
+			string contents = File.ReadAllText(ctx.assetPath);
+			StyleSheet styleSheet = ScriptableObject.CreateInstance<StyleSheet>();
+			styleSheet.hideFlags = HideFlags.NotEditable;
+			styleSheetImporter.Import(styleSheet, contents, ctx.assetPath);
+			ctx.AddObjectToAsset("stylesheet", styleSheet);
+			StyleSheetAssetPostprocessor.ClearReferencedAssets();
+			StyleContext.ClearStyleCache();
 		}
 
-		public void Import(StyleSheet asset, string contents)
+		public void Import(StyleSheet asset, string contents, string contextAssetPath)
 		{
-			StyleSheet styleSheet = this.s_Parser.Parse(contents);
+			StyleSheet styleSheet = this.m_Parser.Parse(contents);
 			if (styleSheet.Errors.Count > 0)
 			{
 				foreach (StylesheetParseError current in styleSheet.Errors)
@@ -78,14 +86,14 @@ namespace UnityEditor.StyleSheets
 				foreach (Property current2 in current.Declarations)
 				{
 					this.m_Builder.BeginProperty(current2.Name);
-					this.VisitValue(current2.Term);
+					StyleSheetImporter.VisitValue(this.m_Errors, this.m_Builder, current2.Term);
 					this.m_Builder.EndProperty();
 				}
 				this.m_Builder.EndRule();
 			}
 		}
 
-		private void VisitValue(Term term)
+		internal static void VisitValue(StyleSheetImportErrors errors, StyleSheetBuilder ssb, Term term)
 		{
 			PrimitiveTerm primitiveTerm = term as PrimitiveTerm;
 			HtmlColor htmlColor = term as HtmlColor;
@@ -93,7 +101,7 @@ namespace UnityEditor.StyleSheets
 			TermList termList = term as TermList;
 			if (term == Term.Inherit)
 			{
-				this.m_Builder.AddValue(StyleValueKeyword.Inherit);
+				ssb.AddValue(StyleValueKeyword.Inherit);
 			}
 			else if (primitiveTerm != null)
 			{
@@ -108,42 +116,39 @@ namespace UnityEditor.StyleSheets
 						'\'',
 						'"'
 					});
-					this.m_Builder.AddValue(value, StyleValueType.String);
-					goto IL_118;
+					ssb.AddValue(value, StyleValueType.String);
+					goto IL_F9;
 				}
 				case UnitType.Uri:
-				{
-					IL_68:
+					IL_63:
 					if (primitiveType != UnitType.Number && primitiveType != UnitType.Pixel)
 					{
-						this.m_Errors.AddSemanticError(StyleSheetImportErrorCode.UnsupportedUnit, primitiveTerm.ToString());
+						errors.AddSemanticError(StyleSheetImportErrorCode.UnsupportedUnit, primitiveTerm.ToString());
 						return;
 					}
-					float? floatValue = primitiveTerm.GetFloatValue(UnitType.Pixel);
-					this.m_Builder.AddValue(floatValue.Value);
-					goto IL_118;
-				}
+					ssb.AddValue(primitiveTerm.GetFloatValue(UnitType.Pixel).Value);
+					goto IL_F9;
 				case UnitType.Ident:
 				{
 					StyleValueKeyword keyword;
-					if (this.TryParseKeyword(text, out keyword))
+					if (StyleSheetImporter.TryParseKeyword(text, out keyword))
 					{
-						this.m_Builder.AddValue(keyword);
+						ssb.AddValue(keyword);
 					}
 					else
 					{
-						this.m_Builder.AddValue(text, StyleValueType.Enum);
+						ssb.AddValue(text, StyleValueType.Enum);
 					}
-					goto IL_118;
+					goto IL_F9;
 				}
 				}
-				goto IL_68;
-				IL_118:;
+				goto IL_63;
+				IL_F9:;
 			}
 			else if (htmlColor != null)
 			{
 				Color value2 = new Color((float)htmlColor.R / 255f, (float)htmlColor.G / 255f, (float)htmlColor.B / 255f, (float)htmlColor.A / 255f);
-				this.m_Builder.AddValue(value2);
+				ssb.AddValue(value2);
 			}
 			else if (genericFunction != null)
 			{
@@ -151,23 +156,23 @@ namespace UnityEditor.StyleSheets
 				if (genericFunction.Name == "resource" && primitiveTerm != null)
 				{
 					string value3 = primitiveTerm.Value as string;
-					this.m_Builder.AddValue(value3, StyleValueType.ResourcePath);
+					ssb.AddValue(value3, StyleValueType.ResourcePath);
 				}
 				else
 				{
-					this.m_Errors.AddSemanticError(StyleSheetImportErrorCode.UnsupportedFunction, genericFunction.Name);
+					errors.AddSemanticError(StyleSheetImportErrorCode.UnsupportedFunction, genericFunction.Name);
 				}
 			}
 			else if (termList != null)
 			{
 				foreach (Term current in termList)
 				{
-					this.VisitValue(current);
+					StyleSheetImporter.VisitValue(errors, ssb, current);
 				}
 			}
 			else
 			{
-				this.m_Errors.AddInternalError(term.GetType().Name);
+				errors.AddInternalError(term.GetType().Name);
 			}
 		}
 
@@ -303,7 +308,7 @@ namespace UnityEditor.StyleSheets
 			return result;
 		}
 
-		private bool TryParseKeyword(string rawStr, out StyleValueKeyword value)
+		private static bool TryParseKeyword(string rawStr, out StyleValueKeyword value)
 		{
 			if (StyleSheetImporter.s_NameCache == null)
 			{

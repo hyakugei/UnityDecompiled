@@ -31,6 +31,8 @@ namespace UnityEditor
 
 			public GUIContent ImportantGI = EditorGUIUtility.TextContent("Prioritize Illumination|When enabled, the object will be marked as a priority object and always included in lighting calculations. Useful for objects that will be strongly emissive to make sure that other objects will be illuminated by this object.");
 
+			public GUIContent StitchLightmapSeams = EditorGUIUtility.TextContent("Stitch Seams|When enabled, seams in baked lightmaps will get smoothed.");
+
 			public GUIContent AutoUVMaxDistance = EditorGUIUtility.TextContent("Max Distance|Specifies the maximum worldspace distance to be used for UV chart simplification. If charts are within this distance they will be simplified for optimization purposes.");
 
 			public GUIContent AutoUVMaxAngle = EditorGUIUtility.TextContent("Max Angle|Specifies the maximum angle in degrees between faces sharing a UV edge. If the angle between the faces is below this value, the UV charts will be simplified.");
@@ -102,12 +104,6 @@ namespace UnityEditor
 
 		private static LightingSettingsInspector.Styles s_Styles;
 
-		private ZoomableArea m_ZoomablePreview;
-
-		private GUIContent m_SelectedObjectPreviewTexture;
-
-		private int m_PreviousSelection;
-
 		private bool m_ShowSettings = false;
 
 		private bool m_ShowChartingSettings = true;
@@ -127,6 +123,8 @@ namespace UnityEditor
 		private SerializedProperty m_StaticEditorFlags;
 
 		private SerializedProperty m_ImportantGI;
+
+		private SerializedProperty m_StitchLightmapSeams;
 
 		private SerializedProperty m_LightmapParameters;
 
@@ -222,6 +220,7 @@ namespace UnityEditor
 			this.m_GameObjectsSerializedObject = new SerializedObject((from t in serializedObject.targetObjects
 			select ((Component)t).gameObject).ToArray<GameObject>());
 			this.m_ImportantGI = this.m_SerializedObject.FindProperty("m_ImportantGI");
+			this.m_StitchLightmapSeams = this.m_SerializedObject.FindProperty("m_StitchLightmapSeams");
 			this.m_LightmapParameters = this.m_SerializedObject.FindProperty("m_LightmapParameters");
 			this.m_LightmapIndex = this.m_SerializedObject.FindProperty("m_LightmapIndex");
 			this.m_LightmapTilingOffsetX = this.m_SerializedObject.FindProperty("m_LightmapTilingOffset.x");
@@ -319,6 +318,11 @@ namespace UnityEditor
 								float cachedMeshSurfaceArea = InternalMeshUtil.GetCachedMeshSurfaceArea((MeshRenderer)this.m_Renderers[0]);
 								this.ShowClampedSizeInLightmapGUI(lightmapScale, cachedMeshSurfaceArea);
 								EditorGUILayout.PropertyField(this.m_ImportantGI, LightingSettingsInspector.s_Styles.ImportantGI, new GUILayoutOption[0]);
+								bool flag2 = LightModeUtil.Get().AreBakedLightmapsEnabled() && LightmapEditorSettings.lightmapper == LightmapEditorSettings.Lightmapper.PathTracer;
+								if (this.isPrefabAsset || flag2)
+								{
+									EditorGUILayout.PropertyField(this.m_StitchLightmapSeams, LightingSettingsInspector.s_Styles.StitchLightmapSeams, new GUILayoutOption[0]);
+								}
 								LightingSettingsInspector.LightmapParametersGUI(this.m_LightmapParameters, LightingSettingsInspector.s_Styles.LightmapParameters);
 								this.m_ShowBakedLM = EditorGUILayout.Foldout(this.m_ShowBakedLM, LightingSettingsInspector.s_Styles.Atlas);
 								if (this.m_ShowBakedLM)

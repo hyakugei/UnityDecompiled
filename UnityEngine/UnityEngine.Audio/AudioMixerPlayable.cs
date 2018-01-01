@@ -63,41 +63,7 @@ namespace UnityEngine.Audio
 			return this.GetHandle() == other.GetHandle();
 		}
 
-		public bool GetAutoNormalizeVolumes()
-		{
-			return AudioMixerPlayable.GetAutoNormalizeInternal(ref this.m_Handle);
-		}
-
-		public void GetAutoNormalizeVolumes(bool value)
-		{
-			AudioMixerPlayable.SetAutoNormalizeInternal(ref this.m_Handle, value);
-		}
-
-		private static bool GetAutoNormalizeInternal(ref PlayableHandle hdl)
-		{
-			return AudioMixerPlayable.INTERNAL_CALL_GetAutoNormalizeInternal(ref hdl);
-		}
-
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern bool INTERNAL_CALL_GetAutoNormalizeInternal(ref PlayableHandle hdl);
-
-		private static void SetAutoNormalizeInternal(ref PlayableHandle hdl, bool normalise)
-		{
-			AudioMixerPlayable.INTERNAL_CALL_SetAutoNormalizeInternal(ref hdl, normalise);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_SetAutoNormalizeInternal(ref PlayableHandle hdl, bool normalise);
-
-		private static bool CreateAudioMixerPlayableInternal(ref PlayableGraph graph, int inputCount, bool normalizeInputVolumes, ref PlayableHandle handle)
-		{
-			return AudioMixerPlayable.INTERNAL_CALL_CreateAudioMixerPlayableInternal(ref graph, inputCount, normalizeInputVolumes, ref handle);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern bool INTERNAL_CALL_CreateAudioMixerPlayableInternal(ref PlayableGraph graph, int inputCount, bool normalizeInputVolumes, ref PlayableHandle handle);
+		private static extern bool CreateAudioMixerPlayableInternal(ref PlayableGraph graph, int inputCount, bool normalizeInputVolumes, ref PlayableHandle handle);
 	}
 }

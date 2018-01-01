@@ -568,7 +568,7 @@ namespace UnityEngine.UI
 				this.m_VerticalScrollbar.onValueChanged.RemoveListener(new UnityAction<float>(this.SetVerticalNormalizedPosition));
 			}
 			this.m_HasRebuiltLayout = false;
-			this.m_Tracker.Clear();
+			this.m_Tracker.Clear(true);
 			this.m_Velocity = Vector2.zero;
 			LayoutRebuilder.MarkLayoutForRebuild(this.rectTransform);
 			base.OnDisable();
@@ -860,7 +860,7 @@ namespace UnityEngine.UI
 
 		public virtual void SetLayoutHorizontal()
 		{
-			this.m_Tracker.Clear();
+			this.m_Tracker.Clear(true);
 			if (this.m_HSliderExpand || this.m_VSliderExpand)
 			{
 				this.m_Tracker.Add(this, this.viewRect, DrivenTransformProperties.AnchoredPositionX | DrivenTransformProperties.AnchoredPositionY | DrivenTransformProperties.AnchorMinX | DrivenTransformProperties.AnchorMinY | DrivenTransformProperties.AnchorMaxX | DrivenTransformProperties.AnchorMaxY | DrivenTransformProperties.SizeDeltaX | DrivenTransformProperties.SizeDeltaY);

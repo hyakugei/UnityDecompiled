@@ -68,6 +68,16 @@ namespace UnityEditor
 			set;
 		}
 
+		public extern AndroidETC2FallbackOverride androidETC2FallbackOverride
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
 		public extern TextureImporterCompression textureCompression
 		{
 			[GeneratedByOldBindingsGenerator]

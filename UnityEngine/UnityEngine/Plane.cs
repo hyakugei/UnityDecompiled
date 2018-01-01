@@ -45,7 +45,7 @@ namespace UnityEngine
 		public Plane(Vector3 inNormal, Vector3 inPoint)
 		{
 			this.m_Normal = Vector3.Normalize(inNormal);
-			this.m_Distance = -Vector3.Dot(inNormal, inPoint);
+			this.m_Distance = -Vector3.Dot(this.m_Normal, inPoint);
 		}
 
 		public Plane(Vector3 inNormal, float d)

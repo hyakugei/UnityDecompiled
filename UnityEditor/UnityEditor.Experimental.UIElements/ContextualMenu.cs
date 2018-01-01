@@ -27,15 +27,19 @@ namespace UnityEditor.Experimental.UIElements
 
 		private List<ContextualMenu.Action> menuActions = new List<ContextualMenu.Action>();
 
-		public ContextualMenu()
+		protected override void RegisterCallbacksOnTarget()
 		{
-			base.phaseInterest = EventPhase.Capture;
+			base.target.RegisterCallback<IMGUIEvent>(new EventCallback<IMGUIEvent>(this.OnIMGUIEvent), Capture.Capture);
 		}
 
-		public override EventPropagation HandleEvent(Event evt, VisualElement finalTarget)
+		protected override void UnregisterCallbacksFromTarget()
 		{
-			EventType type = evt.type;
-			if (type == EventType.ContextClick)
+			base.target.UnregisterCallback<IMGUIEvent>(new EventCallback<IMGUIEvent>(this.OnIMGUIEvent), Capture.Capture);
+		}
+
+		private void OnIMGUIEvent(IMGUIEvent evt)
+		{
+			if (evt.imguiEvent.type == EventType.ContextClick)
 			{
 				GenericMenu genericMenu = new GenericMenu();
 				foreach (ContextualMenu.Action current in this.menuActions)
@@ -51,7 +55,6 @@ namespace UnityEditor.Experimental.UIElements
 				}
 				genericMenu.ShowAsContext();
 			}
-			return EventPropagation.Continue;
 		}
 
 		public void AddAction(string actionName, GenericMenu.MenuFunction action, ContextualMenu.ActionStatusCallback actionStatusCallback)

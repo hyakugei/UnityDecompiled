@@ -1,7 +1,6 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using UnityEngine.Scripting;
 
 namespace UnityEngine.Networking
 {
@@ -10,29 +9,46 @@ namespace UnityEngine.Networking
 	{
 		public extern AssetBundle assetBundle
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
 
 		public DownloadHandlerAssetBundle(string url, uint crc)
 		{
-			base.InternalCreateAssetBundle(url, crc);
+			this.InternalCreateAssetBundle(url, crc);
 		}
 
 		public DownloadHandlerAssetBundle(string url, uint version, uint crc)
 		{
-			base.InternalCreateAssetBundleCached(url, "", new Hash128(0u, 0u, 0u, version), crc);
+			this.InternalCreateAssetBundleCached(url, "", new Hash128(0u, 0u, 0u, version), crc);
 		}
 
 		public DownloadHandlerAssetBundle(string url, Hash128 hash, uint crc)
 		{
-			base.InternalCreateAssetBundleCached(url, "", hash, crc);
+			this.InternalCreateAssetBundleCached(url, "", hash, crc);
 		}
 
 		public DownloadHandlerAssetBundle(string url, string name, Hash128 hash, uint crc)
 		{
-			base.InternalCreateAssetBundleCached(url, name, hash, crc);
+			this.InternalCreateAssetBundleCached(url, name, hash, crc);
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern IntPtr Create(DownloadHandlerAssetBundle obj, string url, uint crc);
+
+		private static IntPtr CreateCached(DownloadHandlerAssetBundle obj, string url, string name, Hash128 hash, uint crc)
+		{
+			return DownloadHandlerAssetBundle.CreateCached_Injected(obj, url, name, ref hash, crc);
+		}
+
+		private void InternalCreateAssetBundle(string url, uint crc)
+		{
+			this.m_Ptr = DownloadHandlerAssetBundle.Create(this, url, crc);
+		}
+
+		private void InternalCreateAssetBundleCached(string url, string name, Hash128 hash, uint crc)
+		{
+			this.m_Ptr = DownloadHandlerAssetBundle.CreateCached(this, url, name, hash, crc);
 		}
 
 		protected override byte[] GetData()
@@ -49,5 +65,8 @@ namespace UnityEngine.Networking
 		{
 			return DownloadHandler.GetCheckedDownloader<DownloadHandlerAssetBundle>(www).assetBundle;
 		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern IntPtr CreateCached_Injected(DownloadHandlerAssetBundle obj, string url, string name, ref Hash128 hash, uint crc);
 	}
 }

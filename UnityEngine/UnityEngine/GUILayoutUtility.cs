@@ -64,9 +64,9 @@ namespace UnityEngine
 		internal static void CleanupRoots()
 		{
 			GUILayoutUtility.s_SpaceStyle = null;
-			GUILayoutUtility.s_StoredLayouts = null;
-			GUILayoutUtility.s_StoredWindows = null;
-			GUILayoutUtility.current = null;
+			GUILayoutUtility.s_StoredLayouts.Clear();
+			GUILayoutUtility.s_StoredWindows.Clear();
+			GUILayoutUtility.current = new GUILayoutUtility.LayoutCache();
 		}
 
 		internal static GUILayoutUtility.LayoutCache SelectIDList(int instanceID, bool isWindow)

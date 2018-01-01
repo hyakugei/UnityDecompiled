@@ -10,6 +10,40 @@ namespace UnityEditor.Animations
 {
 	public sealed class AnimatorStateMachine : UnityEngine.Object
 	{
+		internal class StateMachineCache
+		{
+			private static Dictionary<AnimatorStateMachine, ChildAnimatorStateMachine[]> m_ChildStateMachines;
+
+			private static bool m_Initialized;
+
+			private static void Init()
+			{
+				if (!AnimatorStateMachine.StateMachineCache.m_Initialized)
+				{
+					AnimatorStateMachine.StateMachineCache.m_ChildStateMachines = new Dictionary<AnimatorStateMachine, ChildAnimatorStateMachine[]>();
+					AnimatorStateMachine.StateMachineCache.m_Initialized = true;
+				}
+			}
+
+			public static void Clear()
+			{
+				AnimatorStateMachine.StateMachineCache.Init();
+				AnimatorStateMachine.StateMachineCache.m_ChildStateMachines.Clear();
+			}
+
+			public static ChildAnimatorStateMachine[] GetChildStateMachines(AnimatorStateMachine parent)
+			{
+				AnimatorStateMachine.StateMachineCache.Init();
+				ChildAnimatorStateMachine[] stateMachines;
+				if (!AnimatorStateMachine.StateMachineCache.m_ChildStateMachines.TryGetValue(parent, out stateMachines))
+				{
+					stateMachines = parent.stateMachines;
+					AnimatorStateMachine.StateMachineCache.m_ChildStateMachines.Add(parent, stateMachines);
+				}
+				return stateMachines;
+			}
+		}
+
 		private PushUndoIfNeeded undoHandler = new PushUndoIfNeeded(true);
 
 		public extern ChildAnimatorState[] states
@@ -162,10 +196,11 @@ namespace UnityEditor.Animations
 			get
 			{
 				List<ChildAnimatorStateMachine> list = new List<ChildAnimatorStateMachine>();
-				list.AddRange(this.stateMachines);
-				for (int i = 0; i < this.stateMachines.Length; i++)
+				ChildAnimatorStateMachine[] childStateMachines = AnimatorStateMachine.StateMachineCache.GetChildStateMachines(this);
+				list.AddRange(childStateMachines);
+				for (int i = 0; i < childStateMachines.Length; i++)
 				{
-					list.AddRange(this.stateMachines[i].stateMachine.stateMachinesRecursive);
+					list.AddRange(childStateMachines[i].stateMachine.stateMachinesRecursive);
 				}
 				return list;
 			}
@@ -406,13 +441,21 @@ namespace UnityEditor.Animations
 
 		public void AddState(AnimatorState state, Vector3 position)
 		{
-			this.undoHandler.DoUndo(this, "State added");
-			ChildAnimatorState item = default(ChildAnimatorState);
-			item.state = state;
-			item.position = position;
 			ChildAnimatorState[] states = this.states;
-			ArrayUtility.Add<ChildAnimatorState>(ref states, item);
-			this.states = states;
+			if (Array.Exists<ChildAnimatorState>(states, (ChildAnimatorState childState) => childState.state == state))
+			{
+				Debug.LogWarning(string.Format("State '{0}' already exists in state machine '{1}', discarding new state.", state.name, base.name));
+			}
+			else
+			{
+				this.undoHandler.DoUndo(this, "State added");
+				ArrayUtility.Add<ChildAnimatorState>(ref states, new ChildAnimatorState
+				{
+					state = state,
+					position = position
+				});
+				this.states = states;
+			}
 		}
 
 		public void RemoveState(AnimatorState state)
@@ -442,13 +485,21 @@ namespace UnityEditor.Animations
 
 		public void AddStateMachine(AnimatorStateMachine stateMachine, Vector3 position)
 		{
-			this.undoHandler.DoUndo(this, "StateMachine " + stateMachine.name + " added");
-			ChildAnimatorStateMachine item = default(ChildAnimatorStateMachine);
-			item.stateMachine = stateMachine;
-			item.position = position;
 			ChildAnimatorStateMachine[] stateMachines = this.stateMachines;
-			ArrayUtility.Add<ChildAnimatorStateMachine>(ref stateMachines, item);
-			this.stateMachines = stateMachines;
+			if (Array.Exists<ChildAnimatorStateMachine>(stateMachines, (ChildAnimatorStateMachine childStateMachine) => childStateMachine.stateMachine == stateMachine))
+			{
+				Debug.LogWarning(string.Format("Sub state machine '{0}' already exists in state machine '{1}', discarding new state machine.", stateMachine.name, base.name));
+			}
+			else
+			{
+				this.undoHandler.DoUndo(this, "StateMachine " + stateMachine.name + " added");
+				ArrayUtility.Add<ChildAnimatorStateMachine>(ref stateMachines, new ChildAnimatorStateMachine
+				{
+					stateMachine = stateMachine,
+					position = position
+				});
+				this.stateMachines = stateMachines;
+			}
 		}
 
 		public void RemoveStateMachine(AnimatorStateMachine stateMachine)
@@ -678,17 +729,18 @@ namespace UnityEditor.Animations
 
 		internal AnimatorStateMachine FindStateMachine(string path)
 		{
-			AnimatorStateMachine.<FindStateMachine>c__AnonStorey9 <FindStateMachine>c__AnonStorey = new AnimatorStateMachine.<FindStateMachine>c__AnonStorey9();
-			<FindStateMachine>c__AnonStorey.smNames = path.Split(new char[]
+			AnimatorStateMachine.<FindStateMachine>c__AnonStoreyB <FindStateMachine>c__AnonStoreyB = new AnimatorStateMachine.<FindStateMachine>c__AnonStoreyB();
+			<FindStateMachine>c__AnonStoreyB.smNames = path.Split(new char[]
 			{
 				'.'
 			});
 			AnimatorStateMachine animatorStateMachine = this;
+			ChildAnimatorStateMachine[] childStateMachines = AnimatorStateMachine.StateMachineCache.GetChildStateMachines(animatorStateMachine);
 			int i = 1;
-			while (i < <FindStateMachine>c__AnonStorey.smNames.Length - 1 && animatorStateMachine != null)
+			while (i < <FindStateMachine>c__AnonStoreyB.smNames.Length - 1 && animatorStateMachine != null)
 			{
-				int num = Array.FindIndex<ChildAnimatorStateMachine>(animatorStateMachine.stateMachines, (ChildAnimatorStateMachine t) => t.stateMachine.name == <FindStateMachine>c__AnonStorey.smNames[i]);
-				animatorStateMachine = ((num < 0) ? null : animatorStateMachine.stateMachines[num].stateMachine);
+				int num = Array.FindIndex<ChildAnimatorStateMachine>(childStateMachines, (ChildAnimatorStateMachine t) => t.stateMachine.name == <FindStateMachine>c__AnonStoreyB.smNames[i]);
+				animatorStateMachine = ((num < 0) ? null : childStateMachines[num].stateMachine);
 				i++;
 			}
 			return (!(animatorStateMachine == null)) ? animatorStateMachine : this;

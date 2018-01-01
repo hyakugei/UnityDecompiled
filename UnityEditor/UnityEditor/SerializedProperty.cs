@@ -363,6 +363,34 @@ namespace UnityEditor
 			}
 		}
 
+		public Vector2Int vector2IntValue
+		{
+			get
+			{
+				Vector2Int result;
+				this.INTERNAL_get_vector2IntValue(out result);
+				return result;
+			}
+			set
+			{
+				this.INTERNAL_set_vector2IntValue(ref value);
+			}
+		}
+
+		public Vector3Int vector3IntValue
+		{
+			get
+			{
+				Vector3Int result;
+				this.INTERNAL_get_vector3IntValue(out result);
+				return result;
+			}
+			set
+			{
+				this.INTERNAL_set_vector3IntValue(ref value);
+			}
+		}
+
 		public Quaternion quaternionValue
 		{
 			get
@@ -391,6 +419,20 @@ namespace UnityEditor
 			}
 		}
 
+		public RectInt rectIntValue
+		{
+			get
+			{
+				RectInt result;
+				this.INTERNAL_get_rectIntValue(out result);
+				return result;
+			}
+			set
+			{
+				this.INTERNAL_set_rectIntValue(ref value);
+			}
+		}
+
 		public Bounds boundsValue
 		{
 			get
@@ -402,6 +444,20 @@ namespace UnityEditor
 			set
 			{
 				this.INTERNAL_set_boundsValue(ref value);
+			}
+		}
+
+		public BoundsInt boundsIntValue
+		{
+			get
+			{
+				BoundsInt result;
+				this.INTERNAL_get_boundsIntValue(out result);
+				return result;
+			}
+			set
+			{
+				this.INTERNAL_set_boundsIntValue(ref value);
 			}
 		}
 
@@ -578,6 +634,22 @@ namespace UnityEditor
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void INTERNAL_get_vector2IntValue(out Vector2Int value);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void INTERNAL_set_vector2IntValue(ref Vector2Int value);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void INTERNAL_get_vector3IntValue(out Vector3Int value);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void INTERNAL_set_vector3IntValue(ref Vector3Int value);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern void INTERNAL_get_quaternionValue(out Quaternion value);
 
 		[GeneratedByOldBindingsGenerator]
@@ -594,11 +666,27 @@ namespace UnityEditor
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void INTERNAL_get_rectIntValue(out RectInt value);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void INTERNAL_set_rectIntValue(ref RectInt value);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern void INTERNAL_get_boundsValue(out Bounds value);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern void INTERNAL_set_boundsValue(ref Bounds value);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void INTERNAL_get_boundsIntValue(out BoundsInt value);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void INTERNAL_set_boundsIntValue(ref BoundsInt value);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -826,6 +914,18 @@ namespace UnityEditor
 					break;
 				case SerializedPropertyType.ExposedReference:
 					this.exposedReferenceValue = serializedProperty.exposedReferenceValue;
+					break;
+				case SerializedPropertyType.Vector2Int:
+					this.vector2IntValue = serializedProperty.vector2IntValue;
+					break;
+				case SerializedPropertyType.Vector3Int:
+					this.vector3IntValue = serializedProperty.vector3IntValue;
+					break;
+				case SerializedPropertyType.RectInt:
+					this.rectIntValue = serializedProperty.rectIntValue;
+					break;
+				case SerializedPropertyType.BoundsInt:
+					this.boundsIntValue = serializedProperty.boundsIntValue;
 					break;
 				}
 			}

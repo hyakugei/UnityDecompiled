@@ -1,5 +1,4 @@
 using System;
-using UnityEditor.Web;
 using UnityEngine;
 
 namespace UnityEditor.Collaboration
@@ -18,7 +17,7 @@ namespace UnityEditor.Collaboration
 
 		private static void DrawProjectBrowserIconOverlay(Rect iconRect, string guid, bool isListMode)
 		{
-			if (CollabAccess.Instance.IsServiceEnabled())
+			if (Collab.instance.IsCollabEnabledForCurrentProject())
 			{
 				Collab.CollabStates assetState = CollabProjectHook.GetAssetState(guid);
 				Overlay.DrawOverlays(assetState, iconRect, isListMode);
@@ -28,7 +27,7 @@ namespace UnityEditor.Collaboration
 		public static Collab.CollabStates GetAssetState(string assetGuid)
 		{
 			Collab.CollabStates result;
-			if (!CollabAccess.Instance.IsServiceEnabled())
+			if (!Collab.instance.IsCollabEnabledForCurrentProject())
 			{
 				result = Collab.CollabStates.kCollabNone;
 			}

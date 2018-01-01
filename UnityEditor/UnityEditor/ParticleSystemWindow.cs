@@ -59,7 +59,8 @@ namespace UnityEditor
 			EditorApplication.hierarchyWindowChanged = (EditorApplication.CallbackFunction)Delegate.Combine(EditorApplication.hierarchyWindowChanged, new EditorApplication.CallbackFunction(this.OnHierarchyOrProjectWindowWasChanged));
 			EditorApplication.projectWindowChanged = (EditorApplication.CallbackFunction)Delegate.Combine(EditorApplication.projectWindowChanged, new EditorApplication.CallbackFunction(this.OnHierarchyOrProjectWindowWasChanged));
 			SceneView.onSceneGUIDelegate = (SceneView.OnSceneFunc)Delegate.Combine(SceneView.onSceneGUIDelegate, new SceneView.OnSceneFunc(this.OnSceneViewGUI));
-			EditorApplication.playmodeStateChanged = (EditorApplication.CallbackFunction)Delegate.Combine(EditorApplication.playmodeStateChanged, new EditorApplication.CallbackFunction(this.OnPlayModeStateChanged));
+			EditorApplication.pauseStateChanged += new Action<PauseState>(this.OnPauseStateChanged);
+			EditorApplication.playModeStateChanged += new Action<PlayModeStateChange>(this.OnPlayModeStateChanged);
 			Undo.undoRedoPerformed = (Undo.UndoRedoCallback)Delegate.Combine(Undo.undoRedoPerformed, new Undo.UndoRedoCallback(this.UndoRedoPerformed));
 			base.autoRepaintOnSceneChange = false;
 		}
@@ -69,7 +70,8 @@ namespace UnityEditor
 			SceneView.onSceneGUIDelegate = (SceneView.OnSceneFunc)Delegate.Remove(SceneView.onSceneGUIDelegate, new SceneView.OnSceneFunc(this.OnSceneViewGUI));
 			EditorApplication.projectWindowChanged = (EditorApplication.CallbackFunction)Delegate.Remove(EditorApplication.projectWindowChanged, new EditorApplication.CallbackFunction(this.OnHierarchyOrProjectWindowWasChanged));
 			EditorApplication.hierarchyWindowChanged = (EditorApplication.CallbackFunction)Delegate.Remove(EditorApplication.hierarchyWindowChanged, new EditorApplication.CallbackFunction(this.OnHierarchyOrProjectWindowWasChanged));
-			EditorApplication.playmodeStateChanged = (EditorApplication.CallbackFunction)Delegate.Remove(EditorApplication.playmodeStateChanged, new EditorApplication.CallbackFunction(this.OnPlayModeStateChanged));
+			EditorApplication.pauseStateChanged -= new Action<PauseState>(this.OnPauseStateChanged);
+			EditorApplication.playModeStateChanged -= new Action<PlayModeStateChange>(this.OnPlayModeStateChanged);
 			Undo.undoRedoPerformed = (Undo.UndoRedoCallback)Delegate.Remove(Undo.undoRedoPerformed, new Undo.UndoRedoCallback(this.UndoRedoPerformed));
 			this.Clear();
 			if (ParticleSystemWindow.s_Instance == this)
@@ -88,7 +90,12 @@ namespace UnityEditor
 			}
 		}
 
-		private void OnPlayModeStateChanged()
+		private void OnPauseStateChanged(PauseState state)
+		{
+			base.Repaint();
+		}
+
+		private void OnPlayModeStateChanged(PlayModeStateChange state)
 		{
 			base.Repaint();
 		}
@@ -236,9 +243,9 @@ namespace UnityEditor
 				{
 					this.m_ParticleEffectUI.SetShowOnlySelectedMode(flag3);
 				}
+				ParticleSystemEditorUtils.editorPreviewAll = GUILayout.Toggle(ParticleSystemEditorUtils.editorPreviewAll, ParticleEffectUI.texts.previewAll, "ToolbarButton", new GUILayoutOption[0]);
 				ParticleSystemEditorUtils.editorResimulation = GUILayout.Toggle(ParticleSystemEditorUtils.editorResimulation, ParticleEffectUI.texts.resimulation, "ToolbarButton", new GUILayoutOption[0]);
-				ParticleEffectUI.m_ShowWireframe = GUILayout.Toggle(ParticleEffectUI.m_ShowWireframe, ParticleEffectUI.texts.wireframe, "ToolbarButton", new GUILayoutOption[0]);
-				ParticleEffectUI.m_ShowBounds = GUILayout.Toggle(ParticleEffectUI.m_ShowBounds, ParticleEffectUI.texts.bounds, "ToolbarButton", new GUILayoutOption[0]);
+				ParticleEffectUI.m_ShowBounds = GUILayout.Toggle(ParticleEffectUI.m_ShowBounds, ParticleEffectUI.texts.showBounds, "ToolbarButton", new GUILayoutOption[0]);
 				if (GUILayout.Button((!ParticleEffectUI.m_VerticalLayout) ? ParticleSystemWindow.s_Icons[1] : ParticleSystemWindow.s_Icons[0], "ToolbarButton", new GUILayoutOption[0]))
 				{
 					ParticleEffectUI.m_VerticalLayout = !ParticleEffectUI.m_VerticalLayout;

@@ -30,7 +30,7 @@ namespace UnityEditor
 			internal override void Reset(PluginImporterInspector inspector)
 			{
 				string editorData = inspector.importer.GetEditorData(base.key);
-				base.ParseStringValue(editorData);
+				base.ParseStringValue(inspector, editorData, false);
 			}
 
 			internal override void Apply(PluginImporterInspector inspector)
@@ -38,10 +38,6 @@ namespace UnityEditor
 				inspector.importer.SetEditorData(base.key, base.value.ToString());
 			}
 		}
-
-		private EditorPluginImporterExtension.EditorPluginCPUArchitecture cpu;
-
-		private EditorPluginImporterExtension.EditorPluginOSArchitecture os;
 
 		public EditorPluginImporterExtension() : base(EditorPluginImporterExtension.GetProperties())
 		{

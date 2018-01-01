@@ -1,11 +1,12 @@
 using System;
 using System.Runtime.CompilerServices;
+using UnityEngine.Bindings;
 using UnityEngine.Internal;
 using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
-	[UsedByNativeCode]
+	[NativeType(Header = "Runtime/Math/Vector3.h"), UsedByNativeCode]
 	public struct Vector3
 	{
 		public const float kEpsilon = 1E-05f;

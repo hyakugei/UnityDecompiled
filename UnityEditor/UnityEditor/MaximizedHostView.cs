@@ -5,7 +5,7 @@ namespace UnityEditor
 {
 	internal class MaximizedHostView : HostView
 	{
-		public void OnGUI()
+		protected override void OldOnGUI()
 		{
 			base.ClearBackground();
 			EditorGUIUtility.ResetGUIState();
@@ -46,13 +46,10 @@ namespace UnityEditor
 			WindowLayout.Unmaximize(win);
 		}
 
-		protected override void AddDefaultItemsToMenu(GenericMenu menu, EditorWindow view)
+		protected override void AddDefaultItemsToMenu(GenericMenu menu, EditorWindow window)
 		{
-			if (menu.GetItemCount() != 0)
-			{
-				menu.AddSeparator("");
-			}
-			menu.AddItem(EditorGUIUtility.TextContent("Maximize"), !(base.parent is SplitView), new GenericMenu.MenuFunction2(this.Unmaximize), view);
+			base.AddDefaultItemsToMenu(menu, window);
+			menu.AddItem(EditorGUIUtility.TextContent("Maximize"), !(base.parent is SplitView), new GenericMenu.MenuFunction2(this.Unmaximize), window);
 			menu.AddDisabledItem(EditorGUIUtility.TextContent("Close Tab"));
 			menu.AddSeparator("");
 			Type[] paneTypes = base.GetPaneTypes();

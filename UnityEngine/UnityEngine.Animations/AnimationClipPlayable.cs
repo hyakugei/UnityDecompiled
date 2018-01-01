@@ -63,15 +63,6 @@ namespace UnityEngine.Animations
 			return this.GetHandle() == other.GetHandle();
 		}
 
-		private static bool CreateHandleInternal(PlayableGraph graph, AnimationClip clip, ref PlayableHandle handle)
-		{
-			return AnimationClipPlayable.INTERNAL_CALL_CreateHandleInternal(ref graph, clip, ref handle);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern bool INTERNAL_CALL_CreateHandleInternal(ref PlayableGraph graph, AnimationClip clip, ref PlayableHandle handle);
-
 		public AnimationClip GetAnimationClip()
 		{
 			return AnimationClipPlayable.GetAnimationClipInternal(ref this.m_Handle);
@@ -97,49 +88,27 @@ namespace UnityEngine.Animations
 			AnimationClipPlayable.SetRemoveStartOffsetInternal(ref this.m_Handle, value);
 		}
 
-		private static AnimationClip GetAnimationClipInternal(ref PlayableHandle handle)
+		private static bool CreateHandleInternal(PlayableGraph graph, AnimationClip clip, ref PlayableHandle handle)
 		{
-			return AnimationClipPlayable.INTERNAL_CALL_GetAnimationClipInternal(ref handle);
+			return AnimationClipPlayable.CreateHandleInternal_Injected(ref graph, clip, ref handle);
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern AnimationClip INTERNAL_CALL_GetAnimationClipInternal(ref PlayableHandle handle);
+		private static extern AnimationClip GetAnimationClipInternal(ref PlayableHandle handle);
 
-		private static bool GetApplyFootIKInternal(ref PlayableHandle handle)
-		{
-			return AnimationClipPlayable.INTERNAL_CALL_GetApplyFootIKInternal(ref handle);
-		}
-
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern bool INTERNAL_CALL_GetApplyFootIKInternal(ref PlayableHandle handle);
+		private static extern bool GetApplyFootIKInternal(ref PlayableHandle handle);
 
-		private static void SetApplyFootIKInternal(ref PlayableHandle handle, bool value)
-		{
-			AnimationClipPlayable.INTERNAL_CALL_SetApplyFootIKInternal(ref handle, value);
-		}
-
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_SetApplyFootIKInternal(ref PlayableHandle handle, bool value);
+		private static extern void SetApplyFootIKInternal(ref PlayableHandle handle, bool value);
 
-		private static bool GetRemoveStartOffsetInternal(ref PlayableHandle handle)
-		{
-			return AnimationClipPlayable.INTERNAL_CALL_GetRemoveStartOffsetInternal(ref handle);
-		}
-
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern bool INTERNAL_CALL_GetRemoveStartOffsetInternal(ref PlayableHandle handle);
+		private static extern bool GetRemoveStartOffsetInternal(ref PlayableHandle handle);
 
-		private static void SetRemoveStartOffsetInternal(ref PlayableHandle handle, bool value)
-		{
-			AnimationClipPlayable.INTERNAL_CALL_SetRemoveStartOffsetInternal(ref handle, value);
-		}
-
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_SetRemoveStartOffsetInternal(ref PlayableHandle handle, bool value);
+		private static extern void SetRemoveStartOffsetInternal(ref PlayableHandle handle, bool value);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern bool CreateHandleInternal_Injected(ref PlayableGraph graph, AnimationClip clip, ref PlayableHandle handle);
 	}
 }

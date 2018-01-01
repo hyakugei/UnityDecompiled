@@ -56,10 +56,6 @@ namespace UnityEditor
 
 		private SplitterState splitState = null;
 
-		private static float[] s_StartDragPos;
-
-		private static float[] s_DragPos;
-
 		internal const float kGrabDist = 5f;
 
 		private Rect RectFromEdge(Rect rect, SplitView.ViewEdge edge, float thickness, float offset)

@@ -18,6 +18,9 @@ namespace UnityEditor
 		private bool m_MaxTextureSizeIsDifferent = false;
 
 		[SerializeField]
+		private bool m_ResizeAlgorithmIsDifferent = false;
+
+		[SerializeField]
 		private bool m_TextureCompressionIsDifferent = false;
 
 		[SerializeField]
@@ -31,6 +34,9 @@ namespace UnityEditor
 
 		[SerializeField]
 		private bool m_AlphaSplitIsDifferent = false;
+
+		[SerializeField]
+		private bool m_AndroidETC2FallbackOverrideIsDifferent = false;
 
 		[SerializeField]
 		public BuildTarget m_Target;
@@ -72,6 +78,10 @@ namespace UnityEditor
 			57,
 			58,
 			59,
+			34,
+			64,
+			47,
+			65,
 			7,
 			3,
 			1,
@@ -82,13 +92,15 @@ namespace UnityEditor
 		public static readonly int[] kTextureFormatsValueAndroid = new int[]
 		{
 			10,
-			12,
 			28,
+			12,
 			29,
 			34,
+			64,
 			45,
 			46,
 			47,
+			65,
 			30,
 			31,
 			32,
@@ -124,16 +136,6 @@ namespace UnityEditor
 			4
 		};
 
-		public static readonly int[] kTextureFormatsValueSTV = new int[]
-		{
-			34,
-			7,
-			3,
-			1,
-			13,
-			4
-		};
-
 		public static readonly int[] kTextureFormatsValueWebGL = new int[]
 		{
 			10,
@@ -149,6 +151,8 @@ namespace UnityEditor
 
 		public static readonly int[] kNormalFormatsValueDefault = new int[]
 		{
+			27,
+			25,
 			12,
 			29,
 			2,
@@ -177,6 +181,14 @@ namespace UnityEditor
 		{
 			1,
 			26
+		};
+
+		public static readonly int[] kAndroidETC2FallbackOverrideValues = new int[]
+		{
+			0,
+			1,
+			2,
+			3
 		};
 
 		public TextureImporterPlatformSettings platformTextureSettings
@@ -232,6 +244,22 @@ namespace UnityEditor
 			get
 			{
 				return this.m_MaxTextureSizeIsDifferent;
+			}
+		}
+
+		public TextureResizeAlgorithm resizeAlgorithm
+		{
+			get
+			{
+				return this.m_PlatformSettings.resizeAlgorithm;
+			}
+		}
+
+		public bool resizeAlgorithmIsDifferent
+		{
+			get
+			{
+				return this.m_ResizeAlgorithmIsDifferent;
 			}
 		}
 
@@ -315,6 +343,22 @@ namespace UnityEditor
 			}
 		}
 
+		public AndroidETC2FallbackOverride androidETC2FallbackOverride
+		{
+			get
+			{
+				return this.m_PlatformSettings.androidETC2FallbackOverride;
+			}
+		}
+
+		public bool androidETC2FallbackOverrideIsDifferent
+		{
+			get
+			{
+				return this.m_AndroidETC2FallbackOverrideIsDifferent;
+			}
+		}
+
 		public TextureImporter[] importers
 		{
 			get
@@ -361,6 +405,10 @@ namespace UnityEditor
 					{
 						this.m_MaxTextureSizeIsDifferent = true;
 					}
+					if (platformTextureSettings.resizeAlgorithm != this.m_PlatformSettings.resizeAlgorithm)
+					{
+						this.m_ResizeAlgorithmIsDifferent = true;
+					}
 					if (platformTextureSettings.textureCompression != this.m_PlatformSettings.textureCompression)
 					{
 						this.m_TextureCompressionIsDifferent = true;
@@ -376,6 +424,10 @@ namespace UnityEditor
 					if (platformTextureSettings.allowsAlphaSplitting != this.m_PlatformSettings.allowsAlphaSplitting)
 					{
 						this.m_AlphaSplitIsDifferent = true;
+					}
+					if (platformTextureSettings.androidETC2FallbackOverride != this.m_PlatformSettings.androidETC2FallbackOverride)
+					{
+						this.m_AndroidETC2FallbackOverrideIsDifferent = true;
 					}
 				}
 			}
@@ -393,6 +445,13 @@ namespace UnityEditor
 		{
 			this.m_PlatformSettings.maxTextureSize = maxTextureSize;
 			this.m_MaxTextureSizeIsDifferent = false;
+			this.SetChanged();
+		}
+
+		public void SetResizeAlgorithmForAll(TextureResizeAlgorithm algorithm)
+		{
+			this.m_PlatformSettings.resizeAlgorithm = algorithm;
+			this.m_ResizeAlgorithmIsDifferent = false;
 			this.SetChanged();
 		}
 
@@ -431,44 +490,47 @@ namespace UnityEditor
 			this.SetChanged();
 		}
 
+		public void SetAndroidETC2FallbackOverrideForAll(AndroidETC2FallbackOverride value)
+		{
+			this.m_PlatformSettings.androidETC2FallbackOverride = value;
+			this.m_AndroidETC2FallbackOverrideIsDifferent = false;
+			this.SetChanged();
+		}
+
 		public bool SupportsFormat(TextureImporterFormat format, TextureImporter importer)
 		{
 			TextureImporterSettings settings = this.GetSettings(importer);
 			BuildTarget target = this.m_Target;
 			int[] array;
-			switch (target)
+			if (target != BuildTarget.WiiU)
 			{
-			case BuildTarget.SamsungTV:
-				array = TextureImportPlatformSettings.kTextureFormatsValueSTV;
-				goto IL_9E;
-			case BuildTarget.N3DS:
-				IL_29:
-				if (target == BuildTarget.iOS)
+				if (target != BuildTarget.tvOS && target != BuildTarget.iOS)
 				{
-					goto IL_51;
+					if (target != BuildTarget.Android)
+					{
+						if (target != BuildTarget.Tizen)
+						{
+							array = ((settings.textureType != TextureImporterType.NormalMap) ? TextureImportPlatformSettings.kTextureFormatsValueDefault : TextureImportPlatformSettings.kNormalFormatsValueDefault);
+						}
+						else
+						{
+							array = TextureImportPlatformSettings.kTextureFormatsValueTizen;
+						}
+					}
+					else
+					{
+						array = TextureImportPlatformSettings.kTextureFormatsValueAndroid;
+					}
 				}
-				if (target == BuildTarget.Android)
+				else
 				{
-					array = TextureImportPlatformSettings.kTextureFormatsValueAndroid;
-					goto IL_9E;
+					array = TextureImportPlatformSettings.kTextureFormatsValueApplePVR;
 				}
-				if (target != BuildTarget.Tizen)
-				{
-					array = ((settings.textureType != TextureImporterType.NormalMap) ? TextureImportPlatformSettings.kTextureFormatsValueDefault : TextureImportPlatformSettings.kNormalFormatsValueDefault);
-					goto IL_9E;
-				}
-				array = TextureImportPlatformSettings.kTextureFormatsValueTizen;
-				goto IL_9E;
-			case BuildTarget.WiiU:
-				array = TextureImportPlatformSettings.kTextureFormatsValueWiiU;
-				goto IL_9E;
-			case BuildTarget.tvOS:
-				goto IL_51;
 			}
-			goto IL_29;
-			IL_51:
-			array = TextureImportPlatformSettings.kTextureFormatsValueApplePVR;
-			IL_9E:
+			else
+			{
+				array = TextureImportPlatformSettings.kTextureFormatsValueWiiU;
+			}
 			return ((IList)array).Contains((int)format);
 		}
 
@@ -497,6 +559,8 @@ namespace UnityEditor
 				TextureImportPlatformSettings textureImportPlatformSettings = this.m_Inspector.m_PlatformSettings[0];
 				this.m_PlatformSettings.maxTextureSize = textureImportPlatformSettings.maxTextureSize;
 				this.m_MaxTextureSizeIsDifferent = textureImportPlatformSettings.m_MaxTextureSizeIsDifferent;
+				this.m_PlatformSettings.resizeAlgorithm = textureImportPlatformSettings.resizeAlgorithm;
+				this.m_ResizeAlgorithmIsDifferent = textureImportPlatformSettings.m_ResizeAlgorithmIsDifferent;
 				this.m_PlatformSettings.textureCompression = textureImportPlatformSettings.textureCompression;
 				this.m_TextureCompressionIsDifferent = textureImportPlatformSettings.m_TextureCompressionIsDifferent;
 				this.m_PlatformSettings.format = textureImportPlatformSettings.format;
@@ -507,6 +571,7 @@ namespace UnityEditor
 				this.m_CrunchedCompressionIsDifferent = textureImportPlatformSettings.m_CrunchedCompressionIsDifferent;
 				this.m_PlatformSettings.allowsAlphaSplitting = textureImportPlatformSettings.allowsAlphaSplitting;
 				this.m_AlphaSplitIsDifferent = textureImportPlatformSettings.m_AlphaSplitIsDifferent;
+				this.m_AndroidETC2FallbackOverrideIsDifferent = textureImportPlatformSettings.m_AndroidETC2FallbackOverrideIsDifferent;
 			}
 			if ((this.overridden || this.m_OverriddenIsDifferent) && this.m_PlatformSettings.format < (TextureImporterFormat)0)
 			{
@@ -557,6 +622,10 @@ namespace UnityEditor
 				{
 					platformTextureSettings.maxTextureSize = this.m_PlatformSettings.maxTextureSize;
 				}
+				if (!this.m_ResizeAlgorithmIsDifferent)
+				{
+					platformTextureSettings.resizeAlgorithm = this.m_PlatformSettings.resizeAlgorithm;
+				}
 				if (!this.m_TextureCompressionIsDifferent)
 				{
 					platformTextureSettings.textureCompression = this.m_PlatformSettings.textureCompression;
@@ -572,6 +641,10 @@ namespace UnityEditor
 				if (!this.m_AlphaSplitIsDifferent)
 				{
 					platformTextureSettings.allowsAlphaSplitting = this.m_PlatformSettings.allowsAlphaSplitting;
+				}
+				if (!this.m_AndroidETC2FallbackOverrideIsDifferent)
+				{
+					platformTextureSettings.androidETC2FallbackOverride = this.m_PlatformSettings.androidETC2FallbackOverride;
 				}
 				textureImporter.SetPlatformTextureSettings(platformTextureSettings);
 			}

@@ -32,6 +32,11 @@ namespace UnityEngine
 			BootConfigData.Set(this.m_Ptr, key, value);
 		}
 
+		public string Get(string key)
+		{
+			return BootConfigData.Get(this.m_Ptr, key);
+		}
+
 		private static BootConfigData Wrap(IntPtr nativeHandle)
 		{
 			return new BootConfigData(nativeHandle);
@@ -44,5 +49,9 @@ namespace UnityEngine
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern void Set(IntPtr nativeHandle, string key, string val);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern string Get(IntPtr nativeHandle, string key);
 	}
 }

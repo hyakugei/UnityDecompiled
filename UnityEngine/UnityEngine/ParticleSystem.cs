@@ -52,9 +52,7 @@ namespace UnityEngine
 		{
 			private float m_Time;
 
-			private short m_MinCount;
-
-			private short m_MaxCount;
+			private ParticleSystem.MinMaxCurve m_Count;
 
 			private int m_RepeatCount;
 
@@ -72,15 +70,27 @@ namespace UnityEngine
 				}
 			}
 
+			public ParticleSystem.MinMaxCurve count
+			{
+				get
+				{
+					return this.m_Count;
+				}
+				set
+				{
+					this.m_Count = value;
+				}
+			}
+
 			public short minCount
 			{
 				get
 				{
-					return this.m_MinCount;
+					return (short)this.m_Count.constantMin;
 				}
 				set
 				{
-					this.m_MinCount = value;
+					this.m_Count.constantMin = (float)value;
 				}
 			}
 
@@ -88,11 +98,11 @@ namespace UnityEngine
 			{
 				get
 				{
-					return this.m_MaxCount;
+					return (short)this.m_Count.constantMax;
 				}
 				set
 				{
-					this.m_MaxCount = value;
+					this.m_Count.constantMax = (float)value;
 				}
 			}
 
@@ -123,8 +133,7 @@ namespace UnityEngine
 			public Burst(float _time, short _count)
 			{
 				this.m_Time = _time;
-				this.m_MinCount = _count;
-				this.m_MaxCount = _count;
+				this.m_Count = (float)_count;
 				this.m_RepeatCount = 0;
 				this.m_RepeatInterval = 0f;
 			}
@@ -132,8 +141,7 @@ namespace UnityEngine
 			public Burst(float _time, short _minCount, short _maxCount)
 			{
 				this.m_Time = _time;
-				this.m_MinCount = _minCount;
-				this.m_MaxCount = _maxCount;
+				this.m_Count = new ParticleSystem.MinMaxCurve((float)_minCount, (float)_maxCount);
 				this.m_RepeatCount = 0;
 				this.m_RepeatInterval = 0f;
 			}
@@ -141,8 +149,23 @@ namespace UnityEngine
 			public Burst(float _time, short _minCount, short _maxCount, int _cycleCount, float _repeatInterval)
 			{
 				this.m_Time = _time;
-				this.m_MinCount = _minCount;
-				this.m_MaxCount = _maxCount;
+				this.m_Count = new ParticleSystem.MinMaxCurve((float)_minCount, (float)_maxCount);
+				this.m_RepeatCount = _cycleCount - 1;
+				this.m_RepeatInterval = _repeatInterval;
+			}
+
+			public Burst(float _time, ParticleSystem.MinMaxCurve _count)
+			{
+				this.m_Time = _time;
+				this.m_Count = _count;
+				this.m_RepeatCount = 0;
+				this.m_RepeatInterval = 0f;
+			}
+
+			public Burst(float _time, ParticleSystem.MinMaxCurve _count, int _cycleCount, float _repeatInterval)
+			{
+				this.m_Time = _time;
+				this.m_Count = _count;
 				this.m_RepeatCount = _cycleCount - 1;
 				this.m_RepeatInterval = _repeatInterval;
 			}
@@ -1024,6 +1047,18 @@ namespace UnityEngine
 				}
 			}
 
+			public ParticleSystemStopAction stopAction
+			{
+				get
+				{
+					return ParticleSystem.MainModule.GetStopAction(this.m_ParticleSystem);
+				}
+				set
+				{
+					ParticleSystem.MainModule.SetStopAction(this.m_ParticleSystem, value);
+				}
+			}
+
 			internal MainModule(ParticleSystem particleSystem)
 			{
 				this.m_ParticleSystem = particleSystem;
@@ -1316,6 +1351,14 @@ namespace UnityEngine
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			private static extern bool GetUseRigidbodyForVelocity(ParticleSystem system);
+
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			private static extern void SetStopAction(ParticleSystem system, ParticleSystemStopAction value);
+
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			private static extern ParticleSystemStopAction GetStopAction(ParticleSystem system);
 		}
 
 		public struct EmissionModule
@@ -1392,6 +1435,10 @@ namespace UnityEngine
 				{
 					return ParticleSystem.EmissionModule.GetBurstCount(this.m_ParticleSystem);
 				}
+				set
+				{
+					ParticleSystem.EmissionModule.SetBurstCount(this.m_ParticleSystem, value);
+				}
 			}
 
 			[Obsolete("ParticleSystemEmissionType no longer does anything. Time and Distance based emission are now both always active.")]
@@ -1441,17 +1488,36 @@ namespace UnityEngine
 
 			public void SetBursts(ParticleSystem.Burst[] bursts)
 			{
-				ParticleSystem.EmissionModule.SetBursts(this.m_ParticleSystem, bursts, bursts.Length);
+				this.SetBursts(bursts, bursts.Length);
 			}
 
 			public void SetBursts(ParticleSystem.Burst[] bursts, int size)
 			{
-				ParticleSystem.EmissionModule.SetBursts(this.m_ParticleSystem, bursts, size);
+				this.burstCount = size;
+				for (int i = 0; i < size; i++)
+				{
+					ParticleSystem.EmissionModule.SetBurst(this.m_ParticleSystem, i, bursts[i]);
+				}
 			}
 
 			public int GetBursts(ParticleSystem.Burst[] bursts)
 			{
-				return ParticleSystem.EmissionModule.GetBursts(this.m_ParticleSystem, bursts);
+				int burstCount = this.burstCount;
+				for (int i = 0; i < burstCount; i++)
+				{
+					bursts[i] = ParticleSystem.EmissionModule.GetBurst(this.m_ParticleSystem, i);
+				}
+				return burstCount;
+			}
+
+			public void SetBurst(int index, ParticleSystem.Burst burst)
+			{
+				ParticleSystem.EmissionModule.SetBurst(this.m_ParticleSystem, index, burst);
+			}
+
+			public ParticleSystem.Burst GetBurst(int index)
+			{
+				return ParticleSystem.EmissionModule.GetBurst(this.m_ParticleSystem, index);
 			}
 
 			[GeneratedByOldBindingsGenerator]
@@ -1500,11 +1566,27 @@ namespace UnityEngine
 
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
-			private static extern void SetBursts(ParticleSystem system, ParticleSystem.Burst[] bursts, int size);
+			private static extern void SetBurstCount(ParticleSystem system, int value);
+
+			private static void SetBurst(ParticleSystem system, int index, ParticleSystem.Burst burst)
+			{
+				ParticleSystem.EmissionModule.INTERNAL_CALL_SetBurst(system, index, ref burst);
+			}
 
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
-			private static extern int GetBursts(ParticleSystem system, ParticleSystem.Burst[] bursts);
+			private static extern void INTERNAL_CALL_SetBurst(ParticleSystem system, int index, ref ParticleSystem.Burst burst);
+
+			private static ParticleSystem.Burst GetBurst(ParticleSystem system, int index)
+			{
+				ParticleSystem.Burst result;
+				ParticleSystem.EmissionModule.INTERNAL_CALL_GetBurst(system, index, out result);
+				return result;
+			}
+
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			private static extern void INTERNAL_CALL_GetBurst(ParticleSystem system, int index, out ParticleSystem.Burst value);
 		}
 
 		public struct ShapeModule
@@ -1527,11 +1609,11 @@ namespace UnityEngine
 			{
 				get
 				{
-					return (ParticleSystemShapeType)ParticleSystem.ShapeModule.GetShapeType(this.m_ParticleSystem);
+					return ParticleSystem.ShapeModule.GetShapeType(this.m_ParticleSystem);
 				}
 				set
 				{
-					ParticleSystem.ShapeModule.SetShapeType(this.m_ParticleSystem, (int)value);
+					ParticleSystem.ShapeModule.SetShapeType(this.m_ParticleSystem, value);
 				}
 			}
 
@@ -1599,11 +1681,11 @@ namespace UnityEngine
 			{
 				get
 				{
-					return (ParticleSystemShapeMultiModeValue)ParticleSystem.ShapeModule.GetRadiusMode(this.m_ParticleSystem);
+					return ParticleSystem.ShapeModule.GetRadiusMode(this.m_ParticleSystem);
 				}
 				set
 				{
-					ParticleSystem.ShapeModule.SetRadiusMode(this.m_ParticleSystem, (int)value);
+					ParticleSystem.ShapeModule.SetRadiusMode(this.m_ParticleSystem, value);
 				}
 			}
 
@@ -1710,11 +1792,11 @@ namespace UnityEngine
 			{
 				get
 				{
-					return (ParticleSystemMeshShapeType)ParticleSystem.ShapeModule.GetMeshShapeType(this.m_ParticleSystem);
+					return ParticleSystem.ShapeModule.GetMeshShapeType(this.m_ParticleSystem);
 				}
 				set
 				{
-					ParticleSystem.ShapeModule.SetMeshShapeType(this.m_ParticleSystem, (int)value);
+					ParticleSystem.ShapeModule.SetMeshShapeType(this.m_ParticleSystem, value);
 				}
 			}
 
@@ -1831,11 +1913,11 @@ namespace UnityEngine
 			{
 				get
 				{
-					return (ParticleSystemShapeMultiModeValue)ParticleSystem.ShapeModule.GetArcMode(this.m_ParticleSystem);
+					return ParticleSystem.ShapeModule.GetArcMode(this.m_ParticleSystem);
 				}
 				set
 				{
-					ParticleSystem.ShapeModule.SetArcMode(this.m_ParticleSystem, (int)value);
+					ParticleSystem.ShapeModule.SetArcMode(this.m_ParticleSystem, value);
 				}
 			}
 
@@ -1953,11 +2035,11 @@ namespace UnityEngine
 
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
-			private static extern void SetShapeType(ParticleSystem system, int value);
+			private static extern void SetShapeType(ParticleSystem system, ParticleSystemShapeType value);
 
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
-			private static extern int GetShapeType(ParticleSystem system);
+			private static extern ParticleSystemShapeType GetShapeType(ParticleSystem system);
 
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
@@ -2001,11 +2083,11 @@ namespace UnityEngine
 
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
-			private static extern void SetRadiusMode(ParticleSystem system, int value);
+			private static extern void SetRadiusMode(ParticleSystem system, ParticleSystemShapeMultiModeValue value);
 
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
-			private static extern int GetRadiusMode(ParticleSystem system);
+			private static extern ParticleSystemShapeMultiModeValue GetRadiusMode(ParticleSystem system);
 
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
@@ -2077,11 +2159,11 @@ namespace UnityEngine
 
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
-			private static extern void SetMeshShapeType(ParticleSystem system, int value);
+			private static extern void SetMeshShapeType(ParticleSystem system, ParticleSystemMeshShapeType value);
 
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
-			private static extern int GetMeshShapeType(ParticleSystem system);
+			private static extern ParticleSystemMeshShapeType GetMeshShapeType(ParticleSystem system);
 
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
@@ -2149,11 +2231,11 @@ namespace UnityEngine
 
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
-			private static extern void SetArcMode(ParticleSystem system, int value);
+			private static extern void SetArcMode(ParticleSystem system, ParticleSystemShapeMultiModeValue value);
 
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
-			private static extern int GetArcMode(ParticleSystem system);
+			private static extern ParticleSystemShapeMultiModeValue GetArcMode(ParticleSystem system);
 
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
@@ -2306,6 +2388,20 @@ namespace UnityEngine
 				}
 			}
 
+			public ParticleSystem.MinMaxCurve speedModifier
+			{
+				get
+				{
+					ParticleSystem.MinMaxCurve result = default(ParticleSystem.MinMaxCurve);
+					ParticleSystem.VelocityOverLifetimeModule.GetSpeedModifier(this.m_ParticleSystem, ref result);
+					return result;
+				}
+				set
+				{
+					ParticleSystem.VelocityOverLifetimeModule.SetSpeedModifier(this.m_ParticleSystem, ref value);
+				}
+			}
+
 			public float xMultiplier
 			{
 				get
@@ -2339,6 +2435,18 @@ namespace UnityEngine
 				set
 				{
 					ParticleSystem.VelocityOverLifetimeModule.SetZMultiplier(this.m_ParticleSystem, value);
+				}
+			}
+
+			public float speedModifierMultiplier
+			{
+				get
+				{
+					return ParticleSystem.VelocityOverLifetimeModule.GetSpeedModifierMultiplier(this.m_ParticleSystem);
+				}
+				set
+				{
+					ParticleSystem.VelocityOverLifetimeModule.SetSpeedModifierMultiplier(this.m_ParticleSystem, value);
 				}
 			}
 
@@ -2393,6 +2501,14 @@ namespace UnityEngine
 
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
+			private static extern void SetSpeedModifier(ParticleSystem system, ref ParticleSystem.MinMaxCurve curve);
+
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			private static extern void GetSpeedModifier(ParticleSystem system, ref ParticleSystem.MinMaxCurve curve);
+
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
 			private static extern void SetXMultiplier(ParticleSystem system, float value);
 
 			[GeneratedByOldBindingsGenerator]
@@ -2414,6 +2530,14 @@ namespace UnityEngine
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			private static extern float GetZMultiplier(ParticleSystem system);
+
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			private static extern void SetSpeedModifierMultiplier(ParticleSystem system, float value);
+
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			private static extern float GetSpeedModifierMultiplier(ParticleSystem system);
 
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
@@ -2580,6 +2704,56 @@ namespace UnityEngine
 				}
 			}
 
+			public ParticleSystem.MinMaxCurve drag
+			{
+				get
+				{
+					ParticleSystem.MinMaxCurve result = default(ParticleSystem.MinMaxCurve);
+					ParticleSystem.LimitVelocityOverLifetimeModule.GetDrag(this.m_ParticleSystem, ref result);
+					return result;
+				}
+				set
+				{
+					ParticleSystem.LimitVelocityOverLifetimeModule.SetDrag(this.m_ParticleSystem, ref value);
+				}
+			}
+
+			public float dragMultiplier
+			{
+				get
+				{
+					return ParticleSystem.LimitVelocityOverLifetimeModule.GetDragMultiplier(this.m_ParticleSystem);
+				}
+				set
+				{
+					ParticleSystem.LimitVelocityOverLifetimeModule.SetDragMultiplier(this.m_ParticleSystem, value);
+				}
+			}
+
+			public bool multiplyDragByParticleSize
+			{
+				get
+				{
+					return ParticleSystem.LimitVelocityOverLifetimeModule.GetMultiplyDragByParticleSize(this.m_ParticleSystem);
+				}
+				set
+				{
+					ParticleSystem.LimitVelocityOverLifetimeModule.SetMultiplyDragByParticleSize(this.m_ParticleSystem, value);
+				}
+			}
+
+			public bool multiplyDragByParticleVelocity
+			{
+				get
+				{
+					return ParticleSystem.LimitVelocityOverLifetimeModule.GetMultiplyDragByParticleVelocity(this.m_ParticleSystem);
+				}
+				set
+				{
+					ParticleSystem.LimitVelocityOverLifetimeModule.SetMultiplyDragByParticleVelocity(this.m_ParticleSystem, value);
+				}
+			}
+
 			internal LimitVelocityOverLifetimeModule(ParticleSystem particleSystem)
 			{
 				this.m_ParticleSystem = particleSystem;
@@ -2680,6 +2854,38 @@ namespace UnityEngine
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			private static extern bool GetWorldSpace(ParticleSystem system);
+
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			private static extern void SetDrag(ParticleSystem system, ref ParticleSystem.MinMaxCurve curve);
+
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			private static extern void GetDrag(ParticleSystem system, ref ParticleSystem.MinMaxCurve curve);
+
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			private static extern void SetDragMultiplier(ParticleSystem system, float value);
+
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			private static extern float GetDragMultiplier(ParticleSystem system);
+
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			private static extern void SetMultiplyDragByParticleSize(ParticleSystem system, bool value);
+
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			private static extern bool GetMultiplyDragByParticleSize(ParticleSystem system);
+
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			private static extern void SetMultiplyDragByParticleVelocity(ParticleSystem system, bool value);
+
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			private static extern bool GetMultiplyDragByParticleVelocity(ParticleSystem system);
 		}
 
 		public struct InheritVelocityModule
@@ -2702,11 +2908,11 @@ namespace UnityEngine
 			{
 				get
 				{
-					return (ParticleSystemInheritVelocityMode)ParticleSystem.InheritVelocityModule.GetMode(this.m_ParticleSystem);
+					return ParticleSystem.InheritVelocityModule.GetMode(this.m_ParticleSystem);
 				}
 				set
 				{
-					ParticleSystem.InheritVelocityModule.SetMode(this.m_ParticleSystem, (int)value);
+					ParticleSystem.InheritVelocityModule.SetMode(this.m_ParticleSystem, value);
 				}
 			}
 
@@ -2751,11 +2957,11 @@ namespace UnityEngine
 
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
-			private static extern void SetMode(ParticleSystem system, int value);
+			private static extern void SetMode(ParticleSystem system, ParticleSystemInheritVelocityMode value);
 
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
-			private static extern int GetMode(ParticleSystem system);
+			private static extern ParticleSystemInheritVelocityMode GetMode(ParticleSystem system);
 
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
@@ -4598,11 +4804,11 @@ namespace UnityEngine
 			{
 				get
 				{
-					return (ParticleSystemCollisionType)ParticleSystem.CollisionModule.GetType(this.m_ParticleSystem);
+					return ParticleSystem.CollisionModule.GetType(this.m_ParticleSystem);
 				}
 				set
 				{
-					ParticleSystem.CollisionModule.SetType(this.m_ParticleSystem, (int)value);
+					ParticleSystem.CollisionModule.SetType(this.m_ParticleSystem, value);
 				}
 			}
 
@@ -4610,11 +4816,11 @@ namespace UnityEngine
 			{
 				get
 				{
-					return (ParticleSystemCollisionMode)ParticleSystem.CollisionModule.GetMode(this.m_ParticleSystem);
+					return ParticleSystem.CollisionModule.GetMode(this.m_ParticleSystem);
 				}
 				set
 				{
-					ParticleSystem.CollisionModule.SetMode(this.m_ParticleSystem, (int)value);
+					ParticleSystem.CollisionModule.SetMode(this.m_ParticleSystem, value);
 				}
 			}
 
@@ -4898,19 +5104,19 @@ namespace UnityEngine
 
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
-			private static extern void SetType(ParticleSystem system, int value);
+			private static extern void SetType(ParticleSystem system, ParticleSystemCollisionType value);
 
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
-			private static extern int GetType(ParticleSystem system);
+			private static extern ParticleSystemCollisionType GetType(ParticleSystem system);
 
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
-			private static extern void SetMode(ParticleSystem system, int value);
+			private static extern void SetMode(ParticleSystem system, ParticleSystemCollisionMode value);
 
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
-			private static extern int GetMode(ParticleSystem system);
+			private static extern ParticleSystemCollisionMode GetMode(ParticleSystem system);
 
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
@@ -5105,11 +5311,11 @@ namespace UnityEngine
 			{
 				get
 				{
-					return (ParticleSystemOverlapAction)ParticleSystem.TriggerModule.GetInside(this.m_ParticleSystem);
+					return ParticleSystem.TriggerModule.GetInside(this.m_ParticleSystem);
 				}
 				set
 				{
-					ParticleSystem.TriggerModule.SetInside(this.m_ParticleSystem, (int)value);
+					ParticleSystem.TriggerModule.SetInside(this.m_ParticleSystem, value);
 				}
 			}
 
@@ -5117,11 +5323,11 @@ namespace UnityEngine
 			{
 				get
 				{
-					return (ParticleSystemOverlapAction)ParticleSystem.TriggerModule.GetOutside(this.m_ParticleSystem);
+					return ParticleSystem.TriggerModule.GetOutside(this.m_ParticleSystem);
 				}
 				set
 				{
-					ParticleSystem.TriggerModule.SetOutside(this.m_ParticleSystem, (int)value);
+					ParticleSystem.TriggerModule.SetOutside(this.m_ParticleSystem, value);
 				}
 			}
 
@@ -5129,11 +5335,11 @@ namespace UnityEngine
 			{
 				get
 				{
-					return (ParticleSystemOverlapAction)ParticleSystem.TriggerModule.GetEnter(this.m_ParticleSystem);
+					return ParticleSystem.TriggerModule.GetEnter(this.m_ParticleSystem);
 				}
 				set
 				{
-					ParticleSystem.TriggerModule.SetEnter(this.m_ParticleSystem, (int)value);
+					ParticleSystem.TriggerModule.SetEnter(this.m_ParticleSystem, value);
 				}
 			}
 
@@ -5141,11 +5347,11 @@ namespace UnityEngine
 			{
 				get
 				{
-					return (ParticleSystemOverlapAction)ParticleSystem.TriggerModule.GetExit(this.m_ParticleSystem);
+					return ParticleSystem.TriggerModule.GetExit(this.m_ParticleSystem);
 				}
 				set
 				{
-					ParticleSystem.TriggerModule.SetExit(this.m_ParticleSystem, (int)value);
+					ParticleSystem.TriggerModule.SetExit(this.m_ParticleSystem, value);
 				}
 			}
 
@@ -5194,35 +5400,35 @@ namespace UnityEngine
 
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
-			private static extern void SetInside(ParticleSystem system, int value);
+			private static extern void SetInside(ParticleSystem system, ParticleSystemOverlapAction value);
 
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
-			private static extern int GetInside(ParticleSystem system);
+			private static extern ParticleSystemOverlapAction GetInside(ParticleSystem system);
 
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
-			private static extern void SetOutside(ParticleSystem system, int value);
+			private static extern void SetOutside(ParticleSystem system, ParticleSystemOverlapAction value);
 
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
-			private static extern int GetOutside(ParticleSystem system);
+			private static extern ParticleSystemOverlapAction GetOutside(ParticleSystem system);
 
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
-			private static extern void SetEnter(ParticleSystem system, int value);
+			private static extern void SetEnter(ParticleSystem system, ParticleSystemOverlapAction value);
 
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
-			private static extern int GetEnter(ParticleSystem system);
+			private static extern ParticleSystemOverlapAction GetEnter(ParticleSystem system);
 
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
-			private static extern void SetExit(ParticleSystem system, int value);
+			private static extern void SetExit(ParticleSystem system, ParticleSystemOverlapAction value);
 
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
-			private static extern int GetExit(ParticleSystem system);
+			private static extern ParticleSystemOverlapAction GetExit(ParticleSystem system);
 
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
@@ -5481,11 +5687,11 @@ namespace UnityEngine
 			{
 				get
 				{
-					return (ParticleSystemAnimationMode)ParticleSystem.TextureSheetAnimationModule.GetMode(this.m_ParticleSystem);
+					return ParticleSystem.TextureSheetAnimationModule.GetMode(this.m_ParticleSystem);
 				}
 				set
 				{
-					ParticleSystem.TextureSheetAnimationModule.SetMode(this.m_ParticleSystem, (int)value);
+					ParticleSystem.TextureSheetAnimationModule.SetMode(this.m_ParticleSystem, value);
 				}
 			}
 
@@ -5517,11 +5723,11 @@ namespace UnityEngine
 			{
 				get
 				{
-					return (ParticleSystemAnimationType)ParticleSystem.TextureSheetAnimationModule.GetAnimationType(this.m_ParticleSystem);
+					return ParticleSystem.TextureSheetAnimationModule.GetAnimationType(this.m_ParticleSystem);
 				}
 				set
 				{
-					ParticleSystem.TextureSheetAnimationModule.SetAnimationType(this.m_ParticleSystem, (int)value);
+					ParticleSystem.TextureSheetAnimationModule.SetAnimationType(this.m_ParticleSystem, value);
 				}
 			}
 
@@ -5692,11 +5898,11 @@ namespace UnityEngine
 
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
-			private static extern void SetMode(ParticleSystem system, int value);
+			private static extern void SetMode(ParticleSystem system, ParticleSystemAnimationMode value);
 
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
-			private static extern int GetMode(ParticleSystem system);
+			private static extern ParticleSystemAnimationMode GetMode(ParticleSystem system);
 
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
@@ -5716,11 +5922,11 @@ namespace UnityEngine
 
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
-			private static extern void SetAnimationType(ParticleSystem system, int value);
+			private static extern void SetAnimationType(ParticleSystem system, ParticleSystemAnimationType value);
 
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
-			private static extern int GetAnimationType(ParticleSystem system);
+			private static extern ParticleSystemAnimationType GetAnimationType(ParticleSystem system);
 
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
@@ -6093,6 +6299,18 @@ namespace UnityEngine
 				}
 			}
 
+			public ParticleSystemTrailMode mode
+			{
+				get
+				{
+					return ParticleSystem.TrailModule.GetMode(this.m_ParticleSystem);
+				}
+				set
+				{
+					ParticleSystem.TrailModule.SetMode(this.m_ParticleSystem, value);
+				}
+			}
+
 			public float ratio
 			{
 				get
@@ -6147,11 +6365,11 @@ namespace UnityEngine
 			{
 				get
 				{
-					return (ParticleSystemTrailTextureMode)ParticleSystem.TrailModule.GetTextureMode(this.m_ParticleSystem);
+					return ParticleSystem.TrailModule.GetTextureMode(this.m_ParticleSystem);
 				}
 				set
 				{
-					ParticleSystem.TrailModule.SetTextureMode(this.m_ParticleSystem, (float)value);
+					ParticleSystem.TrailModule.SetTextureMode(this.m_ParticleSystem, value);
 				}
 			}
 
@@ -6281,6 +6499,18 @@ namespace UnityEngine
 				}
 			}
 
+			public int ribbonCount
+			{
+				get
+				{
+					return ParticleSystem.TrailModule.GetRibbonCount(this.m_ParticleSystem);
+				}
+				set
+				{
+					ParticleSystem.TrailModule.SetRibbonCount(this.m_ParticleSystem, value);
+				}
+			}
+
 			internal TrailModule(ParticleSystem particleSystem)
 			{
 				this.m_ParticleSystem = particleSystem;
@@ -6293,6 +6523,14 @@ namespace UnityEngine
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			private static extern bool GetEnabled(ParticleSystem system);
+
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			private static extern void SetMode(ParticleSystem system, ParticleSystemTrailMode value);
+
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			private static extern ParticleSystemTrailMode GetMode(ParticleSystem system);
 
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
@@ -6328,11 +6566,11 @@ namespace UnityEngine
 
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
-			private static extern void SetTextureMode(ParticleSystem system, float value);
+			private static extern void SetTextureMode(ParticleSystem system, ParticleSystemTrailTextureMode value);
 
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
-			private static extern int GetTextureMode(ParticleSystem system);
+			private static extern ParticleSystemTrailTextureMode GetTextureMode(ParticleSystem system);
 
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
@@ -6413,6 +6651,14 @@ namespace UnityEngine
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			private static extern bool GetGenerateLightingData(ParticleSystem system);
+
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			private static extern void SetRibbonCount(ParticleSystem system, int value);
+
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			private static extern int GetRibbonCount(ParticleSystem system);
 		}
 
 		public struct CustomDataModule
@@ -6438,12 +6684,12 @@ namespace UnityEngine
 
 			public void SetMode(ParticleSystemCustomData stream, ParticleSystemCustomDataMode mode)
 			{
-				ParticleSystem.CustomDataModule.SetMode(this.m_ParticleSystem, (int)stream, (int)mode);
+				ParticleSystem.CustomDataModule.SetMode(this.m_ParticleSystem, (int)stream, mode);
 			}
 
 			public ParticleSystemCustomDataMode GetMode(ParticleSystemCustomData stream)
 			{
-				return (ParticleSystemCustomDataMode)ParticleSystem.CustomDataModule.GetMode(this.m_ParticleSystem, (int)stream);
+				return ParticleSystem.CustomDataModule.GetMode(this.m_ParticleSystem, (int)stream);
 			}
 
 			public void SetVectorComponentCount(ParticleSystemCustomData stream, int count)
@@ -6490,7 +6736,7 @@ namespace UnityEngine
 
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
-			private static extern void SetMode(ParticleSystem system, int stream, int mode);
+			private static extern void SetMode(ParticleSystem system, int stream, ParticleSystemCustomDataMode mode);
 
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
@@ -6506,7 +6752,7 @@ namespace UnityEngine
 
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
-			private static extern int GetMode(ParticleSystem system, int stream);
+			private static extern ParticleSystemCustomDataMode GetMode(ParticleSystem system, int stream);
 
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]

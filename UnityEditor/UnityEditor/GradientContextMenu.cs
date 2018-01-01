@@ -6,7 +6,7 @@ namespace UnityEditor
 {
 	internal class GradientContextMenu
 	{
-		private SerializedProperty m_Prop1;
+		private readonly SerializedProperty m_Prop1;
 
 		private GradientContextMenu(SerializedProperty prop1)
 		{

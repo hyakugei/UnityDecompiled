@@ -259,6 +259,13 @@ namespace UnityEngine
 			get;
 		}
 
+		public static extern int supportsMultisampledTextures
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+		}
+
 		public static extern bool usesReversedZBuffer
 		{
 			[GeneratedByOldBindingsGenerator]
@@ -365,9 +372,27 @@ namespace UnityEngine
 			get;
 		}
 
+		public static extern bool supportsAsyncCompute
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+		}
+
+		public static extern bool supportsGPUFence
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+		}
+
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern bool SupportsRenderTextureFormat(RenderTextureFormat format);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern bool SupportsBlendingOnRenderTextureFormat(RenderTextureFormat format);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]

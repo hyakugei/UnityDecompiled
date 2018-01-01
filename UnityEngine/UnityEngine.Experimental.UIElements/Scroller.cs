@@ -4,7 +4,7 @@ using UnityEngine.Experimental.UIElements.StyleEnums;
 
 namespace UnityEngine.Experimental.UIElements
 {
-	public class Scroller : VisualContainer
+	public class Scroller : VisualElement
 	{
 		public event Action<float> valueChanged
 		{
@@ -59,11 +59,6 @@ namespace UnityEngine.Experimental.UIElements
 			set
 			{
 				this.slider.value = value;
-				if (this.valueChanged != null)
-				{
-					this.valueChanged(this.slider.value);
-				}
-				base.Dirty(ChangeType.Repaint);
 			}
 		}
 
@@ -73,6 +68,10 @@ namespace UnityEngine.Experimental.UIElements
 			{
 				return this.slider.lowValue;
 			}
+			set
+			{
+				this.slider.lowValue = value;
+			}
 		}
 
 		public float highValue
@@ -81,85 +80,69 @@ namespace UnityEngine.Experimental.UIElements
 			{
 				return this.slider.highValue;
 			}
+			set
+			{
+				this.slider.highValue = value;
+			}
 		}
 
 		public Slider.Direction direction
 		{
 			get
 			{
-				return (base.flexDirection != FlexDirection.Row) ? Slider.Direction.Vertical : Slider.Direction.Horizontal;
+				return (base.style.flexDirection != FlexDirection.Row) ? Slider.Direction.Vertical : Slider.Direction.Horizontal;
 			}
 			set
 			{
 				if (value == Slider.Direction.Horizontal)
 				{
-					base.flexDirection = FlexDirection.Row;
+					base.style.flexDirection = FlexDirection.Row;
 					base.AddToClassList("horizontal");
 				}
 				else
 				{
-					base.flexDirection = FlexDirection.Column;
+					base.style.flexDirection = FlexDirection.Column;
 					base.AddToClassList("vertical");
 				}
 			}
 		}
 
-		public override bool enabled
-		{
-			get
-			{
-				return base.enabled;
-			}
-			set
-			{
-				base.enabled = value;
-				this.PropagateEnabled(this, value);
-			}
-		}
-
 		public Scroller(float lowValue, float highValue, Action<float> valueChanged, Slider.Direction direction = Slider.Direction.Vertical)
 		{
-			base.phaseInterest = EventPhase.BubbleUp;
 			this.direction = direction;
 			this.valueChanged = valueChanged;
 			this.slider = new Slider(lowValue, highValue, new Action<float>(this.OnSliderValueChange), direction, 10f)
 			{
-				name = "Slider"
+				name = "Slider",
+				persistenceKey = "Slider"
 			};
-			base.AddChild(this.slider);
+			base.Add(this.slider);
 			this.lowButton = new ScrollerButton(new Action(this.ScrollPageUp), 250L, 30L)
 			{
 				name = "LowButton"
 			};
-			base.AddChild(this.lowButton);
+			base.Add(this.lowButton);
 			this.highButton = new ScrollerButton(new Action(this.ScrollPageDown), 250L, 30L)
 			{
 				name = "HighButton"
 			};
-			base.AddChild(this.highButton);
-		}
-
-		public void PropagateEnabled(VisualContainer c, bool enabled)
-		{
-			if (c != null)
-			{
-				foreach (VisualElement current in c)
-				{
-					current.enabled = enabled;
-					this.PropagateEnabled(current as VisualContainer, enabled);
-				}
-			}
+			base.Add(this.highButton);
 		}
 
 		public void Adjust(float factor)
 		{
-			this.enabled = (factor < 1f);
+			this.SetEnabled(factor < 1f);
 			this.slider.AdjustDragElement(factor);
 		}
 
 		private void OnSliderValueChange(float newValue)
 		{
 			this.value = newValue;
+			if (this.valueChanged != null)
+			{
+				this.valueChanged(this.slider.value);
+			}
+			base.Dirty(ChangeType.Repaint);
 		}
 
 		public void ScrollPageUp()

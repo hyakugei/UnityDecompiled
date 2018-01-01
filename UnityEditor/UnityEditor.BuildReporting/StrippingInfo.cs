@@ -17,6 +17,9 @@ namespace UnityEditor.BuildReporting
 
 			[SerializeField]
 			public string icon;
+
+			[SerializeField]
+			public int size;
 		}
 
 		public const string RequiredByScripts = "Required by Scripts";
@@ -55,6 +58,7 @@ namespace UnityEditor.BuildReporting
 			this.SetIcon(StrippingInfo.ModuleName("Cloth"), "class/Cloth");
 			this.SetIcon(StrippingInfo.ModuleName("ImageConversion"), "class/Texture");
 			this.SetIcon(StrippingInfo.ModuleName("ScreenCapture"), "class/RenderTexture");
+			this.SetIcon(StrippingInfo.ModuleName("Wind"), "class/WindZone");
 		}
 
 		public void OnBeforeSerialize()
@@ -71,6 +75,7 @@ namespace UnityEditor.BuildReporting
 				item.key = current.Key;
 				item.value = list;
 				item.icon = ((!this.icons.ContainsKey(current.Key)) ? "class/DefaultAsset" : this.icons[current.Key]);
+				item.size = ((!this.sizes.ContainsKey(current.Key)) ? 0 : this.sizes[current.Key]);
 				this.serializedDependencies.Add(item);
 			}
 			this.serializedSizes = new List<int>();
@@ -93,6 +98,7 @@ namespace UnityEditor.BuildReporting
 				}
 				this.dependencies.Add(this.serializedDependencies[i].key, hashSet);
 				this.icons[this.serializedDependencies[i].key] = this.serializedDependencies[i].icon;
+				this.sizes[this.serializedDependencies[i].key] = this.serializedDependencies[i].size;
 			}
 			this.sizes = new Dictionary<string, int>();
 			for (int j = 0; j < this.serializedSizes.Count; j++)

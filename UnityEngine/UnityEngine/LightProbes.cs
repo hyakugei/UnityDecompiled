@@ -59,6 +59,10 @@ namespace UnityEngine
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern void INTERNAL_CALL_GetInterpolatedProbe(ref Vector3 position, Renderer renderer, out SphericalHarmonicsL2 probe);
 
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern bool AreLightProbesAllowed(Renderer renderer);
+
 		[Obsolete("Use GetInterpolatedProbe instead.", true)]
 		public void GetInterpolatedLightProbe(Vector3 position, Renderer renderer, float[] coefficients)
 		{

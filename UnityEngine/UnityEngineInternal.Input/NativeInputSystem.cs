@@ -5,19 +5,43 @@ using UnityEngine.Scripting;
 
 namespace UnityEngineInternal.Input
 {
-	public sealed class NativeInputSystem
+	public class NativeInputSystem
 	{
 		public static NativeUpdateCallback onUpdate;
 
 		public static NativeEventCallback onEvents;
 
-		public static NativeDeviceDiscoveredCallback onDeviceDiscovered;
+		private static NativeDeviceDiscoveredCallback s_OnDeviceDiscoveredCallback;
+
+		public static event NativeDeviceDiscoveredCallback onDeviceDiscovered
+		{
+			add
+			{
+				NativeInputSystem.s_OnDeviceDiscoveredCallback = (NativeDeviceDiscoveredCallback)Delegate.Combine(NativeInputSystem.s_OnDeviceDiscoveredCallback, value);
+				NativeInputSystem.hasDeviceDiscoveredCallback = (NativeInputSystem.s_OnDeviceDiscoveredCallback != null);
+			}
+			remove
+			{
+				NativeInputSystem.s_OnDeviceDiscoveredCallback = (NativeDeviceDiscoveredCallback)Delegate.Remove(NativeInputSystem.s_OnDeviceDiscoveredCallback, value);
+				NativeInputSystem.hasDeviceDiscoveredCallback = (NativeInputSystem.s_OnDeviceDiscoveredCallback != null);
+			}
+		}
 
 		public static extern double zeroEventTime
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
+		}
+
+		public static extern bool hasDeviceDiscoveredCallback
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		static NativeInputSystem()
+		{
+			NativeInputSystem.hasDeviceDiscoveredCallback = false;
 		}
 
 		[RequiredByNativeCode]
@@ -41,30 +65,36 @@ namespace UnityEngineInternal.Input
 		}
 
 		[RequiredByNativeCode]
-		internal static bool HasDeviceDiscoveredHandler()
-		{
-			return NativeInputSystem.onDeviceDiscovered != null;
-		}
-
-		[RequiredByNativeCode]
 		internal static void NotifyDeviceDiscovered(NativeInputDeviceInfo deviceInfo)
 		{
-			NativeDeviceDiscoveredCallback nativeDeviceDiscoveredCallback = NativeInputSystem.onDeviceDiscovered;
+			NativeDeviceDiscoveredCallback nativeDeviceDiscoveredCallback = NativeInputSystem.s_OnDeviceDiscoveredCallback;
 			if (nativeDeviceDiscoveredCallback != null)
 			{
 				nativeDeviceDiscoveredCallback(deviceInfo);
 			}
 		}
 
-		[GeneratedByOldBindingsGenerator, ThreadAndSerializationSafe]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern void SendInput(ref NativeInputEvent inputEvent);
+		public static void SendInput<TInputEvent>(TInputEvent inputEvent) where TInputEvent : struct
+		{
+			NativeInputSystem.SendInput(UnsafeUtility.AddressOf<TInputEvent>(ref inputEvent));
+		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern string GetDeviceConfiguration(int deviceId);
+		public static extern void SendInput(IntPtr inputEvent);
 
-		[GeneratedByOldBindingsGenerator]
+		public static bool SendOutput<TOutputEvent>(int deviceId, int type, TOutputEvent outputEvent) where TOutputEvent : struct
+		{
+			return NativeInputSystem.SendOutput(deviceId, type, UnsafeUtility.SizeOf<TOutputEvent>(), UnsafeUtility.AddressOf<TOutputEvent>(ref outputEvent));
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern bool SendOutput(int deviceId, int type, int sizeInBytes, IntPtr data);
+
+		public static string GetDeviceConfiguration(int deviceId)
+		{
+			return null;
+		}
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern string GetControlConfiguration(int deviceId, int controlIndex);
 
@@ -77,8 +107,22 @@ namespace UnityEngineInternal.Input
 			NativeInputSystem.SetPollingFrequencyInternal(hertz);
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern void SetPollingFrequencyInternal(float hertz);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void SendEvents();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void Update(NativeInputUpdateType updateType);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern int ReportNewInputDevice(string descriptor);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void ReportInputDeviceDisconnect(int nativeDeviceId);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void ReportInputDeviceReconnect(int nativeDeviceId);
 	}
 }

@@ -14,6 +14,10 @@ namespace UnityEngine.UI
 
 		public delegate RaycastHit2D[] GetRayIntersectionAllCallback(Ray r, float f, int i);
 
+		public delegate int GetRayIntersectionAllNonAllocCallback(Ray r, RaycastHit2D[] results, float f, int i);
+
+		public delegate int GetRaycastNonAllocCallback(Ray r, RaycastHit[] results, float f, int i);
+
 		public ReflectionMethodsCache.Raycast3DCallback raycast3D = null;
 
 		public ReflectionMethodsCache.RaycastAllCallback raycast3DAll = null;
@@ -21,6 +25,10 @@ namespace UnityEngine.UI
 		public ReflectionMethodsCache.Raycast2DCallback raycast2D = null;
 
 		public ReflectionMethodsCache.GetRayIntersectionAllCallback getRayIntersectionAll = null;
+
+		public ReflectionMethodsCache.GetRayIntersectionAllNonAllocCallback getRayIntersectionAllNonAlloc = null;
+
+		public ReflectionMethodsCache.GetRaycastNonAllocCallback getRaycastNonAlloc = null;
 
 		private static ReflectionMethodsCache s_ReflectionMethodsCache = null;
 
@@ -79,6 +87,28 @@ namespace UnityEngine.UI
 			if (method4 != null)
 			{
 				this.getRayIntersectionAll = (ReflectionMethodsCache.GetRayIntersectionAllCallback)ScriptingUtils.CreateDelegate(typeof(ReflectionMethodsCache.GetRayIntersectionAllCallback), method4);
+			}
+			MethodInfo method5 = typeof(Physics2D).GetMethod("GetRayIntersectionNonAlloc", new Type[]
+			{
+				typeof(Ray),
+				typeof(RaycastHit2D[]),
+				typeof(float),
+				typeof(int)
+			});
+			if (method5 != null)
+			{
+				this.getRayIntersectionAllNonAlloc = (ReflectionMethodsCache.GetRayIntersectionAllNonAllocCallback)ScriptingUtils.CreateDelegate(typeof(ReflectionMethodsCache.GetRayIntersectionAllNonAllocCallback), method5);
+			}
+			MethodInfo method6 = typeof(Physics).GetMethod("RaycastNonAlloc", new Type[]
+			{
+				typeof(Ray),
+				typeof(RaycastHit[]),
+				typeof(float),
+				typeof(int)
+			});
+			if (method6 != null)
+			{
+				this.getRaycastNonAlloc = (ReflectionMethodsCache.GetRaycastNonAllocCallback)ScriptingUtils.CreateDelegate(typeof(ReflectionMethodsCache.GetRaycastNonAllocCallback), method6);
 			}
 		}
 	}

@@ -33,5 +33,65 @@ namespace UnityEngineInternal.Input
 
 		[FieldOffset(76)]
 		public int displayIndex;
+
+		public static NativePointerEvent Down(int deviceId, double time, int pointerId, Vector3 position, Vector3 delta = default(Vector3), float pressure = 1f, float twist = 1f, Vector2 tilt = default(Vector2), Vector3 radius = default(Vector3), int displayIndex = 0)
+		{
+			NativePointerEvent result;
+			result.baseEvent = new NativeInputEvent(NativeInputEventType.PointerDown, 80, deviceId, time);
+			result.pointerId = pointerId;
+			result.position = position;
+			result.delta = delta;
+			result.pressure = pressure;
+			result.twist = twist;
+			result.tilt = tilt;
+			result.radius = radius;
+			result.displayIndex = displayIndex;
+			return result;
+		}
+
+		public static NativePointerEvent Move(int deviceId, double time, int pointerId, Vector3 position, Vector3 delta = default(Vector3), float pressure = 1f, float twist = 1f, Vector2 tilt = default(Vector2), Vector3 radius = default(Vector3), int displayIndex = 0)
+		{
+			NativePointerEvent result;
+			result.baseEvent = new NativeInputEvent(NativeInputEventType.PointerMove, 80, deviceId, time);
+			result.pointerId = pointerId;
+			result.position = position;
+			result.delta = delta;
+			result.pressure = pressure;
+			result.twist = twist;
+			result.tilt = tilt;
+			result.radius = radius;
+			result.displayIndex = displayIndex;
+			return result;
+		}
+
+		public static NativePointerEvent Up(int deviceId, double time, int pointerId, Vector3 position, Vector3 delta = default(Vector3), float pressure = 1f, float twist = 1f, Vector2 tilt = default(Vector2), Vector3 radius = default(Vector3), int displayIndex = 0)
+		{
+			NativePointerEvent result;
+			result.baseEvent = new NativeInputEvent(NativeInputEventType.PointerUp, 80, deviceId, time);
+			result.pointerId = pointerId;
+			result.position = position;
+			result.delta = delta;
+			result.pressure = pressure;
+			result.twist = twist;
+			result.tilt = tilt;
+			result.radius = radius;
+			result.displayIndex = displayIndex;
+			return result;
+		}
+
+		public static NativePointerEvent Cancelled(int deviceId, double time, int pointerId, Vector3 position, Vector3 delta = default(Vector3), float pressure = 1f, float twist = 1f, Vector2 tilt = default(Vector2), Vector3 radius = default(Vector3), int displayIndex = 0)
+		{
+			NativePointerEvent result;
+			result.baseEvent = new NativeInputEvent(NativeInputEventType.PointerCancelled, 80, deviceId, time);
+			result.pointerId = pointerId;
+			result.position = position;
+			result.delta = delta;
+			result.pressure = pressure;
+			result.twist = twist;
+			result.tilt = tilt;
+			result.radius = radius;
+			result.displayIndex = displayIndex;
+			return result;
+		}
 	}
 }

@@ -80,7 +80,7 @@ namespace UnityEngine.UI
 
 		protected override void OnDisable()
 		{
-			this.m_Tracker.Clear();
+			this.m_Tracker.Clear(true);
 			LayoutRebuilder.MarkLayoutForRebuild(this.rectTransform);
 			base.OnDisable();
 		}
@@ -94,7 +94,7 @@ namespace UnityEngine.UI
 		{
 			if (this.IsActive())
 			{
-				this.m_Tracker.Clear();
+				this.m_Tracker.Clear(false);
 				switch (this.m_AspectMode)
 				{
 				case AspectRatioFitter.AspectMode.None:

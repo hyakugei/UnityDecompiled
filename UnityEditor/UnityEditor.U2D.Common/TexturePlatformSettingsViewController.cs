@@ -130,7 +130,7 @@ namespace UnityEditor.U2D.Common
 			TextureImporterFormat format2 = view.DrawFormat(format, displayValues, displayStrings, flag2, flag || !overridden, out flag5);
 			if (!flag2 && !flag && overridden && formatHelper.TextureFormatRequireCompressionQualityInput(format))
 			{
-				bool flag7 = buildTarget == BuildTarget.iOS || buildTarget == BuildTarget.tvOS || buildTarget == BuildTarget.Android || buildTarget == BuildTarget.Tizen || buildTarget == BuildTarget.SamsungTV;
+				bool flag7 = buildTarget == BuildTarget.iOS || buildTarget == BuildTarget.tvOS || buildTarget == BuildTarget.Android || buildTarget == BuildTarget.Tizen;
 				if (flag7)
 				{
 					int defaultValue = 1;

@@ -15,29 +15,37 @@ namespace UnityEngine.Collections
 
 		private Allocator m_Label;
 
+		private AtomicSafetyHandle m_Safety;
+
 		private string m_FileName;
 
 		private int m_LineNumber;
 
-		public static DisposeSentinel Create(IntPtr ptr, Allocator label, int callSiteStackDepth, DisposeSentinel.DeallocateDelegate deallocateDelegate = null)
+		public static void Dispose(AtomicSafetyHandle safety, ref DisposeSentinel sentinel)
 		{
-			DisposeSentinel result;
+			AtomicSafetyHandle.CheckDeallocateAndThrow(safety);
+			AtomicSafetyHandle.Release(safety);
+			DisposeSentinel.Clear(ref sentinel);
+		}
+
+		public static void Create(IntPtr ptr, Allocator label, out AtomicSafetyHandle safety, out DisposeSentinel sentinel, int callSiteStackDepth, DisposeSentinel.DeallocateDelegate deallocateDelegate = null)
+		{
+			safety = AtomicSafetyHandle.Create();
 			if (NativeLeakDetection.Mode == NativeLeakDetectionMode.Enabled)
 			{
-				DisposeSentinel disposeSentinel = new DisposeSentinel();
+				sentinel = new DisposeSentinel();
 				StackFrame stackFrame = new StackFrame(callSiteStackDepth + 2, true);
-				disposeSentinel.m_FileName = stackFrame.GetFileName();
-				disposeSentinel.m_LineNumber = stackFrame.GetFileLineNumber();
-				disposeSentinel.m_Ptr = ptr;
-				disposeSentinel.m_Label = label;
-				disposeSentinel.m_DeallocateDelegate = deallocateDelegate;
-				result = disposeSentinel;
+				sentinel.m_FileName = stackFrame.GetFileName();
+				sentinel.m_LineNumber = stackFrame.GetFileLineNumber();
+				sentinel.m_Ptr = ptr;
+				sentinel.m_Label = label;
+				sentinel.m_DeallocateDelegate = deallocateDelegate;
+				sentinel.m_Safety = safety;
 			}
 			else
 			{
-				result = null;
+				sentinel = null;
 			}
-			return result;
 		}
 
 		protected override void Finalize()
@@ -46,8 +54,9 @@ namespace UnityEngine.Collections
 			{
 				if (this.m_Ptr != IntPtr.Zero)
 				{
-					string msg = string.Format("A NativeArray created with Allocator.Persistent has not been disposed, resulting in a memory leak. It was allocated at {0}:{1}.", this.m_FileName, this.m_LineNumber);
+					string msg = string.Format("A Native Collection created with Allocator.{2} has not been disposed, resulting in a memory leak. It was allocated at {0}:{1}.", this.m_FileName, this.m_LineNumber, this.m_Label);
 					UnsafeUtility.LogError(msg, this.m_FileName, this.m_LineNumber);
+					AtomicSafetyHandle.EnforceAllBufferJobsHaveCompletedAndRelease(this.m_Safety);
 					if (this.m_DeallocateDelegate != null)
 					{
 						this.m_DeallocateDelegate(this.m_Ptr, this.m_Label);

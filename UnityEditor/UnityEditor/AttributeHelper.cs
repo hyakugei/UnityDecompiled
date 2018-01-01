@@ -3,7 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.Scripting;
 
@@ -30,6 +32,42 @@ namespace UnityEditor
 
 			public Type type;
 		}
+
+		internal class MethodWithAttribute
+		{
+			public MethodInfo info;
+
+			public Attribute attribute;
+		}
+
+		internal class MethodInfoSorter
+		{
+			public List<AttributeHelper.MethodWithAttribute> MethodsWithAttributes
+			{
+				[CompilerGenerated]
+				get
+				{
+					return this.<MethodsWithAttributes>k__BackingField;
+				}
+			}
+
+			internal MethodInfoSorter(List<AttributeHelper.MethodWithAttribute> methodsWithAttributes)
+			{
+				this.<MethodsWithAttributes>k__BackingField = methodsWithAttributes;
+			}
+
+			public IEnumerable<MethodInfo> FilterAndSortOnAttribute<T>(Func<T, bool> filter, Func<T, IComparable> sorter) where T : Attribute
+			{
+				return from a in this.MethodsWithAttributes
+				where filter((T)((object)a.attribute))
+				select a into c
+				orderby sorter((T)((object)c.attribute))
+				select c into o
+				select o.info;
+			}
+		}
+
+		private static Dictionary<Type, AttributeHelper.MethodInfoSorter> m_Cache = new Dictionary<Type, AttributeHelper.MethodInfoSorter>();
 
 		[RequiredByNativeCode]
 		private static AttributeHelper.MonoGizmoMethod[] ExtractGizmos(Assembly assembly)
@@ -224,6 +262,152 @@ namespace UnityEditor
 			AttributeHelper.<CallMethodsWithAttribute>c__Iterator0<T> expr_15 = <CallMethodsWithAttribute>c__Iterator;
 			expr_15.$PC = -2;
 			return expr_15;
+		}
+
+		private static bool AreSignaturesMatching(MethodInfo left, MethodInfo right)
+		{
+			bool result;
+			if (left.IsStatic != right.IsStatic)
+			{
+				result = false;
+			}
+			else if (left.ReturnType != right.ReturnType)
+			{
+				result = false;
+			}
+			else
+			{
+				ParameterInfo[] parameters = left.GetParameters();
+				ParameterInfo[] parameters2 = right.GetParameters();
+				if (parameters.Length != parameters2.Length)
+				{
+					result = false;
+				}
+				else
+				{
+					for (int i = 0; i < parameters.Length; i++)
+					{
+						if (parameters[i].ParameterType != parameters2[i].ParameterType)
+						{
+							result = false;
+							return result;
+						}
+					}
+					result = true;
+				}
+			}
+			return result;
+		}
+
+		internal static string MethodToString(MethodInfo method)
+		{
+			return ((!method.IsStatic) ? "" : "static ") + method.ToString();
+		}
+
+		internal static bool MethodMatchesAnyRequiredSignatureOfAttribute(MethodInfo method, Type attributeType)
+		{
+			List<MethodInfo> list = new List<MethodInfo>();
+			MethodInfo[] methods = attributeType.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Static | BindingFlags.NonPublic);
+			bool result;
+			for (int i = 0; i < methods.Length; i++)
+			{
+				MethodInfo methodInfo = methods[i];
+				object[] customAttributes = methodInfo.GetCustomAttributes(typeof(RequiredSignatureAttribute), false);
+				if (customAttributes.Length > 0)
+				{
+					if (AttributeHelper.AreSignaturesMatching(method, methodInfo))
+					{
+						result = true;
+						return result;
+					}
+					list.Add(methodInfo);
+				}
+			}
+			if (list.Count == 0)
+			{
+				UnityEngine.Debug.LogError(string.Concat(new object[]
+				{
+					AttributeHelper.MethodToString(method),
+					" has an invalid attribute : ",
+					attributeType,
+					". ",
+					attributeType,
+					" must have at least one required signature declaration"
+				}));
+			}
+			else if (list.Count == 1)
+			{
+				UnityEngine.Debug.LogError(string.Concat(new object[]
+				{
+					AttributeHelper.MethodToString(method),
+					" does not match ",
+					attributeType,
+					" expected signature.\n Use ",
+					AttributeHelper.MethodToString(list[0])
+				}));
+			}
+			else
+			{
+				object[] expr_102 = new object[5];
+				expr_102[0] = AttributeHelper.MethodToString(method);
+				expr_102[1] = " does not match any of ";
+				expr_102[2] = attributeType;
+				expr_102[3] = " expected signatures.\n Valid signatures are: ";
+				expr_102[4] = string.Join(" , ", (from a in list
+				select AttributeHelper.MethodToString(a)).ToArray<string>());
+				UnityEngine.Debug.LogError(string.Concat(expr_102));
+			}
+			result = false;
+			return result;
+		}
+
+		internal static AttributeHelper.MethodInfoSorter GetMethodsWithAttribute<T>(BindingFlags flags = BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic) where T : Attribute
+		{
+			if (!AttributeHelper.m_Cache.ContainsKey(typeof(T)))
+			{
+				List<AttributeHelper.MethodWithAttribute> list = new List<AttributeHelper.MethodWithAttribute>();
+				Assembly[] loadedAssemblies = EditorAssemblies.loadedAssemblies;
+				for (int i = 0; i < loadedAssemblies.Length; i++)
+				{
+					Assembly assembly = loadedAssemblies[i];
+					Type[] typesFromAssembly = AssemblyHelper.GetTypesFromAssembly(assembly);
+					for (int j = 0; j < typesFromAssembly.Length; j++)
+					{
+						Type type = typesFromAssembly[j];
+						MethodInfo[] methods = type.GetMethods(flags);
+						for (int k = 0; k < methods.Length; k++)
+						{
+							MethodInfo methodInfo = methods[k];
+							object[] customAttributes = methodInfo.GetCustomAttributes(typeof(T), false);
+							if (customAttributes.Length > 0)
+							{
+								if (methodInfo.IsGenericMethod)
+								{
+									UnityEngine.Debug.LogError(AttributeHelper.MethodToString(methodInfo) + " is a generic method. " + typeof(T).ToString() + " can't be applied to it.");
+								}
+								else
+								{
+									object[] array = customAttributes;
+									for (int l = 0; l < array.Length; l++)
+									{
+										T t = (T)((object)array[l]);
+										if (AttributeHelper.MethodMatchesAnyRequiredSignatureOfAttribute(methodInfo, typeof(T)))
+										{
+											list.Add(new AttributeHelper.MethodWithAttribute
+											{
+												info = methodInfo,
+												attribute = t
+											});
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+				AttributeHelper.m_Cache.Add(typeof(T), new AttributeHelper.MethodInfoSorter(list));
+			}
+			return AttributeHelper.m_Cache[typeof(T)];
 		}
 	}
 }

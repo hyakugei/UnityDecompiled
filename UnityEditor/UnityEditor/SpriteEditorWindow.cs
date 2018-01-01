@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEditor.Experimental.U2D;
 using UnityEditor.Sprites;
 using UnityEditor.U2D;
 using UnityEditor.U2D.Interface;
@@ -68,16 +69,12 @@ namespace UnityEditor
 				}
 			}
 
-			public PreviewTexture2D(UnityEngine.Texture2D t) : base(t)
+			public PreviewTexture2D(UnityEngine.Texture2D t, int width, int height) : base(t)
 			{
-				if (t != null)
-				{
-					(AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(t)) as TextureImporter).GetWidthAndHeight(ref this.m_ActualWidth, ref this.m_ActualHeight);
-				}
+				this.m_ActualWidth = width;
+				this.m_ActualHeight = height;
 			}
 		}
-
-		private SpriteEditorWindow.SpriteEditorWindowStyles m_SpriteEditorWindowStyles;
 
 		private const float k_MarginForFraming = 0.05f;
 
@@ -97,11 +94,9 @@ namespace UnityEditor
 
 		private SpriteRectCache m_RectsCache;
 
+		private ISpriteEditorDataProvider m_SpriteDataProvider;
+
 		private SerializedObject m_TextureImporterSO;
-
-		private TextureImporter m_TextureImporter;
-
-		private SerializedProperty m_TextureImporterSprites;
 
 		private bool m_RequestRepaint = false;
 
@@ -146,7 +141,7 @@ namespace UnityEditor
 		{
 			get
 			{
-				return this.m_TextureImporter != null && this.m_TextureImporter.spriteImportMode == SpriteImportMode.Multiple;
+				return this.m_SpriteDataProvider != null && this.m_SpriteDataProvider.spriteImportMode == SpriteImportMode.Multiple;
 			}
 		}
 
@@ -154,7 +149,7 @@ namespace UnityEditor
 		{
 			get
 			{
-				return this.m_TextureImporter != null && this.m_TextureImporter.spriteImportMode != SpriteImportMode.None;
+				return this.m_SpriteDataProvider != null && this.m_SpriteDataProvider.spriteImportMode != SpriteImportMode.None;
 			}
 		}
 
@@ -162,7 +157,7 @@ namespace UnityEditor
 		{
 			get
 			{
-				return this.m_TextureImporter != null && this.m_Texture != null && this.m_OriginalTexture != null;
+				return this.m_SpriteDataProvider != null && this.m_Texture != null && this.m_OriginalTexture != null;
 			}
 		}
 
@@ -207,6 +202,14 @@ namespace UnityEditor
 			set
 			{
 				this.m_Selected = value;
+			}
+		}
+
+		public ISpriteEditorDataProvider spriteEditorDataProvider
+		{
+			get
+			{
+				return this.m_SpriteDataProvider;
 			}
 		}
 
@@ -289,9 +292,9 @@ namespace UnityEditor
 
 		private void ApplyCacheSettingsToInspector(SerializedObject so)
 		{
-			if (this.m_TextureImporterSO != null && this.m_TextureImporterSO.targetObject == so.targetObject)
+			if (this.m_SpriteDataProvider != null && this.m_SpriteDataProvider.targetObject == so.targetObject)
 			{
-				if (so.FindProperty("m_SpriteMode").intValue == this.m_TextureImporterSO.FindProperty("m_SpriteMode").intValue)
+				if (so.FindProperty("m_SpriteMode").intValue == (int)this.m_SpriteDataProvider.spriteImportMode)
 				{
 					SpriteEditorWindow.s_Instance.m_IgnoreNextPostprocessEvent = true;
 				}
@@ -311,12 +314,20 @@ namespace UnityEditor
 			this.m_OriginalTexture = this.GetSelectedTexture2D();
 			if (!(this.m_OriginalTexture == null))
 			{
-				this.m_TextureImporter = (AssetImporter.GetAtPath(this.m_SelectedAssetPath) as TextureImporter);
-				if (!(this.m_TextureImporter == null))
+				AssetImporter atPath = AssetImporter.GetAtPath(this.m_SelectedAssetPath);
+				this.m_SpriteDataProvider = (atPath as ISpriteEditorDataProvider);
+				if (atPath is TextureImporter)
 				{
-					this.m_TextureImporterSO = new SerializedObject(this.m_TextureImporter);
-					this.m_TextureImporterSprites = this.m_TextureImporterSO.FindProperty("m_SpriteSheet.m_Sprites");
-					this.m_Texture = ((!(this.m_OriginalTexture == null)) ? new SpriteEditorWindow.PreviewTexture2D(this.m_OriginalTexture) : null);
+					this.m_SpriteDataProvider = new UnityEditor.U2D.Interface.TextureImporter((TextureImporter)atPath);
+				}
+				if (!(atPath == null) && this.m_SpriteDataProvider != null)
+				{
+					this.m_TextureImporterSO = new SerializedObject(atPath);
+					this.m_SpriteDataProvider.InitSpriteEditorDataProvider(this.m_TextureImporterSO);
+					int width = 0;
+					int height = 0;
+					this.m_SpriteDataProvider.GetTextureActualWidthAndHeight(out width, out height);
+					this.m_Texture = ((!(this.m_OriginalTexture == null)) ? new SpriteEditorWindow.PreviewTexture2D(this.m_OriginalTexture, width, height) : null);
 				}
 			}
 		}
@@ -334,9 +345,7 @@ namespace UnityEditor
 				this.m_ReadableTexture = null;
 			}
 			this.m_OriginalTexture = null;
-			this.m_TextureImporter = null;
-			this.m_TextureImporterSO = null;
-			this.m_TextureImporterSprites = null;
+			this.m_SpriteDataProvider = null;
 		}
 
 		public bool IsEditingDisabled()
@@ -397,11 +406,21 @@ namespace UnityEditor
 			{
 				this.OnSelectionChange();
 			}
-			if (this.m_RectsCache != null && !this.m_RectsCache.Contains(this.selectedSpriteRect))
-			{
-				this.selectedSpriteRect = null;
-			}
+			this.InitSelectedSpriteRect();
 			base.Repaint();
+		}
+
+		private void InitSelectedSpriteRect()
+		{
+			SpriteRect selectedSpriteRect = null;
+			if (this.m_RectsCache != null)
+			{
+				if (this.m_RectsCache.Count > 0)
+				{
+					selectedSpriteRect = ((!this.m_RectsCache.Contains(this.selectedSpriteRect)) ? this.m_RectsCache.RectAt(0) : this.selectedSpriteRect);
+				}
+			}
+			this.selectedSpriteRect = selectedSpriteRect;
 		}
 
 		private void OnDisable()
@@ -429,9 +448,9 @@ namespace UnityEditor
 
 		private void HandleApplyRevertDialog()
 		{
-			if (this.textureIsDirty && this.m_TextureImporter != null)
+			if (this.textureIsDirty && this.m_SpriteDataProvider != null)
 			{
-				if (EditorUtility.DisplayDialog(SpriteEditorWindow.SpriteEditorWindowStyles.applyRevertDialogTitle.text, string.Format(SpriteEditorWindow.SpriteEditorWindowStyles.applyRevertDialogContent.text, this.m_TextureImporter.assetPath), SpriteEditorWindow.SpriteEditorWindowStyles.applyButtonLabel.text, SpriteEditorWindow.SpriteEditorWindowStyles.revertButtonLabel.text))
+				if (EditorUtility.DisplayDialog(SpriteEditorWindow.SpriteEditorWindowStyles.applyRevertDialogTitle.text, string.Format(SpriteEditorWindow.SpriteEditorWindowStyles.applyRevertDialogContent.text, this.m_SelectedAssetPath), SpriteEditorWindow.SpriteEditorWindowStyles.applyButtonLabel.text, SpriteEditorWindow.SpriteEditorWindowStyles.revertButtonLabel.text))
 				{
 					this.DoApply();
 				}
@@ -452,39 +471,29 @@ namespace UnityEditor
 				UnityEngine.Object.DestroyImmediate(this.m_RectsCache);
 			}
 			this.m_RectsCache = ScriptableObject.CreateInstance<SpriteRectCache>();
-			if (this.m_TextureImporterSprites != null)
+			if (this.m_SpriteDataProvider != null)
 			{
 				if (this.multipleSprites)
 				{
-					for (int i = 0; i < this.m_TextureImporterSprites.arraySize; i++)
+					for (int i = 0; i < this.m_SpriteDataProvider.spriteDataCount; i++)
 					{
 						SpriteRect spriteRect = new SpriteRect();
-						spriteRect.LoadFromSerializedProperty(this.m_TextureImporterSprites.GetArrayElementAtIndex(i));
+						spriteRect.LoadFromSpriteData(this.m_SpriteDataProvider.GetSpriteData(i));
 						this.m_RectsCache.AddRect(spriteRect);
-						EditorUtility.DisplayProgressBar(SpriteEditorWindow.SpriteEditorWindowStyles.loadProgressTitle.text, string.Format(SpriteEditorWindow.SpriteEditorWindowStyles.loadContentText.text, i, this.m_TextureImporterSprites.arraySize), (float)i / (float)this.m_TextureImporterSprites.arraySize);
+						EditorUtility.DisplayProgressBar(SpriteEditorWindow.SpriteEditorWindowStyles.loadProgressTitle.text, string.Format(SpriteEditorWindow.SpriteEditorWindowStyles.loadContentText.text, i, this.m_SpriteDataProvider.spriteDataCount), (float)i / (float)this.m_SpriteDataProvider.spriteDataCount);
 					}
 				}
 				else if (this.validSprite)
 				{
 					SpriteRect spriteRect2 = new SpriteRect();
+					spriteRect2.LoadFromSpriteData(this.m_SpriteDataProvider.GetSpriteData(0));
 					spriteRect2.rect = new Rect(0f, 0f, (float)this.m_Texture.width, (float)this.m_Texture.height);
 					spriteRect2.name = this.m_OriginalTexture.name;
-					spriteRect2.alignment = (SpriteAlignment)this.m_TextureImporterSO.FindProperty("m_Alignment").intValue;
-					spriteRect2.border = this.m_TextureImporter.spriteBorder;
-					spriteRect2.pivot = SpriteEditorUtility.GetPivotValue(spriteRect2.alignment, this.m_TextureImporter.spritePivot);
-					spriteRect2.tessellationDetail = this.m_TextureImporterSO.FindProperty("m_SpriteTessellationDetail").floatValue;
-					SerializedProperty outlineSP = this.m_TextureImporterSO.FindProperty("m_SpriteSheet.m_Outline");
-					spriteRect2.outline = SpriteRect.AcquireOutline(outlineSP);
-					SerializedProperty outlineSP2 = this.m_TextureImporterSO.FindProperty("m_SpriteSheet.m_PhysicsShape");
-					spriteRect2.physicsShape = SpriteRect.AcquireOutline(outlineSP2);
 					this.m_RectsCache.AddRect(spriteRect2);
 				}
 				EditorUtility.ClearProgressBar();
-				if (this.m_RectsCache.Count > 0)
-				{
-					this.selectedSpriteRect = this.m_RectsCache.RectAt(0);
-				}
 			}
+			this.InitSelectedSpriteRect();
 		}
 
 		private void OnGUI()
@@ -550,8 +559,11 @@ namespace UnityEditor
 			this.m_TextureViewRect = new Rect(0f, 17f, base.position.width - 16f, base.position.height - 16f - 17f);
 			if (this.m_RegisteredModules.Count > 1)
 			{
-				int num = EditorGUI.Popup(new Rect(0f, 0f, 90f, 17f), this.m_CurrentModuleIndex, this.m_RegisteredModuleNames, EditorStyles.toolbarPopup);
-				if (num != this.m_CurrentModuleIndex)
+				float num = 90f / base.minSize.x;
+				float num2 = (base.position.width <= base.minSize.x) ? 90f : (base.position.width * num);
+				num2 = Mathf.Min(num2, EditorStyles.popup.CalcSize(this.m_RegisteredModuleNames[this.m_CurrentModuleIndex]).x);
+				int num3 = EditorGUI.Popup(new Rect(0f, 0f, num2, 17f), this.m_CurrentModuleIndex, this.m_RegisteredModuleNames, EditorStyles.toolbarPopup);
+				if (num3 != this.m_CurrentModuleIndex)
 				{
 					if (this.textureIsDirty)
 					{
@@ -564,9 +576,9 @@ namespace UnityEditor
 							this.DoRevert();
 						}
 					}
-					this.SetupModule(num);
+					this.SetupModule(num3);
 				}
-				rect.x = 90f;
+				rect.x = num2;
 			}
 			rect = base.DoAlphaZoomToolbarGUI(rect);
 			Rect position = rect;
@@ -608,7 +620,7 @@ namespace UnityEditor
 			{
 				List<string> list = new List<string>();
 				List<string> list2 = new List<string>();
-				SerializedProperty serializedProperty = so.FindProperty("m_SpriteSheet.m_Sprites");
+				this.m_SpriteDataProvider.spriteDataCount = this.m_RectsCache.Count;
 				for (int i = 0; i < this.m_RectsCache.Count; i++)
 				{
 					SpriteRect spriteRect = this.m_RectsCache.RectAt(i);
@@ -621,17 +633,9 @@ namespace UnityEditor
 						list.Add(spriteRect.originalName);
 						list2.Add(spriteRect.name);
 					}
-					if (serializedProperty.arraySize < this.m_RectsCache.Count)
-					{
-						serializedProperty.InsertArrayElementAtIndex(serializedProperty.arraySize);
-					}
-					SerializedProperty arrayElementAtIndex = serializedProperty.GetArrayElementAtIndex(i);
-					spriteRect.ApplyToSerializedProperty(arrayElementAtIndex);
+					SpriteDataBase spriteData = this.m_SpriteDataProvider.GetSpriteData(i);
+					spriteRect.ApplyToSpriteData(spriteData);
 					EditorUtility.DisplayProgressBar(SpriteEditorWindow.SpriteEditorWindowStyles.saveProgressTitle.text, string.Format(SpriteEditorWindow.SpriteEditorWindowStyles.saveContentText.text, i, this.m_RectsCache.Count), (float)i / (float)this.m_RectsCache.Count);
-				}
-				while (this.m_RectsCache.Count < serializedProperty.arraySize)
-				{
-					serializedProperty.DeleteArrayElementAtIndex(this.m_RectsCache.Count);
 				}
 				if (list.Count > 0)
 				{
@@ -641,29 +645,10 @@ namespace UnityEditor
 			else if (this.m_RectsCache.Count > 0)
 			{
 				SpriteRect spriteRect2 = this.m_RectsCache.RectAt(0);
-				so.FindProperty("m_Alignment").intValue = (int)spriteRect2.alignment;
-				so.FindProperty("m_SpriteBorder").vector4Value = spriteRect2.border;
-				so.FindProperty("m_SpritePivot").vector2Value = spriteRect2.pivot;
-				so.FindProperty("m_SpriteTessellationDetail").floatValue = spriteRect2.tessellationDetail;
-				SerializedProperty serializedProperty2 = so.FindProperty("m_SpriteSheet.m_Outline");
-				if (spriteRect2.outline != null)
-				{
-					SpriteRect.ApplyOutlineChanges(serializedProperty2, spriteRect2.outline);
-				}
-				else
-				{
-					serializedProperty2.ClearArray();
-				}
-				SerializedProperty serializedProperty3 = so.FindProperty("m_SpriteSheet.m_PhysicsShape");
-				if (spriteRect2.physicsShape != null)
-				{
-					SpriteRect.ApplyOutlineChanges(serializedProperty3, spriteRect2.physicsShape);
-				}
-				else
-				{
-					serializedProperty3.ClearArray();
-				}
+				SpriteDataBase spriteData2 = this.m_SpriteDataProvider.GetSpriteData(0);
+				spriteRect2.ApplyToSpriteData(spriteData2);
 			}
+			this.m_SpriteDataProvider.Apply(so);
 			EditorUtility.ClearProgressBar();
 		}
 
@@ -673,15 +658,14 @@ namespace UnityEditor
 			this.DoApply(this.m_TextureImporterSO);
 			this.m_TextureImporterSO.ApplyModifiedPropertiesWithoutUndo();
 			this.m_IgnoreNextPostprocessEvent = true;
-			this.DoTextureReimport(this.m_TextureImporter.assetPath);
+			this.DoTextureReimport(this.m_SelectedAssetPath);
 			this.textureIsDirty = false;
-			this.selectedSpriteRect = null;
+			this.InitSelectedSpriteRect();
 		}
 
 		private void DoRevert()
 		{
 			this.textureIsDirty = false;
-			this.selectedSpriteRect = null;
 			this.RefreshRects();
 			GUI.FocusControl("");
 		}
@@ -810,7 +794,7 @@ namespace UnityEditor
 
 		public void DoTextureReimport(string path)
 		{
-			if (this.m_TextureImporterSO != null)
+			if (this.m_SpriteDataProvider != null)
 			{
 				try
 				{
@@ -937,10 +921,9 @@ namespace UnityEditor
 		{
 			if (this.m_ReadableTexture == null)
 			{
-				ITextureImporter assetImporterFromPath = this.m_AssetDatabase.GetAssetImporterFromPath(this.m_SelectedAssetPath);
 				int width = 0;
 				int height = 0;
-				assetImporterFromPath.GetWidthAndHeight(ref width, ref height);
+				this.m_SpriteDataProvider.GetTextureActualWidthAndHeight(out width, out height);
 				this.m_ReadableTexture = SpriteUtility.CreateTemporaryDuplicate(this.m_OriginalTexture, width, height);
 				if (this.m_ReadableTexture != null)
 				{
@@ -948,6 +931,18 @@ namespace UnityEditor
 				}
 			}
 			return new UnityEngine.U2D.Interface.Texture2D(this.m_ReadableTexture);
+		}
+
+		public void ApplyOrRevertModification(bool apply)
+		{
+			if (apply)
+			{
+				this.DoApply();
+			}
+			else
+			{
+				this.DoRevert();
+			}
 		}
 	}
 }

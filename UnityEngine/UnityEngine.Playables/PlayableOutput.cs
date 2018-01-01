@@ -35,7 +35,7 @@ namespace UnityEngine.Playables
 
 		public Type GetPlayableOutputType()
 		{
-			return PlayableOutputHandle.GetPlayableOutputTypeOf(ref this.m_Handle);
+			return this.GetHandle().GetPlayableOutputType();
 		}
 
 		public bool Equals(PlayableOutput other)

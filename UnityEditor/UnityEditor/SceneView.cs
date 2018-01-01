@@ -11,6 +11,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Profiling;
 using UnityEngine.Rendering;
+using UnityEngine.Scripting;
 
 namespace UnityEditor
 {
@@ -30,6 +31,8 @@ namespace UnityEditor
 
 			public bool showImageEffects = true;
 
+			public bool showParticleSystems = true;
+
 			public SceneViewState()
 			{
 			}
@@ -41,11 +44,12 @@ namespace UnityEditor
 				this.showSkybox = other.showSkybox;
 				this.showFlares = other.showFlares;
 				this.showImageEffects = other.showImageEffects;
+				this.showParticleSystems = other.showParticleSystems;
 			}
 
 			public bool IsAllOn()
 			{
-				return this.showFog && this.showMaterialUpdate && this.showSkybox && this.showFlares && this.showImageEffects;
+				return this.showFog && this.showMaterialUpdate && this.showSkybox && this.showFlares && this.showImageEffects && this.showParticleSystems;
 			}
 
 			public void Toggle(bool value)
@@ -55,6 +59,7 @@ namespace UnityEditor
 				this.showSkybox = value;
 				this.showFlares = value;
 				this.showImageEffects = value;
+				this.showParticleSystems = value;
 			}
 		}
 
@@ -93,6 +98,12 @@ namespace UnityEditor
 		private static readonly PrefColor kSceneViewSelectedOutline = new PrefColor("Scene/Selected Outline", 1f, 0.4f, 0f, 0f);
 
 		private static readonly PrefColor kSceneViewSelectedWire = new PrefColor("Scene/Wireframe Selected", 0.368627459f, 0.466666669f, 0.607843161f, 0.2509804f);
+
+		private static readonly PrefColor kSceneViewMaterialValidateLow = new PrefColor("Scene/Material Validator Value Too Low", 1f, 0f, 0f, 1f);
+
+		private static readonly PrefColor kSceneViewMaterialValidateHigh = new PrefColor("Scene/Material Validator Value Too High", 0f, 0f, 1f, 1f);
+
+		private static readonly PrefColor kSceneViewMaterialValidatePureMetal = new PrefColor("Scene/Material Validator Pure Metal", 1f, 1f, 0f, 1f);
 
 		internal static Color kSceneViewFrontLight = new Color(0.769f, 0.769f, 0.769f, 1f);
 
@@ -156,7 +167,7 @@ namespace UnityEditor
 		public bool m_ValidateTrueMetals = false;
 
 		[SerializeField]
-		internal SceneView.SceneViewState m_SceneViewState;
+		private SceneView.SceneViewState m_SceneViewState;
 
 		[SerializeField]
 		private SceneViewGrid grid;
@@ -175,6 +186,9 @@ namespace UnityEditor
 
 		[NonSerialized]
 		private Camera m_Camera;
+
+		[SerializeField]
+		private bool m_ShowGlobalGrid = true;
 
 		[SerializeField]
 		private Quaternion m_LastSceneViewRotation;
@@ -205,11 +219,7 @@ namespace UnityEditor
 
 		private static Shader s_ShowMipsShader;
 
-		private static Shader s_ShowLightmapsShader;
-
 		private static Shader s_AuraShader;
-
-		private static Shader s_GrayScaleShader;
 
 		private static Texture2D s_MipColorsTexture;
 
@@ -268,6 +278,12 @@ namespace UnityEditor
 		private GUIContent[] m_AlbedoSwatchGUIContent;
 
 		private string[] m_AlbedoSwatchLuminanceStrings;
+
+		private GUIStyle m_TooLowColorStyle = null;
+
+		private GUIStyle m_TooHighColorStyle = null;
+
+		private GUIStyle m_PureMetalColorStyle = null;
 
 		private int m_SelectedAlbedoSwatchIndex = 0;
 
@@ -349,6 +365,34 @@ namespace UnityEditor
 			{
 				this.m_RenderMode = value;
 				this.SetupPBRValidation();
+			}
+		}
+
+		public SceneView.SceneViewState sceneViewState
+		{
+			get
+			{
+				return this.m_SceneViewState;
+			}
+		}
+
+		internal bool showGlobalGrid
+		{
+			get
+			{
+				return this.m_ShowGlobalGrid;
+			}
+			set
+			{
+				this.m_ShowGlobalGrid = value;
+			}
+		}
+
+		internal bool drawGlobalGrid
+		{
+			get
+			{
+				return AnnotationUtility.showGrid && this.showGlobalGrid;
 			}
 		}
 
@@ -534,11 +578,13 @@ namespace UnityEditor
 			this.m_ReplacementString = replaceString;
 		}
 
+		[RequiredByNativeCode]
 		public static bool FrameLastActiveSceneView()
 		{
 			return !(SceneView.lastActiveSceneView == null) && SceneView.lastActiveSceneView.SendEvent(EditorGUIUtility.CommandEvent("FrameSelected"));
 		}
 
+		[RequiredByNativeCode]
 		public static bool FrameLastActiveSceneViewWithLock()
 		{
 			return !(SceneView.lastActiveSceneView == null) && SceneView.lastActiveSceneView.SendEvent(EditorGUIUtility.CommandEvent("FrameSelectedWithLock"));
@@ -597,14 +643,6 @@ namespace UnityEditor
 			base.SetSearchFilter(searchFilter, mode, setAll);
 		}
 
-		internal void OnFocus()
-		{
-			if (!Application.isPlaying && this.m_AudioPlay && this.m_Camera != null)
-			{
-				this.RefreshAudioPlay();
-			}
-		}
-
 		internal void OnLostFocus()
 		{
 			GameView gameView = (GameView)WindowLayout.FindEditorWindowOfType(typeof(GameView));
@@ -638,21 +676,23 @@ namespace UnityEditor
 			this.m_Size.valueChanged.AddListener(new UnityAction(base.Repaint));
 			this.m_Ortho.valueChanged.AddListener(new UnityAction(base.Repaint));
 			base.wantsMouseMove = true;
+			base.wantsMouseEnterLeaveWindow = true;
 			base.dontClearBackground = true;
 			SceneView.s_SceneViews.Add(this);
-			this.m_Lighting = EditorGUIUtility.IconContent("SceneviewLighting", "Lighting|The scene lighting is used when toggled on. When toggled off a light attached to the scene view camera is used.");
-			this.m_Fx = EditorGUIUtility.IconContent("SceneviewFx", "Fx|Toggles skybox, fog and lens flare effects.");
-			this.m_AudioPlayContent = EditorGUIUtility.IconContent("SceneviewAudio", "AudioPlay|Toggles audio on or off.");
-			this.m_GizmosContent = new GUIContent("Gizmos");
-			this.m_2DModeContent = new GUIContent("2D");
-			this.m_RenderDocContent = EditorGUIUtility.IconContent("renderdoc", "Capture|Capture the current view and open in RenderDoc");
+			this.m_Lighting = EditorGUIUtility.IconContent("SceneviewLighting", "Lighting|When toggled on, the Scene lighting is used. When toggled off, a light attached to the Scene view camera is used.");
+			this.m_Fx = EditorGUIUtility.IconContent("SceneviewFx", "Effects|Toggle skybox, fog, and various other effects.");
+			this.m_AudioPlayContent = EditorGUIUtility.IconContent("SceneviewAudio", "AudioPlay|Toggle audio on or off.");
+			this.m_GizmosContent = EditorGUIUtility.TextContent("Gizmos|Toggle the visibility of different Gizmos in the Scene view.");
+			this.m_2DModeContent = new GUIContent("2D", "When togggled on, the Scene is in 2D view. When toggled off, the Scene is in 3D view.");
+			this.m_RenderDocContent = EditorGUIUtility.IconContent("renderdoc", "Capture|Capture the current view and open in RenderDoc.");
 			this.m_SceneViewOverlay = new SceneViewOverlay(this);
-			Delegate arg_190_0 = EditorApplication.modifierKeysChanged;
+			EditorApplication.playModeStateChanged += new Action<PlayModeStateChange>(this.OnPlayModeStateChanged);
+			Delegate arg_1AD_0 = EditorApplication.modifierKeysChanged;
 			if (SceneView.<>f__mg$cache0 == null)
 			{
 				SceneView.<>f__mg$cache0 = new EditorApplication.CallbackFunction(SceneView.RepaintAll);
 			}
-			EditorApplication.modifierKeysChanged = (EditorApplication.CallbackFunction)Delegate.Combine(arg_190_0, SceneView.<>f__mg$cache0);
+			EditorApplication.modifierKeysChanged = (EditorApplication.CallbackFunction)Delegate.Combine(arg_1AD_0, SceneView.<>f__mg$cache0);
 			this.m_DraggingLockedState = SceneView.DraggingLockedState.NotDragging;
 			this.CreateSceneCameraAndLights();
 			if (this.m_2DMode)
@@ -664,7 +704,7 @@ namespace UnityEditor
 
 		internal void Awake()
 		{
-			if (this.m_SceneViewState == null)
+			if (this.sceneViewState == null)
 			{
 				this.m_SceneViewState = new SceneView.SceneViewState();
 			}
@@ -712,6 +752,7 @@ namespace UnityEditor
 				SceneView.<>f__mg$cache1 = new EditorApplication.CallbackFunction(SceneView.RepaintAll);
 			}
 			EditorApplication.modifierKeysChanged = (EditorApplication.CallbackFunction)Delegate.Remove(arg_23_0, SceneView.<>f__mg$cache1);
+			EditorApplication.playModeStateChanged -= new Action<PlayModeStateChange>(this.OnPlayModeStateChanged);
 			if (this.m_Camera)
 			{
 				UnityEngine.Object.DestroyImmediate(this.m_Camera.gameObject, true);
@@ -757,10 +798,20 @@ namespace UnityEditor
 			}
 		}
 
+		internal void OnPlayModeStateChanged(PlayModeStateChange state)
+		{
+			if (this.m_AudioPlay)
+			{
+				this.m_AudioPlay = false;
+				this.RefreshAudioPlay();
+			}
+		}
+
 		private void DoToolbarGUI()
 		{
 			GUILayout.BeginHorizontal("toolbar", new GUILayoutOption[0]);
 			GUIContent gUIContent = SceneRenderModeWindow.GetGUIContent(this.m_RenderMode);
+			gUIContent.tooltip = LocalizationDatabase.GetLocalizedString("The Draw Mode used to display the Scene.");
 			Rect rect = GUILayoutUtility.GetRect(gUIContent, EditorStyles.toolbarDropDown, new GUILayoutOption[]
 			{
 				GUILayout.Width(120f)
@@ -795,10 +846,10 @@ namespace UnityEditor
 				PopupWindow.Show(last2, new SceneFXWindow(this));
 				GUIUtility.ExitGUI();
 			}
-			bool flag = GUI.Toggle(rect2, this.m_SceneViewState.IsAllOn(), this.m_Fx, this.effectsDropDownStyle);
-			if (flag != this.m_SceneViewState.IsAllOn())
+			bool flag = GUI.Toggle(rect2, this.sceneViewState.IsAllOn(), this.m_Fx, this.effectsDropDownStyle);
+			if (flag != this.sceneViewState.IsAllOn())
 			{
-				this.m_SceneViewState.Toggle(flag);
+				this.sceneViewState.Toggle(flag);
 			}
 			EditorGUILayout.Space();
 			GUILayout.FlexibleSpace();
@@ -1114,7 +1165,7 @@ namespace UnityEditor
 			oldShadowDistance = QualitySettings.shadowDistance;
 			if (Event.current.type == EventType.Repaint)
 			{
-				if (!this.m_SceneViewState.showFog)
+				if (!this.sceneViewState.showFog)
 				{
 					Unsupported.SetRenderSettingsUseFogNoDirty(false);
 				}
@@ -1178,6 +1229,11 @@ namespace UnityEditor
 			}
 			this.m_SceneTargetTexture.Create();
 			EditorGUIUtility.SetGUITextureBlitColorspaceSettings(EditorGUIUtility.GUITextureBlitColorspaceMaterial);
+		}
+
+		internal bool IsCameraDrawModeEnabled(DrawCameraMode mode)
+		{
+			return Handles.IsCameraDrawModeEnabled(this.m_Camera, mode);
 		}
 
 		internal bool IsSceneCameraDeferred()
@@ -1255,7 +1311,7 @@ namespace UnityEditor
 			pushedGUIClip = false;
 			if (this.m_Camera.gameObject.activeInHierarchy)
 			{
-				DrawGridParameters gridParam = this.grid.PrepareGridRender(this.camera, this.pivot, this.m_Rotation.target, this.m_Size.value, this.m_Ortho.target, AnnotationUtility.showGrid);
+				DrawGridParameters gridParam = this.grid.PrepareGridRender(this.camera, this.pivot, this.m_Rotation.target, this.m_Size.value, this.m_Ortho.target, this.drawGlobalGrid);
 				Event current = Event.current;
 				if (this.UseSceneFiltering())
 				{
@@ -1587,6 +1643,16 @@ namespace UnityEditor
 			}
 		}
 
+		private void UpdatePBRColorLegend()
+		{
+			this.m_TooLowColorStyle = this.CreateSwatchStyleForColor(SceneView.kSceneViewMaterialValidateLow.Color);
+			this.m_TooHighColorStyle = this.CreateSwatchStyleForColor(SceneView.kSceneViewMaterialValidateHigh.Color);
+			this.m_PureMetalColorStyle = this.CreateSwatchStyleForColor(SceneView.kSceneViewMaterialValidatePureMetal.Color);
+			Shader.SetGlobalColor("unity_MaterialValidateLowColor", SceneView.kSceneViewMaterialValidateLow.Color.linear);
+			Shader.SetGlobalColor("unity_MaterialValidateHighColor", SceneView.kSceneViewMaterialValidateHigh.Color.linear);
+			Shader.SetGlobalColor("unity_MaterialValidatePureMetalColor", SceneView.kSceneViewMaterialValidatePureMetal.Color.linear);
+		}
+
 		private void UpdateAlbedoSwatch()
 		{
 			Color color = Color.gray;
@@ -1617,6 +1683,10 @@ namespace UnityEditor
 		{
 			if (this.m_RenderMode == DrawCameraMode.ValidateAlbedo)
 			{
+				if (PlayerSettings.colorSpace == ColorSpace.Gamma)
+				{
+					EditorGUILayout.HelpBox("Albedo Validation doesn't work when Color Space is set to gamma space", MessageType.Warning);
+				}
 				EditorGUIUtility.labelWidth = 140f;
 				this.m_SelectedAlbedoSwatchIndex = EditorGUILayout.Popup(new GUIContent("Luminance Validation:", "Select default luminance validation or validate against a configured albedo swatch"), this.m_SelectedAlbedoSwatchIndex, this.m_AlbedoSwatchGUIContent, new GUILayoutOption[0]);
 				EditorGUI.indentLevel++;
@@ -1643,15 +1713,42 @@ namespace UnityEditor
 					}
 				}
 			}
+			this.UpdatePBRColorLegend();
+			EditorGUILayout.LabelField("Color Legend:", new GUILayoutOption[0]);
+			EditorGUI.indentLevel++;
+			string str;
+			if (this.m_RenderMode == DrawCameraMode.ValidateAlbedo)
+			{
+				str = "Luminance";
+			}
+			else
+			{
+				str = "Specular";
+			}
+			using (new EditorGUILayout.HorizontalScope(new GUILayoutOption[0]))
+			{
+				EditorGUIUtility.labelWidth = 2f;
+				EditorGUILayout.LabelField("", this.m_TooLowColorStyle, new GUILayoutOption[0]);
+				EditorGUIUtility.labelWidth = 200f;
+				EditorGUILayout.LabelField("Below Minimum " + str + " Value", new GUILayoutOption[0]);
+			}
+			using (new EditorGUILayout.HorizontalScope(new GUILayoutOption[0]))
+			{
+				EditorGUIUtility.labelWidth = 2f;
+				EditorGUILayout.LabelField("", this.m_TooHighColorStyle, new GUILayoutOption[0]);
+				EditorGUIUtility.labelWidth = 200f;
+				EditorGUILayout.LabelField("Above Maximum " + str + " Value", new GUILayoutOption[0]);
+			}
+			using (new EditorGUILayout.HorizontalScope(new GUILayoutOption[0]))
+			{
+				EditorGUIUtility.labelWidth = 2f;
+				EditorGUILayout.LabelField("", this.m_PureMetalColorStyle, new GUILayoutOption[0]);
+				EditorGUIUtility.labelWidth = 200f;
+				EditorGUILayout.LabelField("Not A Pure Metal", new GUILayoutOption[0]);
+			}
 		}
 
-		private static void DrawPBRSettings(UnityEngine.Object target, SceneView sceneView)
-		{
-			sceneView.DrawTrueMetalCheckbox();
-			sceneView.DrawPBRSettingsForScene();
-		}
-
-		private void DrawValidateAlbedoSwatches(SceneView sceneView)
+		internal void PrepareValidationUI()
 		{
 			if (this.m_AlbedoSwatchInfos == null)
 			{
@@ -1662,12 +1759,26 @@ namespace UnityEditor
 				this.UpdateAlbedoSwatchGUI();
 				this.UpdateAlbedoSwatch();
 			}
-			GUIContent arg_5D_0 = new GUIContent("PBR Validation Settings");
-			if (SceneView.<>f__mg$cache4 == null)
+		}
+
+		private static void DrawPBRSettings(UnityEngine.Object target, SceneView sceneView)
+		{
+			sceneView.DrawTrueMetalCheckbox();
+			sceneView.DrawPBRSettingsForScene();
+		}
+
+		private void DrawValidateAlbedoSwatches(SceneView sceneView)
+		{
+			if (sceneView.m_RenderMode == DrawCameraMode.ValidateAlbedo || sceneView.m_RenderMode == DrawCameraMode.ValidateMetalSpecular)
 			{
-				SceneView.<>f__mg$cache4 = new SceneViewOverlay.WindowFunction(SceneView.DrawPBRSettings);
+				sceneView.PrepareValidationUI();
+				GUIContent arg_50_0 = new GUIContent("PBR Validation Settings");
+				if (SceneView.<>f__mg$cache4 == null)
+				{
+					SceneView.<>f__mg$cache4 = new SceneViewOverlay.WindowFunction(SceneView.DrawPBRSettings);
+				}
+				SceneViewOverlay.Window(arg_50_0, SceneView.<>f__mg$cache4, 450, sceneView, SceneViewOverlay.WindowDisplayOption.OneWindowPerTarget);
 			}
-			SceneViewOverlay.Window(arg_5D_0, SceneView.<>f__mg$cache4, 350, SceneViewOverlay.WindowDisplayOption.OneWindowPerTitle);
 		}
 
 		private void RepaintGizmosThatAreRenderedOnTopOfSceneView()
@@ -1728,6 +1839,16 @@ namespace UnityEditor
 			bool flag;
 			this.DoDrawCamera(rect2, out flag);
 			this.CleanupCustomSceneLighting();
+			RenderTexture renderTexture = this.m_SceneTargetTexture;
+			if (!this.UseSceneFiltering() && current.type == EventType.Repaint && RenderTextureEditor.IsHDRFormat(this.m_SceneTargetTexture.format))
+			{
+				RenderTextureDescriptor descriptor = this.m_SceneTargetTexture.descriptor;
+				descriptor.colorFormat = RenderTextureFormat.ARGB32;
+				descriptor.depthBufferBits = 0;
+				renderTexture = RenderTexture.GetTemporary(descriptor);
+				Graphics.Blit(this.m_SceneTargetTexture, renderTexture);
+				Graphics.SetRenderTarget(renderTexture.colorBuffer, this.m_SceneTargetTexture.depthBuffer);
+			}
 			if (!this.UseSceneFiltering())
 			{
 				Handles.DrawCameraStep2(this.m_Camera, this.m_RenderMode);
@@ -1768,7 +1889,11 @@ namespace UnityEditor
 				if (current.type == EventType.Repaint)
 				{
 					GL.sRGBWrite = (QualitySettings.activeColorSpace == ColorSpace.Linear);
-					Graphics.DrawTexture(rect2, this.m_SceneTargetTexture, new Rect(0f, 0f, 1f, 1f), 0, 0, 0, 0, GUI.color, EditorGUIUtility.GUITextureBlitColorspaceMaterial);
+					Graphics.DrawTexture(rect2, renderTexture, new Rect(0f, 0f, 1f, 1f), 0, 0, 0, 0, GUI.color, EditorGUIUtility.GUITextureBlitColorspaceMaterial);
+					if (RenderTextureEditor.IsHDRFormat(this.m_SceneTargetTexture.format))
+					{
+						RenderTexture.ReleaseTemporary(renderTexture);
+					}
 					GL.sRGBWrite = false;
 					Profiler.EndSample();
 				}
@@ -2015,9 +2140,10 @@ namespace UnityEditor
 			}
 			if (Event.current.type == EventType.Repaint)
 			{
-				this.UpdateImageEffects(!this.UseSceneFiltering() && this.m_RenderMode == DrawCameraMode.Textured && this.m_SceneViewState.showImageEffects);
+				this.UpdateImageEffects(!this.UseSceneFiltering() && this.m_RenderMode == DrawCameraMode.Textured && this.sceneViewState.showImageEffects);
 			}
-			EditorUtility.SetCameraAnimateMaterials(this.m_Camera, this.m_SceneViewState.showMaterialUpdate);
+			EditorUtility.SetCameraAnimateMaterials(this.m_Camera, this.sceneViewState.showMaterialUpdate);
+			ParticleSystemEditorUtils.editorRenderInSceneView = this.m_SceneViewState.showParticleSystems;
 			this.ResetIfNaN();
 			this.m_Camera.transform.rotation = this.m_Rotation.value;
 			float num = this.m_Ortho.Fade(90f, 0f);
@@ -2043,8 +2169,8 @@ namespace UnityEditor
 			this.SetSceneCameraHDRAndDepthModes();
 			if (this.m_RenderMode == DrawCameraMode.Textured || this.m_RenderMode == DrawCameraMode.TexturedWire)
 			{
-				Handles.EnableCameraFlares(this.m_Camera, this.m_SceneViewState.showFlares);
-				Handles.EnableCameraSkybox(this.m_Camera, this.m_SceneViewState.showSkybox);
+				Handles.EnableCameraFlares(this.m_Camera, this.sceneViewState.showFlares);
+				Handles.EnableCameraSkybox(this.m_Camera, this.sceneViewState.showSkybox);
 			}
 			else
 			{
@@ -2060,30 +2186,24 @@ namespace UnityEditor
 			}
 			if (this.m_ViewIsLockedToObject && Selection.gameObjects.Length > 0)
 			{
-				SceneView.DraggingLockedState draggingLockedState = this.m_DraggingLockedState;
-				if (draggingLockedState != SceneView.DraggingLockedState.Dragging)
+				Bounds bounds = InternalEditorUtility.CalculateSelectionBounds(false, Tools.pivotMode == PivotMode.Pivot);
+				SceneView.DraggingLockedState draggingLocked = this.draggingLocked;
+				if (draggingLocked != SceneView.DraggingLockedState.Dragging)
 				{
-					if (draggingLockedState != SceneView.DraggingLockedState.LookAt)
+					if (draggingLocked != SceneView.DraggingLockedState.LookAt)
 					{
-						if (draggingLockedState == SceneView.DraggingLockedState.NotDragging)
+						if (draggingLocked == SceneView.DraggingLockedState.NotDragging)
 						{
-							this.m_Position.value = Selection.activeGameObject.transform.position;
+							this.m_Position.value = bounds.center;
 						}
 					}
-					else if (!this.m_Position.value.Equals(Selection.activeGameObject.transform.position))
+					else if (!this.m_Position.value.Equals(this.m_Position.target))
 					{
-						if (!EditorApplication.isPlaying)
-						{
-							this.m_Position.target = Selection.activeGameObject.transform.position;
-						}
-						else
-						{
-							this.m_Position.value = Selection.activeGameObject.transform.position;
-						}
+						this.Frame(bounds, EditorApplication.isPlaying);
 					}
 					else
 					{
-						this.m_DraggingLockedState = SceneView.DraggingLockedState.NotDragging;
+						this.draggingLocked = SceneView.DraggingLockedState.NotDragging;
 					}
 				}
 			}
@@ -2101,7 +2221,7 @@ namespace UnityEditor
 
 		private void UpdateAnimatedMaterials()
 		{
-			if (this.m_SceneViewState.showMaterialUpdate && this.m_lastRenderedTime + 0.032999999821186066 < EditorApplication.timeSinceStartup)
+			if (this.sceneViewState.showMaterialUpdate && this.m_lastRenderedTime + 0.032999999821186066 < EditorApplication.timeSinceStartup)
 			{
 				this.m_lastRenderedTime = EditorApplication.timeSinceStartup;
 				base.Repaint();
@@ -2173,6 +2293,7 @@ namespace UnityEditor
 				this.m_Rotation.value = rot;
 				this.m_Size.value = Mathf.Abs(newSize);
 				this.m_Ortho.value = ortho;
+				this.draggingLocked = SceneView.DraggingLockedState.NotDragging;
 			}
 			else
 			{
@@ -2205,8 +2326,11 @@ namespace UnityEditor
 			case Tool.Rect:
 				ScaleTool.OnGUI(this);
 				break;
-			case (Tool)5:
+			case Tool.Transform:
 				RectTool.OnGUI(this);
+				break;
+			case (Tool)6:
+				TransformTool.OnGUI(this);
 				break;
 			}
 			if (EditorGUI.EndChangeCheck() && EditorApplication.isPlaying && flag)
@@ -2439,10 +2563,10 @@ namespace UnityEditor
 					}
 				}
 			}
-			return this.Frame(bounds);
+			return this.Frame(bounds, EditorApplication.isPlaying);
 		}
 
-		public bool Frame(Bounds bounds)
+		public bool Frame(Bounds bounds, bool instant = true)
 		{
 			float num = bounds.extents.magnitude * 1.5f;
 			bool result;
@@ -2456,7 +2580,7 @@ namespace UnityEditor
 				{
 					num = 10f;
 				}
-				this.LookAt(bounds.center, this.m_Rotation.target, num * 2.2f, this.m_Ortho.value, EditorApplication.isPlaying);
+				this.LookAt(bounds.center, this.m_Rotation.target, num * 2.2f, this.m_Ortho.value, instant);
 				result = true;
 			}
 			return result;
@@ -2676,19 +2800,6 @@ namespace UnityEditor
 			HandleUtility.ignoreRaySnapObjects = null;
 			Tools.vertexDragging = false;
 			Tools.handleOffset = Vector3.zero;
-		}
-
-		internal static void Report2DAnalytics()
-		{
-			UnityEngine.Object[] array = Resources.FindObjectsOfTypeAll(typeof(SceneView));
-			if (array.Length == 1)
-			{
-				SceneView sceneView = array[0] as SceneView;
-				if (sceneView.in2DMode)
-				{
-					UsabilityAnalytics.Event("2D", "SceneView", "Single 2D", 1);
-				}
-			}
 		}
 	}
 }

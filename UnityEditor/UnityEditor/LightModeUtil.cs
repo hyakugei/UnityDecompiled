@@ -14,20 +14,6 @@ namespace UnityEditor
 
 		public static readonly GUIContent s_enableBaked = EditorGUIUtility.TextContent("Baked Global Illumination|Controls whether Mixed and Baked lights will use baked Global Illumination. If enabled, Mixed lights are baked using the specified Lighting Mode and Baked lights will be completely baked and not adjustable at runtime.");
 
-		public static readonly string[] s_typenames = new string[]
-		{
-			"Realtime",
-			"Mixed",
-			"Baked"
-		};
-
-		private static readonly GUIContent[] s_modes = new GUIContent[]
-		{
-			new GUIContent(LightModeUtil.s_typenames[0]),
-			new GUIContent(LightModeUtil.s_typenames[1]),
-			new GUIContent(LightModeUtil.s_typenames[2])
-		};
-
 		private int[] m_modeVals = new int[3];
 
 		private UnityEngine.Object m_cachedObject = null;
@@ -160,40 +146,6 @@ namespace UnityEditor
 		public bool Flush()
 		{
 			return this.m_so.ApplyModifiedProperties();
-		}
-
-		public void DrawElement(Rect r, SerializedProperty property, SerializedProperty dependency)
-		{
-			bool disabled = dependency.enumValueIndex == 3;
-			using (new EditorGUI.DisabledScope(disabled))
-			{
-				EditorGUI.BeginChangeCheck();
-				int intValue = EditorGUI.IntPopup(r, property.intValue, LightModeUtil.s_modes, new int[]
-				{
-					4,
-					1,
-					2
-				});
-				if (EditorGUI.EndChangeCheck())
-				{
-					property.intValue = intValue;
-				}
-			}
-		}
-
-		public void DrawElement(SerializedProperty property, GUIContent label)
-		{
-			EditorGUI.BeginChangeCheck();
-			int intValue = EditorGUILayout.IntPopup(label, property.intValue, LightModeUtil.s_modes, new int[]
-			{
-				4,
-				1,
-				2
-			}, new GUILayoutOption[0]);
-			if (EditorGUI.EndChangeCheck())
-			{
-				property.intValue = intValue;
-			}
 		}
 
 		public void DrawBakedGIElement()

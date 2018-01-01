@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using UnityEditor.Experimental.UIElements;
+using UnityEngine;
 using UnityEngine.Experimental.UIElements;
 using UnityEngine.Experimental.UIElements.StyleSheets;
 using UnityEngine.Scripting;
@@ -9,6 +11,8 @@ namespace UnityEditor
 {
 	internal class RetainedMode : AssetPostprocessor
 	{
+		private static HashSet<UnityEngine.Object> s_TmpDirtySet;
+
 		[CompilerGenerated]
 		private static Action<IMGUIContainer> <>f__mg$cache0;
 
@@ -17,6 +21,7 @@ namespace UnityEditor
 
 		static RetainedMode()
 		{
+			RetainedMode.s_TmpDirtySet = new HashSet<UnityEngine.Object>();
 			if (RetainedMode.<>f__mg$cache0 == null)
 			{
 				RetainedMode.<>f__mg$cache0 = new Action<IMGUIContainer>(RetainedMode.OnBeginContainer);
@@ -42,6 +47,19 @@ namespace UnityEditor
 		[RequiredByNativeCode]
 		private static void UpdateSchedulers()
 		{
+			try
+			{
+				RetainedMode.UpdateSchedulersInternal(RetainedMode.s_TmpDirtySet);
+			}
+			finally
+			{
+				RetainedMode.s_TmpDirtySet.Clear();
+			}
+		}
+
+		private static void UpdateSchedulersInternal(HashSet<UnityEngine.Object> tmpDirtySet)
+		{
+			DataWatchService.sharedInstance.PollNativeData();
 			Dictionary<int, Panel>.Enumerator panelsIterator = UIElementsUtility.GetPanelsIterator();
 			while (panelsIterator.MoveNext())
 			{
@@ -51,11 +69,9 @@ namespace UnityEditor
 				{
 					IScheduler scheduler = value.scheduler;
 					value.timerEventScheduler.UpdateScheduledEvents();
-					DataWatchService dataWatchService = value.dataWatch as DataWatchService;
-					dataWatchService.ProcessNotificationQueue();
 					if (value.visualTree.IsDirty(ChangeType.Repaint))
 					{
-						GUIView gUIView = EditorUtility.InstanceIDToObject(value.instanceID) as GUIView;
+						GUIView gUIView = value.ownerObject as GUIView;
 						if (gUIView != null)
 						{
 							gUIView.Repaint();
@@ -67,12 +83,24 @@ namespace UnityEditor
 
 		private static void OnPostprocessAllAssets(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths)
 		{
+			bool flag = false;
+			bool flag2 = false;
 			for (int i = 0; i < importedAssets.Length; i++)
 			{
 				string text = importedAssets[i];
 				if (text.EndsWith("uss"))
 				{
+					flag2 = true;
 					RetainedMode.FlagStyleSheetChange();
+				}
+				else if (text.EndsWith("uxml"))
+				{
+					flag = true;
+					UIElementsViewImporter.logger.FinishImport();
+					StyleSheetCache.ClearCaches();
+				}
+				if (flag && flag2)
+				{
 					break;
 				}
 			}
@@ -90,7 +118,7 @@ namespace UnityEditor
 				{
 					value.styleContext.DirtyStyleSheets();
 					value.visualTree.Dirty(ChangeType.Styles);
-					GUIView gUIView = EditorUtility.InstanceIDToObject(value.instanceID) as GUIView;
+					GUIView gUIView = value.ownerObject as GUIView;
 					if (gUIView != null)
 					{
 						gUIView.Repaint();

@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using UnityEditor.Modules;
 using UnityEditor.Utils;
-using UnityEngine;
 
 namespace UnityEditor.Scripting.Compilers
 {
@@ -16,46 +15,6 @@ namespace UnityEditor.Scripting.Compilers
 			get
 			{
 				return this._island._target;
-			}
-		}
-
-		internal static string ProgramFilesDirectory
-		{
-			get
-			{
-				string environmentVariable = Environment.GetEnvironmentVariable("ProgramFiles(x86)");
-				string result;
-				if (Directory.Exists(environmentVariable))
-				{
-					result = environmentVariable;
-				}
-				else
-				{
-					UnityEngine.Debug.Log("Env variables ProgramFiles(x86) & ProgramFiles didn't exist, trying hard coded paths");
-					string fullPath = Path.GetFullPath(Environment.GetEnvironmentVariable("windir") + "\\..\\..");
-					string text = fullPath + "Program Files (x86)";
-					string text2 = fullPath + "Program Files";
-					if (Directory.Exists(text))
-					{
-						result = text;
-					}
-					else
-					{
-						if (!Directory.Exists(text2))
-						{
-							throw new Exception(string.Concat(new string[]
-							{
-								"Path '",
-								text,
-								"' or '",
-								text2,
-								"' doesn't exist."
-							}));
-						}
-						result = text2;
-					}
-				}
-				return result;
 			}
 		}
 
@@ -77,34 +36,6 @@ namespace UnityEditor.Scripting.Compilers
 				"UnityScript.Lang.dll",
 				"Boo.Lang.dll"
 			};
-		}
-
-		internal static string GetNETCoreFrameworkReferencesDirectory(WSASDK wsaSDK)
-		{
-			switch (wsaSDK)
-			{
-			case WSASDK.SDK80:
-			{
-				string result = MicrosoftCSharpCompiler.ProgramFilesDirectory + "\\Reference Assemblies\\Microsoft\\Framework\\.NETCore\\v4.5";
-				return result;
-			}
-			case WSASDK.SDK81:
-			{
-				string result = MicrosoftCSharpCompiler.ProgramFilesDirectory + "\\Reference Assemblies\\Microsoft\\Framework\\.NETCore\\v4.5.1";
-				return result;
-			}
-			case WSASDK.PhoneSDK81:
-			{
-				string result = MicrosoftCSharpCompiler.ProgramFilesDirectory + "\\Reference Assemblies\\Microsoft\\Framework\\WindowsPhoneApp\\v8.1";
-				return result;
-			}
-			case WSASDK.UWP:
-			{
-				string result = null;
-				return result;
-			}
-			}
-			throw new Exception("Unknown Windows SDK: " + wsaSDK.ToString());
 		}
 
 		private string[] GetClassLibraries()
@@ -134,19 +65,11 @@ namespace UnityEditor.Scripting.Compilers
 				{
 					throw new InvalidOperationException(string.Format("MicrosoftCSharpCompiler cannot build for .NET Scripting backend for BuildTarget.{0}.", this.BuildTarget));
 				}
-				WSASDK wSASDK = WSASDK.UWP;
-				if (wSASDK != WSASDK.UWP)
+				NuGetPackageResolver nuGetPackageResolver = new NuGetPackageResolver
 				{
-					result = Directory.GetFiles(MicrosoftCSharpCompiler.GetNETCoreFrameworkReferencesDirectory(wSASDK), "*.dll");
-				}
-				else
-				{
-					NuGetPackageResolver nuGetPackageResolver = new NuGetPackageResolver
-					{
-						ProjectLockFile = "UWP\\project.lock.json"
-					};
-					result = nuGetPackageResolver.Resolve();
-				}
+					ProjectLockFile = "UWP\\project.lock.json"
+				};
+				result = nuGetPackageResolver.Resolve();
 			}
 			return result;
 		}

@@ -5,7 +5,7 @@ namespace UnityEditor
 	public enum GameViewSizeGroupType
 	{
 		Standalone,
-		[Obsolete("WebPlayer has been removed in 5.4", false)]
+		[Obsolete("WebPlayer has been removed in 5.4")]
 		WebPlayer,
 		iOS,
 		Android,

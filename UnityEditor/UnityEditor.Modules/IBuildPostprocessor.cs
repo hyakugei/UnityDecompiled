@@ -11,6 +11,8 @@ namespace UnityEditor.Modules
 
 		bool SupportsInstallInBuildFolder();
 
+		bool SupportsLz4Compression();
+
 		void PostProcessScriptsOnly(BuildPostProcessArgs args);
 
 		bool SupportsScriptsOnlyBuild();

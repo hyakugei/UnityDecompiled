@@ -61,6 +61,38 @@ namespace UnityEngine
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern void INTERNAL_CALL_SetVector(ComputeShader self, int nameID, ref Vector4 val);
 
+		public void SetVectorArray(string name, Vector4[] values)
+		{
+			this.SetVectorArray(Shader.PropertyToID(name), values);
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public extern void SetVectorArray(int nameID, Vector4[] values);
+
+		public void SetMatrix(string name, Matrix4x4 val)
+		{
+			this.SetMatrix(Shader.PropertyToID(name), val);
+		}
+
+		public void SetMatrix(int nameID, Matrix4x4 val)
+		{
+			ComputeShader.INTERNAL_CALL_SetMatrix(this, nameID, ref val);
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void INTERNAL_CALL_SetMatrix(ComputeShader self, int nameID, ref Matrix4x4 val);
+
+		public void SetMatrixArray(string name, Matrix4x4[] values)
+		{
+			this.SetMatrixArray(Shader.PropertyToID(name), values);
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public extern void SetMatrixArray(int nameID, Matrix4x4[] values);
+
 		public void SetFloats(string name, params float[] values)
 		{
 			this.Internal_SetFloats(Shader.PropertyToID(name), values);

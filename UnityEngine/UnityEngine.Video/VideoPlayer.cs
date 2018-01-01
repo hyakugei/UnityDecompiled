@@ -324,6 +324,16 @@ namespace UnityEngine.Video
 			set;
 		}
 
+		public extern Video3DLayout targetCamera3DLayout
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
 		public extern Texture texture
 		{
 			[GeneratedByOldBindingsGenerator]

@@ -61,7 +61,7 @@ namespace UnityEditor
 			base.serializedObject.Update();
 			this.OnBlendShapeUI();
 			Editor.DrawPropertiesExcluding(base.serializedObject, this.m_ExcludedProperties);
-			EditMode.DoEditModeInspectorModeButton(EditMode.SceneViewEditMode.Collider, "Edit Bounds", PrimitiveBoundsHandle.editModeButton, (base.target as SkinnedMeshRenderer).bounds, this);
+			EditMode.DoEditModeInspectorModeButton(EditMode.SceneViewEditMode.Collider, "Edit Bounds", PrimitiveBoundsHandle.editModeButton, this);
 			EditorGUI.BeginChangeCheck();
 			EditorGUILayout.PropertyField(this.m_AABB, new GUIContent("Bounds"), new GUILayoutOption[0]);
 			if (EditorGUI.EndChangeCheck())
@@ -71,6 +71,11 @@ namespace UnityEditor
 			this.LightingFieldsGUI();
 			EditorGUILayout.PropertyField(this.m_Materials, true, new GUILayoutOption[0]);
 			base.serializedObject.ApplyModifiedProperties();
+		}
+
+		internal override Bounds GetWorldBoundsOfTarget(UnityEngine.Object targetObject)
+		{
+			return ((SkinnedMeshRenderer)targetObject).bounds;
 		}
 
 		private void LightingFieldsGUI()

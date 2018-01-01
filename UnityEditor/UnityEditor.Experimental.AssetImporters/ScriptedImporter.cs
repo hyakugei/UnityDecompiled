@@ -34,16 +34,12 @@ namespace UnityEditor.Experimental.AssetImporters
 				selectedBuildTarget = request.m_SelectedBuildTarget
 			};
 			this.OnImportAsset(assetImportContext);
-			if (!assetImportContext.subAssets.Any((ImportedObject x) => x.mainAsset))
-			{
-				throw new Exception("Import failed/rejected as none of the sub assets was set as the 'main asset':" + assetImportContext.assetPath);
-			}
 			ScriptedImporter.ImportResult result = default(ScriptedImporter.ImportResult);
-			result.m_Assets = (from x in assetImportContext.subAssets
-			select x.asset).ToArray<UnityEngine.Object>();
-			result.m_AssetNames = (from x in assetImportContext.subAssets
-			select x.identifier).ToArray<string>();
-			result.m_Thumbnails = (from x in assetImportContext.subAssets
+			result.m_Assets = (from x in assetImportContext.importedObjects
+			select x.obj).ToArray<UnityEngine.Object>();
+			result.m_AssetNames = (from x in assetImportContext.importedObjects
+			select x.localIdentifier).ToArray<string>();
+			result.m_Thumbnails = (from x in assetImportContext.importedObjects
 			select x.thumbnail).ToArray<Texture2D>();
 			return result;
 		}

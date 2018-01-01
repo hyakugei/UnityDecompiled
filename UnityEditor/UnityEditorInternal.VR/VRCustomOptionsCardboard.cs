@@ -6,7 +6,7 @@ namespace UnityEditorInternal.VR
 {
 	internal class VRCustomOptionsCardboard : VRCustomOptionsGoogleVR
 	{
-		private static GUIContent s_EnableTransitionVewLabel = new GUIContent("Enable Tansition View");
+		private static GUIContent s_EnableTransitionViewLabel = new GUIContent("Enable Transition View");
 
 		private SerializedProperty m_EnableTransitionView;
 
@@ -25,7 +25,7 @@ namespace UnityEditorInternal.VR
 		{
 			rect = base.Draw(rect);
 			rect.height = EditorGUIUtility.singleLineHeight;
-			GUIContent label = EditorGUI.BeginProperty(rect, VRCustomOptionsCardboard.s_EnableTransitionVewLabel, this.m_EnableTransitionView);
+			GUIContent label = EditorGUI.BeginProperty(rect, VRCustomOptionsCardboard.s_EnableTransitionViewLabel, this.m_EnableTransitionView);
 			EditorGUI.BeginChangeCheck();
 			bool boolValue = EditorGUI.Toggle(rect, label, this.m_EnableTransitionView.boolValue);
 			if (EditorGUI.EndChangeCheck())

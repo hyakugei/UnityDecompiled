@@ -38,6 +38,14 @@ namespace UnityEditorInternal
 			}
 		}
 
+		public bool isDiscreteCurve
+		{
+			get
+			{
+				return this.m_Binding.isDiscreteCurve;
+			}
+		}
+
 		public bool isPhantom
 		{
 			get
@@ -360,7 +368,7 @@ namespace UnityEditorInternal
 			object result;
 			if (this.m_Keyframes.Count == 0)
 			{
-				result = null;
+				result = ((!this.isPPtrCurve) ? 0f : null);
 			}
 			else
 			{
@@ -408,7 +416,7 @@ namespace UnityEditorInternal
 								i++;
 							}
 						}
-						result = null;
+						result = ((!this.isPPtrCurve) ? 0f : null);
 					}
 				}
 			}

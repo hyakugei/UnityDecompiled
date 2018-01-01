@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace UnityEngine.Experimental.UIElements
 {
-	public class MouseManipulator : Manipulator
+	public abstract class MouseManipulator : Manipulator
 	{
 		private ManipulatorActivationFilter m_currentActivator;
 
@@ -18,12 +18,12 @@ namespace UnityEngine.Experimental.UIElements
 			this.activators = new List<ManipulatorActivationFilter>();
 		}
 
-		protected bool CanStartManipulation(Event evt)
+		protected bool CanStartManipulation(IMouseEvent e)
 		{
 			bool result;
 			foreach (ManipulatorActivationFilter current in this.activators)
 			{
-				if (current.Matches(evt))
+				if (current.Matches(e))
 				{
 					this.m_currentActivator = current;
 					result = true;
@@ -34,9 +34,9 @@ namespace UnityEngine.Experimental.UIElements
 			return result;
 		}
 
-		protected bool CanStopManipulation(Event evt)
+		protected bool CanStopManipulation(IMouseEvent e)
 		{
-			return evt.button == (int)this.m_currentActivator.button && this.HasCapture();
+			return e.button == (int)this.m_currentActivator.button && base.target.HasCapture();
 		}
 	}
 }

@@ -551,7 +551,7 @@ namespace UnityEditor
 				return scrollPos.y + scrollViewHeight >= yOffset && yOffset + this.Height >= scrollPos.y;
 			}
 
-			public void Draw(float yOffset, Vector2 scrollPos)
+			public void Draw(float yOffset, Vector2 scrollPos, ref int rowsInUse)
 			{
 				this.NeedsRepaint = false;
 				bool flag = Event.current.type == EventType.Repaint || Event.current.type == EventType.Layout;
@@ -566,12 +566,23 @@ namespace UnityEditor
 					int itemCount = this.ItemCount;
 					if (num2 >= 0 && num2 < itemCount)
 					{
-						int num3 = num2;
-						int num4 = Math.Min(itemCount, this.m_Grid.rows * this.m_Grid.columns);
-						float num5 = this.m_Grid.itemSize.y + this.m_Grid.verticalSpacing;
-						int num6 = (int)Math.Ceiling((double)(this.m_Owner.m_VisibleRect.height / num5));
-						num4 = Math.Min(num4, num3 + num6 * this.m_Grid.columns + this.m_Grid.columns);
-						this.DrawInternal(num3, num4, yOffset);
+						int itemIdx = num2;
+						int num3 = Math.Min(itemCount, this.m_Grid.rows * this.m_Grid.columns);
+						float num4 = this.m_Grid.itemSize.y + this.m_Grid.verticalSpacing;
+						int num5 = (int)Math.Ceiling((double)(this.m_Owner.m_VisibleRect.height / num4));
+						num5++;
+						int num6 = num5 - rowsInUse;
+						if (num6 < 0)
+						{
+							num6 = 0;
+						}
+						rowsInUse = Math.Min(num5, Mathf.CeilToInt((float)(num3 - num2) / (float)this.m_Grid.columns));
+						num3 = num6 * this.m_Grid.columns + num2;
+						if (num3 > itemCount)
+						{
+							num3 = itemCount;
+						}
+						this.DrawInternal(itemIdx, num3, yOffset);
 					}
 					if (flag)
 					{
@@ -3597,11 +3608,12 @@ namespace UnityEditor
 				this.LastScrollTime = timeSinceStartup;
 			}
 			float num2 = 0f;
+			int num3 = 0;
 			foreach (ObjectListArea.Group current2 in this.m_Groups)
 			{
 				if (!this.SkipGroup(current2))
 				{
-					current2.Draw(num2, scrollPosition);
+					current2.Draw(num2, scrollPosition, ref num3);
 					flag2 = (flag2 || current2.NeedsRepaint);
 					num2 += current2.Height;
 					if (this.m_LocalAssets.ShowNone)

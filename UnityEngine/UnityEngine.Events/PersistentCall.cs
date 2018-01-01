@@ -19,7 +19,7 @@ namespace UnityEngine.Events
 		[FormerlySerializedAs("arguments"), SerializeField]
 		private ArgumentCache m_Arguments = new ArgumentCache();
 
-		[FormerlySerializedAs("enabled"), FormerlySerializedAs("m_Enabled"), SerializeField]
+		[FormerlySerializedAs("m_Enabled"), FormerlySerializedAs("enabled"), SerializeField]
 		private UnityEventCallState m_CallState = UnityEventCallState.RuntimeOnly;
 
 		public UnityEngine.Object target

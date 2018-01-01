@@ -4,6 +4,7 @@ using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
+	[Obsolete("This component is part of the legacy UI system and will be removed in a future release.")]
 	public sealed class GUITexture : GUIElement
 	{
 		public Color color

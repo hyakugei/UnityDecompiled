@@ -52,7 +52,9 @@ namespace UnityEditor
 			public static readonly GUIContent SelectObjectsButton = EditorGUIUtility.TextContentWithIcon("|Find References in Scene", "UnityEditor.FindDependencies");
 		}
 
-		private static ColorPickerHDRConfig s_ColorPickerHDRConfig = new ColorPickerHDRConfig(0f, 99f, 0.01010101f, 3f);
+		private const float kMaxfp16 = 65536f;
+
+		private static ColorPickerHDRConfig s_ColorPickerHDRConfig = new ColorPickerHDRConfig(0f, 65536f, 1.52587891E-05f, 3f);
 
 		private static SerializedPropertyTreeView.Column[] FinalizeColumns(SerializedPropertyTreeView.Column[] columns, out string[] propNames)
 		{
@@ -71,137 +73,135 @@ namespace UnityEditor
 
 		public static SerializedPropertyTreeView.Column[] CreateLightColumns(out string[] propNames)
 		{
-			SerializedPropertyTreeView.Column[] expr_07 = new SerializedPropertyTreeView.Column[8];
-			expr_07[0] = new SerializedPropertyTreeView.Column
+			SerializedPropertyTreeView.Column[] columns = new SerializedPropertyTreeView.Column[]
 			{
-				headerContent = LightTableColumns.Styles.Name,
-				headerTextAlignment = TextAlignment.Left,
-				sortedAscending = true,
-				sortingArrowAlignment = TextAlignment.Center,
-				width = 200f,
-				minWidth = 100f,
-				autoResize = false,
-				allowToggleVisibility = true,
-				propertyName = null,
-				dependencyIndices = null,
-				compareDelegate = SerializedPropertyTreeView.DefaultDelegates.s_CompareName,
-				drawDelegate = SerializedPropertyTreeView.DefaultDelegates.s_DrawName,
-				filter = new SerializedPropertyFilters.Name()
+				new SerializedPropertyTreeView.Column
+				{
+					headerContent = LightTableColumns.Styles.Name,
+					headerTextAlignment = TextAlignment.Left,
+					sortedAscending = true,
+					sortingArrowAlignment = TextAlignment.Center,
+					width = 200f,
+					minWidth = 100f,
+					autoResize = false,
+					allowToggleVisibility = true,
+					propertyName = null,
+					dependencyIndices = null,
+					compareDelegate = SerializedPropertyTreeView.DefaultDelegates.s_CompareName,
+					drawDelegate = SerializedPropertyTreeView.DefaultDelegates.s_DrawName,
+					filter = new SerializedPropertyFilters.Name()
+				},
+				new SerializedPropertyTreeView.Column
+				{
+					headerContent = LightTableColumns.Styles.On,
+					headerTextAlignment = TextAlignment.Center,
+					sortedAscending = true,
+					sortingArrowAlignment = TextAlignment.Center,
+					width = 25f,
+					minWidth = 25f,
+					maxWidth = 25f,
+					autoResize = false,
+					allowToggleVisibility = true,
+					propertyName = "m_Enabled",
+					dependencyIndices = null,
+					compareDelegate = SerializedPropertyTreeView.DefaultDelegates.s_CompareCheckbox,
+					drawDelegate = SerializedPropertyTreeView.DefaultDelegates.s_DrawCheckbox
+				},
+				new SerializedPropertyTreeView.Column
+				{
+					headerContent = LightTableColumns.Styles.Type,
+					headerTextAlignment = TextAlignment.Left,
+					sortedAscending = true,
+					sortingArrowAlignment = TextAlignment.Center,
+					width = 120f,
+					minWidth = 60f,
+					autoResize = false,
+					allowToggleVisibility = true,
+					propertyName = "m_Type",
+					dependencyIndices = null,
+					compareDelegate = SerializedPropertyTreeView.DefaultDelegates.s_CompareEnum,
+					drawDelegate = SerializedPropertyTreeView.DefaultDelegates.s_DrawDefault
+				},
+				new SerializedPropertyTreeView.Column
+				{
+					headerContent = LightTableColumns.Styles.Mode,
+					headerTextAlignment = TextAlignment.Left,
+					sortedAscending = true,
+					sortingArrowAlignment = TextAlignment.Center,
+					width = 70f,
+					minWidth = 40f,
+					maxWidth = 70f,
+					autoResize = false,
+					allowToggleVisibility = true,
+					propertyName = "m_Lightmapping",
+					dependencyIndices = new int[]
+					{
+						2
+					},
+					compareDelegate = SerializedPropertyTreeView.DefaultDelegates.s_CompareEnum,
+					drawDelegate = SerializedPropertyTreeView.DefaultDelegates.s_DrawDefault
+				},
+				new SerializedPropertyTreeView.Column
+				{
+					headerContent = LightTableColumns.Styles.Color,
+					headerTextAlignment = TextAlignment.Left,
+					sortedAscending = true,
+					sortingArrowAlignment = TextAlignment.Center,
+					width = 70f,
+					minWidth = 40f,
+					autoResize = false,
+					allowToggleVisibility = true,
+					propertyName = "m_Color",
+					dependencyIndices = null,
+					compareDelegate = SerializedPropertyTreeView.DefaultDelegates.s_CompareColor,
+					drawDelegate = SerializedPropertyTreeView.DefaultDelegates.s_DrawDefault
+				},
+				new SerializedPropertyTreeView.Column
+				{
+					headerContent = LightTableColumns.Styles.Intensity,
+					headerTextAlignment = TextAlignment.Left,
+					sortedAscending = true,
+					sortingArrowAlignment = TextAlignment.Center,
+					width = 60f,
+					minWidth = 30f,
+					autoResize = false,
+					allowToggleVisibility = true,
+					propertyName = "m_Intensity",
+					dependencyIndices = null,
+					compareDelegate = SerializedPropertyTreeView.DefaultDelegates.s_CompareFloat,
+					drawDelegate = SerializedPropertyTreeView.DefaultDelegates.s_DrawDefault
+				},
+				new SerializedPropertyTreeView.Column
+				{
+					headerContent = LightTableColumns.Styles.IndirectMultiplier,
+					headerTextAlignment = TextAlignment.Left,
+					sortedAscending = true,
+					sortingArrowAlignment = TextAlignment.Center,
+					width = 110f,
+					minWidth = 60f,
+					autoResize = false,
+					allowToggleVisibility = true,
+					propertyName = "m_BounceIntensity",
+					dependencyIndices = null,
+					compareDelegate = SerializedPropertyTreeView.DefaultDelegates.s_CompareFloat,
+					drawDelegate = SerializedPropertyTreeView.DefaultDelegates.s_DrawDefault
+				},
+				new SerializedPropertyTreeView.Column
+				{
+					headerContent = LightTableColumns.Styles.ShadowType,
+					headerTextAlignment = TextAlignment.Left,
+					sortedAscending = true,
+					sortingArrowAlignment = TextAlignment.Center,
+					width = 100f,
+					minWidth = 60f,
+					autoResize = false,
+					allowToggleVisibility = true,
+					propertyName = "m_Shadows.m_Type",
+					dependencyIndices = null,
+					compareDelegate = SerializedPropertyTreeView.DefaultDelegates.s_CompareEnum,
+					drawDelegate = SerializedPropertyTreeView.DefaultDelegates.s_DrawDefault
+				}
 			};
-			expr_07[1] = new SerializedPropertyTreeView.Column
-			{
-				headerContent = LightTableColumns.Styles.On,
-				headerTextAlignment = TextAlignment.Center,
-				sortedAscending = true,
-				sortingArrowAlignment = TextAlignment.Center,
-				width = 25f,
-				minWidth = 25f,
-				maxWidth = 25f,
-				autoResize = false,
-				allowToggleVisibility = true,
-				propertyName = "m_Enabled",
-				dependencyIndices = null,
-				compareDelegate = SerializedPropertyTreeView.DefaultDelegates.s_CompareCheckbox,
-				drawDelegate = SerializedPropertyTreeView.DefaultDelegates.s_DrawCheckbox
-			};
-			expr_07[2] = new SerializedPropertyTreeView.Column
-			{
-				headerContent = LightTableColumns.Styles.Type,
-				headerTextAlignment = TextAlignment.Left,
-				sortedAscending = true,
-				sortingArrowAlignment = TextAlignment.Center,
-				width = 120f,
-				minWidth = 60f,
-				autoResize = false,
-				allowToggleVisibility = true,
-				propertyName = "m_Type",
-				dependencyIndices = null,
-				compareDelegate = SerializedPropertyTreeView.DefaultDelegates.s_CompareEnum,
-				drawDelegate = SerializedPropertyTreeView.DefaultDelegates.s_DrawDefault
-			};
-			int arg_21C_1 = 3;
-			SerializedPropertyTreeView.Column column = new SerializedPropertyTreeView.Column();
-			column.headerContent = LightTableColumns.Styles.Mode;
-			column.headerTextAlignment = TextAlignment.Left;
-			column.sortedAscending = true;
-			column.sortingArrowAlignment = TextAlignment.Center;
-			column.width = 70f;
-			column.minWidth = 40f;
-			column.maxWidth = 70f;
-			column.autoResize = false;
-			column.allowToggleVisibility = true;
-			column.propertyName = "m_Lightmapping";
-			column.dependencyIndices = new int[]
-			{
-				2
-			};
-			column.compareDelegate = SerializedPropertyTreeView.DefaultDelegates.s_CompareEnum;
-			column.drawDelegate = delegate(Rect r, SerializedProperty prop, SerializedProperty[] dep)
-			{
-				LightModeUtil.Get().DrawElement(r, prop, dep[0]);
-			};
-			expr_07[arg_21C_1] = column;
-			expr_07[4] = new SerializedPropertyTreeView.Column
-			{
-				headerContent = LightTableColumns.Styles.Color,
-				headerTextAlignment = TextAlignment.Left,
-				sortedAscending = true,
-				sortingArrowAlignment = TextAlignment.Center,
-				width = 70f,
-				minWidth = 40f,
-				autoResize = false,
-				allowToggleVisibility = true,
-				propertyName = "m_Color",
-				dependencyIndices = null,
-				compareDelegate = SerializedPropertyTreeView.DefaultDelegates.s_CompareColor,
-				drawDelegate = SerializedPropertyTreeView.DefaultDelegates.s_DrawDefault
-			};
-			expr_07[5] = new SerializedPropertyTreeView.Column
-			{
-				headerContent = LightTableColumns.Styles.Intensity,
-				headerTextAlignment = TextAlignment.Left,
-				sortedAscending = true,
-				sortingArrowAlignment = TextAlignment.Center,
-				width = 60f,
-				minWidth = 30f,
-				autoResize = false,
-				allowToggleVisibility = true,
-				propertyName = "m_Intensity",
-				dependencyIndices = null,
-				compareDelegate = SerializedPropertyTreeView.DefaultDelegates.s_CompareFloat,
-				drawDelegate = SerializedPropertyTreeView.DefaultDelegates.s_DrawDefault
-			};
-			expr_07[6] = new SerializedPropertyTreeView.Column
-			{
-				headerContent = LightTableColumns.Styles.IndirectMultiplier,
-				headerTextAlignment = TextAlignment.Left,
-				sortedAscending = true,
-				sortingArrowAlignment = TextAlignment.Center,
-				width = 110f,
-				minWidth = 60f,
-				autoResize = false,
-				allowToggleVisibility = true,
-				propertyName = "m_BounceIntensity",
-				dependencyIndices = null,
-				compareDelegate = SerializedPropertyTreeView.DefaultDelegates.s_CompareFloat,
-				drawDelegate = SerializedPropertyTreeView.DefaultDelegates.s_DrawDefault
-			};
-			expr_07[7] = new SerializedPropertyTreeView.Column
-			{
-				headerContent = LightTableColumns.Styles.ShadowType,
-				headerTextAlignment = TextAlignment.Left,
-				sortedAscending = true,
-				sortingArrowAlignment = TextAlignment.Center,
-				width = 100f,
-				minWidth = 60f,
-				autoResize = false,
-				allowToggleVisibility = true,
-				propertyName = "m_Shadows.m_Type",
-				dependencyIndices = null,
-				compareDelegate = SerializedPropertyTreeView.DefaultDelegates.s_CompareEnum,
-				drawDelegate = SerializedPropertyTreeView.DefaultDelegates.s_DrawDefault
-			};
-			SerializedPropertyTreeView.Column[] columns = expr_07;
 			return LightTableColumns.FinalizeColumns(columns, out propNames);
 		}
 

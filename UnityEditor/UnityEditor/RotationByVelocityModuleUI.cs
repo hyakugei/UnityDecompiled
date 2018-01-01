@@ -58,23 +58,14 @@ namespace UnityEditor
 
 		public override void OnInspectorGUI(InitialModuleUI initial)
 		{
-			if (RotationByVelocityModuleUI.s_Texts == null)
-			{
-				RotationByVelocityModuleUI.s_Texts = new RotationByVelocityModuleUI.Texts();
-			}
 			EditorGUI.BeginChangeCheck();
 			bool flag = ModuleUI.GUIToggle(RotationByVelocityModuleUI.s_Texts.separateAxes, this.m_SeparateAxes, new GUILayoutOption[0]);
 			if (EditorGUI.EndChangeCheck())
 			{
-				if (flag)
-				{
-					this.m_Z.RemoveCurveFromEditor();
-				}
-				else
+				if (!flag)
 				{
 					this.m_X.RemoveCurveFromEditor();
 					this.m_Y.RemoveCurveFromEditor();
-					this.m_Z.RemoveCurveFromEditor();
 				}
 			}
 			if (!this.m_Z.stateHasMultipleDifferentValues)

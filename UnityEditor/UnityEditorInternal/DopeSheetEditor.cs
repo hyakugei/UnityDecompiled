@@ -325,8 +325,6 @@ namespace UnityEditorInternal
 
 		private DopeSheetEditor.DopeSheetSelectionRect m_SelectionRect;
 
-		private Texture m_DefaultDopeKeyIcon;
-
 		private float m_DragStartTime;
 
 		private bool m_MousedownOnKeyframe;
@@ -714,7 +712,7 @@ namespace UnityEditorInternal
 				Hashtable hashtable = new Hashtable();
 				foreach (AnimationWindowKeyframe current2 in this.state.selectedKeys)
 				{
-					if (!current2.isPPtrCurve)
+					if (!current2.isDiscreteCurve)
 					{
 						int keyframeIndex = current2.curve.GetKeyframeIndex(AnimationKeyTime.Time(current2.time, this.state.frameRate));
 						if (keyframeIndex != -1)

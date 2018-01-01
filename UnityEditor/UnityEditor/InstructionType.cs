@@ -9,6 +9,9 @@ namespace UnityEditor
 		kClipPop,
 		kLayoutBeginGroup,
 		kLayoutEndGroup,
-		kLayoutEntry
+		kLayoutEntry,
+		kPropertyBegin,
+		kPropertyEnd,
+		kLayoutNamedControl
 	}
 }

@@ -20,64 +20,36 @@ namespace UnityEngine.Experimental.UIElements
 		{
 		}
 
-		public override EventPropagation HandleEvent(Event evt, VisualElement finalTarget)
+		protected override void RegisterCallbacksOnTarget()
+		{
+			base.RegisterCallbacksOnTarget();
+			base.target.RegisterCallback<MouseDownEvent>(new EventCallback<MouseDownEvent>(this.OnMouseDown), Capture.NoCapture);
+			base.target.RegisterCallback<MouseUpEvent>(new EventCallback<MouseUpEvent>(this.OnMouseUp), Capture.NoCapture);
+			base.target.RegisterCallback<MouseMoveEvent>(new EventCallback<MouseMoveEvent>(this.OnMouseMove), Capture.NoCapture);
+			base.target.RegisterCallback<KeyDownEvent>(new EventCallback<KeyDownEvent>(this.OnKeyDown), Capture.NoCapture);
+			base.target.RegisterCallback<IMGUIEvent>(new EventCallback<IMGUIEvent>(this.OnIMGUIEvent), Capture.NoCapture);
+		}
+
+		protected override void UnregisterCallbacksFromTarget()
+		{
+			base.UnregisterCallbacksFromTarget();
+			base.target.UnregisterCallback<MouseDownEvent>(new EventCallback<MouseDownEvent>(this.OnMouseDown), Capture.NoCapture);
+			base.target.UnregisterCallback<MouseUpEvent>(new EventCallback<MouseUpEvent>(this.OnMouseUp), Capture.NoCapture);
+			base.target.UnregisterCallback<MouseMoveEvent>(new EventCallback<MouseMoveEvent>(this.OnMouseMove), Capture.NoCapture);
+			base.target.UnregisterCallback<KeyDownEvent>(new EventCallback<KeyDownEvent>(this.OnKeyDown), Capture.NoCapture);
+			base.target.UnregisterCallback<IMGUIEvent>(new EventCallback<IMGUIEvent>(this.OnIMGUIEvent), Capture.NoCapture);
+		}
+
+		private void OnMouseDown(MouseDownEvent evt)
 		{
 			base.SyncTextEditor();
 			this.m_Changed = false;
-			EventPropagation result = EventPropagation.Continue;
-			EventType type = evt.type;
-			switch (type)
-			{
-			case EventType.MouseDown:
-				result = this.DoMouseDown(evt);
-				goto IL_94;
-			case EventType.MouseUp:
-				result = this.DoMouseUp(evt);
-				goto IL_94;
-			case EventType.MouseMove:
-				IL_31:
-				if (type == EventType.ValidateCommand)
-				{
-					result = this.DoValidateCommand(evt);
-					goto IL_94;
-				}
-				if (type != EventType.ExecuteCommand)
-				{
-					goto IL_94;
-				}
-				result = this.DoExecuteCommand(evt);
-				goto IL_94;
-			case EventType.MouseDrag:
-				result = this.DoMouseDrag(evt);
-				goto IL_94;
-			case EventType.KeyDown:
-				result = this.DoKeyDown(evt);
-				goto IL_94;
-			}
-			goto IL_31;
-			IL_94:
-			if (this.m_Changed)
-			{
-				if (base.maxLength >= 0 && base.text != null && base.text.Length > base.maxLength)
-				{
-					base.text = base.text.Substring(0, base.maxLength);
-				}
-				base.textField.text = base.text;
-				result = EventPropagation.Stop;
-			}
-			base.UpdateScrollOffset();
-			return result;
-		}
-
-		private EventPropagation DoMouseDown(Event evt)
-		{
-			this.TakeCapture();
-			EventPropagation result;
+			base.target.TakeCapture();
 			if (!this.m_HasFocus)
 			{
 				this.m_HasFocus = true;
-				base.MoveCursorToPosition_Internal(evt.mousePosition, evt.shift);
-				result = EventPropagation.Stop;
+				base.MoveCursorToPosition_Internal(evt.localMousePosition, evt.shiftKey);
+				evt.StopPropagation();
 			}
 			else
 			{
@@ -97,238 +69,271 @@ namespace UnityEngine.Experimental.UIElements
 				}
 				else
 				{
-					base.MoveCursorToPosition_Internal(evt.mousePosition, evt.shift);
+					base.MoveCursorToPosition_Internal(evt.localMousePosition, evt.shiftKey);
 					this.m_SelectAllOnMouseUp = false;
 				}
-				result = EventPropagation.Stop;
+				evt.StopPropagation();
 			}
-			return result;
+			if (this.m_Changed)
+			{
+				if (base.maxLength >= 0 && base.text != null && base.text.Length > base.maxLength)
+				{
+					base.text = base.text.Substring(0, base.maxLength);
+				}
+				base.textField.text = base.text;
+				base.textField.TextFieldChanged();
+				evt.StopPropagation();
+			}
+			base.UpdateScrollOffset();
 		}
 
-		private EventPropagation DoMouseUp(Event evt)
+		private void OnMouseUp(MouseUpEvent evt)
 		{
-			EventPropagation result;
-			if (!this.HasCapture())
+			if (base.target.HasCapture())
 			{
-				result = EventPropagation.Continue;
-			}
-			else
-			{
+				base.SyncTextEditor();
+				this.m_Changed = false;
 				if (this.m_Dragged && this.m_DragToPosition)
 				{
 					base.MoveSelectionToAltCursor();
 				}
 				else if (this.m_PostPoneMove)
 				{
-					base.MoveCursorToPosition_Internal(evt.mousePosition, evt.shift);
+					base.MoveCursorToPosition_Internal(evt.localMousePosition, evt.shiftKey);
 				}
 				else if (this.m_SelectAllOnMouseUp)
 				{
 					this.m_SelectAllOnMouseUp = false;
 				}
 				base.MouseDragSelectsWholeWords(false);
-				this.ReleaseCapture();
+				base.target.ReleaseCapture();
 				this.m_DragToPosition = true;
 				this.m_Dragged = false;
 				this.m_PostPoneMove = false;
-				result = EventPropagation.Stop;
+				evt.StopPropagation();
+				if (this.m_Changed)
+				{
+					if (base.maxLength >= 0 && base.text != null && base.text.Length > base.maxLength)
+					{
+						base.text = base.text.Substring(0, base.maxLength);
+					}
+					base.textField.text = base.text;
+					base.textField.TextFieldChanged();
+					evt.StopPropagation();
+				}
+				base.UpdateScrollOffset();
 			}
-			return result;
 		}
 
-		private EventPropagation DoMouseDrag(Event evt)
+		private void OnMouseMove(MouseMoveEvent evt)
 		{
-			EventPropagation result;
-			if (!this.HasCapture())
+			if (base.target.HasCapture())
 			{
-				result = EventPropagation.Continue;
-			}
-			else
-			{
-				if (!evt.shift && base.hasSelection && this.m_DragToPosition)
+				base.SyncTextEditor();
+				this.m_Changed = false;
+				if (!evt.shiftKey && base.hasSelection && this.m_DragToPosition)
 				{
-					base.MoveAltCursorToPosition(Event.current.mousePosition);
+					base.MoveAltCursorToPosition(evt.localMousePosition);
 				}
 				else
 				{
-					if (evt.shift)
+					if (evt.shiftKey)
 					{
-						base.MoveCursorToPosition_Internal(evt.mousePosition, evt.shift);
+						base.MoveCursorToPosition_Internal(evt.localMousePosition, evt.shiftKey);
 					}
 					else
 					{
-						base.SelectToPosition(evt.mousePosition);
+						base.SelectToPosition(evt.localMousePosition);
 					}
 					this.m_DragToPosition = false;
 					this.m_SelectAllOnMouseUp = !base.hasSelection;
 				}
 				this.m_Dragged = true;
-				result = EventPropagation.Stop;
+				evt.StopPropagation();
+				if (this.m_Changed)
+				{
+					if (base.maxLength >= 0 && base.text != null && base.text.Length > base.maxLength)
+					{
+						base.text = base.text.Substring(0, base.maxLength);
+					}
+					base.textField.text = base.text;
+					base.textField.TextFieldChanged();
+					evt.StopPropagation();
+				}
+				base.UpdateScrollOffset();
 			}
-			return result;
 		}
 
-		private EventPropagation DoKeyDown(Event evt)
+		private void OnKeyDown(KeyDownEvent evt)
 		{
-			EventPropagation result;
-			if (!base.textField.hasFocus)
+			if (base.textField.hasFocus)
 			{
-				result = EventPropagation.Continue;
-			}
-			else if (base.HandleKeyEvent(evt))
-			{
-				this.m_Changed = true;
-				base.textField.text = base.text;
-				result = EventPropagation.Stop;
-			}
-			else if (evt.keyCode == KeyCode.Tab || evt.character == '\t')
-			{
-				result = EventPropagation.Continue;
-			}
-			else
-			{
-				char character = evt.character;
-				if (character == '\n' && !this.multiline && !evt.alt)
+				base.SyncTextEditor();
+				this.m_Changed = false;
+				if (base.HandleKeyEvent(evt.imguiEvent))
 				{
-					result = EventPropagation.Continue;
-				}
-				else if ((base.textField.font != null && base.textField.font.HasCharacter(character)) || character == '\n')
-				{
-					base.Insert(character);
 					this.m_Changed = true;
-					result = EventPropagation.Continue;
-				}
-				else if (character == '\0')
-				{
-					if (!string.IsNullOrEmpty(Input.compositionString))
-					{
-						base.ReplaceSelection("");
-						this.m_Changed = true;
-					}
-					result = EventPropagation.Stop;
+					base.textField.text = base.text;
+					evt.StopPropagation();
 				}
 				else
 				{
-					result = EventPropagation.Continue;
+					if (evt.keyCode == KeyCode.Tab || evt.character == '\t')
+					{
+						return;
+					}
+					char character = evt.character;
+					if (character == '\n' && !this.multiline && !evt.altKey)
+					{
+						base.textField.TextFieldChangeValidated();
+						return;
+					}
+					Font font = base.textField.editor.style.font;
+					if ((font != null && font.HasCharacter(character)) || character == '\n')
+					{
+						base.Insert(character);
+						this.m_Changed = true;
+					}
+					else if (character == '\0')
+					{
+						if (!string.IsNullOrEmpty(Input.compositionString))
+						{
+							base.ReplaceSelection("");
+							this.m_Changed = true;
+						}
+						evt.StopPropagation();
+					}
 				}
+				if (this.m_Changed)
+				{
+					if (base.maxLength >= 0 && base.text != null && base.text.Length > base.maxLength)
+					{
+						base.text = base.text.Substring(0, base.maxLength);
+					}
+					base.textField.text = base.text;
+					base.textField.TextFieldChanged();
+					evt.StopPropagation();
+				}
+				base.UpdateScrollOffset();
 			}
-			return result;
 		}
 
-		private EventPropagation DoValidateCommand(Event evt)
+		private void OnIMGUIEvent(IMGUIEvent evt)
 		{
-			EventPropagation result;
-			if (!base.textField.hasFocus)
+			if (base.textField.hasFocus)
 			{
-				result = EventPropagation.Continue;
-			}
-			else
-			{
-				string commandName = evt.commandName;
-				if (commandName != null)
+				base.SyncTextEditor();
+				this.m_Changed = false;
+				EventType type = evt.imguiEvent.type;
+				if (type != EventType.ValidateCommand)
 				{
-					if (!(commandName == "Cut") && !(commandName == "Copy"))
+					if (type == EventType.ExecuteCommand)
 					{
-						if (!(commandName == "Paste"))
+						bool flag = false;
+						string text = base.text;
+						if (!base.textField.hasFocus)
 						{
-							if (!(commandName == "SelectAll") && !(commandName == "Delete"))
+							return;
+						}
+						string commandName = evt.imguiEvent.commandName;
+						if (commandName != null)
+						{
+							if (commandName == "OnLostFocus")
 							{
-								if (!(commandName == "UndoRedoPerformed"))
+								evt.StopPropagation();
+								return;
+							}
+							if (!(commandName == "Cut"))
+							{
+								if (commandName == "Copy")
 								{
+									base.Copy();
+									evt.StopPropagation();
+									return;
 								}
-							}
-						}
-						else if (!base.CanPaste())
-						{
-							result = EventPropagation.Continue;
-							return result;
-						}
-					}
-					else if (!base.hasSelection)
-					{
-						result = EventPropagation.Continue;
-						return result;
-					}
-				}
-				result = EventPropagation.Stop;
-			}
-			return result;
-		}
-
-		private EventPropagation DoExecuteCommand(Event evt)
-		{
-			bool flag = false;
-			string text = base.text;
-			EventPropagation result;
-			if (!base.textField.hasFocus)
-			{
-				result = EventPropagation.Continue;
-			}
-			else
-			{
-				string commandName = evt.commandName;
-				if (commandName != null)
-				{
-					if (commandName == "OnLostFocus")
-					{
-						result = EventPropagation.Stop;
-						return result;
-					}
-					if (!(commandName == "Cut"))
-					{
-						if (commandName == "Copy")
-						{
-							base.Copy();
-							result = EventPropagation.Stop;
-							return result;
-						}
-						if (!(commandName == "Paste"))
-						{
-							if (commandName == "SelectAll")
-							{
-								base.SelectAll();
-								result = EventPropagation.Stop;
-								return result;
-							}
-							if (commandName == "Delete")
-							{
-								if (SystemInfo.operatingSystemFamily == OperatingSystemFamily.MacOSX)
+								if (!(commandName == "Paste"))
 								{
-									base.Delete();
+									if (commandName == "SelectAll")
+									{
+										base.SelectAll();
+										evt.StopPropagation();
+										return;
+									}
+									if (commandName == "Delete")
+									{
+										if (SystemInfo.operatingSystemFamily == OperatingSystemFamily.MacOSX)
+										{
+											base.Delete();
+										}
+										else
+										{
+											base.Cut();
+										}
+										flag = true;
+									}
 								}
 								else
 								{
-									base.Cut();
+									base.Paste();
+									flag = true;
 								}
+							}
+							else
+							{
+								base.Cut();
 								flag = true;
 							}
 						}
-						else
+						if (flag)
 						{
-							base.Paste();
-							flag = true;
+							if (text != base.text)
+							{
+								this.m_Changed = true;
+							}
+							evt.StopPropagation();
 						}
 					}
-					else
-					{
-						base.Cut();
-						flag = true;
-					}
-				}
-				if (flag)
-				{
-					if (text != base.text)
-					{
-						this.m_Changed = true;
-					}
-					result = EventPropagation.Stop;
 				}
 				else
 				{
-					result = EventPropagation.Continue;
+					string commandName2 = evt.imguiEvent.commandName;
+					if (commandName2 != null)
+					{
+						if (!(commandName2 == "Cut") && !(commandName2 == "Copy"))
+						{
+							if (!(commandName2 == "Paste"))
+							{
+								if (!(commandName2 == "SelectAll") && !(commandName2 == "Delete"))
+								{
+									if (!(commandName2 == "UndoRedoPerformed"))
+									{
+									}
+								}
+							}
+							else if (!base.CanPaste())
+							{
+								return;
+							}
+						}
+						else if (!base.hasSelection)
+						{
+							return;
+						}
+					}
+					evt.StopPropagation();
 				}
+				if (this.m_Changed)
+				{
+					if (base.maxLength >= 0 && base.text != null && base.text.Length > base.maxLength)
+					{
+						base.text = base.text.Substring(0, base.maxLength);
+					}
+					base.textField.text = base.text;
+					base.textField.TextFieldChanged();
+					evt.StopPropagation();
+				}
+				base.UpdateScrollOffset();
 			}
-			return result;
 		}
 
 		public void PreDrawCursor(string newText)

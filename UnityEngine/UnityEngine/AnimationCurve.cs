@@ -136,6 +136,11 @@ namespace UnityEngine
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern void SmoothTangents(int index, float weight);
 
+		public static AnimationCurve Constant(float timeStart, float timeEnd, float value)
+		{
+			return AnimationCurve.Linear(timeStart, value, timeEnd, value);
+		}
+
 		public static AnimationCurve Linear(float timeStart, float valueStart, float timeEnd, float valueEnd)
 		{
 			float num = (valueEnd - valueStart) / (timeEnd - timeStart);

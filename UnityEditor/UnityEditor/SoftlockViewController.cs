@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using UnityEditor.Collaboration;
-using UnityEditor.Web;
 using UnityEngine;
 
 namespace UnityEditor
@@ -221,6 +220,7 @@ namespace UnityEditor
 			this.UnregisterDrawDelegates();
 			ObjectListArea.postAssetIconDrawCallback += new ObjectListArea.OnAssetIconDrawDelegate(SoftlockViewController.Instance.DrawProjectBrowserGridUI);
 			ObjectListArea.postAssetLabelDrawCallback += new ObjectListArea.OnAssetLabelDrawDelegate(SoftlockViewController.Instance.DrawProjectBrowserListUI);
+			AssetsTreeViewGUI.postAssetLabelDrawCallback += new AssetsTreeViewGUI.OnAssetLabelDrawDelegate(SoftlockViewController.Instance.DrawSingleColumnProjectBrowserUI);
 			Editor.OnPostIconGUI = (Editor.OnEditorGUIDelegate)Delegate.Combine(Editor.OnPostIconGUI, new Editor.OnEditorGUIDelegate(SoftlockViewController.Instance.DrawInspectorUI));
 			GameObjectTreeViewGUI.OnPostHeaderGUI = (GameObjectTreeViewGUI.OnHeaderGUIDelegate)Delegate.Combine(GameObjectTreeViewGUI.OnPostHeaderGUI, new GameObjectTreeViewGUI.OnHeaderGUIDelegate(SoftlockViewController.Instance.DrawSceneUI));
 		}
@@ -228,7 +228,7 @@ namespace UnityEditor
 		private bool HasSoftlockSupport(Editor editor)
 		{
 			bool result;
-			if (!CollabAccess.Instance.IsServiceEnabled() || editor == null || editor.targets.Length > 1)
+			if (!Collab.instance.IsCollabEnabledForCurrentProject() || editor == null || editor.targets.Length > 1)
 			{
 				result = false;
 			}
@@ -252,7 +252,7 @@ namespace UnityEditor
 		private bool HasSoftlocks(string assetGUID)
 		{
 			bool result;
-			if (!CollabAccess.Instance.IsServiceEnabled())
+			if (!Collab.instance.IsCollabEnabledForCurrentProject())
 			{
 				result = false;
 			}
@@ -357,23 +357,46 @@ namespace UnityEditor
 		private bool DrawProjectBrowserListUI(Rect drawRect, string assetGUID, bool isListMode)
 		{
 			bool result;
-			if (!this.HasSoftlocks(assetGUID))
+			if (!isListMode || !this.HasSoftlocks(assetGUID))
 			{
 				result = false;
 			}
 			else
 			{
-				Texture iconForSection = SoftLockUIData.GetIconForSection(SoftLockUIData.SectionEnum.ProjectBrowser);
-				bool flag = false;
-				if (iconForSection != null)
-				{
-					Rect iconRect = drawRect;
-					iconRect.width = drawRect.height;
-					iconRect.x = (float)Math.Round((double)(drawRect.center.x - iconRect.width / 2f));
-					this.DrawIconWithTooltips(iconRect, iconForSection, assetGUID);
-					flag = true;
-				}
-				result = flag;
+				Rect iconRect = drawRect;
+				iconRect.width = drawRect.height;
+				iconRect.x = (float)Math.Round((double)(drawRect.center.x - iconRect.width / 2f));
+				result = this.DrawInProjectBrowserListMode(iconRect, assetGUID);
+			}
+			return result;
+		}
+
+		private bool DrawSingleColumnProjectBrowserUI(Rect drawRect, string assetGUID)
+		{
+			bool result;
+			if (ProjectBrowser.s_LastInteractedProjectBrowser.IsTwoColumns() || !this.HasSoftlocks(assetGUID))
+			{
+				result = false;
+			}
+			else
+			{
+				Rect iconRect = drawRect;
+				iconRect.width = drawRect.height;
+				float num = iconRect.width / 2f;
+				iconRect.x = (float)Math.Round((double)(drawRect.xMax - iconRect.width - num));
+				result = this.DrawInProjectBrowserListMode(iconRect, assetGUID);
+			}
+			return result;
+		}
+
+		private bool DrawInProjectBrowserListMode(Rect iconRect, string assetGUID)
+		{
+			Texture iconForSection = SoftLockUIData.GetIconForSection(SoftLockUIData.SectionEnum.ProjectBrowser);
+			bool result = false;
+			if (iconForSection != null)
+			{
+				this.DrawIconWithTooltips(iconRect, iconForSection, assetGUID);
+				result = true;
 			}
 			return result;
 		}

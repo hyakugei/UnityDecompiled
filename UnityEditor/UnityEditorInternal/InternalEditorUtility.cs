@@ -11,6 +11,7 @@ using UnityEditor.Scripting.ScriptCompilation;
 using UnityEngine;
 using UnityEngine.Internal;
 using UnityEngine.Scripting;
+using UnityEngine.Tilemaps;
 
 namespace UnityEditorInternal
 {
@@ -197,6 +198,10 @@ namespace UnityEditorInternal
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern string GetEngineCoreModuleAssemblyPath();
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern string CalculateHashForObjectsAndDependencies(UnityEngine.Object[] objects);
 
 		[GeneratedByOldBindingsGenerator]
@@ -313,6 +318,10 @@ namespace UnityEditorInternal
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern bool HasAdvancedLicenseOnBuildTarget(BuildTarget target);
 
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern bool IsMobilePlatform(BuildTarget target);
+
 		public static Rect GetBoundsOfDesktopAtPoint(Vector2 pos)
 		{
 			Rect result;
@@ -331,6 +340,10 @@ namespace UnityEditorInternal
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void AddTag(string tag);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern string[] GetLayersWithId();
 
 		public static LayerMask ConcatenatedLayersMaskToLayerMask(int concatenatedLayersMask)
 		{
@@ -409,7 +422,7 @@ namespace UnityEditorInternal
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern int GetClassIDWithoutLoadingObject(int instanceID);
+		public static extern Type GetTypeWithoutLoadingObject(int instanceID);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -513,6 +526,18 @@ namespace UnityEditorInternal
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern Color[] INTERNAL_CALL_ReadScreenPixel(ref Vector2 pixelPos, int sizex, int sizey);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern void SetGpuDeviceAndRecreateGraphics(int index, string name);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern bool IsGpuDeviceSelectionSupported();
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern string[] GetGpuDevices();
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -846,6 +871,15 @@ namespace UnityEditorInternal
 				}
 				else
 				{
+					if (component2 is TilemapRenderer)
+					{
+						Tilemap component4 = component2.GetComponent<Tilemap>();
+						if (component4 != null)
+						{
+							result = component4.localBounds;
+							return result;
+						}
+					}
 					result = new Bounds(Vector3.zero, Vector3.zero);
 				}
 			}
@@ -1078,6 +1112,12 @@ namespace UnityEditorInternal
 				return result;
 			case "js":
 				result = EditorGUIUtility.FindTexture("Js Script Icon");
+				return result;
+			case "dll":
+				result = EditorGUIUtility.FindTexture("Assembly Icon");
+				return result;
+			case "asmdef":
+				result = EditorGUIUtility.FindTexture("AssemblyDefinitionAsset Icon");
 				return result;
 			case "mat":
 				result = EditorGUIUtility.FindTexture("Material Icon");
@@ -1586,13 +1626,8 @@ namespace UnityEditorInternal
 		internal static IEnumerable<string> GetAllScriptGUIDs()
 		{
 			return from asset in AssetDatabase.GetAllAssetPaths()
-			where InternalEditorUtility.IsScriptOrAssembly(asset)
+			where InternalEditorUtility.IsScriptOrAssembly(asset) && (!AssetDatabase.IsPackagedAssetPath(asset) && !AssetDatabase.IsInternalizedPackagedAssetPath(asset))
 			select AssetDatabase.AssetPathToGUID(asset);
-		}
-
-		internal static MonoIsland[] GetMonoIslands()
-		{
-			return EditorCompilationInterface.GetAllMonoIslands();
 		}
 
 		internal static MonoIsland[] GetMonoIslandsForPlayer()
@@ -1601,7 +1636,12 @@ namespace UnityEditorInternal
 			BuildTarget activeBuildTarget = EditorUserBuildSettings.activeBuildTarget;
 			PrecompiledAssembly[] unityAssemblies = InternalEditorUtility.GetUnityAssemblies(false, activeBuildTargetGroup, activeBuildTarget);
 			PrecompiledAssembly[] precompiledAssemblies = InternalEditorUtility.GetPrecompiledAssemblies(false, activeBuildTargetGroup, activeBuildTarget);
-			return EditorCompilationInterface.GetAllMonoIslandsExt(unityAssemblies, precompiledAssemblies, BuildFlags.None);
+			return EditorCompilationInterface.Instance.GetAllMonoIslands(unityAssemblies, precompiledAssemblies, EditorScriptCompilationOptions.BuildingEmpty);
+		}
+
+		internal static MonoIsland[] GetMonoIslands()
+		{
+			return EditorCompilationInterface.GetAllMonoIslands();
 		}
 
 		internal static string[] GetCompilationDefinesForPlayer()
@@ -1609,6 +1649,12 @@ namespace UnityEditorInternal
 			BuildTargetGroup activeBuildTargetGroup = EditorUserBuildSettings.activeBuildTargetGroup;
 			BuildTarget activeBuildTarget = EditorUserBuildSettings.activeBuildTarget;
 			return InternalEditorUtility.GetCompilationDefines(EditorScriptCompilationOptions.BuildingEmpty, activeBuildTargetGroup, activeBuildTarget);
+		}
+
+		internal static string GetMonolithicEngineAssemblyPath()
+		{
+			string directoryName = Path.GetDirectoryName(InternalEditorUtility.GetEditorAssemblyPath());
+			return Path.Combine(directoryName, "UnityEngine.dll");
 		}
 	}
 }

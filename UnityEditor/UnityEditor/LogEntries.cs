@@ -50,7 +50,7 @@ namespace UnityEditor
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern void GetFirstTwoLinesEntryTextAndModeInternal(int row, ref int mask, ref string outString);
+		public static extern void GetLinesAndModeFromEntryInternal(int row, int numberOfLines, ref int mask, ref string outString);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]

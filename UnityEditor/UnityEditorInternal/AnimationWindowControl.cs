@@ -161,9 +161,6 @@ namespace UnityEditorInternal
 		[SerializeField]
 		private AnimationClip m_CandidateClip;
 
-		[NonSerialized]
-		private List<UndoPropertyModification> m_Candidates;
-
 		[SerializeField]
 		private AnimationModeDriver m_Driver;
 

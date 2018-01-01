@@ -20,6 +20,11 @@ namespace UnityEditor
 			return this.renderer.GetCurveOfComponent(this.component);
 		}
 
+		public float ClampedValue(float value)
+		{
+			return value;
+		}
+
 		public float RangeStart()
 		{
 			return this.renderer.RangeStart();

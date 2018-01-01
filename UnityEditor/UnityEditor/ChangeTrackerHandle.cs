@@ -61,5 +61,18 @@ namespace UnityEditor
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern bool Internal_PollChanges();
+
+		internal void ForceDirtyNextPoll()
+		{
+			if (this.m_Handle == IntPtr.Zero)
+			{
+				throw new ArgumentNullException("Not a valid handle, has it been released already?");
+			}
+			this.Internal_ForceUpdate();
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void Internal_ForceUpdate();
 	}
 }

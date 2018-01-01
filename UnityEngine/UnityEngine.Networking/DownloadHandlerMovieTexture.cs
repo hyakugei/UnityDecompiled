@@ -1,7 +1,6 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using UnityEngine.Scripting;
 
 namespace UnityEngine.Networking
 {
@@ -10,7 +9,6 @@ namespace UnityEngine.Networking
 	{
 		public extern MovieTexture movieTexture
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
@@ -20,23 +18,23 @@ namespace UnityEngine.Networking
 			this.InternalCreateDHMovieTexture();
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern void InternalCreateDHMovieTexture();
+		private static extern IntPtr Create(DownloadHandlerMovieTexture obj);
+
+		private void InternalCreateDHMovieTexture()
+		{
+			this.m_Ptr = DownloadHandlerMovieTexture.Create(this);
+		}
 
 		protected override byte[] GetData()
 		{
-			return this.InternalGetData();
+			return DownloadHandler.InternalGetByteArray(this);
 		}
 
 		protected override string GetText()
 		{
 			throw new NotSupportedException("String access is not supported for movies");
 		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern byte[] InternalGetData();
 
 		public static MovieTexture GetContent(UnityWebRequest uwr)
 		{

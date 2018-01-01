@@ -432,8 +432,7 @@ namespace UnityEditor.IMGUI.Controls
 				IL_2C:
 				if (typeForControl == EventType.DragUpdated || typeForControl == EventType.DragPerform)
 				{
-					bool firstItem = row == 0;
-					if (this.dragging != null && this.dragging.DragElement(item, rect, firstItem))
+					if (this.dragging != null && this.dragging.DragElement(item, rect, row))
 					{
 						GUIUtility.hotControl = 0;
 					}
@@ -555,10 +554,7 @@ namespace UnityEditor.IMGUI.Controls
 			{
 				this.m_TotalRect = rect;
 			}
-			if (this.m_GUIView == null)
-			{
-				this.m_GUIView = GUIView.current;
-			}
+			this.m_GUIView = GUIView.current;
 			if (this.m_GUIView != null && !this.m_GUIView.hasFocus && this.state.renameOverlay.IsRenaming())
 			{
 				this.EndNameEditing(true);
@@ -823,14 +819,14 @@ namespace UnityEditor.IMGUI.Controls
 				else if (this.dragging != null && this.m_TotalRect.Contains(Event.current.mousePosition))
 				{
 					this.m_DragSelection.Clear();
-					this.dragging.DragElement(null, default(Rect), false);
+					this.dragging.DragElement(null, default(Rect), -1);
 					this.Repaint();
 					Event.current.Use();
 				}
 			}
 			else if (this.dragging != null && this.m_TotalRect.Contains(Event.current.mousePosition))
 			{
-				this.dragging.DragElement(null, default(Rect), false);
+				this.dragging.DragElement(null, default(Rect), -1);
 				this.Repaint();
 				Event.current.Use();
 			}
@@ -1209,19 +1205,22 @@ namespace UnityEditor.IMGUI.Controls
 
 		private void EnsureRowIsVisible(int row, bool animated)
 		{
-			if (row >= 0)
+			if (this.m_UseScrollView)
 			{
-				float num = (this.m_VisibleRect.height <= 0f) ? this.m_TotalRect.height : this.m_VisibleRect.height;
-				Rect rectForFraming = this.gui.GetRectForFraming(row);
-				float y = rectForFraming.y;
-				float num2 = rectForFraming.yMax - num;
-				if (this.state.scrollPos.y < num2)
+				if (row >= 0)
 				{
-					this.ChangeScrollValue(num2, animated);
-				}
-				else if (this.state.scrollPos.y > y)
-				{
-					this.ChangeScrollValue(y, animated);
+					float num = (this.m_VisibleRect.height <= 0f) ? this.m_TotalRect.height : this.m_VisibleRect.height;
+					Rect rectForFraming = this.gui.GetRectForFraming(row);
+					float y = rectForFraming.y;
+					float num2 = rectForFraming.yMax - num;
+					if (this.state.scrollPos.y < num2)
+					{
+						this.ChangeScrollValue(num2, animated);
+					}
+					else if (this.state.scrollPos.y > y)
+					{
+						this.ChangeScrollValue(y, animated);
+					}
 				}
 			}
 		}

@@ -17,5 +17,13 @@ namespace UnityEngineInternal.Input
 
 		[FieldOffset(12)]
 		public double time;
+
+		public NativeInputEvent(NativeInputEventType type, int sizeInBytes, int deviceId, double time)
+		{
+			this.type = type;
+			this.sizeInBytes = sizeInBytes;
+			this.deviceId = deviceId;
+			this.time = time;
+		}
 	}
 }

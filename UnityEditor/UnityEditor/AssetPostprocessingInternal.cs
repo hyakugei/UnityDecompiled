@@ -286,6 +286,33 @@ namespace UnityEditor
 		}
 
 		[RequiredByNativeCode]
+		private static void PostprocessAnimation(GameObject root, AnimationClip clip)
+		{
+			IEnumerator enumerator = AssetPostprocessingInternal.m_ImportProcessors.GetEnumerator();
+			try
+			{
+				while (enumerator.MoveNext())
+				{
+					AssetPostprocessor target = (AssetPostprocessor)enumerator.Current;
+					object[] args = new object[]
+					{
+						root,
+						clip
+					};
+					AttributeHelper.InvokeMemberIfAvailable(target, "OnPostprocessAnimation", args);
+				}
+			}
+			finally
+			{
+				IDisposable disposable;
+				if ((disposable = (enumerator as IDisposable)) != null)
+				{
+					disposable.Dispose();
+				}
+			}
+		}
+
+		[RequiredByNativeCode]
 		private static Material ProcessMeshAssignMaterial(Renderer renderer, Material material)
 		{
 			IEnumerator enumerator = AssetPostprocessingInternal.m_ImportProcessors.GetEnumerator();
@@ -425,6 +452,34 @@ namespace UnityEditor
 					disposable.Dispose();
 				}
 			}
+		}
+
+		[RequiredByNativeCode]
+		private static EditorCurveBinding[] PostprocessGameObjectWithAnimatedUserProperties(GameObject go, EditorCurveBinding[] bindings)
+		{
+			IEnumerator enumerator = AssetPostprocessingInternal.m_ImportProcessors.GetEnumerator();
+			try
+			{
+				while (enumerator.MoveNext())
+				{
+					AssetPostprocessor target = (AssetPostprocessor)enumerator.Current;
+					object[] args = new object[]
+					{
+						go,
+						bindings
+					};
+					AttributeHelper.InvokeMemberIfAvailable(target, "OnPostprocessGameObjectWithAnimatedUserProperties", args);
+				}
+			}
+			finally
+			{
+				IDisposable disposable;
+				if ((disposable = (enumerator as IDisposable)) != null)
+				{
+					disposable.Dispose();
+				}
+			}
+			return bindings;
 		}
 
 		[RequiredByNativeCode]

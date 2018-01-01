@@ -29,8 +29,14 @@ namespace UnityEngine.Experimental.UIElements.StyleSheets
 		MaxWidth,
 		MaxHeight,
 		Flex,
-		BorderWidth,
-		BorderRadius,
+		BorderLeftWidth,
+		BorderTopWidth,
+		BorderRightWidth,
+		BorderBottomWidth,
+		BorderTopLeftRadius,
+		BorderTopRightRadius,
+		BorderBottomRightRadius,
+		BorderBottomLeftRadius,
 		FlexDirection,
 		FlexWrap,
 		JustifyContent,
@@ -54,6 +60,9 @@ namespace UnityEngine.Experimental.UIElements.StyleSheets
 		SliceRight,
 		SliceBottom,
 		Opacity,
+		BorderRadius,
+		Margin,
+		Padding,
 		Custom
 	}
 }

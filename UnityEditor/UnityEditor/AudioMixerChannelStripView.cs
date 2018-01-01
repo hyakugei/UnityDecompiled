@@ -614,6 +614,7 @@ namespace UnityEditor
 				{
 					if (GUI.Button(position, this.bypassButtonContent, GUIStyle.none))
 					{
+						Undo.RecordObject(effect, "Bypass Effect");
 						effect.bypass = !effect.bypass;
 						this.m_Controller.UpdateBypass();
 						InspectorWindow.RepaintAllInspectors();

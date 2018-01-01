@@ -1331,6 +1331,17 @@ namespace UnityEditor
 				}
 				break;
 			}
+			case ProceduralPropertyType.String:
+			{
+				EditorGUI.BeginChangeCheck();
+				string value6 = EditorGUILayout.TextField(gUIContent, ProceduralMaterialInspector.m_Material.GetProceduralString(input.name), new GUILayoutOption[0]);
+				if (EditorGUI.EndChangeCheck())
+				{
+					this.RecordForUndo(ProceduralMaterialInspector.m_Material, ProceduralMaterialInspector.m_Importer, "Modified property " + input.name + " for material " + ProceduralMaterialInspector.m_Material.name);
+					ProceduralMaterialInspector.m_Material.SetProceduralString(input.name, value6);
+				}
+				break;
+			}
 			}
 		}
 

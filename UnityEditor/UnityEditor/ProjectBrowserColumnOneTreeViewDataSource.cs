@@ -83,11 +83,24 @@ namespace UnityEditor
 			int num = 0;
 			string displayName = "Assets";
 			TreeViewItem treeViewItem = new TreeViewItem(assetsFolderInstanceID, num, this.m_RootItem, displayName);
-			this.ReadAssetDatabase(treeViewItem, num + 1);
-			TreeViewItem treeViewItem2 = SavedSearchFilters.ConvertToTreeView();
-			treeViewItem2.parent = this.m_RootItem;
-			list.Add(treeViewItem2);
+			this.ReadAssetDatabase(HierarchyType.Assets, treeViewItem, num + 1);
+			TreeViewItem treeViewItem2 = null;
+			if (Unsupported.IsDeveloperBuild() && EditorPrefs.GetBool("ShowPackagesFolder"))
+			{
+				string guid = AssetDatabase.AssetPathToGUID(AssetDatabase.GetPackagesRootPath());
+				int instanceIDFromGUID = AssetDatabase.GetInstanceIDFromGUID(guid);
+				string packagesRootPath = AssetDatabase.GetPackagesRootPath();
+				treeViewItem2 = new TreeViewItem(instanceIDFromGUID, num, this.m_RootItem, packagesRootPath);
+				this.ReadAssetDatabase(HierarchyType.Packages, treeViewItem2, num + 1);
+			}
+			TreeViewItem treeViewItem3 = SavedSearchFilters.ConvertToTreeView();
+			treeViewItem3.parent = this.m_RootItem;
+			list.Add(treeViewItem3);
 			list.Add(treeViewItem);
+			if (treeViewItem2 != null)
+			{
+				list.Add(treeViewItem2);
+			}
 			this.m_RootItem.children = list;
 			foreach (TreeViewItem current in this.m_RootItem.children)
 			{
@@ -97,9 +110,9 @@ namespace UnityEditor
 			this.m_NeedRefreshRows = true;
 		}
 
-		private void ReadAssetDatabase(TreeViewItem parent, int baseDepth)
+		private void ReadAssetDatabase(HierarchyType htype, TreeViewItem parent, int baseDepth)
 		{
-			IHierarchyProperty hierarchyProperty = new HierarchyProperty(HierarchyType.Assets);
+			IHierarchyProperty hierarchyProperty = new HierarchyProperty(htype);
 			hierarchyProperty.Reset();
 			Texture2D texture2D = EditorGUIUtility.FindTexture(EditorResourcesUtility.folderIconName);
 			Texture2D texture2D2 = EditorGUIUtility.FindTexture(EditorResourcesUtility.emptyFolderIconName);

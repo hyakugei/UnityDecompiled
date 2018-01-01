@@ -5,7 +5,7 @@ using UnityEditorInternal;
 
 namespace UnityEditor.RestService
 {
-	internal class OpenDocumentsRestHandler : Handler
+	internal class OpenDocumentsRestHandler : JSONHandler
 	{
 		protected override JSONValue HandlePost(Request request, JSONValue payload)
 		{
@@ -27,7 +27,7 @@ namespace UnityEditor.RestService
 		protected override JSONValue HandleGet(Request request, JSONValue payload)
 		{
 			JSONValue result = default(JSONValue);
-			result["documents"] = Handler.ToJSON(ScriptEditorSettings.OpenDocuments);
+			result["documents"] = JSONHandler.ToJSON(ScriptEditorSettings.OpenDocuments);
 			return result;
 		}
 

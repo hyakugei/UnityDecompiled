@@ -1,4 +1,5 @@
 using System;
+using UnityEditorInternal;
 using UnityEngine;
 
 namespace UnityEditor
@@ -72,8 +73,6 @@ namespace UnityEditor
 
 			public static string advancedText = "Advanced Options";
 
-			public static GUIContent emissiveWarning = new GUIContent("Emissive value is animated but the material has not been configured to support emissive. Please make sure the material itself has some amount of emissive.");
-
 			public static readonly string[] blendNames = Enum.GetNames(typeof(StandardShaderGUI.BlendMode));
 		}
 
@@ -133,7 +132,9 @@ namespace UnityEditor
 
 		private StandardShaderGUI.WorkflowMode m_WorkflowMode = StandardShaderGUI.WorkflowMode.Specular;
 
-		private ColorPickerHDRConfig m_ColorPickerHDRConfig = new ColorPickerHDRConfig(0f, 99f, 0.01010101f, 3f);
+		private const float kMaxfp16 = 65536f;
+
+		private ColorPickerHDRConfig m_ColorPickerHDRConfig = new ColorPickerHDRConfig(0f, 65536f, 1.52587891E-05f, 3f);
 
 		private bool m_FirstTimeApply = true;
 
@@ -200,7 +201,7 @@ namespace UnityEditor
 			GUILayout.Label(StandardShaderGUI.Styles.primaryMapsText, EditorStyles.boldLabel, new GUILayoutOption[0]);
 			this.DoAlbedoArea(material);
 			this.DoSpecularMetallicArea();
-			this.m_MaterialEditor.TexturePropertySingleLine(StandardShaderGUI.Styles.normalMapText, this.bumpMap, (!(this.bumpMap.textureValue != null)) ? null : this.bumpScale);
+			this.DoNormalArea();
 			this.m_MaterialEditor.TexturePropertySingleLine(StandardShaderGUI.Styles.heightMapText, this.heightMap, (!(this.heightMap.textureValue != null)) ? null : this.heigtMapScale);
 			this.m_MaterialEditor.TexturePropertySingleLine(StandardShaderGUI.Styles.occlusionText, this.occlusionMap, (!(this.occlusionMap.textureValue != null)) ? null : this.occlusionStrength);
 			this.m_MaterialEditor.TexturePropertySingleLine(StandardShaderGUI.Styles.detailMaskText, this.detailMask);
@@ -300,6 +301,15 @@ namespace UnityEditor
 				this.blendMode.floatValue = (float)blendMode;
 			}
 			EditorGUI.showMixedValue = false;
+		}
+
+		private void DoNormalArea()
+		{
+			this.m_MaterialEditor.TexturePropertySingleLine(StandardShaderGUI.Styles.normalMapText, this.bumpMap, (!(this.bumpMap.textureValue != null)) ? null : this.bumpScale);
+			if (this.bumpScale.floatValue != 1f && InternalEditorUtility.IsMobilePlatform(EditorUserBuildSettings.activeBuildTarget) && this.m_MaterialEditor.HelpBoxWithButton(EditorGUIUtility.TextContent("Bump scale is not supported on mobile platforms"), EditorGUIUtility.TextContent("Fix Now")))
+			{
+				this.bumpScale.floatValue = 1f;
+			}
 		}
 
 		private void DoAlbedoArea(Material material)

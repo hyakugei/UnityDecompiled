@@ -16,17 +16,23 @@ namespace UnityEditor
 
 		private static GUIContent s_CheckForNewUpdatesText;
 
-		private static string s_ErrorString;
+		[SerializeField]
+		private string s_ErrorString;
 
-		private static string s_LatestVersionString;
+		[SerializeField]
+		private string s_LatestVersionString;
 
-		private static string s_LatestVersionMessage;
+		[SerializeField]
+		private string s_LatestVersionMessage;
 
-		private static string s_UpdateURL;
+		[SerializeField]
+		private string s_UpdateURL;
 
-		private static bool s_HasUpdate;
+		[SerializeField]
+		private bool s_HasUpdate;
 
-		private static bool s_HasConnectionError;
+		[SerializeField]
+		private bool s_HasConnectionError;
 
 		private static bool s_ShowAtStartup;
 
@@ -35,26 +41,26 @@ namespace UnityEditor
 		private static void ShowEditorErrorWindow(string errorString)
 		{
 			EditorUpdateWindow.LoadResources();
-			EditorUpdateWindow.s_ErrorString = errorString;
-			EditorUpdateWindow.s_HasConnectionError = true;
-			EditorUpdateWindow.s_HasUpdate = false;
-			EditorUpdateWindow.ShowWindow();
+			EditorUpdateWindow editorUpdateWindow = EditorUpdateWindow.ShowWindow();
+			editorUpdateWindow.s_ErrorString = errorString;
+			editorUpdateWindow.s_HasConnectionError = true;
+			editorUpdateWindow.s_HasUpdate = false;
 		}
 
 		private static void ShowEditorUpdateWindow(string latestVersionString, string latestVersionMessage, string updateURL)
 		{
 			EditorUpdateWindow.LoadResources();
-			EditorUpdateWindow.s_LatestVersionString = latestVersionString;
-			EditorUpdateWindow.s_LatestVersionMessage = latestVersionMessage;
-			EditorUpdateWindow.s_UpdateURL = updateURL;
-			EditorUpdateWindow.s_HasConnectionError = false;
-			EditorUpdateWindow.s_HasUpdate = (updateURL.Length > 0);
-			EditorUpdateWindow.ShowWindow();
+			EditorUpdateWindow editorUpdateWindow = EditorUpdateWindow.ShowWindow();
+			editorUpdateWindow.s_LatestVersionString = latestVersionString;
+			editorUpdateWindow.s_LatestVersionMessage = latestVersionMessage;
+			editorUpdateWindow.s_UpdateURL = updateURL;
+			editorUpdateWindow.s_HasConnectionError = false;
+			editorUpdateWindow.s_HasUpdate = (updateURL.Length > 0);
 		}
 
-		private static void ShowWindow()
+		private static EditorUpdateWindow ShowWindow()
 		{
-			EditorWindow.GetWindowWithRect(typeof(EditorUpdateWindow), new Rect(100f, 100f, 570f, 400f), true, EditorUpdateWindow.s_Title.text);
+			return EditorWindow.GetWindowWithRect(typeof(EditorUpdateWindow), new Rect(100f, 100f, 570f, 400f), true, EditorUpdateWindow.s_Title.text) as EditorUpdateWindow;
 		}
 
 		private static void LoadResources()
@@ -80,16 +86,16 @@ namespace UnityEditor
 			GUILayout.BeginHorizontal(new GUILayoutOption[0]);
 			GUILayout.Space(120f);
 			GUILayout.BeginVertical(new GUILayoutOption[0]);
-			if (EditorUpdateWindow.s_HasConnectionError)
+			if (this.s_HasConnectionError)
 			{
-				GUILayout.Label(EditorUpdateWindow.s_ErrorString, "WordWrappedLabel", new GUILayoutOption[]
+				GUILayout.Label(this.s_ErrorString, "WordWrappedLabel", new GUILayoutOption[]
 				{
 					GUILayout.Width(405f)
 				});
 			}
-			else if (EditorUpdateWindow.s_HasUpdate)
+			else if (this.s_HasUpdate)
 			{
-				GUILayout.Label(string.Format(EditorUpdateWindow.s_TextHasUpdate.text, InternalEditorUtility.GetFullUnityVersion(), EditorUpdateWindow.s_LatestVersionString), "WordWrappedLabel", new GUILayoutOption[]
+				GUILayout.Label(string.Format(EditorUpdateWindow.s_TextHasUpdate.text, InternalEditorUtility.GetFullUnityVersion(), this.s_LatestVersionString), "WordWrappedLabel", new GUILayoutOption[]
 				{
 					GUILayout.Width(300f)
 				});
@@ -99,7 +105,7 @@ namespace UnityEditor
 					GUILayout.Width(405f),
 					GUILayout.Height(200f)
 				});
-				GUILayout.Label(EditorUpdateWindow.s_LatestVersionMessage, "WordWrappedLabel", new GUILayoutOption[0]);
+				GUILayout.Label(this.s_LatestVersionMessage, "WordWrappedLabel", new GUILayoutOption[0]);
 				EditorGUILayout.EndScrollView();
 				GUILayout.Space(20f);
 				GUILayout.BeginHorizontal(new GUILayoutOption[0]);
@@ -108,14 +114,14 @@ namespace UnityEditor
 					GUILayout.Width(200f)
 				}))
 				{
-					Help.BrowseURL(EditorUpdateWindow.s_UpdateURL);
+					Help.BrowseURL(this.s_UpdateURL);
 				}
 				if (GUILayout.Button("Skip new version", new GUILayoutOption[]
 				{
 					GUILayout.Width(200f)
 				}))
 				{
-					EditorPrefs.SetString("EditorUpdateSkipVersionString", EditorUpdateWindow.s_LatestVersionString);
+					EditorPrefs.SetString("EditorUpdateSkipVersionString", this.s_LatestVersionString);
 					base.Close();
 				}
 				GUILayout.EndHorizontal();

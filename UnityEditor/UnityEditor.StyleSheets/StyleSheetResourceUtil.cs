@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using UnityEngine;
+using UnityEngine.StyleSheets;
 
 namespace UnityEditor.StyleSheets
 {
@@ -39,8 +40,21 @@ namespace UnityEditor.StyleSheets
 			{
 				@object = Resources.Load(pathName, type);
 			}
+			if (@object == null && lookForRetinaAssets)
+			{
+				@object = AssetDatabase.LoadMainAssetAtPath(text);
+			}
+			if (@object == null)
+			{
+				@object = AssetDatabase.LoadMainAssetAtPath(pathName);
+			}
 			if (@object != null)
 			{
+				string assetPath = AssetDatabase.GetAssetPath(@object);
+				if (type != typeof(StyleSheet) && !assetPath.StartsWith("Library"))
+				{
+					StyleSheetAssetPostprocessor.AddReferencedAssetPath(assetPath);
+				}
 			}
 			return @object;
 		}

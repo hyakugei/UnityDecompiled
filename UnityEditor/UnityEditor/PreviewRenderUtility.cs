@@ -15,6 +15,8 @@ namespace UnityEditor
 
 		private SavedRenderTargetState m_SavedState;
 
+		private bool m_PixelPerfect;
+
 		private Material m_InvisibleMaterial;
 
 		[Obsolete("Use the property camera instead (UnityUpgradable) -> camera", false)]
@@ -96,6 +98,11 @@ namespace UnityEditor
 		{
 		}
 
+		public PreviewRenderUtility(bool renderFullScene, bool pixelPerfect) : this()
+		{
+			this.m_PixelPerfect = pixelPerfect;
+		}
+
 		public PreviewRenderUtility()
 		{
 			this.m_PreviewScene = new PreviewScene("Preview Scene");
@@ -108,6 +115,17 @@ namespace UnityEditor
 			this.Light0.color = SceneView.kSceneViewFrontLight;
 			this.Light1.transform.rotation = Quaternion.Euler(340f, 218f, 177f);
 			this.Light1.color = new Color(0.4f, 0.4f, 0.45f, 0f) * 0.7f;
+			this.m_PixelPerfect = false;
+		}
+
+		internal static void SetEnabledRecursive(GameObject go, bool enabled)
+		{
+			Renderer[] componentsInChildren = go.GetComponentsInChildren<Renderer>();
+			for (int i = 0; i < componentsInChildren.Length; i++)
+			{
+				Renderer renderer = componentsInChildren[i];
+				renderer.enabled = enabled;
+			}
 		}
 
 		public void Cleanup()
@@ -187,13 +205,21 @@ namespace UnityEditor
 				Light light2 = lights2[j];
 				light2.enabled = true;
 			}
+			SphericalHarmonicsL2 ambientProbe = RenderSettings.ambientProbe;
+			Unsupported.SetOverrideRenderSettings(this.previewScene.scene);
+			RenderSettings.ambientProbe = ambientProbe;
 		}
 
 		public float GetScaleFactor(float width, float height)
 		{
 			float a = Mathf.Max(Mathf.Min(width * 2f, 1024f), width) / width;
 			float b = Mathf.Max(Mathf.Min(height * 2f, 1024f), height) / height;
-			return Mathf.Min(a, b) * EditorGUIUtility.pixelsPerPoint;
+			float num = Mathf.Min(a, b) * EditorGUIUtility.pixelsPerPoint;
+			if (this.m_PixelPerfect)
+			{
+				num = Mathf.Max(Mathf.Round(num), 1f);
+			}
+			return num;
 		}
 
 		[Obsolete("This method has been marked obsolete, use BeginStaticPreview() instead (UnityUpgradable) -> BeginStaticPreview(*)", false)]
@@ -210,6 +236,7 @@ namespace UnityEditor
 
 		public Texture EndPreview()
 		{
+			Unsupported.RestoreOverrideRenderSettings();
 			this.m_SavedState.Restore();
 			this.FinishFrame();
 			return this.m_RenderTexture;
@@ -236,6 +263,7 @@ namespace UnityEditor
 
 		public Texture2D EndStaticPreview()
 		{
+			Unsupported.RestoreOverrideRenderSettings();
 			RenderTexture temporary = RenderTexture.GetTemporary((int)this.m_TargetRect.width, (int)this.m_TargetRect.height, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default);
 			GL.sRGBWrite = (QualitySettings.activeColorSpace == ColorSpace.Linear);
 			Graphics.Blit(this.m_RenderTexture, temporary);
@@ -250,9 +278,20 @@ namespace UnityEditor
 			return texture2D;
 		}
 
+		[Obsolete("AddSingleGO(GameObject go, bool instantiateAtZero) has been deprecated, use AddSingleGo(GameObject go) instead. instantiateAtZero has no effect and is not supported.")]
+		public void AddSingleGO(GameObject go, bool instantiateAtZero)
+		{
+			this.AddSingleGO(go);
+		}
+
 		public void AddSingleGO(GameObject go)
 		{
 			this.previewScene.AddGameObject(go);
+		}
+
+		public GameObject InstantiatePrefabInScene(GameObject prefab)
+		{
+			return (GameObject)PrefabUtility.InstantiatePrefab(prefab, this.m_PreviewScene.scene);
 		}
 
 		private Material GetInvisibleMaterial()
@@ -265,6 +304,11 @@ namespace UnityEditor
 				this.m_InvisibleMaterial.SetInt("_ZWrite", 0);
 			}
 			return this.m_InvisibleMaterial;
+		}
+
+		internal void AddManagedGO(GameObject go)
+		{
+			this.m_PreviewScene.AddManagedGO(go);
 		}
 
 		public void DrawMesh(Mesh mesh, Matrix4x4 matrix, Material mat, int subMeshIndex)
@@ -281,7 +325,8 @@ namespace UnityEditor
 		{
 			Quaternion rot = Quaternion.LookRotation(m.GetColumn(2), m.GetColumn(1));
 			Vector4 column = m.GetColumn(3);
-			this.DrawMesh(mesh, column, rot, mat, subMeshIndex, customProperties, probeAnchor, useLightProbe);
+			Vector3 scale = new Vector3(m.GetColumn(0).magnitude, m.GetColumn(1).magnitude, m.GetColumn(2).magnitude);
+			this.DrawMesh(mesh, column, scale, rot, mat, subMeshIndex, customProperties, probeAnchor, useLightProbe);
 		}
 
 		public void DrawMesh(Mesh mesh, Vector3 pos, Quaternion rot, Material mat, int subMeshIndex)
@@ -301,7 +346,12 @@ namespace UnityEditor
 
 		public void DrawMesh(Mesh mesh, Vector3 pos, Quaternion rot, Material mat, int subMeshIndex, MaterialPropertyBlock customProperties, Transform probeAnchor, bool useLightProbe)
 		{
-			Graphics.DrawMesh(mesh, Matrix4x4.TRS(pos, rot, Vector3.one), mat, 1, this.camera, subMeshIndex, customProperties, ShadowCastingMode.Off, false, probeAnchor, useLightProbe);
+			this.DrawMesh(mesh, pos, Vector3.one, rot, mat, subMeshIndex, customProperties, probeAnchor, useLightProbe);
+		}
+
+		public void DrawMesh(Mesh mesh, Vector3 pos, Vector3 scale, Quaternion rot, Material mat, int subMeshIndex, MaterialPropertyBlock customProperties, Transform probeAnchor, bool useLightProbe)
+		{
+			Graphics.DrawMesh(mesh, Matrix4x4.TRS(pos, rot, scale), mat, 1, this.camera, subMeshIndex, customProperties, ShadowCastingMode.Off, false, probeAnchor, useLightProbe);
 		}
 
 		internal static Mesh GetPreviewSphere()
@@ -366,7 +416,6 @@ namespace UnityEditor
 			this.camera.Render();
 			this.camera.fieldOfView = fieldOfView;
 			Unsupported.useScriptableRenderPipeline = useScriptableRenderPipeline;
-			Unsupported.RestoreOverrideRenderSettings();
 		}
 	}
 }

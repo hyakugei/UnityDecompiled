@@ -9,7 +9,7 @@ namespace UnityEngine.Experimental.UIElements
 		public ScrollerButton(Action clickEvent, long delay, long interval)
 		{
 			this.clickable = new Clickable(clickEvent, delay, interval);
-			base.AddManipulator(this.clickable);
+			this.AddManipulator(this.clickable);
 		}
 	}
 }

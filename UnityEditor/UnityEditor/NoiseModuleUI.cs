@@ -45,11 +45,11 @@ namespace UnityEditor
 
 			public GUIContent previewTextureMultiEdit = EditorGUIUtility.TextContent("Preview (Disabled)|Preview is disabled in multi-object editing mode.");
 
-			public string[] qualityDropdown = new string[]
+			public GUIContent[] qualityDropdown = new GUIContent[]
 			{
-				"Low (1D)",
-				"Medium (2D)",
-				"High (3D)"
+				EditorGUIUtility.TextContent("Low (1D)"),
+				EditorGUIUtility.TextContent("Medium (2D)"),
+				EditorGUIUtility.TextContent("High (3D)")
 			};
 		}
 
@@ -155,10 +155,6 @@ namespace UnityEditor
 
 		public override void OnInspectorGUI(InitialModuleUI initial)
 		{
-			if (NoiseModuleUI.s_Texts == null)
-			{
-				NoiseModuleUI.s_Texts = new NoiseModuleUI.Texts();
-			}
 			if (NoiseModuleUI.s_PreviewTextureDirty)
 			{
 				if (this.m_ParticleSystemUI.multiEdit)
@@ -186,22 +182,12 @@ namespace UnityEditor
 			bool flag = ModuleUI.GUIToggle(NoiseModuleUI.s_Texts.separateAxes, this.m_SeparateAxes, new GUILayoutOption[0]);
 			bool flag2 = EditorGUI.EndChangeCheck();
 			EditorGUI.BeginChangeCheck();
-			if (flag2)
+			if (flag2 && !flag)
 			{
-				if (flag)
-				{
-					this.m_StrengthX.RemoveCurveFromEditor();
-					this.m_RemapX.RemoveCurveFromEditor();
-				}
-				else
-				{
-					this.m_StrengthX.RemoveCurveFromEditor();
-					this.m_StrengthY.RemoveCurveFromEditor();
-					this.m_StrengthZ.RemoveCurveFromEditor();
-					this.m_RemapX.RemoveCurveFromEditor();
-					this.m_RemapY.RemoveCurveFromEditor();
-					this.m_RemapZ.RemoveCurveFromEditor();
-				}
+				this.m_StrengthY.RemoveCurveFromEditor();
+				this.m_StrengthZ.RemoveCurveFromEditor();
+				this.m_RemapY.RemoveCurveFromEditor();
+				this.m_RemapZ.RemoveCurveFromEditor();
 			}
 			if (!this.m_StrengthX.stateHasMultipleDifferentValues)
 			{
@@ -233,7 +219,15 @@ namespace UnityEditor
 				ModuleUI.GUIFloat(NoiseModuleUI.s_Texts.octaveScale, this.m_OctaveScale, new GUILayoutOption[0]);
 			}
 			ModuleUI.GUIPopup(NoiseModuleUI.s_Texts.quality, this.m_Quality, NoiseModuleUI.s_Texts.qualityDropdown, new GUILayoutOption[0]);
+			EditorGUI.BeginChangeCheck();
 			bool flag3 = ModuleUI.GUIToggle(NoiseModuleUI.s_Texts.remap, this.m_RemapEnabled, new GUILayoutOption[0]);
+			bool flag4 = EditorGUI.EndChangeCheck();
+			if (flag4 && !flag3)
+			{
+				this.m_RemapX.RemoveCurveFromEditor();
+				this.m_RemapY.RemoveCurveFromEditor();
+				this.m_RemapZ.RemoveCurveFromEditor();
+			}
 			using (new EditorGUI.DisabledScope(!flag3))
 			{
 				if (flag)

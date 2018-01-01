@@ -20,8 +20,6 @@ namespace UnityEditor
 
 		private const HierarchyType k_HierarchyType = HierarchyType.GameObjects;
 
-		private readonly int kGameObjectClassID = UnityType.FindTypeByName("GameObject").persistentTypeID;
-
 		private const int k_DefaultStartCapacity = 1000;
 
 		private int m_RootInstanceID;
@@ -105,15 +103,6 @@ namespace UnityEditor
 			base.rootIsCollapsable = rootItemIsCollapsable;
 		}
 
-		public override void OnInitialize()
-		{
-			base.OnInitialize();
-			GameObjectTreeViewGUI gameObjectTreeViewGUI = (GameObjectTreeViewGUI)this.m_TreeView.gui;
-			gameObjectTreeViewGUI.scrollHeightChanged += new Action(this.EnsureFullyInitialized);
-			gameObjectTreeViewGUI.scrollPositionChanged += new Action(this.EnsureFullyInitialized);
-			gameObjectTreeViewGUI.mouseAndKeyboardInput += new Action(this.EnsureFullyInitialized);
-		}
-
 		internal void SetupChildParentReferencesIfNeeded()
 		{
 			this.EnsureFullyInitialized();
@@ -149,7 +138,7 @@ namespace UnityEditor
 		private bool IsValidHierarchyInstanceID(int instanceID)
 		{
 			bool flag = SceneHierarchyWindow.IsSceneHeaderInHierarchyWindow(EditorSceneManager.GetSceneByHandle(instanceID));
-			bool flag2 = InternalEditorUtility.GetClassIDWithoutLoadingObject(instanceID) == this.kGameObjectClassID;
+			bool flag2 = InternalEditorUtility.GetTypeWithoutLoadingObject(instanceID) == typeof(GameObject);
 			return flag || flag2;
 		}
 
@@ -378,8 +367,11 @@ namespace UnityEditor
 			{
 				GameObjectTreeViewDataSource.Log("Init full (" + this.m_RowCount + ")");
 			}
-			HierarchyProperty property = this.CreateHierarchyProperty();
-			this.InitializeRows(property, 0, this.m_RowCount - 1);
+			HierarchyProperty hierarchyProperty = this.CreateHierarchyProperty();
+			this.m_RowCount = hierarchyProperty.CountRemaining(this.m_TreeView.state.expandedIDs.ToArray());
+			this.ResizeItemList(this.m_RowCount);
+			hierarchyProperty.Reset();
+			this.InitializeRows(hierarchyProperty, 0, this.m_RowCount - 1);
 		}
 
 		private void InitializeProgressivly(HierarchyProperty property, bool subTreeWanted, bool isSearching)

@@ -5,6 +5,7 @@ using UnityEditor.Audio;
 using UnityEditor.IMGUI.Controls;
 using UnityEditorInternal;
 using UnityEngine;
+using UnityEngine.Scripting;
 
 namespace UnityEditor
 {
@@ -198,6 +199,7 @@ namespace UnityEditor
 		{
 			if (!(this.m_Controller == null))
 			{
+				this.m_AllControllers = AudioMixerWindow.FindAllAudioMixerControllers();
 				this.m_Controller.SanitizeGroupViews();
 				this.m_Controller.OnUnitySelectionChanged();
 				if (this.m_GroupTree != null)
@@ -220,7 +222,8 @@ namespace UnityEditor
 			}
 		}
 
-		public static void Create()
+		[RequiredByNativeCode]
+		public static void CreateAudioMixerWindow()
 		{
 			AudioMixerWindow window = EditorWindow.GetWindow<AudioMixerWindow>(new Type[]
 			{
@@ -380,18 +383,30 @@ namespace UnityEditor
 			base.titleContent = base.GetLocalizedTitleContent();
 			AudioMixerWindow.s_Instance = this;
 			Undo.undoRedoPerformed = (Undo.UndoRedoCallback)Delegate.Combine(Undo.undoRedoPerformed, new Undo.UndoRedoCallback(this.UndoRedoPerformed));
-			EditorApplication.playmodeStateChanged = (EditorApplication.CallbackFunction)Delegate.Combine(EditorApplication.playmodeStateChanged, new EditorApplication.CallbackFunction(this.PlaymodeChanged));
+			EditorApplication.pauseStateChanged += new Action<PauseState>(this.OnPauseStateChanged);
+			EditorApplication.playModeStateChanged += new Action<PlayModeStateChange>(this.OnPlayModeStateChanged);
 			EditorApplication.projectWindowChanged = (EditorApplication.CallbackFunction)Delegate.Combine(EditorApplication.projectWindowChanged, new EditorApplication.CallbackFunction(this.OnProjectChanged));
 		}
 
 		public void OnDisable()
 		{
-			EditorApplication.playmodeStateChanged = (EditorApplication.CallbackFunction)Delegate.Remove(EditorApplication.playmodeStateChanged, new EditorApplication.CallbackFunction(this.PlaymodeChanged));
+			EditorApplication.pauseStateChanged -= new Action<PauseState>(this.OnPauseStateChanged);
+			EditorApplication.playModeStateChanged -= new Action<PlayModeStateChange>(this.OnPlayModeStateChanged);
 			Undo.undoRedoPerformed = (Undo.UndoRedoCallback)Delegate.Remove(Undo.undoRedoPerformed, new Undo.UndoRedoCallback(this.UndoRedoPerformed));
 			EditorApplication.projectWindowChanged = (EditorApplication.CallbackFunction)Delegate.Remove(EditorApplication.projectWindowChanged, new EditorApplication.CallbackFunction(this.OnProjectChanged));
 		}
 
-		private void PlaymodeChanged()
+		private void OnPauseStateChanged(PauseState state)
+		{
+			this.OnPauseOrPlayModeStateChanged();
+		}
+
+		private void OnPlayModeStateChanged(PlayModeStateChange state)
+		{
+			this.OnPauseOrPlayModeStateChanged();
+		}
+
+		private void OnPauseOrPlayModeStateChanged()
 		{
 			this.m_Ticker.Reset();
 			if (this.m_Controller != null)

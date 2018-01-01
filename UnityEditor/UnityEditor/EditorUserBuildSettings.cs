@@ -283,6 +283,16 @@ namespace UnityEditor
 			set;
 		}
 
+		public static extern AndroidETC2Fallback androidETC2Fallback
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
 		public static extern AndroidBuildSystem androidBuildSystem
 		{
 			[GeneratedByOldBindingsGenerator]
@@ -314,6 +324,16 @@ namespace UnityEditor
 		}
 
 		public static extern AndroidMinification androidReleaseMinification
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public static extern string androidDeviceSocketAddress
 		{
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
@@ -364,6 +384,16 @@ namespace UnityEditor
 			set;
 		}
 
+		public static extern string wsaUWPVisualStudioVersion
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
 		public static extern WSABuildAndRunDeployTarget wsaBuildAndRunDeployTarget
 		{
 			[GeneratedByOldBindingsGenerator]
@@ -394,24 +424,20 @@ namespace UnityEditor
 			set;
 		}
 
+		[Obsolete("EditorUserBuildSettings.webPlayerStreamed is obsolete and has no effect. It will be removed in a subsequent Unity release.", true)]
 		public static extern bool webPlayerStreamed
 		{
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
 		}
 
+		[Obsolete("EditorUserBuildSettings.webPlayerOfflineDeployment is obsolete and has no effect. It will be removed in a subsequent Unity release.", true)]
 		public static extern bool webPlayerOfflineDeployment
 		{
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
 		}
 
 		public static extern BuildTarget activeBuildTarget
@@ -596,15 +622,13 @@ namespace UnityEditor
 			set;
 		}
 
-		internal static extern bool facebookCreatePackageForSubmission
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern Compression GetCompressionType(BuildTargetGroup targetGroup);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void SetCompressionType(BuildTargetGroup targetGroup, Compression type);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]

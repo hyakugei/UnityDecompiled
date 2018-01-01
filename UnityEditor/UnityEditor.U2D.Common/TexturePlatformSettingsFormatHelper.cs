@@ -14,11 +14,6 @@ namespace UnityEditor.U2D.Common
 					formatValues = TextureImportPlatformSettings.kTextureFormatsValueApplePVR;
 					formatStrings = TextureImporterInspector.s_TextureFormatStringsApplePVR;
 				}
-				else if (buildTarget == BuildTarget.SamsungTV)
-				{
-					formatValues = TextureImportPlatformSettings.kTextureFormatsValueSTV;
-					formatStrings = TextureImporterInspector.s_TextureFormatStringsSTV;
-				}
 				else
 				{
 					formatValues = TextureImportPlatformSettings.kTextureFormatsValueAndroid;

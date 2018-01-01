@@ -52,10 +52,11 @@ namespace UnityEditor
 		private bool m_AllowDifferentObjects = false;
 
 		[SerializeField]
-		private GameObject[] m_CurrentObject = new GameObject[2];
-
-		[SerializeField]
-		private GameObject[] m_PreviewObjects = new GameObject[2];
+		private GameObject[][] m_PreviewObjects = new GameObject[][]
+		{
+			new GameObject[3],
+			new GameObject[3]
+		};
 
 		[SerializeField]
 		private LookDevEditionContext m_CurrentContextEdition = LookDevEditionContext.Left;
@@ -83,6 +84,12 @@ namespace UnityEditor
 
 		[SerializeField]
 		private CameraState m_CameraStateRight = new CameraState();
+
+		private GameObject[][] m_CurrentObjectInstances = new GameObject[][]
+		{
+			new GameObject[3],
+			new GameObject[3]
+		};
 
 		private LookDevView m_LookDevView = null;
 
@@ -167,11 +174,19 @@ namespace UnityEditor
 			}
 		}
 
-		public GameObject[] currentObject
+		public GameObject[][] currentObjectInstances
 		{
 			get
 			{
-				return this.m_CurrentObject;
+				return this.m_CurrentObjectInstances;
+			}
+		}
+
+		public GameObject[][] previewObjects
+		{
+			get
+			{
+				return this.m_PreviewObjects;
 			}
 		}
 
@@ -468,9 +483,9 @@ namespace UnityEditor
 		public int GetObjectLoDCount(LookDevEditionContext context)
 		{
 			int result;
-			if (this.m_CurrentObject[(int)context] != null)
+			if (this.m_CurrentObjectInstances[(int)context][0] != null)
 			{
-				LODGroup lODGroup = this.m_CurrentObject[(int)context].GetComponent(typeof(LODGroup)) as LODGroup;
+				LODGroup lODGroup = this.m_CurrentObjectInstances[(int)context][0].GetComponent(typeof(LODGroup)) as LODGroup;
 				if (lODGroup != null)
 				{
 					result = lODGroup.lodCount;
@@ -491,39 +506,36 @@ namespace UnityEditor
 			}
 		}
 
-		private void DestroytCurrentPreviewObject(LookDevEditionContext context)
+		private void DestroyCurrentPreviewObject(LookDevEditionContext context)
 		{
-			if (this.m_PreviewObjects[(int)context] != null)
+			for (int i = 0; i < this.m_PreviewObjects[(int)context].Length; i++)
 			{
-				UnityEngine.Object.DestroyImmediate(this.m_PreviewObjects[(int)context]);
-				this.m_PreviewObjects[(int)context] = null;
+				if (this.m_PreviewObjects[(int)context][i] != null)
+				{
+					UnityEngine.Object.DestroyImmediate(this.m_PreviewObjects[(int)context][i]);
+					this.m_PreviewObjects[(int)context][i] = null;
+				}
 			}
 		}
 
-		public void SetEnabledRecursive(GameObject go, bool enabled)
-		{
-			Renderer[] componentsInChildren = go.GetComponentsInChildren<Renderer>();
-			for (int i = 0; i < componentsInChildren.Length; i++)
-			{
-				Renderer renderer = componentsInChildren[i];
-				renderer.enabled = enabled;
-			}
-		}
-
-		private void DisableLightProbes(GameObject go)
+		internal static void DisableRendererProperties(GameObject go)
 		{
 			Renderer[] componentsInChildren = go.GetComponentsInChildren<Renderer>();
 			for (int i = 0; i < componentsInChildren.Length; i++)
 			{
 				Renderer renderer = componentsInChildren[i];
 				renderer.lightProbeUsage = LightProbeUsage.Off;
+				renderer.allowOcclusionWhenDynamic = false;
 			}
 		}
 
 		public void ResynchronizeObjects()
 		{
 			Undo.RecordObject(this, "Resync objects");
-			this.SetCurrentPreviewObject(this.m_OriginalGameObject[this.m_CurrentEditionContextIndex], (this.m_CurrentEditionContextIndex + LookDevEditionContext.Right) % LookDevEditionContext.None);
+			for (int i = 0; i < 2; i++)
+			{
+				this.SetCurrentPreviewObject(this.m_OriginalGameObject[this.m_CurrentEditionContextIndex], (LookDevEditionContext)i);
+			}
 			this.m_LookDevView.Frame(false);
 		}
 
@@ -547,13 +559,19 @@ namespace UnityEditor
 		{
 			if (this.allowDifferentObjects)
 			{
-				this.m_CurrentObject[0] = this.m_PreviewObjects[0];
-				this.m_CurrentObject[1] = this.m_PreviewObjects[1];
+				for (int i = 0; i < this.m_PreviewObjects[0].Length; i++)
+				{
+					this.m_CurrentObjectInstances[0][i] = this.m_PreviewObjects[0][i];
+					this.m_CurrentObjectInstances[1][i] = this.m_PreviewObjects[1][i];
+				}
 			}
 			else
 			{
-				this.m_CurrentObject[this.m_CurrentEditionContextIndex] = this.m_PreviewObjects[this.m_CurrentEditionContextIndex];
-				this.m_CurrentObject[(this.m_CurrentEditionContextIndex + 1) % 2] = this.m_PreviewObjects[this.m_CurrentEditionContextIndex];
+				for (int j = 0; j < this.m_PreviewObjects[0].Length; j++)
+				{
+					this.m_CurrentObjectInstances[this.m_CurrentEditionContextIndex][j] = this.m_PreviewObjects[this.m_CurrentEditionContextIndex][j];
+					this.m_CurrentObjectInstances[(this.m_CurrentEditionContextIndex + 1) % 2][j] = this.m_PreviewObjects[this.m_CurrentEditionContextIndex][j];
+				}
 			}
 		}
 
@@ -562,7 +580,7 @@ namespace UnityEditor
 			this.SetCurrentPreviewObject(go, this.m_CurrentContextEdition);
 			int num = (this.m_CurrentEditionContextIndex + 1) % 2;
 			bool result;
-			if (this.m_PreviewObjects[num] == null || !this.m_AllowDifferentObjects)
+			if (this.m_PreviewObjects[num][0] == null || !this.m_AllowDifferentObjects)
 			{
 				this.SetCurrentPreviewObject(go, (LookDevEditionContext)num);
 				result = true;
@@ -576,15 +594,23 @@ namespace UnityEditor
 
 		public void SetCurrentPreviewObject(GameObject go, LookDevEditionContext context)
 		{
-			this.DestroytCurrentPreviewObject(context);
+			this.DestroyCurrentPreviewObject(context);
 			if (go != null)
 			{
-				this.m_OriginalGameObject[(int)context] = go;
-				this.m_PreviewObjects[(int)context] = UnityEngine.Object.Instantiate<GameObject>(this.m_OriginalGameObject[(int)context], Vector3.zero, Quaternion.identity);
-				EditorUtility.InitInstantiatedPreviewRecursive(this.m_PreviewObjects[(int)context]);
-				this.SetEnabledRecursive(this.m_PreviewObjects[(int)context], false);
-				this.DisableLightProbes(this.m_PreviewObjects[(int)context]);
-				this.UpdateCurrentObjectArray();
+				if (!(this.m_LookDevView == null) && this.m_LookDevView.previewUtilityContexts != null && this.m_LookDevView.previewUtilityContexts[(int)context] != null)
+				{
+					this.m_OriginalGameObject[(int)context] = go;
+					for (int i = 0; i < this.m_PreviewObjects[(int)context].Length; i++)
+					{
+						this.m_PreviewObjects[(int)context][i] = this.m_LookDevView.previewUtilityContexts[(int)context].m_PreviewUtility[i].InstantiatePrefabInScene(this.m_OriginalGameObject[(int)context]);
+						this.m_PreviewObjects[(int)context][i].transform.position = new Vector3(0f, 0f, 0f);
+						this.m_PreviewObjects[(int)context][i].transform.rotation = Quaternion.identity;
+						EditorUtility.InitInstantiatedPreviewRecursive(this.m_PreviewObjects[(int)context][i]);
+						LookDevConfig.DisableRendererProperties(this.m_PreviewObjects[(int)context][i]);
+						PreviewRenderUtility.SetEnabledRecursive(this.m_PreviewObjects[(int)context][i], false);
+					}
+					this.UpdateCurrentObjectArray();
+				}
 			}
 		}
 
@@ -597,15 +623,20 @@ namespace UnityEditor
 					this.m_LookDevContexts[i] = new LookDevContext();
 				}
 			}
-			for (int j = 0; j < 2; j++)
-			{
-				if (this.m_OriginalGameObject[j] != null)
-				{
-					this.SetCurrentPreviewObject(this.m_OriginalGameObject[j], (LookDevEditionContext)j);
-				}
-			}
+			this.InitializeCurrentObjects();
 			this.UpdateCameraArray();
 			Undo.undoRedoPerformed = (Undo.UndoRedoCallback)Delegate.Combine(Undo.undoRedoPerformed, new Undo.UndoRedoCallback(this.OnUndoRedo));
+		}
+
+		private void InitializeCurrentObjects()
+		{
+			for (int i = 0; i < 2; i++)
+			{
+				if (this.m_OriginalGameObject[i] != null)
+				{
+					this.SetCurrentPreviewObject(this.m_OriginalGameObject[i], (LookDevEditionContext)i);
+				}
+			}
 		}
 
 		private void OnUndoRedo()
@@ -621,18 +652,24 @@ namespace UnityEditor
 
 		public void OnDestroy()
 		{
-			this.DestroytCurrentPreviewObject(LookDevEditionContext.Left);
-			this.DestroytCurrentPreviewObject(LookDevEditionContext.Right);
+			this.DestroyCurrentPreviewObject(LookDevEditionContext.Left);
+			this.DestroyCurrentPreviewObject(LookDevEditionContext.Right);
 		}
 
 		public void Cleanup()
 		{
 			this.m_CurrentEditionContextIndex = 0;
+			this.DestroyCurrentPreviewObject(LookDevEditionContext.Left);
+			this.DestroyCurrentPreviewObject(LookDevEditionContext.Right);
 		}
 
 		public void SetLookDevView(LookDevView lookDevView)
 		{
-			this.m_LookDevView = lookDevView;
+			if (this.m_LookDevView != lookDevView)
+			{
+				this.m_LookDevView = lookDevView;
+				this.InitializeCurrentObjects();
+			}
 		}
 	}
 }

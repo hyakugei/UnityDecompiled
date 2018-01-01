@@ -37,11 +37,18 @@ namespace UnityEditor.Advertisements
 			set;
 		}
 
-		[GeneratedByOldBindingsGenerator]
+		internal static extern bool enabledForPlatform
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+		}
+
+		[Obsolete("No longer supported and will always return true"), GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern bool IsPlatformEnabled(RuntimePlatform platform);
 
-		[GeneratedByOldBindingsGenerator]
+		[Obsolete("No longer supported and will do nothing"), GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void SetPlatformEnabled(RuntimePlatform platform, bool value);
 
@@ -60,5 +67,9 @@ namespace UnityEditor.Advertisements
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void SetPlatformGameId(string platformName, string gameId);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void ApplyEnableSettings(BuildTarget target);
 	}
 }

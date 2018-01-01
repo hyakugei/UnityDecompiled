@@ -18,21 +18,11 @@ namespace UnityEditor
 
 			public GUIContent vectorComponentCount = EditorGUIUtility.TextContent("Number of Components|How many of the components (XYZW) to fill.");
 
-			public GUIContent color = EditorGUIUtility.TextContent("Color");
-
-			public string[] modes = new string[]
+			public GUIContent[] modes = new GUIContent[]
 			{
-				"Disabled",
-				"Vector",
-				"Color"
-			};
-
-			public GUIContent[] components = new GUIContent[]
-			{
-				EditorGUIUtility.TextContent("X"),
-				EditorGUIUtility.TextContent("Y"),
-				EditorGUIUtility.TextContent("Z"),
-				EditorGUIUtility.TextContent("W")
+				EditorGUIUtility.TextContent("Disabled"),
+				EditorGUIUtility.TextContent("Vector"),
+				EditorGUIUtility.TextContent("Color")
 			};
 		}
 
@@ -47,6 +37,10 @@ namespace UnityEditor
 		private SerializedMinMaxCurve[,] m_Vectors = new SerializedMinMaxCurve[2, 4];
 
 		private SerializedMinMaxGradient[] m_Colors = new SerializedMinMaxGradient[2];
+
+		private SerializedProperty[,] m_VectorLabels = new SerializedProperty[2, 4];
+
+		private SerializedProperty[] m_ColorLabels = new SerializedProperty[2];
 
 		private static CustomDataModuleUI.Texts s_Texts;
 
@@ -68,15 +62,23 @@ namespace UnityEditor
 					this.m_Modes[i] = base.GetProperty("mode" + i);
 					this.m_VectorComponentCount[i] = base.GetProperty("vectorComponentCount" + i);
 					this.m_Colors[i] = new SerializedMinMaxGradient(this, "color" + i);
+					this.m_ColorLabels[i] = base.GetProperty("colorLabel" + i);
 					for (int j = 0; j < 4; j++)
 					{
-						this.m_Vectors[i, j] = new SerializedMinMaxCurve(this, CustomDataModuleUI.s_Texts.components[j], string.Concat(new object[]
+						this.m_Vectors[i, j] = new SerializedMinMaxCurve(this, GUIContent.none, string.Concat(new object[]
 						{
 							"vector",
 							i,
 							"_",
 							j
 						}), ModuleUI.kUseSignedRange);
+						this.m_VectorLabels[i, j] = base.GetProperty(string.Concat(new object[]
+						{
+							"vectorLabel",
+							i,
+							"_",
+							j
+						}));
 					}
 				}
 			}
@@ -84,10 +86,6 @@ namespace UnityEditor
 
 		public override void OnInspectorGUI(InitialModuleUI initial)
 		{
-			if (CustomDataModuleUI.s_Texts == null)
-			{
-				CustomDataModuleUI.s_Texts = new CustomDataModuleUI.Texts();
-			}
 			for (int i = 0; i < 2; i++)
 			{
 				GUILayout.BeginVertical("Custom" + (i + 1), GUI.skin.window, new GUILayoutOption[0]);
@@ -97,12 +95,12 @@ namespace UnityEditor
 					int num = Mathf.Min(ModuleUI.GUIInt(CustomDataModuleUI.s_Texts.vectorComponentCount, this.m_VectorComponentCount[i], new GUILayoutOption[0]), 4);
 					for (int j = 0; j < num; j++)
 					{
-						ModuleUI.GUIMinMaxCurve(CustomDataModuleUI.s_Texts.components[j], this.m_Vectors[i, j], new GUILayoutOption[0]);
+						ModuleUI.GUIMinMaxCurve(this.m_VectorLabels[i, j], this.m_Vectors[i, j], new GUILayoutOption[0]);
 					}
 				}
 				else if (mode == CustomDataModuleUI.Mode.Color)
 				{
-					base.GUIMinMaxGradient(CustomDataModuleUI.s_Texts.color, this.m_Colors[i], true, new GUILayoutOption[0]);
+					base.GUIMinMaxGradient(this.m_ColorLabels[i], this.m_Colors[i], true, new GUILayoutOption[0]);
 				}
 				GUILayout.EndVertical();
 			}

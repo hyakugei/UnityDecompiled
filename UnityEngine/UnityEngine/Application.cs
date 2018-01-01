@@ -84,25 +84,11 @@ namespace UnityEngine
 		{
 			add
 			{
-				UnityAction unityAction = Application.onBeforeRender;
-				UnityAction unityAction2;
-				do
-				{
-					unityAction2 = unityAction;
-					unityAction = Interlocked.CompareExchange<UnityAction>(ref Application.onBeforeRender, (UnityAction)Delegate.Combine(unityAction2, value), unityAction);
-				}
-				while (unityAction != unityAction2);
+				BeforeRenderHelper.RegisterCallback(value);
 			}
 			remove
 			{
-				UnityAction unityAction = Application.onBeforeRender;
-				UnityAction unityAction2;
-				do
-				{
-					unityAction2 = unityAction;
-					unityAction = Interlocked.CompareExchange<UnityAction>(ref Application.onBeforeRender, (UnityAction)Delegate.Remove(unityAction2, value), unityAction);
-				}
-				while (unityAction != unityAction2);
+				BeforeRenderHelper.UnregisterCallback(value);
 			}
 		}
 
@@ -142,6 +128,7 @@ namespace UnityEngine
 			get;
 		}
 
+		[Obsolete("This property is deprecated and will be removed in a future version of Unity, Webplayer support has been removed since Unity 5.4", true)]
 		public static extern bool isWebPlayer
 		{
 			[GeneratedByOldBindingsGenerator]
@@ -274,6 +261,7 @@ namespace UnityEngine
 			get;
 		}
 
+		[Obsolete("Application.srcValue is obsolete and has no effect. It will be removed in a subsequent Unity release.", true)]
 		public static extern string srcValue
 		{
 			[GeneratedByOldBindingsGenerator]
@@ -351,7 +339,7 @@ namespace UnityEngine
 			get;
 		}
 
-		[Obsolete("Application.webSecurityEnabled is no longer supported, since the Unity Web Player is no longer supported by Unity."), ThreadAndSerializationSafe]
+		[Obsolete("Application.webSecurityEnabled is no longer supported, since the Unity Web Player is no longer supported by Unity.", true), ThreadAndSerializationSafe]
 		public static extern bool webSecurityEnabled
 		{
 			[GeneratedByOldBindingsGenerator]
@@ -359,7 +347,7 @@ namespace UnityEngine
 			get;
 		}
 
-		[Obsolete("Application.webSecurityHostUrl is no longer supported, since the Unity Web Player is no longer supported by Unity."), ThreadAndSerializationSafe]
+		[Obsolete("Application.webSecurityHostUrl is no longer supported, since the Unity Web Player is no longer supported by Unity.", true), ThreadAndSerializationSafe]
 		public static extern string webSecurityHostUrl
 		{
 			[GeneratedByOldBindingsGenerator]
@@ -466,24 +454,6 @@ namespace UnityEngine
 			get
 			{
 				return SceneManager.GetActiveScene().name;
-			}
-		}
-
-		[Obsolete("absoluteUrl is deprecated. Please use absoluteURL instead (UnityUpgradable) -> absoluteURL", true)]
-		public static string absoluteUrl
-		{
-			get
-			{
-				return Application.absoluteURL;
-			}
-		}
-
-		[Obsolete("bundleIdentifier is deprecated. Please use identifier instead (UnityUpgradable) -> identifier", true)]
-		public static string bundleIdentifier
-		{
-			get
-			{
-				return Application.identifier;
 			}
 		}
 
@@ -642,6 +612,7 @@ namespace UnityEngine
 			return result;
 		}
 
+		[Obsolete("Application.ExternalCall is deprecated. See https://docs.unity3d.com/Manual/webgl-interactingwithbrowserscripting.html for alternatives.")]
 		public static void ExternalCall(string functionName, params object[] args)
 		{
 			Application.Internal_ExternalCall(Application.BuildInvocationForArguments(functionName, args));
@@ -666,6 +637,7 @@ namespace UnityEngine
 			return stringBuilder.ToString();
 		}
 
+		[Obsolete("Application.ExternalEval is deprecated. See https://docs.unity3d.com/Manual/webgl-interactingwithbrowserscripting.html for alternatives.")]
 		public static void ExternalEval(string script)
 		{
 			if (script.Length > 0 && script[script.Length - 1] != ';')
@@ -740,11 +712,7 @@ namespace UnityEngine
 		[RequiredByNativeCode]
 		internal static void InvokeOnBeforeRender()
 		{
-			UnityAction unityAction = Application.onBeforeRender;
-			if (unityAction != null)
-			{
-				unityAction();
-			}
+			BeforeRenderHelper.Invoke();
 		}
 
 		[Obsolete("Application.RegisterLogCallback is deprecated. Use Application.logMessageReceived instead.")]

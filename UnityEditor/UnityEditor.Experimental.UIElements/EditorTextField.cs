@@ -11,7 +11,7 @@ namespace UnityEditor.Experimental.UIElements
 			contextualMenu.AddAction("Cut", new GenericMenu.MenuFunction(this.Cut), new ContextualMenu.ActionStatusCallback(this.CutCopyActionStatus));
 			contextualMenu.AddAction("Copy", new GenericMenu.MenuFunction(this.Copy), new ContextualMenu.ActionStatusCallback(this.CutCopyActionStatus));
 			contextualMenu.AddAction("Paste", new GenericMenu.MenuFunction(this.Paste), new ContextualMenu.ActionStatusCallback(this.PasteActionStatus));
-			base.AddManipulator(contextualMenu);
+			this.AddManipulator(contextualMenu);
 		}
 
 		private ContextualMenu.ActionStatus CutCopyActionStatus()

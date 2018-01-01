@@ -1,6 +1,8 @@
 using System;
 using System.Reflection;
+using System.Threading;
 using UnityEngine;
+using UnityEngine.Experimental.UIElements;
 
 namespace UnityEditor
 {
@@ -13,13 +15,39 @@ namespace UnityEditor
 		internal GUIStyle background;
 
 		[SerializeField]
-		protected EditorWindow m_ActualView;
+		private EditorWindow m_ActualView;
 
 		[NonSerialized]
 		private Rect m_BackgroundClearRect = new Rect(0f, 0f, 0f, 0f);
 
 		[NonSerialized]
 		protected readonly RectOffset m_BorderSize = new RectOffset();
+
+		internal static event Action<HostView> actualViewChanged
+		{
+			add
+			{
+				Action<HostView> action = HostView.actualViewChanged;
+				Action<HostView> action2;
+				do
+				{
+					action2 = action;
+					action = Interlocked.CompareExchange<Action<HostView>>(ref HostView.actualViewChanged, (Action<HostView>)Delegate.Combine(action2, value), action);
+				}
+				while (action != action2);
+			}
+			remove
+			{
+				Action<HostView> action = HostView.actualViewChanged;
+				Action<HostView> action2;
+				do
+				{
+					action2 = action;
+					action = Interlocked.CompareExchange<Action<HostView>>(ref HostView.actualViewChanged, (Action<HostView>)Delegate.Remove(action2, value), action);
+				}
+				while (action != action2);
+			}
+		}
 
 		internal EditorWindow actualView
 		{
@@ -34,6 +62,10 @@ namespace UnityEditor
 					this.DeregisterSelectedPane(true);
 					this.m_ActualView = value;
 					this.RegisterSelectedPane();
+					if (HostView.actualViewChanged != null)
+					{
+						HostView.actualViewChanged(this);
+					}
 				}
 			}
 		}
@@ -75,19 +107,22 @@ namespace UnityEditor
 			}
 		}
 
-		public void OnEnable()
+		protected override void OnEnable()
 		{
+			base.OnEnable();
 			this.background = null;
 			this.RegisterSelectedPane();
 		}
 
-		public void OnDisable()
+		protected override void OnDisable()
 		{
+			base.OnDisable();
 			this.DeregisterSelectedPane(false);
 		}
 
-		private void OnGUI()
+		protected override void OldOnGUI()
 		{
+			this.ClearBackground();
 			EditorGUIUtility.ResetGUIState();
 			base.DoWindowDecorationStart();
 			if (this.background == null)
@@ -129,11 +164,12 @@ namespace UnityEditor
 
 		private void OnLostFocus()
 		{
+			EditorGUI.EndEditingActiveTextField();
 			this.Invoke("OnLostFocus");
 			base.Repaint();
 		}
 
-		public new void OnDestroy()
+		protected override void OnDestroy()
 		{
 			if (this.m_ActualView)
 			{
@@ -234,41 +270,48 @@ namespace UnityEditor
 
 		public void InvokeOnGUI(Rect onGUIPosition)
 		{
-			base.DoWindowDecorationStart();
-			GUIStyle gUIStyle = "dockareaoverlay";
-			if (this.actualView is GameView)
+			if (Unsupported.IsDeveloperBuild() && this.actualView != null && Event.current.type == EventType.KeyUp && Event.current.keyCode == KeyCode.F5)
 			{
-				GUI.Box(onGUIPosition, GUIContent.none, gUIStyle);
+				this.Reload(this.actualView);
 			}
-			HostView.BeginOffsetArea(new Rect(onGUIPosition.x + 2f, onGUIPosition.y + 17f, onGUIPosition.width - 4f, onGUIPosition.height - 17f - 2f), GUIContent.none, "TabWindowBackground");
-			EditorGUIUtility.ResetGUIState();
-			bool flag = false;
-			try
+			else
 			{
-				this.Invoke("OnGUI");
-			}
-			catch (TargetInvocationException ex)
-			{
-				if (ex.InnerException is ExitGUIException)
+				base.DoWindowDecorationStart();
+				GUIStyle gUIStyle = "dockareaoverlay";
+				if (this.actualView is GameView)
 				{
-					flag = true;
+					GUI.Box(onGUIPosition, GUIContent.none, gUIStyle);
 				}
-				throw;
-			}
-			finally
-			{
-				if (!flag)
+				HostView.BeginOffsetArea(new Rect(onGUIPosition.x + 2f, onGUIPosition.y + 17f, onGUIPosition.width - 4f, onGUIPosition.height - 17f - 2f), GUIContent.none, "TabWindowBackground");
+				EditorGUIUtility.ResetGUIState();
+				bool flag = false;
+				try
 				{
-					if (this.actualView != null && this.actualView.m_FadeoutTime != 0f && Event.current != null && Event.current.type == EventType.Repaint)
+					this.Invoke("OnGUI");
+				}
+				catch (TargetInvocationException ex)
+				{
+					if (ex.InnerException is ExitGUIException)
 					{
-						this.actualView.DrawNotification();
+						flag = true;
 					}
-					HostView.EndOffsetArea();
-					EditorGUIUtility.ResetGUIState();
-					base.DoWindowDecorationEnd();
-					if (Event.current.type == EventType.Repaint)
+					throw;
+				}
+				finally
+				{
+					if (!flag)
 					{
-						gUIStyle.Draw(onGUIPosition, GUIContent.none, 0);
+						if (this.actualView != null && this.actualView.m_FadeoutTime != 0f && Event.current != null && Event.current.type == EventType.Repaint)
+						{
+							this.actualView.DrawNotification();
+						}
+						HostView.EndOffsetArea();
+						EditorGUIUtility.ResetGUIState();
+						base.DoWindowDecorationEnd();
+						if (Event.current.type == EventType.Repaint)
+						{
+							gUIStyle.Draw(onGUIPosition, GUIContent.none, 0);
+						}
 					}
 				}
 			}
@@ -293,7 +336,9 @@ namespace UnityEditor
 			if (this.m_ActualView)
 			{
 				this.m_ActualView.m_Parent = this;
-				base.visualTree.AddChild(this.m_ActualView.rootVisualContainer);
+				base.visualTree.Add(this.m_ActualView.rootVisualContainer);
+				base.panel.getViewDataDictionary = new GetViewDataDictionary(this.m_ActualView.GetViewDataDictionary);
+				base.panel.savePersistentViewData = new SavePersistentViewData(this.m_ActualView.SavePersistentViewData);
 				if (this.GetPaneMethod("Update") != null)
 				{
 					EditorApplication.update = (EditorApplication.CallbackFunction)Delegate.Combine(EditorApplication.update, new EditorApplication.CallbackFunction(this.SendUpdate));
@@ -324,9 +369,11 @@ namespace UnityEditor
 		{
 			if (this.m_ActualView)
 			{
-				if (this.m_ActualView.rootVisualContainer.parent == base.visualTree)
+				if (this.m_ActualView.rootVisualContainer.shadow.parent == base.visualTree)
 				{
-					base.visualTree.RemoveChild(this.m_ActualView.rootVisualContainer);
+					base.visualTree.Remove(this.m_ActualView.rootVisualContainer);
+					base.panel.getViewDataDictionary = null;
+					base.panel.savePersistentViewData = null;
 				}
 				if (this.GetPaneMethod("Update") != null)
 				{
@@ -397,8 +444,53 @@ namespace UnityEditor
 			Event.current.Use();
 		}
 
-		protected virtual void AddDefaultItemsToMenu(GenericMenu menu, EditorWindow view)
+		private void Inspect(object userData)
 		{
+			Selection.activeObject = (UnityEngine.Object)userData;
+		}
+
+		private void Reload(object userData)
+		{
+			EditorWindow editorWindow = userData as EditorWindow;
+			if (!(editorWindow == null))
+			{
+				Type type = editorWindow.GetType();
+				string json = EditorJsonUtility.ToJson(editorWindow);
+				DockArea dockArea = editorWindow.m_Parent as DockArea;
+				if (dockArea != null)
+				{
+					int idx = dockArea.m_Panes.IndexOf(editorWindow);
+					dockArea.RemoveTab(editorWindow, false);
+					UnityEngine.Object.DestroyImmediate(editorWindow, true);
+					editorWindow = (ScriptableObject.CreateInstance(type) as EditorWindow);
+					dockArea.AddTab(idx, editorWindow);
+				}
+				else
+				{
+					editorWindow.Close();
+					editorWindow = (ScriptableObject.CreateInstance(type) as EditorWindow);
+					if (editorWindow != null)
+					{
+						editorWindow.Show();
+					}
+				}
+				EditorJsonUtility.FromJsonOverwrite(json, editorWindow);
+			}
+		}
+
+		protected virtual void AddDefaultItemsToMenu(GenericMenu menu, EditorWindow window)
+		{
+			if (menu.GetItemCount() != 0)
+			{
+				menu.AddSeparator("");
+			}
+			if (Unsupported.IsDeveloperBuild())
+			{
+				menu.AddItem(EditorGUIUtility.TextContent("Inspect Window"), false, new GenericMenu.MenuFunction2(this.Inspect), window);
+				menu.AddItem(EditorGUIUtility.TextContent("Inspect View"), false, new GenericMenu.MenuFunction2(this.Inspect), window.m_Parent);
+				menu.AddItem(EditorGUIUtility.TextContent("Reload Window _f5"), false, new GenericMenu.MenuFunction2(this.Reload), window);
+				menu.AddSeparator("");
+			}
 		}
 
 		protected void ClearBackground()

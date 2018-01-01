@@ -11,17 +11,17 @@ namespace UnityEditorInternal.VR
 	{
 		private static class Styles
 		{
-			public static readonly GUIContent singlepassAndroidWarning = EditorGUIUtility.TextContent("Single-pass stereo rendering requires OpenGL ES 3. Please make sure that it's the first one listed under Graphics APIs.");
+			public static readonly GUIContent singlepassAndroidWarning = EditorGUIUtility.TextContent("Single Pass stereo rendering requires OpenGL ES 3. Please make sure that it's the first one listed under Graphics APIs.");
 
-			public static readonly GUIContent singlepassAndroidWarning2 = EditorGUIUtility.TextContent("Multi-pass stereo rendering will be used on Android devices that don't support single-pass stereo rendering.");
+			public static readonly GUIContent singlepassAndroidWarning2 = EditorGUIUtility.TextContent("Multi Pass will be used on Android devices that don't support Single Pass.");
 
-			public static readonly GUIContent singlePassStereoRendering = EditorGUIUtility.TextContent("Single-Pass Stereo Rendering");
+			public static readonly GUIContent singlePassInstancedWarning = EditorGUIUtility.TextContent("Single Pass Instanced is only supported on Windows. Multi Pass will be used on other platforms.");
 
 			public static readonly GUIContent[] kDefaultStereoRenderingPaths = new GUIContent[]
 			{
 				new GUIContent("Multi Pass"),
 				new GUIContent("Single Pass"),
-				new GUIContent("Single Pass Instanced")
+				new GUIContent("Single Pass Instanced (Preview)")
 			};
 
 			public static readonly GUIContent[] kAndroidStereoRenderingPaths = new GUIContent[]
@@ -29,9 +29,15 @@ namespace UnityEditorInternal.VR
 				new GUIContent("Multi Pass"),
 				new GUIContent("Single Pass (Preview)")
 			};
+
+			public static readonly GUIContent xrSettingsTitle = EditorGUIUtility.TextContent("XR Settings");
+
+			public static readonly GUIContent supportedCheckbox = EditorGUIUtility.TextContent("Virtual Reality Supported");
+
+			public static readonly GUIContent listHeader = EditorGUIUtility.TextContent("Virtual Reality SDKs");
 		}
 
-		private SerializedObject m_Settings;
+		private PlayerSettingsEditor m_Settings;
 
 		private Dictionary<BuildTargetGroup, VRDeviceInfoEditor[]> m_AllVRDevicesForBuildTarget = new Dictionary<BuildTargetGroup, VRDeviceInfoEditor[]>();
 
@@ -43,9 +49,28 @@ namespace UnityEditorInternal.VR
 
 		private Dictionary<string, VRCustomOptions> m_CustomOptions = new Dictionary<string, VRCustomOptions>();
 
-		public PlayerSettingsEditorVR(SerializedObject settingsEditor)
+		private SerializedProperty m_StereoRenderingPath;
+
+		private SerializedProperty m_AndroidEnableTango;
+
+		private SerializedProperty m_AndroidTangoUsesCamera;
+
+		private bool m_InstallsRequired = false;
+
+		private bool m_VuforiaInstalled = false;
+
+		internal int GUISectionIndex
+		{
+			get;
+			set;
+		}
+
+		public PlayerSettingsEditorVR(PlayerSettingsEditor settingsEditor)
 		{
 			this.m_Settings = settingsEditor;
+			this.m_StereoRenderingPath = this.m_Settings.serializedObject.FindProperty("m_StereoRenderingPath");
+			this.m_AndroidEnableTango = this.m_Settings.FindPropertyAssert("AndroidEnableTango");
+			this.m_AndroidTangoUsesCamera = this.m_Settings.FindPropertyAssert("AndroidTangoUsesCamera");
 		}
 
 		private void RefreshVRDeviceList(BuildTargetGroup targetGroup)
@@ -72,7 +97,7 @@ namespace UnityEditorInternal.VR
 					{
 						vRCustomOptions = new VRCustomOptionsNone();
 					}
-					vRCustomOptions.Initialize(this.m_Settings);
+					vRCustomOptions.Initialize(this.m_Settings.serializedObject);
 					this.m_CustomOptions.Add(vRDeviceInfoEditor.deviceNameKey, vRCustomOptions);
 				}
 			}
@@ -88,13 +113,44 @@ namespace UnityEditorInternal.VR
 			return array.Length > 0;
 		}
 
-		internal void DevicesGUI(BuildTargetGroup targetGroup)
+		internal bool TargetGroupSupportsAugmentedReality(BuildTargetGroup targetGroup)
+		{
+			return this.TargetGroupSupportsTango(targetGroup) || this.TargetGroupSupportsVuforia(targetGroup);
+		}
+
+		internal void XRSectionGUI(BuildTargetGroup targetGroup, int sectionIndex)
+		{
+			this.GUISectionIndex = sectionIndex;
+			if (this.TargetGroupSupportsVirtualReality(targetGroup) || this.TargetGroupSupportsAugmentedReality(targetGroup))
+			{
+				this.CheckDevicesRequireInstall(targetGroup);
+				if (this.m_Settings.BeginSettingsBox(sectionIndex, PlayerSettingsEditorVR.Styles.xrSettingsTitle))
+				{
+					if (EditorApplication.isPlaying)
+					{
+						EditorGUILayout.HelpBox("Changing XRSettings in not allowed in play mode.", MessageType.Info);
+					}
+					using (new EditorGUI.DisabledScope(EditorApplication.isPlaying))
+					{
+						this.DevicesGUI(targetGroup);
+						this.SinglePassStereoGUI(targetGroup, this.m_StereoRenderingPath);
+						this.TangoGUI(targetGroup);
+						this.VuforiaGUI(targetGroup);
+						this.ErrorOnARDeviceIncompatibility(targetGroup);
+					}
+					this.InstallGUI(targetGroup);
+				}
+				this.m_Settings.EndSettingsBox();
+			}
+		}
+
+		private void DevicesGUI(BuildTargetGroup targetGroup)
 		{
 			if (this.TargetGroupSupportsVirtualReality(targetGroup))
 			{
 				bool flag = VREditor.GetVREnabledOnTargetGroup(targetGroup);
 				EditorGUI.BeginChangeCheck();
-				flag = EditorGUILayout.Toggle(EditorGUIUtility.TextContent("Virtual Reality Supported"), flag, new GUILayoutOption[0]);
+				flag = EditorGUILayout.Toggle(PlayerSettingsEditorVR.Styles.supportedCheckbox, flag, new GUILayoutOption[0]);
 				if (EditorGUI.EndChangeCheck())
 				{
 					VREditor.SetVREnabledOnTargetGroup(targetGroup, flag);
@@ -106,6 +162,47 @@ namespace UnityEditorInternal.VR
 			}
 		}
 
+		private void InstallGUI(BuildTargetGroup targetGroup)
+		{
+			if (this.m_InstallsRequired)
+			{
+				EditorGUILayout.Space();
+				GUILayout.Label("XR Support Installers", EditorStyles.boldLabel, new GUILayoutOption[0]);
+				EditorGUI.indentLevel++;
+				if (!this.m_VuforiaInstalled)
+				{
+					if (EditorGUILayout.LinkLabel("Vuforia Augmented Reality", new GUILayoutOption[0]))
+					{
+						string playbackEngineDownloadURL = BuildPlayerWindow.GetPlaybackEngineDownloadURL("Vuforia-AR");
+						Application.OpenURL(playbackEngineDownloadURL);
+					}
+				}
+				EditorGUI.indentLevel--;
+				EditorGUILayout.Space();
+			}
+		}
+
+		private void CheckDevicesRequireInstall(BuildTargetGroup targetGroup)
+		{
+			this.m_InstallsRequired = false;
+			if (!this.m_VuforiaInstalled)
+			{
+				VRDeviceInfoEditor[] allVRDeviceInfo = VREditor.GetAllVRDeviceInfo(targetGroup);
+				for (int i = 0; i < allVRDeviceInfo.Length; i++)
+				{
+					if (allVRDeviceInfo[i].deviceNameKey.ToLower() == "vuforia")
+					{
+						this.m_VuforiaInstalled = true;
+						break;
+					}
+				}
+				if (!this.m_VuforiaInstalled)
+				{
+					this.m_InstallsRequired = true;
+				}
+			}
+		}
+
 		private static bool TargetSupportsSinglePassStereoRendering(BuildTargetGroup targetGroup)
 		{
 			return targetGroup == BuildTargetGroup.Standalone || targetGroup == BuildTargetGroup.Android || targetGroup == BuildTargetGroup.PS4;
@@ -113,7 +210,7 @@ namespace UnityEditorInternal.VR
 
 		private static bool TargetSupportsStereoInstancingRendering(BuildTargetGroup targetGroup)
 		{
-			return targetGroup == BuildTargetGroup.WSA;
+			return targetGroup == BuildTargetGroup.Standalone || targetGroup == BuildTargetGroup.WSA || targetGroup == BuildTargetGroup.PS4;
 		}
 
 		private static GUIContent[] GetStereoRenderingPaths(BuildTargetGroup targetGroup)
@@ -121,7 +218,7 @@ namespace UnityEditorInternal.VR
 			return (targetGroup != BuildTargetGroup.Android) ? PlayerSettingsEditorVR.Styles.kDefaultStereoRenderingPaths : PlayerSettingsEditorVR.Styles.kAndroidStereoRenderingPaths;
 		}
 
-		internal void SinglePassStereoGUI(BuildTargetGroup targetGroup, SerializedProperty stereoRenderingPath)
+		private void SinglePassStereoGUI(BuildTargetGroup targetGroup, SerializedProperty stereoRenderingPath)
 		{
 			if (PlayerSettings.virtualRealitySupported)
 			{
@@ -164,6 +261,10 @@ namespace UnityEditorInternal.VR
 					{
 						EditorGUILayout.HelpBox(PlayerSettingsEditorVR.Styles.singlepassAndroidWarning.text, MessageType.Warning);
 					}
+				}
+				else if (stereoRenderingPath.intValue == 2 && targetGroup == BuildTargetGroup.Standalone)
+				{
+					EditorGUILayout.HelpBox(PlayerSettingsEditorVR.Styles.singlePassInstancedWarning.text, MessageType.Warning);
 				}
 			}
 		}
@@ -275,6 +376,12 @@ namespace UnityEditorInternal.VR
 			}
 		}
 
+		private bool GetVRDeviceElementIsInList(BuildTargetGroup target, string deviceName)
+		{
+			string[] vREnabledDevicesOnTargetGroup = VREditor.GetVREnabledDevicesOnTargetGroup(target);
+			return vREnabledDevicesOnTargetGroup.Contains(deviceName);
+		}
+
 		private void VRDevicesGUIOneBuildTarget(BuildTargetGroup targetGroup)
 		{
 			if (!this.m_VRDeviceActiveUI.ContainsKey(targetGroup))
@@ -298,7 +405,7 @@ namespace UnityEditorInternal.VR
 				};
 				reorderableList.drawHeaderCallback = delegate(Rect rect)
 				{
-					GUI.Label(rect, "Virtual Reality SDKs", EditorStyles.label);
+					GUI.Label(rect, PlayerSettingsEditorVR.Styles.listHeader, EditorStyles.label);
 				};
 				reorderableList.elementHeightCallback = ((int index) => this.GetVRDeviceElementHeight(targetGroup, index));
 				reorderableList.onSelectCallback = delegate(ReorderableList list)
@@ -311,6 +418,72 @@ namespace UnityEditorInternal.VR
 			if (this.m_VRDeviceActiveUI[targetGroup].list.Count == 0)
 			{
 				EditorGUILayout.HelpBox("Must add at least one Virtual Reality SDK.", MessageType.Warning);
+			}
+		}
+
+		private void ErrorOnARDeviceIncompatibility(BuildTargetGroup targetGroup)
+		{
+			if (targetGroup == BuildTargetGroup.Android)
+			{
+				if (PlayerSettings.Android.androidTangoEnabled && PlayerSettings.GetPlatformVuforiaEnabled(targetGroup))
+				{
+					EditorGUILayout.HelpBox("Both ARCore and Vuforia XR Device support cannot be selected at the same time. Please select only one XR Device that will manage the Android device.", MessageType.Error);
+				}
+			}
+		}
+
+		internal bool TargetGroupSupportsTango(BuildTargetGroup targetGroup)
+		{
+			return targetGroup == BuildTargetGroup.Android;
+		}
+
+		internal bool TargetGroupSupportsVuforia(BuildTargetGroup targetGroup)
+		{
+			return targetGroup == BuildTargetGroup.Standalone || targetGroup == BuildTargetGroup.Android || targetGroup == BuildTargetGroup.iPhone || targetGroup == BuildTargetGroup.WSA;
+		}
+
+		internal void TangoGUI(BuildTargetGroup targetGroup)
+		{
+			if (this.TargetGroupSupportsTango(targetGroup))
+			{
+				EditorGUILayout.PropertyField(this.m_AndroidEnableTango, EditorGUIUtility.TextContent("Tango Supported"), new GUILayoutOption[0]);
+				if (PlayerSettings.Android.androidTangoEnabled)
+				{
+					EditorGUI.indentLevel++;
+					EditorGUILayout.PropertyField(this.m_AndroidTangoUsesCamera, EditorGUIUtility.TextContent("Tango Uses Camera"), new GUILayoutOption[0]);
+					if (PlayerSettings.Android.minSdkVersion < AndroidSdkVersions.AndroidApiLevel23)
+					{
+						GUIContent gUIContent = EditorGUIUtility.TextContent("Tango requires 'Minimum API Level' to be at least Android 6.0");
+						EditorGUILayout.HelpBox(gUIContent.text, MessageType.Warning);
+					}
+					EditorGUI.indentLevel--;
+				}
+			}
+		}
+
+		internal void VuforiaGUI(BuildTargetGroup targetGroup)
+		{
+			if (this.TargetGroupSupportsVuforia(targetGroup) && this.m_VuforiaInstalled)
+			{
+				bool flag = VREditor.GetVREnabledOnTargetGroup(targetGroup) && this.GetVRDeviceElementIsInList(targetGroup, "Vuforia");
+				using (new EditorGUI.DisabledScope(flag))
+				{
+					if (flag && !PlayerSettings.GetPlatformVuforiaEnabled(targetGroup))
+					{
+						PlayerSettings.SetPlatformVuforiaEnabled(targetGroup, true);
+					}
+					bool flag2 = PlayerSettings.GetPlatformVuforiaEnabled(targetGroup);
+					EditorGUI.BeginChangeCheck();
+					flag2 = EditorGUILayout.Toggle(EditorGUIUtility.TextContent("Vuforia Augmented Reality Supported"), flag2, new GUILayoutOption[0]);
+					if (EditorGUI.EndChangeCheck())
+					{
+						PlayerSettings.SetPlatformVuforiaEnabled(targetGroup, flag2);
+					}
+				}
+				if (flag)
+				{
+					EditorGUILayout.HelpBox("Vuforia Augmented Reality is required when using the Vuforia Virtual Reality SDK.", MessageType.Info);
+				}
 			}
 		}
 	}

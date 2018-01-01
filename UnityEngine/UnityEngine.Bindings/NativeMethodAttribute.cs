@@ -35,6 +35,12 @@ namespace UnityEngine.Bindings
 			set;
 		}
 
+		public bool WritableSelf
+		{
+			get;
+			set;
+		}
+
 		public NativeMethodAttribute()
 		{
 		}

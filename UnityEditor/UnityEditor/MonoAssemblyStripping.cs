@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using UnityEditor.Utils;
 
 namespace UnityEditor
 {
@@ -33,17 +34,17 @@ namespace UnityEditor
 
 		public static void MonoCilStrip(BuildTarget buildTarget, string managedLibrariesDirectory, string[] fileNames)
 		{
-			string buildToolsDirectory = BuildPipeline.GetBuildToolsDirectory(buildTarget);
-			string str = Path.Combine(buildToolsDirectory, "mono-cil-strip.exe");
+			string profileDirectory = MonoInstallationFinder.GetProfileDirectory(BuildPipeline.CompatibilityProfileToClassLibFolder(ApiCompatibilityLevel.NET_4_6), "MonoBleedingEdge");
+			string str = Path.Combine(profileDirectory, "mono-cil-strip.exe");
 			for (int i = 0; i < fileNames.Length; i++)
 			{
 				string text = fileNames[i];
 				Process process = MonoProcessUtility.PrepareMonoProcessBleedingEdge(managedLibrariesDirectory);
 				string text2 = text + ".out";
 				process.StartInfo.Arguments = "\"" + str + "\"";
-				ProcessStartInfo expr_5D = process.StartInfo;
-				string arguments = expr_5D.Arguments;
-				expr_5D.Arguments = string.Concat(new string[]
+				ProcessStartInfo expr_67 = process.StartInfo;
+				string arguments = expr_67.Arguments;
+				expr_67.Arguments = string.Concat(new string[]
 				{
 					arguments,
 					" \"",
@@ -66,7 +67,7 @@ namespace UnityEditor
 				textWriter.WriteLine("<linker>");
 				foreach (AssemblyDefinition current in MonoAssemblyStripping.CollectAllAssemblies(librariesFolder, usedClasses))
 				{
-					if (!(current.Name.Name == "UnityEngine"))
+					if (!AssemblyHelper.IsUnityEngineModule(current.Name.Name))
 					{
 						HashSet<TypeDefinition> hashSet = new HashSet<TypeDefinition>();
 						MonoAssemblyStripping.CollectBlackListTypes(hashSet, current.MainModule.Types, usedClasses.GetAllManagedBaseClassesAsString());
@@ -140,11 +141,18 @@ namespace UnityEditor
 			}
 			catch (AssemblyResolutionException ex)
 			{
-				if (!ex.AssemblyReference.IsWindowsRuntime)
+				if (AssemblyHelper.IsUnityEngineModule(assemblyName.Name))
 				{
-					throw;
+					result = null;
 				}
-				result = null;
+				else
+				{
+					if (!ex.AssemblyReference.IsWindowsRuntime)
+					{
+						throw;
+					}
+					result = null;
+				}
 			}
 			return result;
 		}

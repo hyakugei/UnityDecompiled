@@ -8,7 +8,7 @@ namespace UnityEditor.RestService
 {
 	internal class AssetRestHandler
 	{
-		internal class AssetHandler : Handler
+		internal class AssetHandler : JSONHandler
 		{
 			protected override JSONValue HandleDelete(Request request, JSONValue payload)
 			{
@@ -106,12 +106,12 @@ namespace UnityEditor.RestService
 			}
 		}
 
-		internal class LibraryHandler : Handler
+		internal class LibraryHandler : JSONHandler
 		{
 			protected override JSONValue HandleGet(Request request, JSONValue payload)
 			{
 				JSONValue result = default(JSONValue);
-				result["assets"] = Handler.ToJSON(AssetDatabase.FindAssets("", new string[]
+				result["assets"] = JSONHandler.ToJSON(AssetDatabase.FindAssets("", new string[]
 				{
 					"Assets"
 				}));

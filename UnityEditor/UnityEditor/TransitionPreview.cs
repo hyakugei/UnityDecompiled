@@ -373,6 +373,9 @@ namespace UnityEditor
 							this.m_Timeline.ResetRange();
 						}
 						this.m_AvatarPreview.Animator.StartPlayback();
+						this.m_AvatarPreview.Animator.playbackTime = 0f;
+						this.m_AvatarPreview.Animator.Update(0f);
+						this.m_AvatarPreview.ResetPreviewFocus();
 						this.m_IsResampling = false;
 					}
 				}

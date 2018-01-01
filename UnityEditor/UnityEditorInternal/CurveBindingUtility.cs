@@ -6,8 +6,6 @@ namespace UnityEditorInternal
 {
 	internal static class CurveBindingUtility
 	{
-		private static GameObject s_Root;
-
 		public static object GetCurrentValue(AnimationWindowState state, AnimationWindowCurve curve)
 		{
 			object result;

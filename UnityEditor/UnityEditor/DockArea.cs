@@ -49,8 +49,6 @@ namespace UnityEditor
 
 		private bool m_IsBeingDestroyed;
 
-		private IMGUIContainer m_DAOnGUIContainer;
-
 		[CompilerGenerated]
 		private static EditorApplication.CallbackFunction <>f__mg$cache0;
 
@@ -106,7 +104,7 @@ namespace UnityEditor
 			this.m_Panes = list;
 		}
 
-		public new void OnDestroy()
+		protected override void OnDestroy()
 		{
 			this.m_IsBeingDestroyed = true;
 			if (base.hasFocus)
@@ -121,7 +119,7 @@ namespace UnityEditor
 			base.OnDestroy();
 		}
 
-		public new void OnEnable()
+		protected override void OnEnable()
 		{
 			if (this.m_Panes != null)
 			{
@@ -136,12 +134,7 @@ namespace UnityEditor
 				}
 			}
 			base.OnEnable();
-			this.m_DAOnGUIContainer = new IMGUIContainer(new Action(this.OldOnGUI))
-			{
-				name = VisualElementUtils.GetUniqueName("Dockarea")
-			};
-			this.m_DAOnGUIContainer.StretchToParentSize();
-			base.visualTree.InsertChild(0, this.m_DAOnGUIContainer);
+			base.imguiContainer.name = VisualElementUtils.GetUniqueName("Dockarea");
 		}
 
 		protected override void UpdateViewMargins(EditorWindow view)
@@ -150,22 +143,13 @@ namespace UnityEditor
 			if (!(view == null))
 			{
 				RectOffset borderSize = this.GetBorderSize();
-				view.rootVisualContainer.positionTop = (float)borderSize.top;
-				view.rootVisualContainer.positionBottom = (float)borderSize.bottom;
-				view.rootVisualContainer.positionLeft = (float)borderSize.left;
-				view.rootVisualContainer.positionRight = (float)borderSize.right;
-				view.rootVisualContainer.positionType = PositionType.Absolute;
+				IStyle style = view.rootVisualContainer.style;
+				style.positionTop = (float)borderSize.top;
+				style.positionBottom = (float)borderSize.bottom;
+				style.positionLeft = (float)borderSize.left;
+				style.positionRight = (float)borderSize.right;
+				style.positionType = PositionType.Absolute;
 			}
-		}
-
-		public new void OnDisable()
-		{
-			base.OnDisable();
-			if (this.m_DAOnGUIContainer.HasCapture())
-			{
-				this.m_DAOnGUIContainer.RemoveCapture();
-			}
-			base.visualTree.RemoveChild(this.m_DAOnGUIContainer);
 		}
 
 		public void AddTab(EditorWindow pane)
@@ -177,10 +161,7 @@ namespace UnityEditor
 		{
 			base.DeregisterSelectedPane(true);
 			this.m_Panes.Insert(idx, pane);
-			this.m_ActualView = pane;
-			this.m_Panes[idx] = pane;
 			this.selected = idx;
-			base.RegisterSelectedPane();
 			SplitView splitView = base.parent as SplitView;
 			if (splitView)
 			{
@@ -196,7 +177,7 @@ namespace UnityEditor
 
 		public void RemoveTab(EditorWindow pane, bool killIfEmpty)
 		{
-			if (this.m_ActualView == pane)
+			if (base.actualView == pane)
 			{
 				base.DeregisterSelectedPane(true);
 			}
@@ -219,7 +200,7 @@ namespace UnityEditor
 				}
 				else
 				{
-					this.m_Selected = this.m_Panes.IndexOf(this.m_ActualView);
+					this.m_Selected = this.m_Panes.IndexOf(base.actualView);
 				}
 				if (this.m_Selected >= 0 && this.m_Selected < this.m_Panes.Count)
 				{
@@ -303,11 +284,7 @@ namespace UnityEditor
 			return true;
 		}
 
-		private void OnGUI()
-		{
-		}
-
-		public void OldOnGUI()
+		protected override void OldOnGUI()
 		{
 			base.ClearBackground();
 			EditorGUIUtility.ResetGUIState();
@@ -409,7 +386,10 @@ namespace UnityEditor
 				Rect pos = base.borderSize.Remove(base.position);
 				pos.x = vector.x;
 				pos.y = vector.y;
-				this.m_Panes[this.selected].m_Pos = pos;
+				if (this.selected >= 0 && this.selected < this.m_Panes.Count)
+				{
+					this.m_Panes[this.selected].m_Pos = pos;
+				}
 				HostView.EndOffsetArea();
 			}
 			this.DragTab(new Rect(rect.x + 1f, rect.y, rect.width - 40f, 17f), this.tabStyle);
@@ -481,10 +461,7 @@ namespace UnityEditor
 
 		protected override void AddDefaultItemsToMenu(GenericMenu menu, EditorWindow view)
 		{
-			if (menu.GetItemCount() != 0)
-			{
-				menu.AddSeparator("");
-			}
+			base.AddDefaultItemsToMenu(menu, view);
 			if (base.parent.window.showMode == ShowMode.MainWindow)
 			{
 				menu.AddItem(EditorGUIUtility.TextContent("Maximize"), !(base.parent is SplitView), new GenericMenu.MenuFunction2(this.Maximize), view);

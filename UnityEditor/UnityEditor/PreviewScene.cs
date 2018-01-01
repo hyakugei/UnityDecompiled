@@ -61,6 +61,11 @@ namespace UnityEditor
 			}
 		}
 
+		public void AddManagedGO(GameObject go)
+		{
+			SceneManager.MoveGameObjectToScene(go, this.m_Scene);
+		}
+
 		public void Dispose()
 		{
 			EditorSceneManager.ClosePreviewScene(this.m_Scene);

@@ -74,7 +74,7 @@ namespace UnityEngine.Networking.PlayerConnection
 			{
 				throw new ArgumentException("Cant be Guid.Empty", "messageId");
 			}
-			if (!this.m_PlayerEditorConnectionEvents.messageTypeSubscribers.Any<PlayerEditorConnectionEvents.MessageTypeSubscribers>())
+			if (!this.m_PlayerEditorConnectionEvents.messageTypeSubscribers.Any((PlayerEditorConnectionEvents.MessageTypeSubscribers x) => x.MessageTypeId == messageId))
 			{
 				this.GetConnectionNativeApi().RegisterInternal(messageId);
 			}
@@ -113,6 +113,23 @@ namespace UnityEngine.Networking.PlayerConnection
 			this.GetConnectionNativeApi().SendMessage(messageId, data, 0);
 		}
 
+		public bool BlockUntilRecvMsg(Guid messageId, int timeout)
+		{
+			bool msgReceived = false;
+			UnityAction<MessageEventArgs> callback = delegate(MessageEventArgs args)
+			{
+				msgReceived = true;
+			};
+			DateTime now = DateTime.Now;
+			this.Register(messageId, callback);
+			while ((DateTime.Now - now).TotalMilliseconds < (double)timeout && !msgReceived)
+			{
+				this.GetConnectionNativeApi().Poll();
+			}
+			this.Unregister(messageId, callback);
+			return msgReceived;
+		}
+
 		public void DisconnectAll()
 		{
 			this.GetConnectionNativeApi().DisconnectAll();
@@ -140,6 +157,7 @@ namespace UnityEngine.Networking.PlayerConnection
 		[RequiredByNativeCode]
 		private static void DisconnectedCallback(int playerId)
 		{
+			PlayerConnection.instance.m_connectedPlayers.Remove(playerId);
 			PlayerConnection.instance.m_PlayerEditorConnectionEvents.disconnectionEvent.Invoke(playerId);
 		}
 	}

@@ -1,4 +1,5 @@
 using System;
+using UnityEngine;
 
 namespace UnityEditor
 {
@@ -21,13 +22,15 @@ namespace UnityEditor
 				{
 					new ModelImporterModelEditor(this),
 					new ModelImporterRigEditor(this),
-					new ModelImporterClipEditor(this)
+					new ModelImporterClipEditor(this),
+					new ModelImporterMaterialEditor(this)
 				};
 				this.m_TabNames = new string[]
 				{
 					"Model",
 					"Rig",
-					"Animations"
+					"Animation",
+					"Materials"
 				};
 			}
 			base.OnEnable();
@@ -47,6 +50,21 @@ namespace UnityEditor
 		public override bool HasPreviewGUI()
 		{
 			return base.HasPreviewGUI() && base.targets.Length < 2;
+		}
+
+		public override GUIContent GetPreviewTitle()
+		{
+			ModelImporterClipEditor modelImporterClipEditor = base.activeTab as ModelImporterClipEditor;
+			GUIContent result;
+			if (modelImporterClipEditor != null)
+			{
+				result = new GUIContent(modelImporterClipEditor.selectedClipName);
+			}
+			else
+			{
+				result = base.GetPreviewTitle();
+			}
+			return result;
 		}
 	}
 }

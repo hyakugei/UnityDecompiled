@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEditor.Experimental.U2D;
 using UnityEditorInternal;
 using UnityEngine;
 
@@ -164,6 +165,21 @@ namespace UnityEditor
 			return list;
 		}
 
+		public static List<SpriteOutline> AcquireOutline(List<Vector2[]> outlineSP)
+		{
+			List<SpriteOutline> list = new List<SpriteOutline>();
+			if (outlineSP != null)
+			{
+				for (int i = 0; i < outlineSP.Count; i++)
+				{
+					SpriteOutline spriteOutline = new SpriteOutline();
+					spriteOutline.m_Path.AddRange(outlineSP[i]);
+					list.Add(spriteOutline);
+				}
+			}
+			return list;
+		}
+
 		public static void ApplyOutlineChanges(SerializedProperty outlineSP, List<SpriteOutline> outline)
 		{
 			outlineSP.ClearArray();
@@ -179,6 +195,19 @@ namespace UnityEditor
 					arrayElementAtIndex.GetArrayElementAtIndex(j).vector2Value = spriteOutline[j];
 				}
 			}
+		}
+
+		public static List<Vector2[]> ApplyOutlineChanges(List<SpriteOutline> outline)
+		{
+			List<Vector2[]> list = new List<Vector2[]>();
+			if (outline != null)
+			{
+				for (int i = 0; i < outline.Count; i++)
+				{
+					list.Add(outline[i].m_Path.ToArray());
+				}
+			}
+			return list;
 		}
 
 		public void ApplyToSerializedProperty(SerializedProperty sp)
@@ -215,6 +244,30 @@ namespace UnityEditor
 			this.outline = SpriteRect.AcquireOutline(outlineSP);
 			outlineSP = sp.FindPropertyRelative("m_PhysicsShape");
 			this.physicsShape = SpriteRect.AcquireOutline(outlineSP);
+		}
+
+		public void LoadFromSpriteData(SpriteDataBase sp)
+		{
+			this.rect = sp.rect;
+			this.border = sp.border;
+			this.name = sp.name;
+			this.alignment = sp.alignment;
+			this.pivot = SpriteEditorUtility.GetPivotValue(this.alignment, sp.pivot);
+			this.tessellationDetail = sp.tessellationDetail;
+			this.outline = SpriteRect.AcquireOutline(sp.outline);
+			this.physicsShape = SpriteRect.AcquireOutline(sp.physicsShape);
+		}
+
+		public void ApplyToSpriteData(SpriteDataBase sp)
+		{
+			sp.rect = this.rect;
+			sp.border = this.border;
+			sp.name = this.name;
+			sp.alignment = this.alignment;
+			sp.pivot = this.pivot;
+			sp.tessellationDetail = this.tessellationDetail;
+			sp.outline = SpriteRect.ApplyOutlineChanges(this.outline);
+			sp.physicsShape = SpriteRect.ApplyOutlineChanges(this.physicsShape);
 		}
 	}
 }

@@ -6,16 +6,18 @@ namespace UnityEditor
 {
 	internal class DisplayUtility
 	{
+		private static string s_DisplayStr = "Display {0}";
+
 		private static GUIContent[] s_GenericDisplayNames = new GUIContent[]
 		{
-			EditorGUIUtility.TextContent("Display 1"),
-			EditorGUIUtility.TextContent("Display 2"),
-			EditorGUIUtility.TextContent("Display 3"),
-			EditorGUIUtility.TextContent("Display 4"),
-			EditorGUIUtility.TextContent("Display 5"),
-			EditorGUIUtility.TextContent("Display 6"),
-			EditorGUIUtility.TextContent("Display 7"),
-			EditorGUIUtility.TextContent("Display 8")
+			EditorGUIUtility.TextContent(string.Format(DisplayUtility.s_DisplayStr, 1)),
+			EditorGUIUtility.TextContent(string.Format(DisplayUtility.s_DisplayStr, 2)),
+			EditorGUIUtility.TextContent(string.Format(DisplayUtility.s_DisplayStr, 3)),
+			EditorGUIUtility.TextContent(string.Format(DisplayUtility.s_DisplayStr, 4)),
+			EditorGUIUtility.TextContent(string.Format(DisplayUtility.s_DisplayStr, 5)),
+			EditorGUIUtility.TextContent(string.Format(DisplayUtility.s_DisplayStr, 6)),
+			EditorGUIUtility.TextContent(string.Format(DisplayUtility.s_DisplayStr, 7)),
+			EditorGUIUtility.TextContent(string.Format(DisplayUtility.s_DisplayStr, 8))
 		};
 
 		private static readonly int[] s_DisplayIndices = new int[]

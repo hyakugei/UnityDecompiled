@@ -1,10 +1,9 @@
 using System;
 using System.Threading;
-using UnityEngine.Experimental.UIElements.StyleSheets;
 
 namespace UnityEngine.Experimental.UIElements
 {
-	public class Slider : VisualContainer
+	public class Slider : VisualElement
 	{
 		public enum Direction
 		{
@@ -12,9 +11,19 @@ namespace UnityEngine.Experimental.UIElements
 			Vertical
 		}
 
+		[Serializable]
+		private class SliderValue
+		{
+			public float m_Value = 0f;
+		}
+
+		private float m_LowValue;
+
+		private float m_HighValue;
+
 		private Rect m_DragElementStartPos;
 
-		private float m_Value;
+		private Slider.SliderValue m_SliderValue;
 
 		private Slider.Direction m_Direction;
 
@@ -52,14 +61,34 @@ namespace UnityEngine.Experimental.UIElements
 
 		public float lowValue
 		{
-			get;
-			set;
+			get
+			{
+				return this.m_LowValue;
+			}
+			set
+			{
+				if (!Mathf.Approximately(this.m_LowValue, value))
+				{
+					this.m_LowValue = value;
+					this.ClampValue();
+				}
+			}
 		}
 
 		public float highValue
 		{
-			get;
-			set;
+			get
+			{
+				return this.m_HighValue;
+			}
+			set
+			{
+				if (!Mathf.Approximately(this.m_HighValue, value))
+				{
+					this.m_HighValue = value;
+					this.ClampValue();
+				}
+			}
 		}
 
 		public float range
@@ -86,20 +115,28 @@ namespace UnityEngine.Experimental.UIElements
 		{
 			get
 			{
-				return this.m_Value;
+				return (this.m_SliderValue != null) ? this.m_SliderValue.m_Value : 0f;
 			}
 			set
 			{
-				float num = Mathf.Clamp(value, this.lowValue, this.highValue);
-				if (!Mathf.Approximately(this.m_Value, num))
+				if (this.m_SliderValue == null)
 				{
-					this.m_Value = num;
+					this.m_SliderValue = new Slider.SliderValue
+					{
+						m_Value = this.lowValue
+					};
+				}
+				float num = Mathf.Clamp(value, this.lowValue, this.highValue);
+				if (!Mathf.Approximately(this.m_SliderValue.m_Value, num))
+				{
+					this.m_SliderValue.m_Value = num;
 					this.UpdateDragElementPosition();
 					if (this.valueChanged != null)
 					{
-						this.valueChanged(this.m_Value);
+						this.valueChanged(this.m_SliderValue.m_Value);
 					}
 					base.Dirty(ChangeType.Repaint);
+					base.SavePersistentData();
 				}
 			}
 		}
@@ -133,18 +170,29 @@ namespace UnityEngine.Experimental.UIElements
 			this.pageSize = pageSize;
 			this.lowValue = start;
 			this.highValue = end;
-			base.AddChild(new VisualElement
+			base.Add(new VisualElement
 			{
 				name = "TrackElement"
 			});
-			this.m_Value = this.lowValue;
 			this.dragElement = new VisualElement
 			{
 				name = "DragElement"
 			};
-			base.AddChild(this.dragElement);
+			base.Add(this.dragElement);
 			this.clampedDragger = new ClampedDragger(this, new Action(this.SetSliderValueFromClick), new Action(this.SetSliderValueFromDrag));
-			base.AddManipulator(this.clampedDragger);
+			this.AddManipulator(this.clampedDragger);
+		}
+
+		private void ClampValue()
+		{
+			this.value = this.value;
+		}
+
+		public override void OnPersistentDataReady()
+		{
+			base.OnPersistentDataReady();
+			string fullHierarchicalPersistenceKey = base.GetFullHierarchicalPersistenceKey();
+			this.m_SliderValue = base.GetOrCreatePersistentData<Slider.SliderValue>(this.m_SliderValue, fullHierarchicalPersistenceKey);
 		}
 
 		private void SetSliderValueFromDrag()
@@ -154,11 +202,11 @@ namespace UnityEngine.Experimental.UIElements
 				Vector2 delta = this.clampedDragger.delta;
 				if (this.direction == Slider.Direction.Horizontal)
 				{
-					this.ComputeValueAndDirectionFromDrag(base.position.width, this.dragElement.position.width, this.m_DragElementStartPos.x + delta.x);
+					this.ComputeValueAndDirectionFromDrag(base.layout.width, this.dragElement.style.width, this.m_DragElementStartPos.x + delta.x);
 				}
 				else
 				{
-					this.ComputeValueAndDirectionFromDrag(base.position.height, this.dragElement.position.height, this.m_DragElementStartPos.y + delta.y);
+					this.ComputeValueAndDirectionFromDrag(base.layout.height, this.dragElement.style.height, this.m_DragElementStartPos.y + delta.y);
 				}
 			}
 		}
@@ -180,31 +228,31 @@ namespace UnityEngine.Experimental.UIElements
 				{
 					if (this.pageSize == 0f)
 					{
-						float x = (this.direction != Slider.Direction.Horizontal) ? this.dragElement.position.x : (this.clampedDragger.startMousePosition.x - this.dragElement.position.width / 2f);
-						float y = (this.direction != Slider.Direction.Horizontal) ? (this.clampedDragger.startMousePosition.y - this.dragElement.position.height / 2f) : this.dragElement.position.y;
-						Rect rect = new Rect(x, y, this.dragElement.position.width, this.dragElement.position.height);
-						this.dragElement.position = rect;
-						this.m_DragElementStartPos = rect;
+						float num = (this.direction != Slider.Direction.Horizontal) ? this.dragElement.style.positionLeft.value : (this.clampedDragger.startMousePosition.x - this.dragElement.style.width / 2f);
+						float num2 = (this.direction != Slider.Direction.Horizontal) ? (this.clampedDragger.startMousePosition.y - this.dragElement.style.height / 2f) : this.dragElement.style.positionTop.value;
+						this.dragElement.style.positionLeft = num;
+						this.dragElement.style.positionTop = num2;
+						this.m_DragElementStartPos = new Rect(num, num2, this.dragElement.style.width, this.dragElement.style.height);
 						this.clampedDragger.dragDirection = ClampedDragger.DragDirection.Free;
 						if (this.direction == Slider.Direction.Horizontal)
 						{
-							this.ComputeValueAndDirectionFromDrag(base.position.width, this.dragElement.position.width, this.m_DragElementStartPos.x);
+							this.ComputeValueAndDirectionFromDrag(base.layout.width, this.dragElement.style.width, this.m_DragElementStartPos.x);
 						}
 						else
 						{
-							this.ComputeValueAndDirectionFromDrag(base.position.height, this.dragElement.position.height, this.m_DragElementStartPos.y);
+							this.ComputeValueAndDirectionFromDrag(base.layout.height, this.dragElement.style.height, this.m_DragElementStartPos.y);
 						}
 						return;
 					}
-					this.m_DragElementStartPos = this.dragElement.position;
+					this.m_DragElementStartPos = new Rect(this.dragElement.style.positionLeft, this.dragElement.style.positionTop, this.dragElement.style.width, this.dragElement.style.height);
 				}
 				if (this.direction == Slider.Direction.Horizontal)
 				{
-					this.ComputeValueAndDirectionFromClick(base.position.width, this.dragElement.position.width, this.dragElement.position.x, this.clampedDragger.lastMousePosition.x);
+					this.ComputeValueAndDirectionFromClick(base.layout.width, this.dragElement.style.width, this.dragElement.style.positionLeft, this.clampedDragger.lastMousePosition.x);
 				}
 				else
 				{
-					this.ComputeValueAndDirectionFromClick(base.position.height, this.dragElement.position.height, this.dragElement.position.y, this.clampedDragger.lastMousePosition.y);
+					this.ComputeValueAndDirectionFromClick(base.layout.height, this.dragElement.style.height, this.dragElement.style.positionTop, this.clampedDragger.lastMousePosition.y);
 				}
 			}
 		}
@@ -229,57 +277,56 @@ namespace UnityEngine.Experimental.UIElements
 
 		public void AdjustDragElement(float factor)
 		{
-			Rect position;
-			if (factor >= 1f)
+			bool flag = factor < 1f;
+			this.dragElement.visible = flag;
+			if (flag)
 			{
+				IStyle style = this.dragElement.style;
+				this.dragElement.visible = true;
 				if (this.direction == Slider.Direction.Horizontal)
 				{
-					position = new Rect(this.dragElement.position.x, this.dragElement.position.y, 0f, this.dragElement.height);
+					float specifiedValueOrDefault = style.minWidth.GetSpecifiedValueOrDefault(0f);
+					style.width = Mathf.Max(base.layout.width * factor, specifiedValueOrDefault);
 				}
 				else
 				{
-					position = new Rect(this.dragElement.position.x, this.dragElement.position.y, this.dragElement.width, 0f);
+					float specifiedValueOrDefault2 = style.minHeight.GetSpecifiedValueOrDefault(0f);
+					style.height = Mathf.Max(base.layout.height * factor, specifiedValueOrDefault2);
 				}
 			}
-			else
-			{
-				VisualElementStyles styles = this.dragElement.styles;
-				position = this.dragElement.position;
-				if (this.direction == Slider.Direction.Horizontal)
-				{
-					float specifiedValueOrDefault = styles.minWidth.GetSpecifiedValueOrDefault(0f);
-					position.width = Mathf.Max(base.position.width * factor, specifiedValueOrDefault);
-				}
-				else
-				{
-					float specifiedValueOrDefault2 = styles.minHeight.GetSpecifiedValueOrDefault(0f);
-					position.height = Mathf.Max(base.position.height * factor, specifiedValueOrDefault2);
-				}
-			}
-			this.dragElement.position = position;
 		}
 
 		private void UpdateDragElementPosition()
 		{
 			if (base.panel != null)
 			{
-				float num = this.m_Value - this.lowValue;
-				float width = this.dragElement.position.width;
-				float height = this.dragElement.position.height;
+				float num = this.value - this.lowValue;
+				float num2 = this.dragElement.style.width;
+				float num3 = this.dragElement.style.height;
 				if (this.direction == Slider.Direction.Horizontal)
 				{
-					float num2 = base.position.width - width;
-					this.dragElement.position = new Rect(num / this.range * num2, this.dragElement.position.y, width, height);
+					float num4 = base.layout.width - num2;
+					this.dragElement.style.positionLeft = num / this.range * num4;
 				}
 				else
 				{
-					float num3 = base.position.height - height;
-					this.dragElement.position = new Rect(this.dragElement.position.x, num / this.range * num3, width, height);
+					float num5 = base.layout.height - num3;
+					this.dragElement.style.positionTop = num / this.range * num5;
 				}
 			}
 		}
 
-		protected internal override void OnPostLayout(bool hasNewLayout)
+		protected internal override void ExecuteDefaultAction(EventBase evt)
+		{
+			base.ExecuteDefaultAction(evt);
+			if (evt.GetEventTypeId() == EventBase<PostLayoutEvent>.TypeId())
+			{
+				PostLayoutEvent postLayoutEvent = (PostLayoutEvent)evt;
+				this.OnPostLayout(postLayoutEvent.hasNewLayout);
+			}
+		}
+
+		private void OnPostLayout(bool hasNewLayout)
 		{
 			if (hasNewLayout)
 			{

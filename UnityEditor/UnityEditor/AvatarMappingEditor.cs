@@ -960,8 +960,7 @@ namespace UnityEditor
 
 		private void SaveHumanTemplate()
 		{
-			string message = string.Format("Create a new human template", new object[0]);
-			string text = EditorUtility.SaveFilePanelInProject("Create New Human Template", "New Human Template", "ht", message);
+			string text = EditorUtility.SaveFilePanelInProject("Create New Human Template", "New Human Template", "ht", "Create a new human template");
 			if (!(text == ""))
 			{
 				HumanTemplate humanTemplate = new HumanTemplate();

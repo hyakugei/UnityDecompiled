@@ -7,6 +7,14 @@ namespace UnityEngine
 {
 	public sealed class TouchScreenKeyboard
 	{
+		public enum Status
+		{
+			Visible,
+			Done,
+			Canceled,
+			LostFocus
+		}
+
 		[NonSerialized]
 		internal IntPtr m_Ptr;
 
@@ -94,6 +102,13 @@ namespace UnityEngine
 		}
 
 		public extern bool wasCanceled
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+		}
+
+		public extern TouchScreenKeyboard.Status status
 		{
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]

@@ -7,6 +7,17 @@ namespace UnityEngineInternal.Input
 	[StructLayout(LayoutKind.Explicit, Size = 104)]
 	public struct NativeTrackingEvent
 	{
+		[Flags]
+		public enum Flags : uint
+		{
+			PositionAvailable = 1u,
+			OrientationAvailable = 2u,
+			VelocityAvailable = 4u,
+			AngularVelocityAvailable = 8u,
+			AccelerationAvailable = 16u,
+			AngularAccelerationAvailable = 32u
+		}
+
 		[FieldOffset(0)]
 		public NativeInputEvent baseEvent;
 
@@ -14,7 +25,7 @@ namespace UnityEngineInternal.Input
 		public int nodeId;
 
 		[FieldOffset(24)]
-		public uint availableFields;
+		public NativeTrackingEvent.Flags availableFields;
 
 		[FieldOffset(28)]
 		public Vector3 localPosition;
@@ -33,5 +44,17 @@ namespace UnityEngineInternal.Input
 
 		[FieldOffset(92)]
 		public Vector3 angularAcceleration;
+
+		public static NativeTrackingEvent Create(int deviceId, double time, int nodeId, Vector3 position, Quaternion rotation)
+		{
+			return new NativeTrackingEvent
+			{
+				baseEvent = new NativeInputEvent(NativeInputEventType.Tracking, 104, deviceId, time),
+				nodeId = nodeId,
+				availableFields = (NativeTrackingEvent.Flags.PositionAvailable | NativeTrackingEvent.Flags.OrientationAvailable),
+				localPosition = position,
+				localRotation = rotation
+			};
+		}
 	}
 }

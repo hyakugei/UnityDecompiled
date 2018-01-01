@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.Profiling;
 
 namespace UnityEditorInternal
 {
+	[Serializable]
 	internal class ProfilerHierarchyGUI
 	{
 		internal class Styles
@@ -309,6 +309,7 @@ namespace UnityEditorInternal
 
 		private bool m_SetKeyboardFocus;
 
+		[SerializeField]
 		private ProfilerColumn m_SortType = ProfilerColumn.TotalTime;
 
 		private string m_DetailViewSelectedProperty = string.Empty;
@@ -386,14 +387,34 @@ namespace UnityEditorInternal
 			}
 		}
 
+		public ProfilerHierarchyGUI(ProfilerColumn sort)
+		{
+			this.m_SortType = sort;
+		}
+
 		public ProfilerHierarchyGUI(IProfilerWindowController window, ProfilerHierarchyGUI detailedObjectsView, string columnSettingsName, ProfilerColumn[] columnsToShow, string[] columnNames, bool detailPane, ProfilerColumn sort)
+		{
+			this.m_SortType = sort;
+			this.Setup(window, detailedObjectsView, columnSettingsName, columnsToShow, columnNames, detailPane);
+		}
+
+		public void SetKeyboardFocus()
+		{
+			this.m_SetKeyboardFocus = true;
+		}
+
+		public void SelectFirstRow()
+		{
+			this.MoveSelection(-999999);
+		}
+
+		public void Setup(IProfilerWindowController window, ProfilerHierarchyGUI detailedObjectsView, string columnSettingsName, ProfilerColumn[] columnsToShow, string[] columnNames, bool detailPane)
 		{
 			this.m_Window = window;
 			this.m_ColumnNames = columnNames;
 			this.m_ColumnSettingsName = columnSettingsName;
 			this.m_ColumnsToShow = columnsToShow;
 			this.m_DetailPane = detailPane;
-			this.m_SortType = sort;
 			this.m_HeaderContent = new GUIContent[columnNames.Length];
 			this.m_Splitter = null;
 			for (int i = 0; i < this.m_HeaderContent.Length; i++)
@@ -415,16 +436,6 @@ namespace UnityEditorInternal
 			this.m_DetailedObjectsView = new ProfilerDetailedObjectsView(detailedObjectsView, this);
 			this.m_DetailedCallsView = new ProfilerDetailedCallsView(this);
 			this.m_Window.Repaint();
-		}
-
-		public void SetKeyboardFocus()
-		{
-			this.m_SetKeyboardFocus = true;
-		}
-
-		public void SelectFirstRow()
-		{
-			this.MoveSelection(-999999);
 		}
 
 		private void SetupSplitter()
@@ -782,7 +793,7 @@ namespace UnityEditorInternal
 
 		private bool AllowSearching()
 		{
-			bool flag = Profiler.enabled && (ProfilerDriver.profileEditor || EditorApplication.isPlaying);
+			bool flag = ProfilerDriver.enabled && (ProfilerDriver.profileEditor || EditorApplication.isPlaying);
 			return !flag || !ProfilerDriver.deepProfiling;
 		}
 

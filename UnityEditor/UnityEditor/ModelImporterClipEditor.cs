@@ -68,6 +68,8 @@ namespace UnityEditor
 
 			public GUIContent Mask = EditorGUIUtility.TextContent("Mask|Configure the mask for this clip to remove unnecessary curves.");
 
+			public GUIContent ImportAnimatedCustomProperties = EditorGUIUtility.TextContent("Animated Custom Properties|Controls if animated custom properties are imported.");
+
 			public Styles()
 			{
 				this.numberStyle.alignment = TextAnchor.UpperRight;
@@ -102,9 +104,9 @@ namespace UnityEditor
 
 		private SerializedProperty m_LegacyGenerateAnimations;
 
-		private SerializedProperty m_MotionNodeName;
+		private SerializedProperty m_ImportAnimatedCustomProperties;
 
-		private SerializedProperty m_PivotNodeName;
+		private SerializedProperty m_MotionNodeName;
 
 		private SerializedProperty m_RigImportErrors;
 
@@ -157,6 +159,15 @@ namespace UnityEditor
 				{
 					this.m_ClipList.index = value;
 				}
+			}
+		}
+
+		public string selectedClipName
+		{
+			get
+			{
+				AnimationClipInfoProperties selectedClipInfo = this.GetSelectedClipInfo();
+				return (selectedClipInfo == null) ? "" : selectedClipInfo.name;
 			}
 		}
 
@@ -221,6 +232,7 @@ namespace UnityEditor
 			this.m_AnimationPositionError = base.serializedObject.FindProperty("m_AnimationPositionError");
 			this.m_AnimationScaleError = base.serializedObject.FindProperty("m_AnimationScaleError");
 			this.m_AnimationWrapMode = base.serializedObject.FindProperty("m_AnimationWrapMode");
+			this.m_ImportAnimatedCustomProperties = base.serializedObject.FindProperty("m_ImportAnimatedCustomProperties");
 			this.m_RigImportErrors = base.serializedObject.FindProperty("m_RigImportErrors");
 			this.m_RigImportWarnings = base.serializedObject.FindProperty("m_RigImportWarnings");
 			this.m_AnimationImportErrors = base.serializedObject.FindProperty("m_AnimationImportErrors");
@@ -518,6 +530,7 @@ namespace UnityEditor
 				EditorGUILayout.PropertyField(this.m_AnimationScaleError, ModelImporterClipEditor.styles.AnimScaleErrorLabel, new GUILayoutOption[0]);
 				GUILayout.Label(ModelImporterClipEditor.styles.AnimationCompressionHelp, EditorStyles.helpBox, new GUILayoutOption[0]);
 			}
+			EditorGUILayout.PropertyField(this.m_ImportAnimatedCustomProperties, ModelImporterClipEditor.styles.ImportAnimatedCustomProperties, new GUILayoutOption[0]);
 		}
 
 		private void RootMotionNodeSettings()
@@ -734,7 +747,7 @@ namespace UnityEditor
 
 		public override bool HasPreviewGUI()
 		{
-			return this.m_AnimationClipEditor != null && this.m_AnimationClipEditor.HasPreviewGUI();
+			return this.m_ImportAnimation.boolValue && this.m_AnimationClipEditor != null && this.m_AnimationClipEditor.HasPreviewGUI();
 		}
 
 		public override void OnPreviewSettings()
@@ -921,13 +934,14 @@ namespace UnityEditor
 				if (clipInfo.maskType == ClipAnimationMaskType.CreateFromThisModel && !this.m_MaskInspector.IsMaskUpToDate() && !this.m_MaskInspector.IsMaskEmpty())
 				{
 					GUILayout.BeginHorizontal(EditorStyles.helpBox, new GUILayoutOption[0]);
-					GUILayout.Label("Mask does not match hierarchy. Animation might not import correctly", EditorStyles.wordWrappedMiniLabel, new GUILayoutOption[0]);
+					GUILayout.Label("Mask has a path that does not match the transform hierarchy. Animation may not import correctly.", EditorStyles.wordWrappedMiniLabel, new GUILayoutOption[0]);
 					GUILayout.FlexibleSpace();
 					GUILayout.BeginVertical(new GUILayoutOption[0]);
 					GUILayout.Space(5f);
-					if (GUILayout.Button("Fix Mask", new GUILayoutOption[0]))
+					if (GUILayout.Button("Update Mask", new GUILayoutOption[0]))
 					{
 						this.SetTransformMaskFromReference(clipInfo);
+						this.m_MaskInspector.FillNodeInfos();
 					}
 					GUILayout.EndVertical();
 					GUILayout.EndHorizontal();
@@ -935,7 +949,7 @@ namespace UnityEditor
 				else if (clipInfo.maskType == ClipAnimationMaskType.CopyFromOther && clipInfo.MaskNeedsUpdating())
 				{
 					GUILayout.BeginHorizontal(EditorStyles.helpBox, new GUILayoutOption[0]);
-					GUILayout.Label("Source Mask has changed since last import. It must be Updated", EditorStyles.wordWrappedMiniLabel, new GUILayoutOption[0]);
+					GUILayout.Label("Source Mask has changed since last import and must be updated.", EditorStyles.wordWrappedMiniLabel, new GUILayoutOption[0]);
 					GUILayout.FlexibleSpace();
 					GUILayout.BeginVertical(new GUILayoutOption[0]);
 					GUILayout.Space(5f);
@@ -943,6 +957,16 @@ namespace UnityEditor
 					{
 						clipInfo.MaskToClip(clipInfo.maskSource);
 					}
+					GUILayout.EndVertical();
+					GUILayout.EndHorizontal();
+				}
+				else if (clipInfo.maskType == ClipAnimationMaskType.CopyFromOther && !this.m_MaskInspector.IsMaskUpToDate())
+				{
+					GUILayout.BeginHorizontal(EditorStyles.helpBox, new GUILayoutOption[0]);
+					GUILayout.Label("Source Mask has a path that does not match the transform hierarchy. Animation may not import correctly.", EditorStyles.wordWrappedMiniLabel, new GUILayoutOption[0]);
+					GUILayout.FlexibleSpace();
+					GUILayout.BeginVertical(new GUILayoutOption[0]);
+					GUILayout.Space(5f);
 					GUILayout.EndVertical();
 					GUILayout.EndHorizontal();
 				}
@@ -971,8 +995,8 @@ namespace UnityEditor
 		private void SetTransformMaskFromReference(AnimationClipInfoProperties clipInfo)
 		{
 			string[] referenceTransformPaths = this.referenceTransformPaths;
-			string[] humanTransforms = (this.animationType != ModelImporterAnimationType.Human) ? null : AvatarMaskUtility.GetAvatarHumanTransform(base.serializedObject, referenceTransformPaths);
-			AvatarMaskUtility.UpdateTransformMask(clipInfo.transformMaskProperty, referenceTransformPaths, humanTransforms);
+			string[] currentPaths = (this.animationType != ModelImporterAnimationType.Human) ? AvatarMaskUtility.GetAvatarInactiveTransformMaskPaths(clipInfo.transformMaskProperty) : AvatarMaskUtility.GetAvatarHumanAndActiveExtraTransforms(base.serializedObject, clipInfo.transformMaskProperty, referenceTransformPaths);
+			AvatarMaskUtility.UpdateTransformMask(clipInfo.transformMaskProperty, referenceTransformPaths, currentPaths, this.animationType == ModelImporterAnimationType.Human);
 		}
 
 		private void SetBodyMaskDefaultValues(AnimationClipInfoProperties clipInfo)

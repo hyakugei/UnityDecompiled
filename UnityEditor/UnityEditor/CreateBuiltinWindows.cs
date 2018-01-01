@@ -50,7 +50,7 @@ namespace UnityEditor
 		[MenuItem("Window/Audio Mixer %8", false, 2008)]
 		private static void ShowAudioMixer()
 		{
-			AudioMixerWindow.Create();
+			AudioMixerWindow.CreateAudioMixerWindow();
 		}
 
 		private static void ShowVersionControl()

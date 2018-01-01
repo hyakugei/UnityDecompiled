@@ -7,11 +7,24 @@ namespace UnityEngine.Playables
 	[RequiredByNativeCode]
 	public class PlayableDirector : Behaviour, IExposedPropertyTable
 	{
-		public extern PlayState state
+		public PlayState state
 		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
+			get
+			{
+				return this.GetPlayState();
+			}
+		}
+
+		public DirectorWrapMode extrapolationMode
+		{
+			get
+			{
+				return this.GetWrapMode();
+			}
+			set
+			{
+				this.SetWrapMode(value);
+			}
 		}
 
 		public PlayableAsset playableAsset
@@ -26,70 +39,60 @@ namespace UnityEngine.Playables
 			}
 		}
 
-		public extern DirectorWrapMode extrapolationMode
+		public PlayableGraph playableGraph
 		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
+			get
+			{
+				return this.GetGraphHandle();
+			}
+		}
+
+		public bool playOnAwake
+		{
+			get
+			{
+				return this.GetPlayOnAwake();
+			}
+			set
+			{
+				this.SetPlayOnAwake(value);
+			}
 		}
 
 		public extern DirectorUpdateMode timeUpdateMode
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern double time
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern double initialTime
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern double duration
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
 
-		public PlayableGraph playableGraph
+		public void DeferredEvaluate()
 		{
-			get
-			{
-				PlayableGraph result = default(PlayableGraph);
-				this.InternalGetCurrentGraph(ref result);
-				return result;
-			}
+			this.EvaluateNextFrame();
 		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern void Evaluate();
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern void DeferredEvaluate();
 
 		public void Play(PlayableAsset asset)
 		{
@@ -111,6 +114,54 @@ namespace UnityEngine.Playables
 			this.Play();
 		}
 
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public extern void Evaluate();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public extern void Play();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public extern void Stop();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public extern void Pause();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public extern void Resume();
+
+		public void ClearReferenceValue(PropertyName id)
+		{
+			this.ClearReferenceValue_Injected(ref id);
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern void StopImmediately();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern PlayState GetPlayState();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void SetWrapMode(DirectorWrapMode mode);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern DirectorWrapMode GetWrapMode();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void EvaluateNextFrame();
+
+		private PlayableGraph GetGraphHandle()
+		{
+			PlayableGraph result;
+			this.GetGraphHandle_Injected(out result);
+			return result;
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void SetPlayOnAwake(bool on);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern bool GetPlayOnAwake();
+
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern void SetPlayableAssetInternal(ScriptableObject asset);
@@ -118,26 +169,6 @@ namespace UnityEngine.Playables
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern ScriptableObject GetPlayableAssetInternal();
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern void Play();
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern void Stop();
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern void StopImmediately();
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern void Pause();
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern void Resume();
 
 		public void SetReferenceValue(PropertyName id, UnityEngine.Object value)
 		{
@@ -157,24 +188,6 @@ namespace UnityEngine.Playables
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern UnityEngine.Object INTERNAL_CALL_GetReferenceValue(PlayableDirector self, ref PropertyName id, out bool idValid);
 
-		public void ClearReferenceValue(PropertyName id)
-		{
-			PlayableDirector.INTERNAL_CALL_ClearReferenceValue(this, ref id);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_ClearReferenceValue(PlayableDirector self, ref PropertyName id);
-
-		private void InternalGetCurrentGraph(ref PlayableGraph graph)
-		{
-			PlayableDirector.INTERNAL_CALL_InternalGetCurrentGraph(this, ref graph);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_InternalGetCurrentGraph(PlayableDirector self, ref PlayableGraph graph);
-
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern void SetGenericBinding(UnityEngine.Object key, UnityEngine.Object value);
@@ -186,5 +199,11 @@ namespace UnityEngine.Playables
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern bool HasGenericBinding(UnityEngine.Object key);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void ClearReferenceValue_Injected(ref PropertyName id);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void GetGraphHandle_Injected(out PlayableGraph ret);
 	}
 }

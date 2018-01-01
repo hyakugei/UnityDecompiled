@@ -53,8 +53,6 @@ namespace UnityEditor
 
 		private static OcclusionCullingWindow ms_OcclusionCullingWindow;
 
-		private UnityEngine.Object[] m_Objects;
-
 		private Vector2 m_ScrollPosition = Vector2.zero;
 
 		private OcclusionCullingWindow.Mode m_Mode = OcclusionCullingWindow.Mode.AreaSettings;
@@ -302,19 +300,26 @@ namespace UnityEditor
 
 		private void ModeToggle()
 		{
-			this.m_Mode = (OcclusionCullingWindow.Mode)GUILayout.Toolbar((int)this.m_Mode, OcclusionCullingWindow.s_Styles.ModeToggles, "LargeButton", new GUILayoutOption[0]);
-			if (GUI.changed)
+			EditorGUILayout.BeginHorizontal(new GUILayoutOption[0]);
+			GUILayout.FlexibleSpace();
+			using (EditorGUI.ChangeCheckScope changeCheckScope = new EditorGUI.ChangeCheckScope())
 			{
-				if (this.m_Mode == OcclusionCullingWindow.Mode.Visualization && StaticOcclusionCulling.umbraDataSize > 0)
+				this.m_Mode = (OcclusionCullingWindow.Mode)GUILayout.Toolbar((int)this.m_Mode, OcclusionCullingWindow.s_Styles.ModeToggles, "LargeButton", GUI.ToolbarButtonSize.FitToContents, new GUILayoutOption[0]);
+				if (changeCheckScope.changed)
 				{
-					StaticOcclusionCullingVisualization.showPreVisualization = false;
+					if (this.m_Mode == OcclusionCullingWindow.Mode.Visualization && StaticOcclusionCulling.umbraDataSize > 0)
+					{
+						StaticOcclusionCullingVisualization.showPreVisualization = false;
+					}
+					else
+					{
+						StaticOcclusionCullingVisualization.showPreVisualization = true;
+					}
+					SceneView.RepaintAll();
 				}
-				else
-				{
-					StaticOcclusionCullingVisualization.showPreVisualization = true;
-				}
-				SceneView.RepaintAll();
 			}
+			GUILayout.FlexibleSpace();
+			EditorGUILayout.EndHorizontal();
 		}
 
 		private void OnGUI()
@@ -370,7 +375,7 @@ namespace UnityEditor
 		{
 			if (OcclusionCullingWindow.s_IsVisible)
 			{
-				SceneViewOverlay.Window(new GUIContent("Occlusion Culling"), new SceneViewOverlay.WindowFunction(this.DisplayControls), 100, SceneViewOverlay.WindowDisplayOption.OneWindowPerTarget);
+				SceneViewOverlay.Window(new GUIContent("Occlusion Culling"), new SceneViewOverlay.WindowFunction(this.DisplayControls), 200, SceneViewOverlay.WindowDisplayOption.OneWindowPerTarget);
 			}
 		}
 

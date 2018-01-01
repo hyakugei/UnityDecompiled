@@ -36,6 +36,13 @@ namespace UnityEngine
 			set;
 		}
 
+		public static extern bool isConverged
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+		}
+
 		public static void SetEmissive(Renderer renderer, Color color)
 		{
 			DynamicGI.INTERNAL_CALL_SetEmissive(renderer, ref color);

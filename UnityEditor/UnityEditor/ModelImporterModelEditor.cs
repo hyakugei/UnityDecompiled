@@ -99,6 +99,15 @@ namespace UnityEditor
 				new GUIContent("High")
 			};
 
+			public GUIContent IndexFormatLabel = new GUIContent("Index Format", "Format of mesh index buffer. Auto mode picks 16 or 32 bit depending on mesh vertex count.");
+
+			public GUIContent[] IndexFormatOpt = new GUIContent[]
+			{
+				new GUIContent("Auto"),
+				new GUIContent("16 bit"),
+				new GUIContent("32 bit")
+			};
+
 			public GUIContent OptimizeMeshForGPU = EditorGUIUtility.TextContent("Optimize Mesh|The vertices and indices will be reordered for better GPU performance.");
 
 			public GUIContent KeepQuads = EditorGUIUtility.TextContent("Keep Quads|If model contains quad faces, they are kept for DX11 tessellation.");
@@ -111,62 +120,9 @@ namespace UnityEditor
 
 			public GUIContent ImportLights = EditorGUIUtility.TextContent("Import Lights");
 
+			public GUIContent PreserveHierarchy = EditorGUIUtility.TextContent("Preserve Hierarchy|Always create an explicit prefab root, even if the model only has a single root.");
+
 			public GUIContent IsReadable = EditorGUIUtility.TextContent("Read/Write Enabled|Allow vertices and indices to be accessed from script.");
-
-			public GUIContent Materials = EditorGUIUtility.TextContent("Materials");
-
-			public GUIContent ImportMaterials = EditorGUIUtility.TextContent("Import Materials");
-
-			public GUIContent MaterialName = EditorGUIUtility.TextContent("Material Naming");
-
-			public GUIContent MaterialNameTex = EditorGUIUtility.TextContent("By Base Texture Name");
-
-			public GUIContent MaterialNameMat = EditorGUIUtility.TextContent("From Model's Material");
-
-			public GUIContent[] MaterialNameOptMain = new GUIContent[]
-			{
-				EditorGUIUtility.TextContent("By Base Texture Name"),
-				EditorGUIUtility.TextContent("From Model's Material"),
-				EditorGUIUtility.TextContent("Model Name + Model's Material")
-			};
-
-			public GUIContent[] MaterialNameOptAll = new GUIContent[]
-			{
-				EditorGUIUtility.TextContent("By Base Texture Name"),
-				EditorGUIUtility.TextContent("From Model's Material"),
-				EditorGUIUtility.TextContent("Model Name + Model's Material"),
-				EditorGUIUtility.TextContent("Texture Name or Model Name + Model's Material (Obsolete)")
-			};
-
-			public GUIContent MaterialSearch = EditorGUIUtility.TextContent("Material Search");
-
-			public GUIContent[] MaterialSearchOpt = new GUIContent[]
-			{
-				EditorGUIUtility.TextContent("Local Materials Folder"),
-				EditorGUIUtility.TextContent("Recursive-Up"),
-				EditorGUIUtility.TextContent("Project-Wide")
-			};
-
-			public GUIContent MaterialHelpStart = EditorGUIUtility.TextContent("For each imported material, Unity first looks for an existing material named %MAT%.");
-
-			public GUIContent MaterialHelpEnd = EditorGUIUtility.TextContent("If it doesn't exist, a new one is created in the local Materials folder.");
-
-			public GUIContent MaterialHelpDefault = EditorGUIUtility.TextContent("No new materials are generated. Unity's Default-Diffuse material is used instead.");
-
-			public GUIContent[] MaterialNameHelp = new GUIContent[]
-			{
-				EditorGUIUtility.TextContent("[BaseTextureName]"),
-				EditorGUIUtility.TextContent("[MaterialName]"),
-				EditorGUIUtility.TextContent("[ModelFileName]-[MaterialName]"),
-				EditorGUIUtility.TextContent("[BaseTextureName] or [ModelFileName]-[MaterialName] if no base texture can be found")
-			};
-
-			public GUIContent[] MaterialSearchHelp = new GUIContent[]
-			{
-				EditorGUIUtility.TextContent("Unity will look for it in the local Materials folder."),
-				EditorGUIUtility.TextContent("Unity will do a recursive-up search for it in all Materials folders up to the Assets folder."),
-				EditorGUIUtility.TextContent("Unity will search for it anywhere inside the Assets folder.")
-			};
 
 			public Styles()
 			{
@@ -219,14 +175,6 @@ namespace UnityEditor
 
 		private bool m_SecondaryUVAdvancedOptions = false;
 
-		private bool m_ShowAllMaterialNameOptions = true;
-
-		private SerializedProperty m_ImportMaterials;
-
-		private SerializedProperty m_MaterialName;
-
-		private SerializedProperty m_MaterialSearch;
-
 		private SerializedProperty m_GlobalScale;
 
 		private SerializedProperty m_UseFileScale;
@@ -253,8 +201,6 @@ namespace UnityEditor
 
 		private SerializedProperty m_NormalSmoothAngle;
 
-		private SerializedProperty m_SplitTangentsAcrossSeams;
-
 		private SerializedProperty m_NormalImportMode;
 
 		private SerializedProperty m_NormalCalculationMode;
@@ -267,6 +213,8 @@ namespace UnityEditor
 
 		private SerializedProperty m_KeepQuads;
 
+		private SerializedProperty m_IndexFormat;
+
 		private SerializedProperty m_WeldVertices;
 
 		private SerializedProperty m_ImportCameras;
@@ -275,23 +223,16 @@ namespace UnityEditor
 
 		private SerializedProperty m_ImportVisibility;
 
+		private SerializedProperty m_PreserveHierarchy;
+
 		private static ModelImporterModelEditor.Styles styles;
 
 		public ModelImporterModelEditor(AssetImporterEditor panelContainer) : base(panelContainer)
 		{
 		}
 
-		private void UpdateShowAllMaterialNameOptions()
-		{
-			this.m_MaterialName = base.serializedObject.FindProperty("m_MaterialName");
-			this.m_ShowAllMaterialNameOptions = (this.m_MaterialName.intValue == 3);
-		}
-
 		internal override void OnEnable()
 		{
-			this.m_ImportMaterials = base.serializedObject.FindProperty("m_ImportMaterials");
-			this.m_MaterialName = base.serializedObject.FindProperty("m_MaterialName");
-			this.m_MaterialSearch = base.serializedObject.FindProperty("m_MaterialSearch");
 			this.m_GlobalScale = base.serializedObject.FindProperty("m_GlobalScale");
 			this.m_UseFileScale = base.serializedObject.FindProperty("m_UseFileScale");
 			this.m_FileScale = base.serializedObject.FindProperty("m_FileScale");
@@ -313,25 +254,15 @@ namespace UnityEditor
 			this.m_OptimizeMeshForGPU = base.serializedObject.FindProperty("optimizeMeshForGPU");
 			this.m_IsReadable = base.serializedObject.FindProperty("m_IsReadable");
 			this.m_KeepQuads = base.serializedObject.FindProperty("keepQuads");
+			this.m_IndexFormat = base.serializedObject.FindProperty("indexFormat");
 			this.m_WeldVertices = base.serializedObject.FindProperty("weldVertices");
 			this.m_ImportVisibility = base.serializedObject.FindProperty("m_ImportVisibility");
-			this.UpdateShowAllMaterialNameOptions();
-		}
-
-		internal override void ResetValues()
-		{
-			base.ResetValues();
-			this.UpdateShowAllMaterialNameOptions();
+			this.m_PreserveHierarchy = base.serializedObject.FindProperty("m_PreserveHierarchy");
 		}
 
 		internal override void PreApply()
 		{
 			this.ScaleAvatar();
-		}
-
-		internal override void PostApply()
-		{
-			this.UpdateShowAllMaterialNameOptions();
 		}
 
 		public override void OnInspectorGUI()
@@ -342,7 +273,6 @@ namespace UnityEditor
 			}
 			this.MeshesGUI();
 			this.NormalsAndTangentsGUI();
-			this.MaterialsGUI();
 		}
 
 		private void MeshesGUI()
@@ -365,10 +295,12 @@ namespace UnityEditor
 			EditorGUILayout.PropertyField(this.m_ImportBlendShapes, ModelImporterModelEditor.styles.ImportBlendShapes, new GUILayoutOption[0]);
 			EditorGUILayout.PropertyField(this.m_AddColliders, ModelImporterModelEditor.styles.GenerateColliders, new GUILayoutOption[0]);
 			EditorGUILayout.PropertyField(this.m_KeepQuads, ModelImporterModelEditor.styles.KeepQuads, new GUILayoutOption[0]);
+			EditorGUILayout.Popup(this.m_IndexFormat, ModelImporterModelEditor.styles.IndexFormatOpt, ModelImporterModelEditor.styles.IndexFormatLabel, new GUILayoutOption[0]);
 			EditorGUILayout.PropertyField(this.m_WeldVertices, ModelImporterModelEditor.styles.WeldVertices, new GUILayoutOption[0]);
 			EditorGUILayout.PropertyField(this.m_ImportVisibility, ModelImporterModelEditor.styles.ImportVisibility, new GUILayoutOption[0]);
 			EditorGUILayout.PropertyField(this.m_ImportCameras, ModelImporterModelEditor.styles.ImportCameras, new GUILayoutOption[0]);
 			EditorGUILayout.PropertyField(this.m_ImportLights, ModelImporterModelEditor.styles.ImportLights, new GUILayoutOption[0]);
+			EditorGUILayout.PropertyField(this.m_PreserveHierarchy, ModelImporterModelEditor.styles.PreserveHierarchy, new GUILayoutOption[0]);
 			EditorGUILayout.PropertyField(this.m_SwapUVChannels, ModelImporterModelEditor.styles.SwapUVChannels, new GUILayoutOption[0]);
 			EditorGUILayout.PropertyField(this.m_GenerateSecondaryUV, ModelImporterModelEditor.styles.GenerateSecondaryUV, new GUILayoutOption[0]);
 			if (this.m_GenerateSecondaryUV.boolValue)
@@ -392,31 +324,6 @@ namespace UnityEditor
 				}
 				EditorGUI.indentLevel--;
 			}
-		}
-
-		private void MaterialsGUI()
-		{
-			GUILayout.Label(ModelImporterModelEditor.styles.Materials, EditorStyles.boldLabel, new GUILayoutOption[0]);
-			EditorGUILayout.PropertyField(this.m_ImportMaterials, ModelImporterModelEditor.styles.ImportMaterials, new GUILayoutOption[0]);
-			string text;
-			if (this.m_ImportMaterials.boolValue)
-			{
-				EditorGUILayout.Popup(this.m_MaterialName, (!this.m_ShowAllMaterialNameOptions) ? ModelImporterModelEditor.styles.MaterialNameOptMain : ModelImporterModelEditor.styles.MaterialNameOptAll, ModelImporterModelEditor.styles.MaterialName, new GUILayoutOption[0]);
-				EditorGUILayout.Popup(this.m_MaterialSearch, ModelImporterModelEditor.styles.MaterialSearchOpt, ModelImporterModelEditor.styles.MaterialSearch, new GUILayoutOption[0]);
-				text = string.Concat(new string[]
-				{
-					ModelImporterModelEditor.styles.MaterialHelpStart.text.Replace("%MAT%", ModelImporterModelEditor.styles.MaterialNameHelp[this.m_MaterialName.intValue].text),
-					"\n",
-					ModelImporterModelEditor.styles.MaterialSearchHelp[this.m_MaterialSearch.intValue].text,
-					"\n",
-					ModelImporterModelEditor.styles.MaterialHelpEnd.text
-				});
-			}
-			else
-			{
-				text = ModelImporterModelEditor.styles.MaterialHelpDefault.text;
-			}
-			GUILayout.Label(new GUIContent(text), EditorStyles.helpBox, new GUILayoutOption[0]);
 		}
 
 		private void NormalsAndTangentsGUI()

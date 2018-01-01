@@ -50,14 +50,14 @@ namespace UnityEditor
 			}
 		}
 
-		private static string FormatNumber(int num)
+		private static string FormatNumber(long num)
 		{
 			string result;
-			if (num < 1000)
+			if (num < 1000L)
 			{
 				result = num.ToString();
 			}
-			else if (num < 1000000)
+			else if (num < 1000000L)
 			{
 				result = ((double)num * 0.001).ToString("f1") + "k";
 			}
@@ -149,7 +149,7 @@ namespace UnityEditor
 				stringBuilder2.Append(string.Format("  CPU: main {0:F1}ms  render thread <b>{1:F1}</b>ms\n", GameViewGUI.m_ClientFrameTime * 1000f, GameViewGUI.m_RenderFrameTime * 1000f));
 			}
 			stringBuilder2.Append(string.Format("  Batches: <b>{0}</b> \tSaved by batching: {1}\n", UnityStats.batches, num4 + num5 + num6));
-			stringBuilder2.Append(string.Format("  Tris: {0} \tVerts: {1} \n", GameViewGUI.FormatNumber(UnityStats.triangles), GameViewGUI.FormatNumber(UnityStats.vertices)));
+			stringBuilder2.Append(string.Format("  Tris: {0} \tVerts: {1} \n", GameViewGUI.FormatNumber(UnityStats.trianglesLong), GameViewGUI.FormatNumber(UnityStats.verticesLong)));
 			stringBuilder2.Append(string.Format("  Screen: {0} - {1}\n", UnityStats.screenRes, EditorUtility.FormatBytes(screenBytes)));
 			stringBuilder2.Append(string.Format("  SetPass calls: {0} \tShadow casters: {1} \n", UnityStats.setPassCalls, UnityStats.shadowCasters));
 			stringBuilder2.Append(string.Format("  Visible skinned meshes: {0}  Animations: {1}", UnityStats.visibleSkinnedMeshes, UnityStats.visibleAnimations));

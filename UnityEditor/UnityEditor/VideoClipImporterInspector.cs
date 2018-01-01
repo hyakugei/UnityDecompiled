@@ -109,15 +109,19 @@ namespace UnityEditor
 
 			public GUIContent spatialQualityContent = EditorGUIUtility.TextContent("Spatial Quality|Adds a downsize during import to reduce bitrate using resolution.");
 
-			public GUIContent importerVersionContent = EditorGUIUtility.TextContent("Importer Version|Selects the type of asset produced (legacy MovieTexture or new VideoClip).");
+			public GUIContent importerVersionContent = EditorGUIUtility.TextContent("Importer Version|Selects the type of video asset produced.");
 
 			public GUIContent[] importerVersionOptions = new GUIContent[]
 			{
-				EditorGUIUtility.TextContent("MovieTexture (Legacy)|Produce MovieTexture asset (old version)"),
-				EditorGUIUtility.TextContent("VideoClip|Produce VideoClip asset (for use with VideoPlayer)")
+				EditorGUIUtility.TextContent("VideoClip|Produce VideoClip asset (for use with VideoPlayer)"),
+				EditorGUIUtility.TextContent("MovieTexture (Deprecated)|Produce MovieTexture asset (deprecated in factor of VideoClip)")
 			};
 
 			public GUIContent transcodeWarning = EditorGUIUtility.TextContent("Not all platforms transcoded. Clip is not guaranteed to be compatible on platforms without transcoding.");
+
+			public GUIContent transcodeSkippedWarning = EditorGUIUtility.TextContent("Transcode was skipped. Current clip does not match import settings. Reimport to resolve.");
+
+			public GUIContent multipleTranscodeSkippedWarning = EditorGUIUtility.TextContent("Transcode was skipped for some clips and they don't match import settings. Reimport to resolve.");
 		}
 
 		private SerializedProperty m_UseLegacyImporter;
@@ -649,7 +653,7 @@ namespace UnityEditor
 				EditorGUI.BeginChangeCheck();
 				float labelWidth = EditorGUIUtility.labelWidth;
 				EditorGUIUtility.labelWidth = 100f;
-				int num2 = EditorGUILayout.Popup(VideoClipImporterInspector.s_Styles.importerVersionContent, (!this.m_UseLegacyImporter.boolValue) ? 1 : 0, VideoClipImporterInspector.s_Styles.importerVersionOptions, EditorStyles.popup, new GUILayoutOption[]
+				int num2 = EditorGUILayout.Popup(VideoClipImporterInspector.s_Styles.importerVersionContent, (!this.m_UseLegacyImporter.boolValue) ? 0 : 1, VideoClipImporterInspector.s_Styles.importerVersionOptions, EditorStyles.popup, new GUILayoutOption[]
 				{
 					GUILayout.MaxWidth(230f)
 				});
@@ -657,7 +661,7 @@ namespace UnityEditor
 				EditorGUI.showMixedValue = false;
 				if (EditorGUI.EndChangeCheck())
 				{
-					this.m_UseLegacyImporter.boolValue = (num2 == 0);
+					this.m_UseLegacyImporter.boolValue = (num2 == 1);
 				}
 				GUILayout.FlexibleSpace();
 				if (GUILayout.Button("Open", EditorStyles.miniButton, new GUILayoutOption[0]))
@@ -684,6 +688,17 @@ namespace UnityEditor
 				if (this.AnySettingsNotTranscoded())
 				{
 					EditorGUILayout.HelpBox(VideoClipImporterInspector.s_Styles.transcodeWarning.text, MessageType.Info);
+				}
+			}
+			UnityEngine.Object[] targets = base.targets;
+			for (int i = 0; i < targets.Length; i++)
+			{
+				UnityEngine.Object @object = targets[i];
+				VideoClipImporter videoClipImporter = @object as VideoClipImporter;
+				if (videoClipImporter && videoClipImporter.transcodeSkipped)
+				{
+					EditorGUILayout.HelpBox((base.targets.Length != 1) ? VideoClipImporterInspector.s_Styles.multipleTranscodeSkippedWarning.text : VideoClipImporterInspector.s_Styles.transcodeSkippedWarning.text, MessageType.Error);
+					break;
 				}
 			}
 			base.ApplyRevertGUI();
@@ -741,7 +756,8 @@ namespace UnityEditor
 
 		public override void OnPreviewSettings()
 		{
-			EditorGUI.BeginDisabledGroup(Application.isPlaying || this.HasModified());
+			VideoClipImporter videoClipImporter = (VideoClipImporter)base.target;
+			EditorGUI.BeginDisabledGroup(Application.isPlaying || this.HasModified() || videoClipImporter.useLegacyImporter);
 			this.m_IsPlaying = (PreviewGUI.CycleButton((!this.m_IsPlaying) ? 0 : 1, VideoClipImporterInspector.s_Styles.playIcons) != 0);
 			EditorGUI.EndDisabledGroup();
 		}
@@ -763,22 +779,29 @@ namespace UnityEditor
 				Texture previewTexture = videoClipImporter.GetPreviewTexture();
 				if (previewTexture && previewTexture.width != 0 && previewTexture.height != 0)
 				{
-					float num = 1f;
-					float num2 = 1f;
+					float num = (float)previewTexture.width;
+					float num2 = (float)previewTexture.height;
 					if (videoClipImporter.defaultTargetSettings.enableTranscoding)
 					{
 						VideoResizeMode resizeMode = videoClipImporter.defaultTargetSettings.resizeMode;
-						num = (float)(videoClipImporter.GetResizeWidth(resizeMode) / previewTexture.width);
-						num2 = (float)(videoClipImporter.GetResizeHeight(resizeMode) / previewTexture.height);
+						num = (float)videoClipImporter.GetResizeWidth(resizeMode);
+						num2 = (float)videoClipImporter.GetResizeHeight(resizeMode);
 					}
-					float num3 = Mathf.Min(new float[]
+					if (videoClipImporter.pixelAspectRatioDenominator > 0)
 					{
-						num * r.width / (float)previewTexture.width,
-						num2 * r.height / (float)previewTexture.height,
-						num,
-						num2
-					});
-					Rect rect = new Rect(r.x, r.y, (float)previewTexture.width * num3, (float)previewTexture.height * num3);
+						num *= (float)videoClipImporter.pixelAspectRatioNumerator / (float)videoClipImporter.pixelAspectRatioDenominator;
+					}
+					float num3;
+					if (r.width / num * num2 > r.height)
+					{
+						num3 = r.height / num2;
+					}
+					else
+					{
+						num3 = r.width / num;
+					}
+					num3 = Mathf.Clamp01(num3);
+					Rect rect = new Rect(r.x, r.y, num * num3, num2 * num3);
 					PreviewGUI.BeginScrollView(r, this.m_Position, rect, "PreHorizontalScrollbar", "PreHorizontalScrollbarThumb");
 					EditorGUI.DrawTextureTransparent(rect, previewTexture, ScaleMode.StretchToFill);
 					this.m_Position = PreviewGUI.EndScrollView();

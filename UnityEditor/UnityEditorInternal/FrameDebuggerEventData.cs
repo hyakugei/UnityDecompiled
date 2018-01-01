@@ -15,7 +15,13 @@ namespace UnityEditorInternal
 
 		public string shaderName;
 
+		public string passName;
+
+		public string passLightMode;
+
 		public int shaderInstanceID;
+
+		public int subShaderIndex;
 
 		public int shaderPassIndex;
 
@@ -62,6 +68,10 @@ namespace UnityEditorInternal
 		public FrameDebuggerRasterState rasterState;
 
 		public FrameDebuggerDepthState depthState;
+
+		public FrameDebuggerStencilState stencilState;
+
+		public int stencilRef;
 
 		public int batchBreakCause;
 

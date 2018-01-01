@@ -23,9 +23,13 @@ namespace UnityEditor
 
 			public readonly GUIContent enableMipmaps = EditorGUIUtility.TextContent("Enable Mip Maps|This render texture will have Mip Maps.");
 
+			public readonly GUIContent bindMS = EditorGUIUtility.TextContent("Bind multisampled|If enabled, the texture will not go through an AA resolve if bound to a shader.");
+
 			public readonly GUIContent autoGeneratesMipmaps = EditorGUIUtility.TextContent("Auto generate Mip Maps|This render texture automatically generate its Mip Maps.");
 
 			public readonly GUIContent sRGBTexture = EditorGUIUtility.TextContent("sRGB (Color RenderTexture)|RenderTexture content is stored in gamma space. Non-HDR color textures should enable this flag.");
+
+			public readonly GUIContent useDynamicScale = EditorGUIUtility.TextContent("Dynamic Scaling|Allow the texture to be automatically resized by ScalableBufferManager, to support dynamic resolution.");
 
 			public readonly GUIContent[] renderTextureAntiAliasing = new GUIContent[]
 			{
@@ -90,6 +94,8 @@ namespace UnityEditor
 
 		private SerializedProperty m_sRGB;
 
+		private SerializedProperty m_UseDynamicScale;
+
 		private static RenderTextureEditor.Styles styles
 		{
 			get
@@ -115,6 +121,7 @@ namespace UnityEditor
 			this.m_AutoGeneratesMipmaps = base.serializedObject.FindProperty("m_GenerateMips");
 			this.m_Dimension = base.serializedObject.FindProperty("m_Dimension");
 			this.m_sRGB = base.serializedObject.FindProperty("m_SRGB");
+			this.m_UseDynamicScale = base.serializedObject.FindProperty("m_UseDynamicScale");
 		}
 
 		public static bool IsHDRFormat(RenderTextureFormat format)
@@ -174,6 +181,7 @@ namespace UnityEditor
 			{
 				EditorGUILayout.HelpBox("3D RenderTextures do not support Mip Maps.", MessageType.Info);
 			}
+			EditorGUILayout.PropertyField(this.m_UseDynamicScale, RenderTextureEditor.styles.useDynamicScale, new GUILayoutOption[0]);
 			RenderTexture renderTexture = base.target as RenderTexture;
 			if (GUI.changed && renderTexture != null)
 			{

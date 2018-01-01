@@ -1183,11 +1183,11 @@ namespace UnityEngine.UI
 				local = this.MapCoordinate(local, pixelAdjustedRect);
 				Rect textureRect = this.activeSprite.textureRect;
 				Vector2 vector = new Vector2(local.x / textureRect.width, local.y / textureRect.height);
-				float u = Mathf.Lerp(textureRect.x, textureRect.xMax, vector.x) / (float)this.activeSprite.texture.width;
-				float v = Mathf.Lerp(textureRect.y, textureRect.yMax, vector.y) / (float)this.activeSprite.texture.height;
+				float x = Mathf.Lerp(textureRect.x, textureRect.xMax, vector.x) / (float)this.activeSprite.texture.width;
+				float y = Mathf.Lerp(textureRect.y, textureRect.yMax, vector.y) / (float)this.activeSprite.texture.height;
 				try
 				{
-					result = (this.activeSprite.texture.GetPixelBilinear(u, v).a >= this.alphaHitTestMinimumThreshold);
+					result = (this.activeSprite.texture.GetPixelBilinear(x, y).a >= this.alphaHitTestMinimumThreshold);
 				}
 				catch (UnityException ex)
 				{

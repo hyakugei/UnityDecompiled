@@ -9,6 +9,8 @@ namespace UnityEditor
 
 		public delegate void SetAxisScalarsCallback(Vector2 newAxisScalars);
 
+		public delegate void PreProcessKeyMovement(ref Keyframe key);
+
 		internal enum SelectionMode
 		{
 			None,
@@ -39,6 +41,8 @@ namespace UnityEditor
 		public CurveWrapper.GetAxisScalarsCallback getAxisUiScalarsCallback;
 
 		public CurveWrapper.SetAxisScalarsCallback setAxisUiScalarsCallback;
+
+		public CurveWrapper.PreProcessKeyMovement preProcessKeyMovementDelegate;
 
 		public CurveWrapper.SelectionMode selected;
 
@@ -164,6 +168,26 @@ namespace UnityEditor
 			this.listIndex = -1;
 			this.getAxisUiScalarsCallback = null;
 			this.setAxisUiScalarsCallback = null;
+		}
+
+		public int AddKey(Keyframe key)
+		{
+			this.PreProcessKey(ref key);
+			return this.curve.AddKey(key);
+		}
+
+		public void PreProcessKey(ref Keyframe key)
+		{
+			if (this.preProcessKeyMovementDelegate != null)
+			{
+				this.preProcessKeyMovementDelegate(ref key);
+			}
+		}
+
+		public int MoveKey(int index, ref Keyframe key)
+		{
+			this.PreProcessKey(ref key);
+			return this.curve.MoveKey(index, key);
 		}
 	}
 }

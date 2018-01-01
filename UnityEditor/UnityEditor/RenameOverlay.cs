@@ -123,7 +123,6 @@ namespace UnityEditor
 			bool result;
 			if (this.m_IsRenaming)
 			{
-				Debug.LogError("BeginRename fail: already renaming");
 				result = false;
 			}
 			else

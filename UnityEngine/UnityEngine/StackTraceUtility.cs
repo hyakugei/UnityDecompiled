@@ -7,14 +7,18 @@ using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
-	public class StackTraceUtility
+	public static class StackTraceUtility
 	{
 		private static string projectFolder = "";
 
 		[RequiredByNativeCode]
 		internal static void SetProjectFolder(string folder)
 		{
-			StackTraceUtility.projectFolder = folder.Replace("\\", "/");
+			StackTraceUtility.projectFolder = folder;
+			if (!string.IsNullOrEmpty(StackTraceUtility.projectFolder))
+			{
+				StackTraceUtility.projectFolder = StackTraceUtility.projectFolder.Replace("\\", "/");
+			}
 		}
 
 		[SecuritySafeCritical, RequiredByNativeCode]
@@ -121,7 +125,7 @@ namespace UnityEngine
 							{
 								if (StackTraceUtility.IsSystemStacktraceType(array[j + 1]))
 								{
-									goto IL_288;
+									goto IL_297;
 								}
 								int num = text.IndexOf(" (at");
 								if (num != -1)
@@ -153,7 +157,10 @@ namespace UnityEngine
 											}
 											text = text.Replace("  in <filename unknown>:0", "");
 											text = text.Replace("\\", "/");
-											text = text.Replace(StackTraceUtility.projectFolder, "");
+											if (!string.IsNullOrEmpty(StackTraceUtility.projectFolder))
+											{
+												text = text.Replace(StackTraceUtility.projectFolder, "");
+											}
 											text = text.Replace('\\', '/');
 											int num4 = text.LastIndexOf("  in ");
 											if (num4 != -1)
@@ -169,7 +176,7 @@ namespace UnityEngine
 							}
 						}
 					}
-					IL_288:;
+					IL_297:;
 				}
 				result = stringBuilder.ToString();
 			}
@@ -222,9 +229,12 @@ namespace UnityEngine
 							if ((!(declaringType.Name == "Debug") || !(declaringType.Namespace == "UnityEngine")) && (!(declaringType.Name == "Logger") || !(declaringType.Namespace == "UnityEngine")) && (!(declaringType.Name == "DebugLogHandler") || !(declaringType.Namespace == "UnityEngine")) && (!(declaringType.Name == "Assert") || !(declaringType.Namespace == "UnityEngine.Assertions")) && (!(method.Name == "print") || !(declaringType.Name == "MonoBehaviour") || !(declaringType.Namespace == "UnityEngine")))
 							{
 								stringBuilder.Append(" (at ");
-								if (text.Replace("\\", "/").StartsWith(StackTraceUtility.projectFolder))
+								if (!string.IsNullOrEmpty(StackTraceUtility.projectFolder))
 								{
-									text = text.Substring(StackTraceUtility.projectFolder.Length, text.Length - StackTraceUtility.projectFolder.Length);
+									if (text.Replace("\\", "/").StartsWith(StackTraceUtility.projectFolder))
+									{
+										text = text.Substring(StackTraceUtility.projectFolder.Length, text.Length - StackTraceUtility.projectFolder.Length);
+									}
 								}
 								stringBuilder.Append(text);
 								stringBuilder.Append(":");

@@ -31,6 +31,8 @@ namespace UnityEditor
 
 		private bool m_Focused = false;
 
+		public Action<Color> m_OnColorPicked;
+
 		private static EyeDropper.Styles styles;
 
 		private static EyeDropper get
@@ -52,12 +54,18 @@ namespace UnityEditor
 
 		public static void Start(GUIView viewToUpdate)
 		{
-			EyeDropper.get.Show(viewToUpdate);
+			EyeDropper.get.Show(viewToUpdate, null);
 		}
 
-		private void Show(GUIView sourceView)
+		public static void Start(Action<Color> onColorPicked)
+		{
+			EyeDropper.get.Show(null, onColorPicked);
+		}
+
+		private void Show(GUIView sourceView, Action<Color> onColorPicked)
 		{
 			this.m_DelegateView = sourceView;
+			this.m_OnColorPicked = onColorPicked;
 			ContainerWindow containerWindow = ScriptableObject.CreateInstance<ContainerWindow>();
 			containerWindow.m_DontSaveToLayout = true;
 			containerWindow.title = "EyeDropper";
@@ -128,7 +136,7 @@ namespace UnityEditor
 			}
 		}
 
-		private void OnGUI()
+		protected override void OldOnGUI()
 		{
 			EventType type = Event.current.type;
 			if (type != EventType.MouseMove)
@@ -170,6 +178,10 @@ namespace UnityEditor
 				{
 					GUIUtility.ExitGUI();
 				}
+			}
+			if (this.m_OnColorPicked != null && eventName == "EyeDropperClicked")
+			{
+				this.m_OnColorPicked(EyeDropper.s_LastPickedColor);
 			}
 		}
 

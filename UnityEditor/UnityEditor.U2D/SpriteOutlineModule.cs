@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEditor.Experimental.U2D;
 using UnityEditor.Sprites;
 using UnityEditor.U2D.Interface;
 using UnityEditorInternal;
@@ -174,6 +175,7 @@ namespace UnityEditor.U2D
 			ISpriteRectCache spriteRects = this.spriteEditorWindow.spriteRects;
 			if (spriteRects != null)
 			{
+				bool flag = false;
 				for (int i = 0; i < spriteRects.Count; i++)
 				{
 					SpriteRect spriteRect = spriteRects.RectAt(i);
@@ -181,9 +183,14 @@ namespace UnityEditor.U2D
 					{
 						this.spriteEditorWindow.DisplayProgressBar(this.styles.generatingOutlineDialogTitle.text, string.Format(this.styles.generatingOutlineDialogContent.text, i + 1, spriteRects.Count), (float)i / (float)spriteRects.Count);
 						this.SetupShapeEditorOutline(spriteRect);
+						flag = true;
 					}
 				}
-				this.spriteEditorWindow.ClearProgressBar();
+				if (flag)
+				{
+					this.spriteEditorWindow.ClearProgressBar();
+					this.spriteEditorWindow.ApplyOrRevertModification(true);
+				}
 			}
 		}
 
@@ -283,7 +290,7 @@ namespace UnityEditor.U2D
 
 		public bool CanBeActivated()
 		{
-			return UnityEditor.SpriteUtility.GetSpriteImportMode(this.assetDatabase, this.spriteEditorWindow.selectedTexture) != SpriteImportMode.None;
+			return UnityEditor.SpriteUtility.GetSpriteImportMode(this.spriteEditorWindow.spriteEditorDataProvider) != SpriteImportMode.None;
 		}
 
 		private void RecordUndo()
@@ -491,7 +498,7 @@ namespace UnityEditor.U2D
 		{
 			if (spriteRect.outline == null || spriteRect.outline.Count == 0)
 			{
-				spriteRect.outline = SpriteOutlineModule.GenerateSpriteRectOutline(spriteRect.rect, this.spriteEditorWindow.selectedTexture, spriteRect.tessellationDetail, 0);
+				spriteRect.outline = SpriteOutlineModule.GenerateSpriteRectOutline(spriteRect.rect, this.spriteEditorWindow.selectedTexture, spriteRect.tessellationDetail, 0, this.spriteEditorWindow.spriteEditorDataProvider);
 				if (spriteRect.outline.Count == 0)
 				{
 					Vector2 vector = spriteRect.rect.size * 0.5f;
@@ -509,7 +516,6 @@ namespace UnityEditor.U2D
 						}
 					};
 				}
-				this.spriteEditorWindow.SetDataModified();
 			}
 		}
 
@@ -600,15 +606,14 @@ namespace UnityEditor.U2D
 			}
 		}
 
-		protected static List<SpriteOutline> GenerateSpriteRectOutline(Rect rect, ITexture2D texture, float detail, byte alphaTolerance)
+		protected static List<SpriteOutline> GenerateSpriteRectOutline(Rect rect, ITexture2D texture, float detail, byte alphaTolerance, ISpriteEditorDataProvider spriteEditorDataProvider)
 		{
 			List<SpriteOutline> list = new List<SpriteOutline>();
 			if (texture != null)
 			{
 				int num = 0;
 				int num2 = 0;
-				UnityEditor.TextureImporter textureImporter = AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(texture)) as UnityEditor.TextureImporter;
-				textureImporter.GetWidthAndHeight(ref num, ref num2);
+				spriteEditorDataProvider.GetTextureActualWidthAndHeight(out num, out num2);
 				int width = texture.width;
 				int height = texture.height;
 				Vector2 vector = new Vector2((float)width / (float)num, (float)height / (float)num2);

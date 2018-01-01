@@ -1,9 +1,9 @@
 using System;
-using UnityEngine;
+using UnityEditorInternal;
 
 namespace UnityEditor
 {
-	internal sealed class Physics2DSettings : UnityEngine.Object
+	internal sealed class Physics2DSettings : ProjectSettingsBase
 	{
 	}
 }

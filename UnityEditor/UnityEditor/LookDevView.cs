@@ -48,7 +48,7 @@ namespace UnityEditor
 			}
 		}
 
-		private class PreviewContextCB
+		internal class PreviewContextCB
 		{
 			public CommandBuffer m_drawBallCB;
 
@@ -66,7 +66,7 @@ namespace UnityEditor
 			}
 		}
 
-		private class PreviewContext
+		internal class PreviewContext
 		{
 			public enum PreviewContextPass
 			{
@@ -87,16 +87,34 @@ namespace UnityEditor
 				for (int i = 0; i < 3; i++)
 				{
 					this.m_PreviewUtility[i] = new PreviewRenderUtility();
+					this.m_PreviewUtility[i].camera.fieldOfView = 30f;
+					this.m_PreviewUtility[i].camera.cullingMask = 1 << Camera.PreviewCullingLayer;
 					this.m_PreviewCB[i] = new LookDevView.PreviewContextCB();
 				}
 			}
+
+			public void Cleanup()
+			{
+				for (int i = 0; i < 3; i++)
+				{
+					if (this.m_PreviewUtility[i] != null)
+					{
+						this.m_PreviewUtility[i].Cleanup();
+						this.m_PreviewUtility[i] = null;
+					}
+				}
+			}
 		}
+
+		private static readonly Vector2 s_MinWindowSize = new Vector2(300f, 60f);
 
 		public static Color32 m_FirstViewGizmoColor;
 
 		public static Color32 m_SecondViewGizmoColor;
 
 		private static string m_configAssetPath = "Library/LookDevConfig.asset";
+
+		private bool m_IsSaveRegistered = false;
 
 		private static LookDevView.Styles s_Styles = null;
 
@@ -189,6 +207,14 @@ namespace UnityEditor
 			}
 		}
 
+		internal LookDevView.PreviewContext[] previewUtilityContexts
+		{
+			get
+			{
+				return this.m_PreviewUtilityContexts;
+			}
+		}
+
 		public int hotControl
 		{
 			get
@@ -248,6 +274,7 @@ namespace UnityEditor
 				this.m_LookDevModeToggles[i] = false;
 			}
 			base.wantsMouseMove = true;
+			base.minSize = LookDevView.s_MinWindowSize;
 		}
 
 		public static void DrawFullScreenQuad(Rect previewRect)
@@ -289,18 +316,22 @@ namespace UnityEditor
 		private void Initialize()
 		{
 			LookDevResources.Initialize();
+			this.InitializePreviewUtilities();
 			this.LoadLookDevConfig();
+			if (this.m_LookDevEnvLibrary.hdriList.Count == 0)
+			{
+				this.UpdateContextWithCurrentHDRI(LookDevResources.m_DefaultHDRI);
+			}
+			if (this.m_LookDevEnvWindow == null)
+			{
+				this.m_LookDevEnvWindow = new LookDevEnvironmentWindow(this);
+			}
+		}
+
+		private void InitializePreviewUtilities()
+		{
 			if (this.m_PreviewUtilityContexts[0] == null)
 			{
-				for (int i = 0; i < 2; i++)
-				{
-					this.m_PreviewUtilityContexts[i] = new LookDevView.PreviewContext();
-					for (int j = 0; j < 3; j++)
-					{
-						this.m_PreviewUtilityContexts[i].m_PreviewUtility[j].camera.fieldOfView = 30f;
-						this.m_PreviewUtilityContexts[i].m_PreviewUtility[j].camera.cullingMask = 1 << Camera.PreviewCullingLayer;
-					}
-				}
 				if (QualitySettings.activeColorSpace == ColorSpace.Gamma)
 				{
 					Debug.LogWarning("Look Dev is designed for linear color space. Currently project is set to gamma color space. This can be changed in player settings.");
@@ -313,14 +344,10 @@ namespace UnityEditor
 				{
 					Debug.LogWarning("Look Dev switched HDR mode on for display.");
 				}
-			}
-			if (this.m_LookDevEnvLibrary.hdriList.Count == 0)
-			{
-				this.UpdateContextWithCurrentHDRI(LookDevResources.m_DefaultHDRI);
-			}
-			if (this.m_LookDevEnvWindow == null)
-			{
-				this.m_LookDevEnvWindow = new LookDevEnvironmentWindow(this);
+				for (int i = 0; i < 2; i++)
+				{
+					this.m_PreviewUtilityContexts[i] = new LookDevView.PreviewContext();
+				}
 			}
 		}
 
@@ -330,17 +357,11 @@ namespace UnityEditor
 			this.m_LookDevConfig.Cleanup();
 			for (int i = 0; i < 2; i++)
 			{
-				for (int j = 0; j < 3; j++)
+				if (this.m_PreviewUtilityContexts[i] != null)
 				{
-					if (this.m_PreviewUtilityContexts[i] != null)
-					{
-						if (this.m_PreviewUtilityContexts[i].m_PreviewUtility[j] != null)
-						{
-							this.m_PreviewUtilityContexts[i].m_PreviewUtility[j].Cleanup();
-							this.m_PreviewUtilityContexts[i].m_PreviewUtility[j] = null;
-						}
-					}
+					this.m_PreviewUtilityContexts[i].Cleanup();
 				}
+				this.m_PreviewUtilityContexts[i] = null;
 			}
 			if (this.m_FinalCompositionTexture)
 			{
@@ -429,19 +450,26 @@ namespace UnityEditor
 			}
 		}
 
-		private void RenderScene(Rect previewRect, LookDevContext lookDevContext, LookDevView.PreviewContext previewUtilityContext, GameObject currentObject, CameraState originalCameraState, bool secondView)
+		private void RenderScene(Rect previewRect, LookDevContext lookDevContext, LookDevView.PreviewContext previewUtilityContext, GameObject[] currentObjectByPasses, CameraState originalCameraState, bool secondView)
 		{
 			bool flag = !this.m_LookDevConfig.enableShadowCubemap || (this.m_LookDevConfig.enableShadowCubemap && lookDevContext.shadingMode != -1 && lookDevContext.shadingMode != 2);
-			previewUtilityContext.m_PreviewResult[2] = ((!flag) ? this.RenderScene(previewRect, lookDevContext, previewUtilityContext, currentObject, originalCameraState, null, LookDevView.PreviewContext.PreviewContextPass.kShadow, secondView) : Texture2D.whiteTexture);
+			previewUtilityContext.m_PreviewResult[2] = ((!flag) ? this.RenderScene(previewRect, lookDevContext, previewUtilityContext, currentObjectByPasses[2], originalCameraState, null, LookDevView.PreviewContext.PreviewContextPass.kShadow, secondView) : Texture2D.whiteTexture);
 			CubemapInfo cubemapInfo = this.m_LookDevEnvLibrary.hdriList[lookDevContext.currentHDRIIndex];
-			previewUtilityContext.m_PreviewResult[0] = this.RenderScene(previewRect, lookDevContext, previewUtilityContext, currentObject, originalCameraState, cubemapInfo, LookDevView.PreviewContext.PreviewContextPass.kView, secondView);
-			previewUtilityContext.m_PreviewResult[1] = this.RenderScene(previewRect, lookDevContext, previewUtilityContext, currentObject, originalCameraState, cubemapInfo.cubemapShadowInfo, LookDevView.PreviewContext.PreviewContextPass.kViewWithShadow, secondView);
+			previewUtilityContext.m_PreviewResult[0] = this.RenderScene(previewRect, lookDevContext, previewUtilityContext, currentObjectByPasses[0], originalCameraState, cubemapInfo, LookDevView.PreviewContext.PreviewContextPass.kView, secondView);
+			previewUtilityContext.m_PreviewResult[1] = this.RenderScene(previewRect, lookDevContext, previewUtilityContext, currentObjectByPasses[1], originalCameraState, cubemapInfo.cubemapShadowInfo, LookDevView.PreviewContext.PreviewContextPass.kViewWithShadow, secondView);
 		}
 
 		private Texture RenderScene(Rect previewRect, LookDevContext lookDevContext, LookDevView.PreviewContext previewUtilityContext, GameObject currentObject, CameraState originalCameraState, CubemapInfo cubemapInfo, LookDevView.PreviewContext.PreviewContextPass contextPass, bool secondView)
 		{
 			PreviewRenderUtility previewRenderUtility = previewUtilityContext.m_PreviewUtility[(int)contextPass];
 			LookDevView.PreviewContextCB previewContextCB = previewUtilityContext.m_PreviewCB[(int)contextPass];
+			UnityEngine.Rendering.DefaultReflectionMode defaultReflectionMode = RenderSettings.defaultReflectionMode;
+			AmbientMode ambientMode = RenderSettings.ambientMode;
+			Cubemap customReflection = RenderSettings.customReflection;
+			Material skybox = RenderSettings.skybox;
+			float ambientIntensity = RenderSettings.ambientIntensity;
+			SphericalHarmonicsL2 ambientProbe = RenderSettings.ambientProbe;
+			float reflectionIntensity = RenderSettings.reflectionIntensity;
 			previewRenderUtility.BeginPreview(previewRect, LookDevView.styles.sBigTitleInnerStyle);
 			bool flag = contextPass == LookDevView.PreviewContext.PreviewContextPass.kShadow;
 			DrawCameraMode shadingMode = (DrawCameraMode)lookDevContext.shadingMode;
@@ -504,13 +532,6 @@ namespace UnityEditor
 				}
 			}
 			previewRenderUtility.ambientColor = new Color(0f, 0f, 0f, 0f);
-			UnityEngine.Rendering.DefaultReflectionMode defaultReflectionMode = RenderSettings.defaultReflectionMode;
-			AmbientMode ambientMode = RenderSettings.ambientMode;
-			Cubemap customReflection = RenderSettings.customReflection;
-			Material skybox = RenderSettings.skybox;
-			float ambientIntensity = RenderSettings.ambientIntensity;
-			SphericalHarmonicsL2 ambientProbe = RenderSettings.ambientProbe;
-			float reflectionIntensity = RenderSettings.reflectionIntensity;
 			RenderSettings.defaultReflectionMode = UnityEngine.Rendering.DefaultReflectionMode.Custom;
 			Cubemap cubemap = (cubemapInfo == null) ? null : cubemapInfo.cubemap;
 			LookDevResources.m_SkyboxMaterial.SetTexture("_Tex", cubemap);
@@ -563,7 +584,7 @@ namespace UnityEditor
 				{
 					lODGroup.ForceLOD(lookDevContext.lodIndex);
 				}
-				this.m_LookDevConfig.SetEnabledRecursive(currentObject, true);
+				PreviewRenderUtility.SetEnabledRecursive(currentObject, true);
 				eulerAngles2 = currentObject.transform.eulerAngles;
 				position = currentObject.transform.localPosition;
 				currentObject.transform.position = new Vector3(0f, this.kDefaultSceneHeight, 0f);
@@ -571,7 +592,6 @@ namespace UnityEditor
 				currentObject.transform.Rotate(0f, num, 0f);
 				currentObject.transform.Translate(-originalCameraState.pivot.value);
 				currentObject.transform.Rotate(0f, this.m_CurrentObjRotationOffset, 0f);
-				previewRenderUtility.AddSingleGO(currentObject);
 			}
 			if (shadingMode == DrawCameraMode.TexturedWire && !flag)
 			{
@@ -580,13 +600,13 @@ namespace UnityEditor
 			}
 			else
 			{
-				previewRenderUtility.Render(true, true);
+				previewRenderUtility.Render(true, false);
 			}
 			if (currentObject != null)
 			{
 				currentObject.transform.eulerAngles = eulerAngles2;
 				currentObject.transform.position = position;
-				this.m_LookDevConfig.SetEnabledRecursive(currentObject, false);
+				PreviewRenderUtility.SetEnabledRecursive(currentObject, false);
 			}
 			if (flag2 && !flag)
 			{
@@ -1014,6 +1034,7 @@ namespace UnityEditor
 				{
 					this.m_LookDevConfig = lookDevConfig;
 				}
+				this.m_IsSaveRegistered = false;
 			}
 			this.m_LookDevConfig.SetLookDevView(this);
 			this.m_LookDevConfig.UpdateCurrentObjectArray();
@@ -1067,6 +1088,7 @@ namespace UnityEditor
 
 		public void OnEnable()
 		{
+			this.InitializePreviewUtilities();
 			LookDevView.m_FirstViewGizmoColor = ((!EditorGUIUtility.isProSkin) ? new Color32(0, 127, 255, 255) : new Color32(0, 204, 204, 255));
 			LookDevView.m_SecondViewGizmoColor = ((!EditorGUIUtility.isProSkin) ? new Color32(255, 127, 0, 255) : new Color32(255, 107, 33, 255));
 			this.LoadLookDevConfig();
@@ -1087,6 +1109,7 @@ namespace UnityEditor
 			this.m_LookDevConfig.cameraStateRight.viewSize.valueChanged.AddListener(new UnityAction(base.Repaint));
 			Undo.undoRedoPerformed = (Undo.UndoRedoCallback)Delegate.Combine(Undo.undoRedoPerformed, new Undo.UndoRedoCallback(this.OnUndoRedo));
 			EditorApplication.editorApplicationQuit = (UnityAction)Delegate.Combine(EditorApplication.editorApplicationQuit, new UnityAction(this.OnQuit));
+			EditorApplication.update = (EditorApplication.CallbackFunction)Delegate.Combine(EditorApplication.update, new EditorApplication.CallbackFunction(this.EditorUpdate));
 		}
 
 		public void OnDisable()
@@ -1094,6 +1117,7 @@ namespace UnityEditor
 			this.SaveLookDevConfig();
 			Undo.undoRedoPerformed = (Undo.UndoRedoCallback)Delegate.Remove(Undo.undoRedoPerformed, new Undo.UndoRedoCallback(this.OnUndoRedo));
 			EditorApplication.editorApplicationQuit = (UnityAction)Delegate.Remove(EditorApplication.editorApplicationQuit, new UnityAction(this.OnQuit));
+			EditorApplication.update = (EditorApplication.CallbackFunction)Delegate.Remove(EditorApplication.update, new EditorApplication.CallbackFunction(this.EditorUpdate));
 		}
 
 		private void OnQuit()
@@ -1101,90 +1125,125 @@ namespace UnityEditor
 			this.SaveLookDevConfig();
 		}
 
+		private void DelayedSaveLookDevConfig()
+		{
+			if (!this.m_IsSaveRegistered)
+			{
+				this.m_IsSaveRegistered = true;
+				EditorApplication.delayCall = (EditorApplication.CallbackFunction)Delegate.Combine(EditorApplication.delayCall, new EditorApplication.CallbackFunction(this.DoDelayedSaveLookDevConfig));
+			}
+		}
+
+		private void DoDelayedSaveLookDevConfig()
+		{
+			this.m_IsSaveRegistered = false;
+			this.SaveLookDevConfig();
+		}
+
 		private void RenderPreviewSingle()
 		{
 			int num = (this.m_LookDevConfig.lookDevMode != LookDevMode.Single1) ? 1 : 0;
 			this.UpdateRenderTexture(this.m_PreviewRects[2]);
-			this.RenderScene(this.m_PreviewRects[2], this.m_LookDevConfig.lookDevContexts[num], this.m_PreviewUtilityContexts[num], this.m_LookDevConfig.currentObject[num], this.m_LookDevConfig.cameraState[num], false);
+			this.RenderScene(this.m_PreviewRects[2], this.m_LookDevConfig.lookDevContexts[num], this.m_PreviewUtilityContexts[num], this.m_LookDevConfig.currentObjectInstances[num], this.m_LookDevConfig.cameraState[num], false);
 			this.RenderCompositing(this.m_PreviewRects[2], this.m_PreviewUtilityContexts[num], this.m_PreviewUtilityContexts[num], false);
 		}
 
 		private void RenderPreviewSideBySide()
 		{
 			this.UpdateRenderTexture(this.m_PreviewRects[2]);
-			this.RenderScene(this.m_PreviewRects[0], this.m_LookDevConfig.lookDevContexts[0], this.m_PreviewUtilityContexts[0], this.m_LookDevConfig.currentObject[0], this.m_LookDevConfig.cameraState[0], false);
-			this.RenderScene(this.m_PreviewRects[1], this.m_LookDevConfig.lookDevContexts[1], this.m_PreviewUtilityContexts[1], this.m_LookDevConfig.currentObject[1], this.m_LookDevConfig.cameraState[1], true);
+			this.RenderScene(this.m_PreviewRects[0], this.m_LookDevConfig.lookDevContexts[0], this.m_PreviewUtilityContexts[0], this.m_LookDevConfig.currentObjectInstances[0], this.m_LookDevConfig.cameraState[0], false);
+			this.RenderScene(this.m_PreviewRects[1], this.m_LookDevConfig.lookDevContexts[1], this.m_PreviewUtilityContexts[1], this.m_LookDevConfig.currentObjectInstances[1], this.m_LookDevConfig.cameraState[1], true);
 			this.RenderCompositing(this.m_PreviewRects[2], this.m_PreviewUtilityContexts[0], this.m_PreviewUtilityContexts[1], true);
 		}
 
 		private void RenderPreviewDualView()
 		{
 			this.UpdateRenderTexture(this.m_PreviewRects[2]);
-			this.RenderScene(this.m_PreviewRects[2], this.m_LookDevConfig.lookDevContexts[0], this.m_PreviewUtilityContexts[0], this.m_LookDevConfig.currentObject[0], this.m_LookDevConfig.cameraState[0], false);
-			this.RenderScene(this.m_PreviewRects[2], this.m_LookDevConfig.lookDevContexts[1], this.m_PreviewUtilityContexts[1], this.m_LookDevConfig.currentObject[1], this.m_LookDevConfig.cameraState[1], false);
+			this.RenderScene(this.m_PreviewRects[2], this.m_LookDevConfig.lookDevContexts[0], this.m_PreviewUtilityContexts[0], this.m_LookDevConfig.currentObjectInstances[0], this.m_LookDevConfig.cameraState[0], false);
+			this.RenderScene(this.m_PreviewRects[2], this.m_LookDevConfig.lookDevContexts[1], this.m_PreviewUtilityContexts[1], this.m_LookDevConfig.currentObjectInstances[1], this.m_LookDevConfig.cameraState[1], false);
 			this.RenderCompositing(this.m_PreviewRects[2], this.m_PreviewUtilityContexts[0], this.m_PreviewUtilityContexts[1], true);
 		}
 
 		private void RenderCompositing(Rect previewRect, LookDevView.PreviewContext previewContext0, LookDevView.PreviewContext previewContext1, bool dualView)
 		{
-			Vector4 value = new Vector4(this.m_LookDevConfig.gizmo.center.x, this.m_LookDevConfig.gizmo.center.y, 0f, 0f);
-			Vector4 value2 = new Vector4(this.m_LookDevConfig.gizmo.point2.x, this.m_LookDevConfig.gizmo.point2.y, 0f, 0f);
-			Vector4 value3 = new Vector4(this.m_GizmoThickness, this.m_GizmoThicknessSelected, 0f, 0f);
-			Vector4 value4 = new Vector4(this.m_GizmoCircleRadius, this.m_GizmoCircleRadiusSelected, 0f, 0f);
-			int num = (this.m_LookDevConfig.lookDevMode != LookDevMode.Single2) ? 0 : 1;
-			int num2 = (this.m_LookDevConfig.lookDevMode != LookDevMode.Single1) ? 1 : 0;
-			float y = (this.m_LookDevConfig.lookDevContexts[num].shadingMode != -1 && this.m_LookDevConfig.lookDevContexts[num].shadingMode != 2) ? 0f : this.m_LookDevConfig.lookDevContexts[num].exposureValue;
-			float z = (this.m_LookDevConfig.lookDevContexts[num2].shadingMode != -1 && this.m_LookDevConfig.lookDevContexts[num2].shadingMode != 2) ? 0f : this.m_LookDevConfig.lookDevContexts[num2].exposureValue;
-			float x = (this.m_CurrentDragContext != LookDevEditionContext.Left) ? ((this.m_CurrentDragContext != LookDevEditionContext.Right) ? 0f : -1f) : 1f;
-			CubemapInfo cubemapInfo = this.m_LookDevEnvLibrary.hdriList[this.m_LookDevConfig.lookDevContexts[num].currentHDRIIndex];
-			CubemapInfo cubemapInfo2 = this.m_LookDevEnvLibrary.hdriList[this.m_LookDevConfig.lookDevContexts[num2].currentHDRIIndex];
-			float shadowIntensity = cubemapInfo.shadowInfo.shadowIntensity;
-			float shadowIntensity2 = cubemapInfo2.shadowInfo.shadowIntensity;
-			Color shadowColor = cubemapInfo.shadowInfo.shadowColor;
-			Color shadowColor2 = cubemapInfo2.shadowInfo.shadowColor;
-			Texture value5 = previewContext0.m_PreviewResult[0];
-			Texture value6 = previewContext0.m_PreviewResult[1];
-			Texture value7 = previewContext0.m_PreviewResult[2];
-			Texture value8 = previewContext1.m_PreviewResult[0];
-			Texture value9 = previewContext1.m_PreviewResult[1];
-			Texture value10 = previewContext1.m_PreviewResult[2];
-			Vector4 value11 = new Vector4(this.m_LookDevConfig.dualViewBlendFactor, y, z, (this.m_LookDevConfig.currentEditionContext != LookDevEditionContext.Left) ? -1f : 1f);
-			Vector4 value12 = new Vector4(x, (!this.m_LookDevConfig.enableToneMap) ? -1f : 1f, shadowIntensity, shadowIntensity2);
-			Vector4 value13 = new Vector4(1.4f, 1f, 0.5f, 0.5f);
-			Vector4 value14 = new Vector4(0f, 0f, 5.3f, 1f);
-			RenderTexture active = RenderTexture.active;
-			RenderTexture.active = this.m_FinalCompositionTexture;
-			LookDevResources.m_LookDevCompositing.SetTexture("_Tex0Normal", value5);
-			LookDevResources.m_LookDevCompositing.SetTexture("_Tex0WithoutSun", value6);
-			LookDevResources.m_LookDevCompositing.SetTexture("_Tex0Shadows", value7);
-			LookDevResources.m_LookDevCompositing.SetColor("_ShadowColor0", shadowColor);
-			LookDevResources.m_LookDevCompositing.SetTexture("_Tex1Normal", value8);
-			LookDevResources.m_LookDevCompositing.SetTexture("_Tex1WithoutSun", value9);
-			LookDevResources.m_LookDevCompositing.SetTexture("_Tex1Shadows", value10);
-			LookDevResources.m_LookDevCompositing.SetColor("_ShadowColor1", shadowColor2);
-			LookDevResources.m_LookDevCompositing.SetVector("_CompositingParams", value11);
-			LookDevResources.m_LookDevCompositing.SetVector("_CompositingParams2", value12);
-			LookDevResources.m_LookDevCompositing.SetColor("_FirstViewColor", LookDevView.m_FirstViewGizmoColor);
-			LookDevResources.m_LookDevCompositing.SetColor("_SecondViewColor", LookDevView.m_SecondViewGizmoColor);
-			LookDevResources.m_LookDevCompositing.SetVector("_GizmoPosition", value);
-			LookDevResources.m_LookDevCompositing.SetVector("_GizmoZoneCenter", value2);
-			LookDevResources.m_LookDevCompositing.SetVector("_GizmoSplitPlane", this.m_LookDevConfig.gizmo.plane);
-			LookDevResources.m_LookDevCompositing.SetVector("_GizmoSplitPlaneOrtho", this.m_LookDevConfig.gizmo.planeOrtho);
-			LookDevResources.m_LookDevCompositing.SetFloat("_GizmoLength", this.m_LookDevConfig.gizmo.length);
-			LookDevResources.m_LookDevCompositing.SetVector("_GizmoThickness", value3);
-			LookDevResources.m_LookDevCompositing.SetVector("_GizmoCircleRadius", value4);
-			LookDevResources.m_LookDevCompositing.SetFloat("_BlendFactorCircleRadius", this.m_BlendFactorCircleRadius);
-			LookDevResources.m_LookDevCompositing.SetFloat("_GetBlendFactorMaxGizmoDistance", this.GetBlendFactorMaxGizmoDistance());
-			LookDevResources.m_LookDevCompositing.SetFloat("_GizmoRenderMode", (!this.m_ForceGizmoRenderSelector) ? ((float)this.m_GizmoRenderMode) : 4f);
-			LookDevResources.m_LookDevCompositing.SetVector("_ScreenRatio", this.m_ScreenRatio);
-			LookDevResources.m_LookDevCompositing.SetVector("_ToneMapCoeffs1", value13);
-			LookDevResources.m_LookDevCompositing.SetVector("_ToneMapCoeffs2", value14);
-			LookDevResources.m_LookDevCompositing.SetPass((int)this.m_LookDevConfig.lookDevMode);
-			LookDevView.DrawFullScreenQuad(new Rect(0f, 0f, previewRect.width, previewRect.height));
-			RenderTexture.active = active;
-			GL.sRGBWrite = (QualitySettings.activeColorSpace == ColorSpace.Linear);
-			GUI.DrawTexture(previewRect, this.m_FinalCompositionTexture, ScaleMode.StretchToFill, false);
-			GL.sRGBWrite = false;
+			if (this.m_FinalCompositionTexture.width >= 1 && this.m_FinalCompositionTexture.height >= 1)
+			{
+				Vector4 value = new Vector4(this.m_LookDevConfig.gizmo.center.x, this.m_LookDevConfig.gizmo.center.y, 0f, 0f);
+				Vector4 value2 = new Vector4(this.m_LookDevConfig.gizmo.point2.x, this.m_LookDevConfig.gizmo.point2.y, 0f, 0f);
+				Vector4 value3 = new Vector4(this.m_GizmoThickness, this.m_GizmoThicknessSelected, 0f, 0f);
+				Vector4 value4 = new Vector4(this.m_GizmoCircleRadius, this.m_GizmoCircleRadiusSelected, 0f, 0f);
+				int num = (this.m_LookDevConfig.lookDevMode != LookDevMode.Single2) ? 0 : 1;
+				int num2 = (this.m_LookDevConfig.lookDevMode != LookDevMode.Single1) ? 1 : 0;
+				float y = (this.m_LookDevConfig.lookDevContexts[num].shadingMode != -1 && this.m_LookDevConfig.lookDevContexts[num].shadingMode != 2) ? 0f : this.m_LookDevConfig.lookDevContexts[num].exposureValue;
+				float z = (this.m_LookDevConfig.lookDevContexts[num2].shadingMode != -1 && this.m_LookDevConfig.lookDevContexts[num2].shadingMode != 2) ? 0f : this.m_LookDevConfig.lookDevContexts[num2].exposureValue;
+				float x = (this.m_CurrentDragContext != LookDevEditionContext.Left) ? ((this.m_CurrentDragContext != LookDevEditionContext.Right) ? 0f : -1f) : 1f;
+				CubemapInfo cubemapInfo = this.m_LookDevEnvLibrary.hdriList[this.m_LookDevConfig.lookDevContexts[num].currentHDRIIndex];
+				CubemapInfo cubemapInfo2 = this.m_LookDevEnvLibrary.hdriList[this.m_LookDevConfig.lookDevContexts[num2].currentHDRIIndex];
+				float shadowIntensity = cubemapInfo.shadowInfo.shadowIntensity;
+				float shadowIntensity2 = cubemapInfo2.shadowInfo.shadowIntensity;
+				Color shadowColor = cubemapInfo.shadowInfo.shadowColor;
+				Color shadowColor2 = cubemapInfo2.shadowInfo.shadowColor;
+				Texture value5 = previewContext0.m_PreviewResult[0];
+				Texture value6 = previewContext0.m_PreviewResult[1];
+				Texture value7 = previewContext0.m_PreviewResult[2];
+				Texture value8 = previewContext1.m_PreviewResult[0];
+				Texture value9 = previewContext1.m_PreviewResult[1];
+				Texture value10 = previewContext1.m_PreviewResult[2];
+				Vector4 value11 = new Vector4(this.m_LookDevConfig.dualViewBlendFactor, y, z, (this.m_LookDevConfig.currentEditionContext != LookDevEditionContext.Left) ? -1f : 1f);
+				Vector4 value12 = new Vector4(x, (!this.m_LookDevConfig.enableToneMap) ? -1f : 1f, shadowIntensity, shadowIntensity2);
+				Vector4 value13 = new Vector4(1.4f, 1f, 0.5f, 0.5f);
+				Vector4 value14 = new Vector4(0f, 0f, 5.3f, 1f);
+				RenderTexture active = RenderTexture.active;
+				RenderTexture.active = this.m_FinalCompositionTexture;
+				LookDevResources.m_LookDevCompositing.SetTexture("_Tex0Normal", value5);
+				LookDevResources.m_LookDevCompositing.SetTexture("_Tex0WithoutSun", value6);
+				LookDevResources.m_LookDevCompositing.SetTexture("_Tex0Shadows", value7);
+				LookDevResources.m_LookDevCompositing.SetColor("_ShadowColor0", shadowColor);
+				LookDevResources.m_LookDevCompositing.SetTexture("_Tex1Normal", value8);
+				LookDevResources.m_LookDevCompositing.SetTexture("_Tex1WithoutSun", value9);
+				LookDevResources.m_LookDevCompositing.SetTexture("_Tex1Shadows", value10);
+				LookDevResources.m_LookDevCompositing.SetColor("_ShadowColor1", shadowColor2);
+				LookDevResources.m_LookDevCompositing.SetVector("_CompositingParams", value11);
+				LookDevResources.m_LookDevCompositing.SetVector("_CompositingParams2", value12);
+				LookDevResources.m_LookDevCompositing.SetColor("_FirstViewColor", LookDevView.m_FirstViewGizmoColor);
+				LookDevResources.m_LookDevCompositing.SetColor("_SecondViewColor", LookDevView.m_SecondViewGizmoColor);
+				LookDevResources.m_LookDevCompositing.SetVector("_GizmoPosition", value);
+				LookDevResources.m_LookDevCompositing.SetVector("_GizmoZoneCenter", value2);
+				LookDevResources.m_LookDevCompositing.SetVector("_GizmoSplitPlane", this.m_LookDevConfig.gizmo.plane);
+				LookDevResources.m_LookDevCompositing.SetVector("_GizmoSplitPlaneOrtho", this.m_LookDevConfig.gizmo.planeOrtho);
+				LookDevResources.m_LookDevCompositing.SetFloat("_GizmoLength", this.m_LookDevConfig.gizmo.length);
+				LookDevResources.m_LookDevCompositing.SetVector("_GizmoThickness", value3);
+				LookDevResources.m_LookDevCompositing.SetVector("_GizmoCircleRadius", value4);
+				LookDevResources.m_LookDevCompositing.SetFloat("_BlendFactorCircleRadius", this.m_BlendFactorCircleRadius);
+				LookDevResources.m_LookDevCompositing.SetFloat("_GetBlendFactorMaxGizmoDistance", this.GetBlendFactorMaxGizmoDistance());
+				LookDevResources.m_LookDevCompositing.SetFloat("_GizmoRenderMode", (!this.m_ForceGizmoRenderSelector) ? ((float)this.m_GizmoRenderMode) : 4f);
+				LookDevResources.m_LookDevCompositing.SetVector("_ScreenRatio", this.m_ScreenRatio);
+				LookDevResources.m_LookDevCompositing.SetVector("_ToneMapCoeffs1", value13);
+				LookDevResources.m_LookDevCompositing.SetVector("_ToneMapCoeffs2", value14);
+				LookDevResources.m_LookDevCompositing.SetPass((int)this.m_LookDevConfig.lookDevMode);
+				LookDevView.DrawFullScreenQuad(new Rect(0f, 0f, previewRect.width, previewRect.height));
+				RenderTexture.active = active;
+				GL.sRGBWrite = (QualitySettings.activeColorSpace == ColorSpace.Linear);
+				GUI.DrawTexture(previewRect, this.m_FinalCompositionTexture, ScaleMode.StretchToFill, false);
+				GL.sRGBWrite = false;
+			}
+		}
+
+		private void EditorUpdate()
+		{
+			for (int i = 0; i < 2; i++)
+			{
+				for (int j = 0; j < this.m_LookDevConfig.previewObjects[i].Length; j++)
+				{
+					GameObject gameObject = this.m_LookDevConfig.previewObjects[i][j];
+					if (!(gameObject == null))
+					{
+						EditorUtility.InitInstantiatedPreviewRecursive(gameObject);
+						LookDevConfig.DisableRendererProperties(gameObject);
+						PreviewRenderUtility.SetEnabledRecursive(gameObject, false);
+					}
+				}
+			}
 		}
 
 		private void RenderPreview()
@@ -1352,6 +1411,9 @@ namespace UnityEditor
 					this.m_LookDevConfig.cameraState[0].UpdateCamera(this.m_PreviewUtilityContexts[0].m_PreviewUtility[i].camera);
 					this.m_LookDevConfig.cameraState[1].UpdateCamera(this.m_PreviewUtilityContexts[1].m_PreviewUtility[i].camera);
 				}
+				this.m_LookDevConfig.cameraStateLeft.Copy(this.m_LookDevConfig.cameraState[0]);
+				this.m_LookDevConfig.cameraStateRight.Copy(this.m_LookDevConfig.cameraState[1]);
+				this.DelayedSaveLookDevConfig();
 			}
 		}
 
@@ -1390,7 +1452,7 @@ namespace UnityEditor
 
 		private void Frame(LookDevEditionContext context, bool animate)
 		{
-			GameObject gameObject = this.m_LookDevConfig.currentObject[(int)context];
+			GameObject gameObject = this.m_LookDevConfig.currentObjectInstances[(int)context][0];
 			if (gameObject != null)
 			{
 				Bounds bounds = new Bounds(gameObject.transform.position, Vector3.zero);
@@ -1449,7 +1511,7 @@ namespace UnityEditor
 						flag = true;
 					}
 					GameObject gameObject = @object as GameObject;
-					if (gameObject)
+					if (gameObject && EditorUtility.IsPersistent(gameObject) && PrefabUtility.GetPrefabObject(gameObject) != null)
 					{
 						if (GameObjectInspector.HasRenderableParts(gameObject))
 						{
@@ -1500,6 +1562,7 @@ namespace UnityEditor
 								this.UpdateFocus(Event.current.mousePosition);
 								Undo.RecordObject(this.m_LookDevConfig, "Set current preview object");
 								bool flag3 = this.m_LookDevConfig.SetCurrentPreviewObject(gameObject2);
+								this.DelayedSaveLookDevConfig();
 								this.Frame(this.m_LookDevConfig.currentEditionContext, false);
 								if (flag3)
 								{
@@ -1819,7 +1882,7 @@ namespace UnityEditor
 			this.HandleMouseInput();
 			this.HandleCamera();
 			this.HandleKeyboardShortcut();
-			if (this.m_LookDevConfig.currentObject[0] == null && this.m_LookDevConfig.currentObject[1] == null)
+			if (this.m_LookDevConfig.currentObjectInstances[0][0] == null && this.m_LookDevConfig.currentObjectInstances[1][0] == null)
 			{
 				Color color = GUI.color;
 				GUI.color = Color.gray;

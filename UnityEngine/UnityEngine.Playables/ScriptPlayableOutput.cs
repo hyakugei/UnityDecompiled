@@ -32,7 +32,7 @@ namespace UnityEngine.Playables
 		{
 			PlayableOutputHandle handle;
 			ScriptPlayableOutput result;
-			if (!PlayableGraph.CreateScriptOutputInternal(ref graph, name, out handle))
+			if (!graph.CreateScriptOutputInternal(name, out handle))
 			{
 				result = ScriptPlayableOutput.Null;
 			}

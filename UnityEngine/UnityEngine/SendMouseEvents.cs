@@ -64,6 +64,25 @@ namespace UnityEngine
 			SendMouseEvents.s_MouseUsed = true;
 		}
 
+		private static void HitTestLegacyGUI(Camera camera, Vector3 mousePosition, ref SendMouseEvents.HitInfo hitInfo)
+		{
+			GUILayer component = camera.GetComponent<GUILayer>();
+			if (component)
+			{
+				GUIElement gUIElement = component.HitTest(mousePosition);
+				if (gUIElement)
+				{
+					hitInfo.target = gUIElement.gameObject;
+					hitInfo.camera = camera;
+				}
+				else
+				{
+					hitInfo.target = null;
+					hitInfo.camera = null;
+				}
+			}
+		}
+
 		[RequiredByNativeCode]
 		private static void DoSendMouseEvents(int skipRTCameras)
 		{
@@ -88,21 +107,7 @@ namespace UnityEngine
 					{
 						if (camera.pixelRect.Contains(mousePosition))
 						{
-							GUILayer component = camera.GetComponent<GUILayer>();
-							if (component)
-							{
-								GUIElement gUIElement = component.HitTest(mousePosition);
-								if (gUIElement)
-								{
-									SendMouseEvents.m_CurrentHit[0].target = gUIElement.gameObject;
-									SendMouseEvents.m_CurrentHit[0].camera = camera;
-								}
-								else
-								{
-									SendMouseEvents.m_CurrentHit[0].target = null;
-									SendMouseEvents.m_CurrentHit[0].camera = null;
-								}
-							}
+							SendMouseEvents.HitTestLegacyGUI(camera, mousePosition, ref SendMouseEvents.m_CurrentHit[0]);
 							if (camera.eventMask != 0)
 							{
 								Ray ray = camera.ScreenPointToRay(mousePosition);

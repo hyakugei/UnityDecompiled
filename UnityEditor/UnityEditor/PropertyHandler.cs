@@ -215,6 +215,40 @@ namespace UnityEditor
 			return num;
 		}
 
+		public bool CanCacheInspectorGUI(SerializedProperty property)
+		{
+			bool result;
+			if (this.m_DecoratorDrawers != null && !this.isCurrentlyNested)
+			{
+				if (this.m_DecoratorDrawers.Any((DecoratorDrawer decorator) => !decorator.CanCacheInspectorGUI()))
+				{
+					result = false;
+					return result;
+				}
+			}
+			if (this.propertyDrawer != null)
+			{
+				result = this.propertyDrawer.CanCacheInspectorGUISafe(property.Copy());
+			}
+			else
+			{
+				property = property.Copy();
+				SerializedProperty endProperty = property.GetEndProperty();
+				bool enterChildren = property.isExpanded && EditorGUI.HasVisibleChildFields(property);
+				while (property.NextVisible(enterChildren) && !SerializedProperty.EqualContents(property, endProperty))
+				{
+					if (!ScriptAttributeUtility.GetHandler(property).CanCacheInspectorGUI(property))
+					{
+						result = false;
+						return result;
+					}
+					enterChildren = false;
+				}
+				result = true;
+			}
+			return result;
+		}
+
 		public void AddMenuItems(SerializedProperty property, GenericMenu menu)
 		{
 			if (this.contextMenuItems != null)

@@ -160,11 +160,11 @@ namespace UnityEngine
 			{
 				if (!value)
 				{
-					this.modifiers &= ~EventModifiers.Shift;
+					this.modifiers &= ~EventModifiers.Numeric;
 				}
 				else
 				{
-					this.modifiers |= EventModifiers.Shift;
+					this.modifiers |= EventModifiers.Numeric;
 				}
 			}
 		}
@@ -229,7 +229,7 @@ namespace UnityEngine
 			get
 			{
 				EventType type = this.type;
-				return type == EventType.ScrollWheel || type == EventType.ScrollWheel;
+				return type == EventType.ScrollWheel;
 			}
 		}
 

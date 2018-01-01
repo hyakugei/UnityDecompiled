@@ -4,7 +4,7 @@ namespace UnityEngine.Experimental.UIElements
 {
 	public class Toggle : VisualElement
 	{
-		private readonly Action clickEvent;
+		private Action clickEvent;
 
 		public bool on
 		{
@@ -28,7 +28,12 @@ namespace UnityEngine.Experimental.UIElements
 		public Toggle(Action clickEvent)
 		{
 			this.clickEvent = clickEvent;
-			base.AddManipulator(new Clickable(new Action(this.OnClick)));
+			this.AddManipulator(new Clickable(new Action(this.OnClick)));
+		}
+
+		public void OnToggle(Action clickEvent)
+		{
+			this.clickEvent = clickEvent;
 		}
 
 		private void OnClick()

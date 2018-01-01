@@ -18,8 +18,6 @@ namespace UnityEditor
 
 		private SerializedProperty m_Range;
 
-		private SerializedProperty m_Scale;
-
 		public ColorByVelocityModuleUI(ParticleSystemUI owner, SerializedObject o, string displayName) : base(owner, o, "ColorBySpeedModule", displayName)
 		{
 			this.m_ToolTip = "Controls the color of each particle based on its speed.";
@@ -29,6 +27,10 @@ namespace UnityEditor
 		{
 			if (this.m_Gradient == null)
 			{
+				if (ColorByVelocityModuleUI.s_Texts == null)
+				{
+					ColorByVelocityModuleUI.s_Texts = new ColorByVelocityModuleUI.Texts();
+				}
 				this.m_Gradient = new SerializedMinMaxGradient(this);
 				this.m_Gradient.m_AllowColor = false;
 				this.m_Gradient.m_AllowRandomBetweenTwoColors = false;
@@ -38,10 +40,6 @@ namespace UnityEditor
 
 		public override void OnInspectorGUI(InitialModuleUI initial)
 		{
-			if (ColorByVelocityModuleUI.s_Texts == null)
-			{
-				ColorByVelocityModuleUI.s_Texts = new ColorByVelocityModuleUI.Texts();
-			}
 			base.GUIMinMaxGradient(ColorByVelocityModuleUI.s_Texts.color, this.m_Gradient, false, new GUILayoutOption[0]);
 			ModuleUI.GUIMinMaxRange(ColorByVelocityModuleUI.s_Texts.velocityRange, this.m_Range, new GUILayoutOption[0]);
 		}

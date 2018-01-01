@@ -37,11 +37,11 @@ namespace UnityEngine.Advertisements
 			set;
 		}
 
-		[GeneratedByOldBindingsGenerator]
+		[Obsolete("No longer supported and will always return true"), GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern bool IsPlatformEnabled(RuntimePlatform platform);
 
-		[GeneratedByOldBindingsGenerator]
+		[Obsolete("No longer supported and will do nothing"), GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void SetPlatformEnabled(RuntimePlatform platform, bool value);
 

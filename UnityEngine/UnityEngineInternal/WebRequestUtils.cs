@@ -1,12 +1,14 @@
 using System;
+using System.Text;
 using System.Text.RegularExpressions;
+using UnityEngine;
 using UnityEngine.Scripting;
 
 namespace UnityEngineInternal
 {
 	internal static class WebRequestUtils
 	{
-		private static Regex domainRegex = new Regex("^\\s*\\w+(?:\\.\\w+)+\\s*$");
+		private static Regex domainRegex = new Regex("^\\s*\\w+(?:\\.\\w+)+(\\/.*)?$");
 
 		[RequiredByNativeCode]
 		internal static string RedirectTo(string baseUri, string redirectUri)
@@ -20,52 +22,68 @@ namespace UnityEngineInternal
 			{
 				uri = new Uri(redirectUri, UriKind.RelativeOrAbsolute);
 			}
-			string result;
+			string absoluteUri;
 			if (uri.IsAbsoluteUri)
 			{
-				result = redirectUri;
+				absoluteUri = uri.AbsoluteUri;
 			}
 			else
 			{
 				Uri baseUri2 = new Uri(baseUri, UriKind.Absolute);
 				Uri uri2 = new Uri(baseUri2, uri);
-				result = uri2.AbsoluteUri;
+				absoluteUri = uri2.AbsoluteUri;
 			}
-			return result;
+			return absoluteUri;
 		}
 
 		internal static string MakeInitialUrl(string targetUrl, string localUrl)
 		{
-			Uri uri = new Uri(localUrl);
-			if (targetUrl.StartsWith("//"))
+			string result;
+			if (targetUrl.StartsWith("jar:file://"))
 			{
-				targetUrl = uri.Scheme + ":" + targetUrl;
+				result = targetUrl;
 			}
-			if (targetUrl.StartsWith("/"))
+			else
 			{
-				targetUrl = uri.Scheme + "://" + uri.Host + targetUrl;
-			}
-			if (WebRequestUtils.domainRegex.IsMatch(targetUrl))
-			{
-				targetUrl = uri.Scheme + "://" + targetUrl;
-			}
-			Uri uri2 = null;
-			try
-			{
-				uri2 = new Uri(targetUrl);
-			}
-			catch (FormatException ex)
-			{
+				Uri uri = new Uri(localUrl);
+				if (targetUrl.StartsWith("//"))
+				{
+					targetUrl = uri.Scheme + ":" + targetUrl;
+				}
+				if (targetUrl.StartsWith("/"))
+				{
+					targetUrl = uri.Scheme + "://" + uri.Host + targetUrl;
+				}
+				if (WebRequestUtils.domainRegex.IsMatch(targetUrl))
+				{
+					targetUrl = uri.Scheme + "://" + targetUrl;
+				}
+				Uri uri2 = null;
 				try
 				{
-					uri2 = new Uri(uri, targetUrl);
+					uri2 = new Uri(targetUrl);
 				}
-				catch (FormatException)
+				catch (FormatException ex)
 				{
-					throw ex;
+					try
+					{
+						uri2 = new Uri(uri, targetUrl);
+					}
+					catch (FormatException)
+					{
+						throw ex;
+					}
+				}
+				if (targetUrl.StartsWith("file://", StringComparison.OrdinalIgnoreCase))
+				{
+					result = ((!targetUrl.Contains("%")) ? targetUrl : WWWTranscoder.URLDecode(targetUrl, Encoding.UTF8));
+				}
+				else
+				{
+					result = ((!targetUrl.Contains("%")) ? uri2.AbsoluteUri : uri2.OriginalString);
 				}
 			}
-			return (!targetUrl.Contains("%")) ? uri2.AbsoluteUri : uri2.OriginalString;
+			return result;
 		}
 	}
 }

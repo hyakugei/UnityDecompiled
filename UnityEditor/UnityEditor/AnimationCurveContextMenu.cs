@@ -5,15 +5,15 @@ namespace UnityEditor
 {
 	internal class AnimationCurveContextMenu
 	{
-		private SerializedProperty m_Prop1;
+		private readonly SerializedProperty m_Prop1;
 
-		private SerializedProperty m_Prop2;
+		private readonly SerializedProperty m_Prop2;
 
-		private SerializedProperty m_Scalar;
+		private readonly SerializedProperty m_Scalar;
 
-		private ParticleSystemCurveEditor m_ParticleSystemCurveEditor;
+		private readonly ParticleSystemCurveEditor m_ParticleSystemCurveEditor;
 
-		private Rect m_CurveRanges;
+		private readonly Rect m_CurveRanges;
 
 		private AnimationCurveContextMenu(SerializedProperty prop1, SerializedProperty prop2, SerializedProperty scalar, Rect curveRanges, ParticleSystemCurveEditor owner)
 		{

@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace UnityEditor
 {
@@ -19,6 +20,16 @@ namespace UnityEditor
 			string uniqueNameForSibling = GameObjectUtility.GetUniqueNameForSibling((!(gameObject != null)) ? null : gameObject.transform, "Terrain");
 			GameObject gameObject2 = Terrain.CreateTerrainGameObject(terrainData);
 			gameObject2.name = uniqueNameForSibling;
+			if (GraphicsSettings.renderPipelineAsset != null)
+			{
+				Material defaultTerrainMaterial = GraphicsSettings.renderPipelineAsset.GetDefaultTerrainMaterial();
+				Terrain component = gameObject2.GetComponent<Terrain>();
+				if (component && defaultTerrainMaterial != null)
+				{
+					component.materialType = Terrain.MaterialType.Custom;
+					component.materialTemplate = defaultTerrainMaterial;
+				}
+			}
 			GameObjectUtility.SetParentAndAlign(gameObject2, gameObject);
 			Selection.activeObject = gameObject2;
 			Undo.RegisterCreatedObjectUndo(gameObject2, "Create terrain");

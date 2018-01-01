@@ -1,6 +1,5 @@
 using System;
 using System.Runtime.CompilerServices;
-using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
@@ -12,7 +11,7 @@ namespace UnityEngine
 			{
 				throw new ArgumentException("Invalid terrainData.");
 			}
-			TerrainExtensions.UpdateGIMaterialsForTerrain(terrain, new Rect(0f, 0f, 1f, 1f));
+			TerrainExtensions.UpdateGIMaterialsForTerrain(terrain.GetInstanceID(), new Rect(0f, 0f, 1f, 1f));
 		}
 
 		public static void UpdateGIMaterials(this Terrain terrain, int x, int y, int width, int height)
@@ -23,16 +22,15 @@ namespace UnityEngine
 			}
 			float num = (float)terrain.terrainData.alphamapWidth;
 			float num2 = (float)terrain.terrainData.alphamapHeight;
-			TerrainExtensions.UpdateGIMaterialsForTerrain(terrain, new Rect((float)x / num, (float)y / num2, (float)width / num, (float)height / num2));
+			TerrainExtensions.UpdateGIMaterialsForTerrain(terrain.GetInstanceID(), new Rect((float)x / num, (float)y / num2, (float)width / num, (float)height / num2));
 		}
 
-		internal static void UpdateGIMaterialsForTerrain(Terrain terrain, Rect uvBounds)
+		internal static void UpdateGIMaterialsForTerrain(int terrainInstanceID, Rect uvBounds)
 		{
-			TerrainExtensions.INTERNAL_CALL_UpdateGIMaterialsForTerrain(terrain, ref uvBounds);
+			TerrainExtensions.UpdateGIMaterialsForTerrain_Injected(terrainInstanceID, ref uvBounds);
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_UpdateGIMaterialsForTerrain(Terrain terrain, ref Rect uvBounds);
+		private static extern void UpdateGIMaterialsForTerrain_Injected(int terrainInstanceID, ref Rect uvBounds);
 	}
 }

@@ -1,7 +1,6 @@
 using System;
 using UnityEditor.Collaboration;
 using UnityEditor.Connect;
-using UnityEditor.Web;
 using UnityEditorInternal;
 using UnityEngine;
 
@@ -39,6 +38,16 @@ namespace UnityEditor
 
 		private static GUIContent[] s_ToolIcons;
 
+		private static readonly string[] s_ToolControlNames = new string[]
+		{
+			"ToolbarPersistentToolsPan",
+			"ToolbarPersistentToolsTranslate",
+			"ToolbarPersistentToolsRotate",
+			"ToolbarPersistentToolsScale",
+			"ToolbarPersistentToolsRect",
+			"ToolbarPersistentToolsTransform"
+		};
+
 		private static GUIContent[] s_ViewToolIcons;
 
 		private static GUIContent[] s_PivotIcons;
@@ -65,7 +74,7 @@ namespace UnityEditor
 
 		private static bool m_ShowCollabTooltip = false;
 
-		private static GUIContent[] s_ShownToolIcons = new GUIContent[5];
+		private static GUIContent[] s_ShownToolIcons = new GUIContent[6];
 
 		public static Toolbar get = null;
 
@@ -114,43 +123,48 @@ namespace UnityEditor
 			{
 				Toolbar.s_ToolIcons = new GUIContent[]
 				{
-					EditorGUIUtility.IconContent("MoveTool", "|Move the selected objects."),
-					EditorGUIUtility.IconContent("RotateTool", "|Rotate the selected objects."),
-					EditorGUIUtility.IconContent("ScaleTool", "|Scale the selected objects."),
-					EditorGUIUtility.IconContent("RectTool"),
+					EditorGUIUtility.IconContent("MoveTool", "|Move Tool"),
+					EditorGUIUtility.IconContent("RotateTool", "|Rotate Tool"),
+					EditorGUIUtility.IconContent("ScaleTool", "|Scale Tool"),
+					EditorGUIUtility.IconContent("RectTool", "|Rect Tool"),
+					EditorGUIUtility.IconContent("TransformTool", "|Move, Rotate or Scale selected objects."),
 					EditorGUIUtility.IconContent("MoveTool On"),
 					EditorGUIUtility.IconContent("RotateTool On"),
 					EditorGUIUtility.IconContent("ScaleTool On"),
-					EditorGUIUtility.IconContent("RectTool On")
+					EditorGUIUtility.IconContent("RectTool On"),
+					EditorGUIUtility.IconContent("TransformTool On")
 				};
+				string text = "|Hand Tool";
 				Toolbar.s_ViewToolIcons = new GUIContent[]
 				{
+					EditorGUIUtility.IconContent("ViewToolOrbit", text),
+					EditorGUIUtility.IconContent("ViewToolMove", text),
+					EditorGUIUtility.IconContent("ViewToolZoom", text),
+					EditorGUIUtility.IconContent("ViewToolOrbit", text),
 					EditorGUIUtility.IconContent("ViewToolOrbit", "|Orbit the Scene view."),
-					EditorGUIUtility.IconContent("ViewToolMove"),
-					EditorGUIUtility.IconContent("ViewToolZoom"),
-					EditorGUIUtility.IconContent("ViewToolOrbit", "|Orbit the Scene view."),
+					EditorGUIUtility.IconContent("ViewToolOrbit On", text),
+					EditorGUIUtility.IconContent("ViewToolMove On", text),
+					EditorGUIUtility.IconContent("ViewToolZoom On", text),
 					EditorGUIUtility.IconContent("ViewToolOrbit On"),
-					EditorGUIUtility.IconContent("ViewToolMove On"),
-					EditorGUIUtility.IconContent("ViewToolZoom On"),
-					EditorGUIUtility.IconContent("ViewToolOrbit On")
+					EditorGUIUtility.IconContent("ViewToolOrbit On", text)
 				};
 				Toolbar.s_PivotIcons = new GUIContent[]
 				{
-					EditorGUIUtility.TextContentWithIcon("Center|The tool handle is placed at the center of the selection.", "ToolHandleCenter"),
-					EditorGUIUtility.TextContentWithIcon("Pivot|The tool handle is placed at the active object's pivot point.", "ToolHandlePivot")
+					EditorGUIUtility.TextContentWithIcon("Center|Toggle Tool Handle Position\n\nThe tool handle is placed at the center of the selection.", "ToolHandleCenter"),
+					EditorGUIUtility.TextContentWithIcon("Pivot|Toggle Tool Handle Position\n\nThe tool handle is placed at the active object's pivot point.", "ToolHandlePivot")
 				};
 				Toolbar.s_PivotRotation = new GUIContent[]
 				{
-					EditorGUIUtility.TextContentWithIcon("Local|Tool handles are in active object's rotation.", "ToolHandleLocal"),
-					EditorGUIUtility.TextContentWithIcon("Global|Tool handles are in global rotation.", "ToolHandleGlobal")
+					EditorGUIUtility.TextContentWithIcon("Local|Toggle Tool Handle Rotation\n\nTool handles are in the active object's rotation.", "ToolHandleLocal"),
+					EditorGUIUtility.TextContentWithIcon("Global|Toggle Tool Handle Rotation\n\nTool handles are in global rotation.", "ToolHandleGlobal")
 				};
 				Toolbar.s_LayerContent = EditorGUIUtility.TextContent("Layers|Which layers are visible in the Scene views.");
 				Toolbar.s_PlayIcons = new GUIContent[]
 				{
-					EditorGUIUtility.IconContent("PlayButton"),
-					EditorGUIUtility.IconContent("PauseButton"),
-					EditorGUIUtility.IconContent("StepButton"),
-					EditorGUIUtility.IconContent("PlayButtonProfile"),
+					EditorGUIUtility.IconContent("PlayButton", "|Play"),
+					EditorGUIUtility.IconContent("PauseButton", "|Pause"),
+					EditorGUIUtility.IconContent("StepButton", "|Step"),
+					EditorGUIUtility.IconContent("PlayButtonProfile", "|Profiler Play"),
 					EditorGUIUtility.IconContent("PlayButton On"),
 					EditorGUIUtility.IconContent("PauseButton On"),
 					EditorGUIUtility.IconContent("StepButton On"),
@@ -173,8 +187,9 @@ namespace UnityEditor
 			}
 		}
 
-		public void OnEnable()
+		protected override void OnEnable()
 		{
+			base.OnEnable();
 			EditorApplication.modifierKeysChanged = (EditorApplication.CallbackFunction)Delegate.Combine(EditorApplication.modifierKeysChanged, new EditorApplication.CallbackFunction(base.Repaint));
 			Undo.undoRedoPerformed = (Undo.UndoRedoCallback)Delegate.Combine(Undo.undoRedoPerformed, new Undo.UndoRedoCallback(this.OnSelectionChange));
 			UnityConnect.instance.StateChanged += new UnityEditor.Connect.StateChangedDelegate(this.OnUnityConnectStateChanged);
@@ -187,8 +202,9 @@ namespace UnityEditor
 			}
 		}
 
-		public void OnDisable()
+		protected override void OnDisable()
 		{
+			base.OnDisable();
 			EditorApplication.modifierKeysChanged = (EditorApplication.CallbackFunction)Delegate.Remove(EditorApplication.modifierKeysChanged, new EditorApplication.CallbackFunction(base.Repaint));
 			Undo.undoRedoPerformed = (Undo.UndoRedoCallback)Delegate.Remove(Undo.undoRedoPerformed, new Undo.UndoRedoCallback(this.OnSelectionChange));
 			UnityConnect.instance.StateChanged -= new UnityEditor.Connect.StateChangedDelegate(this.OnUnityConnectStateChanged);
@@ -254,7 +270,7 @@ namespace UnityEditor
 			pos.y += height;
 		}
 
-		private void OnGUI()
+		protected override void OldOnGUI()
 		{
 			float width = 10f;
 			float width2 = 20f;
@@ -273,7 +289,7 @@ namespace UnityEditor
 			}
 			Rect pos = new Rect(0f, 0f, 0f, 0f);
 			this.ReserveWidthRight(width, ref pos);
-			this.ReserveWidthRight(num * 5f, ref pos);
+			this.ReserveWidthRight(num * (float)Toolbar.s_ShownToolIcons.Length, ref pos);
 			this.DoToolButtons(this.GetThickArea(pos));
 			this.ReserveWidthRight(width2, ref pos);
 			this.ReserveWidthRight(num2 * 2f, ref pos);
@@ -369,13 +385,13 @@ namespace UnityEditor
 		{
 			GUI.changed = false;
 			int num = (int)((!Tools.viewToolActive) ? Tools.current : Tool.View);
-			for (int i = 1; i < 5; i++)
+			for (int i = 1; i < Toolbar.s_ShownToolIcons.Length; i++)
 			{
-				Toolbar.s_ShownToolIcons[i] = Toolbar.s_ToolIcons[i - 1 + ((i != num) ? 0 : 4)];
+				Toolbar.s_ShownToolIcons[i] = Toolbar.s_ToolIcons[i - 1 + ((i != num) ? 0 : (Toolbar.s_ShownToolIcons.Length - 1))];
 				Toolbar.s_ShownToolIcons[i].tooltip = Toolbar.s_ToolIcons[i - 1].tooltip;
 			}
-			Toolbar.s_ShownToolIcons[0] = Toolbar.s_ViewToolIcons[(int)(Tools.viewTool + ((num != 0) ? 0 : 4))];
-			num = GUI.Toolbar(rect, num, Toolbar.s_ShownToolIcons, "Command");
+			Toolbar.s_ShownToolIcons[0] = Toolbar.s_ViewToolIcons[(int)(Tools.viewTool + ((num != 0) ? 0 : (Toolbar.s_ShownToolIcons.Length - 1)))];
+			num = GUI.Toolbar(rect, num, Toolbar.s_ShownToolIcons, Toolbar.s_ToolControlNames, "Command", GUI.ToolbarButtonSize.FitToContents);
 			if (GUI.changed)
 			{
 				Tools.current = (Tool)num;
@@ -385,11 +401,13 @@ namespace UnityEditor
 
 		private void DoPivotButtons(Rect rect)
 		{
+			GUI.SetNextControlName("ToolbarToolPivotPositionButton");
 			Tools.pivotMode = (PivotMode)EditorGUI.CycleButton(new Rect(rect.x, rect.y, rect.width / 2f, rect.height), (int)Tools.pivotMode, Toolbar.s_PivotIcons, "ButtonLeft");
 			if (Tools.current == Tool.Scale && Selection.transforms.Length < 2)
 			{
 				GUI.enabled = false;
 			}
+			GUI.SetNextControlName("ToolbarToolPivotOrientationButton");
 			PivotRotation pivotRotation = (PivotRotation)EditorGUI.CycleButton(new Rect(rect.x + rect.width / 2f, rect.y, rect.width / 2f, rect.height), (int)Tools.pivotRotation, Toolbar.s_PivotRotation, "ButtonRight");
 			if (Tools.pivotRotation != pivotRotation)
 			{
@@ -416,6 +434,7 @@ namespace UnityEditor
 			int num = (!isPlaying) ? 0 : 4;
 			Color color = GUI.color + new Color(0.01f, 0.01f, 0.01f, 0.01f);
 			GUI.contentColor = new Color(1f / color.r, 1f / color.g, 1f / color.g, 1f / color.a);
+			GUI.SetNextControlName("ToolbarPlayModePlayButton");
 			GUILayout.Toggle(isOrWillEnterPlaymode, Toolbar.s_PlayIcons[num], "CommandLeft", new GUILayoutOption[0]);
 			GUI.backgroundColor = Color.white;
 			if (GUI.changed)
@@ -424,12 +443,14 @@ namespace UnityEditor
 				GUIUtility.ExitGUI();
 			}
 			GUI.changed = false;
+			GUI.SetNextControlName("ToolbarPlayModePauseButton");
 			bool isPaused = GUILayout.Toggle(EditorApplication.isPaused, Toolbar.s_PlayIcons[num + 1], "CommandMid", new GUILayoutOption[0]);
 			if (GUI.changed)
 			{
 				EditorApplication.isPaused = isPaused;
 				GUIUtility.ExitGUI();
 			}
+			GUI.SetNextControlName("ToolbarPlayModeStepButton");
 			if (GUILayout.Button(Toolbar.s_PlayIcons[num + 2], "CommandRight", new GUILayoutOption[0]))
 			{
 				EditorApplication.Step();
@@ -462,10 +483,11 @@ namespace UnityEditor
 
 		private void ShowPopup(Rect rect)
 		{
-			AssetDatabase.SaveAssets();
 			this.ReserveRight(39f, ref rect);
 			this.ReserveBottom(5f, ref rect);
-			if (CollabToolbarWindow.ShowCenteredAtPosition(rect))
+			Rect buttonRect = GUIUtility.GUIToScreenRect(rect);
+			AssetDatabase.SaveAssets();
+			if (CollabToolbarWindow.ShowCenteredAtPosition(buttonRect))
 			{
 				GUIUtility.ExitGUI();
 			}
@@ -532,7 +554,7 @@ namespace UnityEditor
 				}
 				else
 				{
-					bool flag3 = CollabAccess.Instance.IsServiceEnabled();
+					bool flag3 = Collab.instance.IsCollabEnabledForCurrentProject();
 					if (!UnityConnect.instance.projectInfo.projectBound || !flag3)
 					{
 						collabToolbarState = Toolbar.CollabToolbarState.NeedToEnableCollab;

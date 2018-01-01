@@ -1,6 +1,7 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Threading;
 using UnityEditor.StyleSheets;
 using UnityEngine;
 using UnityEngine.Experimental.UIElements;
@@ -12,8 +13,6 @@ namespace UnityEditor
 	[StructLayout(LayoutKind.Sequential)]
 	internal class GUIView : View
 	{
-		private DataWatchService s_DataWatch = new DataWatchService();
-
 		private int m_DepthBufferBits = 0;
 
 		private EventInterests m_EventInterests;
@@ -24,6 +23,32 @@ namespace UnityEditor
 
 		[CompilerGenerated]
 		private static LoadResourceFunction <>f__mg$cache0;
+
+		internal static event Action<GUIView> positionChanged
+		{
+			add
+			{
+				Action<GUIView> action = GUIView.positionChanged;
+				Action<GUIView> action2;
+				do
+				{
+					action2 = action;
+					action = Interlocked.CompareExchange<Action<GUIView>>(ref GUIView.positionChanged, (Action<GUIView>)Delegate.Combine(action2, value), action);
+				}
+				while (action != action2);
+			}
+			remove
+			{
+				Action<GUIView> action = GUIView.positionChanged;
+				Action<GUIView> action2;
+				do
+				{
+					action2 = action;
+					action = Interlocked.CompareExchange<Action<GUIView>>(ref GUIView.positionChanged, (Action<GUIView>)Delegate.Remove(action2, value), action);
+				}
+				while (action != action2);
+			}
+		}
 
 		public static extern GUIView current
 		{
@@ -63,41 +88,36 @@ namespace UnityEditor
 			set;
 		}
 
-		private Panel panel
+		protected Panel panel
 		{
 			get
 			{
-				int arg_2B_0 = base.GetInstanceID();
-				ContextType arg_2B_1 = ContextType.Editor;
-				IDataWatchService arg_2B_2 = this.s_DataWatch;
-				if (GUIView.<>f__mg$cache0 == null)
+				if (Panel.loadResourceFunc == null)
 				{
-					GUIView.<>f__mg$cache0 = new LoadResourceFunction(StyleSheetResourceUtil.LoadResource);
-				}
-				Panel panel = UIElementsUtility.FindOrCreatePanel(arg_2B_0, arg_2B_1, arg_2B_2, GUIView.<>f__mg$cache0);
-				if (panel.visualTree.styleSheets == null)
-				{
-					panel.visualTree.AddStyleSheetPath("StyleSheets/DefaultCommon.uss");
-					if (EditorGUIUtility.isProSkin)
+					if (GUIView.<>f__mg$cache0 == null)
 					{
-						panel.visualTree.AddStyleSheetPath("StyleSheets/DefaultCommonDark.uss");
+						GUIView.<>f__mg$cache0 = new LoadResourceFunction(StyleSheetResourceUtil.LoadResource);
 					}
-					else
-					{
-						panel.visualTree.AddStyleSheetPath("StyleSheets/DefaultCommonLight.uss");
-					}
-					panel.visualTree.LoadStyleSheetsFromPaths();
+					Panel.loadResourceFunc = GUIView.<>f__mg$cache0;
 				}
+				Panel panel = UIElementsUtility.FindOrCreatePanel(this, ContextType.Editor, DataWatchService.sharedInstance);
+				GUIView.AddDefaultEditorStyleSheets(panel.visualTree);
 				return panel;
 			}
 		}
 
-		public VisualContainer visualTree
+		public VisualElement visualTree
 		{
 			get
 			{
 				return this.panel.visualTree;
 			}
+		}
+
+		protected IMGUIContainer imguiContainer
+		{
+			get;
+			private set;
 		}
 
 		public EventInterests eventInterests
@@ -307,6 +327,22 @@ namespace UnityEditor
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern void INTERNAL_CALL_GrabPixels(GUIView self, RenderTexture rd, ref Rect rect);
 
+		internal static void AddDefaultEditorStyleSheets(VisualElement p)
+		{
+			if (p.styleSheets == null)
+			{
+				p.AddStyleSheetPath("StyleSheets/DefaultCommon.uss");
+				if (EditorGUIUtility.isProSkin)
+				{
+					p.AddStyleSheetPath("StyleSheets/DefaultCommonDark.uss");
+				}
+				else
+				{
+					p.AddStyleSheetPath("StyleSheets/DefaultCommonLight.uss");
+				}
+			}
+		}
+
 		internal bool SendEvent(Event e)
 		{
 			int num = SavedGUIState.Internal_GetGUIDepth();
@@ -346,6 +382,34 @@ namespace UnityEditor
 			this.m_BackgroundValid = false;
 		}
 
+		protected virtual void OnEnable()
+		{
+			this.imguiContainer = new IMGUIContainer(new Action(this.OldOnGUI))
+			{
+				useOwnerObjectGUIState = true
+			};
+			this.imguiContainer.StretchToParentSize();
+			this.imguiContainer.persistenceKey = "Dockarea";
+			this.visualTree.Insert(0, this.imguiContainer);
+		}
+
+		protected virtual void OnDisable()
+		{
+			if (this.imguiContainer.HasCapture())
+			{
+				this.imguiContainer.RemoveCapture();
+			}
+			this.visualTree.Remove(this.imguiContainer);
+		}
+
+		protected virtual void OldOnGUI()
+		{
+		}
+
+		protected virtual void OnGUI()
+		{
+		}
+
 		protected override void SetPosition(Rect newPos)
 		{
 			Rect windowPosition = base.windowPosition;
@@ -359,11 +423,15 @@ namespace UnityEditor
 				this.Internal_SetPosition(base.windowPosition);
 				this.m_BackgroundValid = false;
 				this.panel.visualTree.SetSize(base.windowPosition.size);
+				if (GUIView.positionChanged != null)
+				{
+					GUIView.positionChanged(this);
+				}
 				this.Repaint();
 			}
 		}
 
-		public new void OnDestroy()
+		protected override void OnDestroy()
 		{
 			this.Internal_Close();
 			base.OnDestroy();
@@ -383,6 +451,12 @@ namespace UnityEditor
 			{
 				base.window.HandleWindowDecorationEnd(base.windowPosition);
 			}
+		}
+
+		static GUIView()
+		{
+			// Note: this type is marked as 'beforefieldinit'.
+			GUIView.positionChanged = null;
 		}
 	}
 }

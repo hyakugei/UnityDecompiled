@@ -319,6 +319,8 @@ namespace UnityEditor
 		{
 			TextureImporterFormat.DXT1Crunched,
 			TextureImporterFormat.DXT5Crunched,
+			TextureImporterFormat.ETC_RGB4Crunched,
+			TextureImporterFormat.ETC2_RGBA8Crunched,
 			TextureImporterFormat.PVRTC_RGB2,
 			TextureImporterFormat.PVRTC_RGB4,
 			TextureImporterFormat.PVRTC_RGBA2,
@@ -354,8 +356,6 @@ namespace UnityEditor
 		internal static string[] s_TextureFormatStringsAndroid;
 
 		internal static string[] s_TextureFormatStringsTizen;
-
-		internal static string[] s_TextureFormatStringsSTV;
 
 		internal static string[] s_TextureFormatStringsSingleChannel;
 
@@ -510,49 +510,40 @@ namespace UnityEditor
 					bool flag5 = false;
 					BuildPlatform[] buildPlayerValidPlatforms = TextureImporterInspector.GetBuildPlayerValidPlatforms();
 					BuildPlatform[] array = buildPlayerValidPlatforms;
-					int i = 0;
-					while (i < array.Length)
+					for (int i = 0; i < array.Length; i++)
 					{
 						BuildPlatform buildPlatform = array[i];
 						BuildTarget defaultTarget = buildPlatform.defaultTarget;
-						switch (defaultTarget)
+						if (defaultTarget != BuildTarget.iOS)
 						{
-						case BuildTarget.SamsungTV:
-							goto IL_A3;
-						case BuildTarget.N3DS:
-						case BuildTarget.WiiU:
-							IL_61:
-							if (defaultTarget == BuildTarget.iOS)
+							if (defaultTarget != BuildTarget.Android)
 							{
-								flag2 = true;
-								goto IL_AA;
+								if (defaultTarget != BuildTarget.Tizen)
+								{
+									if (defaultTarget == BuildTarget.tvOS)
+									{
+										flag2 = true;
+										flag5 = true;
+									}
+								}
+								else
+								{
+									flag = true;
+								}
 							}
-							if (defaultTarget == BuildTarget.Android)
+							else
 							{
 								flag2 = true;
 								flag = true;
 								flag3 = true;
 								flag4 = true;
 								flag5 = true;
-								goto IL_AA;
 							}
-							if (defaultTarget != BuildTarget.Tizen)
-							{
-								goto IL_AA;
-							}
-							goto IL_A3;
-						case BuildTarget.tvOS:
-							flag2 = true;
-							flag5 = true;
-							goto IL_AA;
 						}
-						goto IL_61;
-						IL_AA:
-						i++;
-						continue;
-						IL_A3:
-						flag = true;
-						goto IL_AA;
+						else
+						{
+							flag2 = true;
+						}
 					}
 					List<int> list = new List<int>();
 					list.AddRange(new int[]
@@ -622,7 +613,9 @@ namespace UnityEditor
 						24,
 						25,
 						28,
-						29
+						29,
+						64,
+						65
 					});
 					TextureImporterInspector.s_TextureFormatsValueAll = list.ToArray();
 					result = TextureImporterInspector.s_TextureFormatsValueAll;
@@ -771,7 +764,7 @@ namespace UnityEditor
 
 		internal static bool IsGLESMobileTargetPlatform(BuildTarget target)
 		{
-			return target == BuildTarget.iOS || target == BuildTarget.tvOS || target == BuildTarget.Android || target == BuildTarget.Tizen || target == BuildTarget.SamsungTV;
+			return target == BuildTarget.iOS || target == BuildTarget.tvOS || target == BuildTarget.Android || target == BuildTarget.Tizen;
 		}
 
 		private void UpdateImportWarning()
@@ -918,6 +911,7 @@ namespace UnityEditor
 			this.m_SpriteMeshType.intValue = (int)settings.spriteMeshType;
 			this.m_Alignment.intValue = settings.spriteAlignment;
 			this.m_WrapU.intValue = (int)settings.wrapMode;
+			this.m_WrapV.intValue = (int)settings.wrapMode;
 			this.m_FilterMode.intValue = (int)settings.filterMode;
 			this.m_Aniso.intValue = settings.aniso;
 			this.m_AlphaIsTransparency.intValue = ((!settings.alphaIsTransparency) ? 0 : 1);
@@ -1601,10 +1595,6 @@ namespace UnityEditor
 			if (TextureImporterInspector.s_TextureFormatStringsTizen == null)
 			{
 				TextureImporterInspector.s_TextureFormatStringsTizen = TextureImporterInspector.BuildTextureStrings(TextureImportPlatformSettings.kTextureFormatsValueTizen);
-			}
-			if (TextureImporterInspector.s_TextureFormatStringsSTV == null)
-			{
-				TextureImporterInspector.s_TextureFormatStringsSTV = TextureImporterInspector.BuildTextureStrings(TextureImportPlatformSettings.kTextureFormatsValueSTV);
 			}
 			if (TextureImporterInspector.s_TextureFormatStringsWebGL == null)
 			{

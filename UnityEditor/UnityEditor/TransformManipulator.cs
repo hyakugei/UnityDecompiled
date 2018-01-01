@@ -115,7 +115,7 @@ namespace UnityEditor
 						vector.x = MathUtils.RoundBasedOnMinimumDifference(vector.x, minDragDifference.x);
 						vector.y = MathUtils.RoundBasedOnMinimumDifference(vector.y, minDragDifference.y);
 						this.rectTransform.sizeDelta = vector;
-						if (this.rectTransform.drivenByObject != null)
+						if (this.rectTransform.IsDriven())
 						{
 							RectTransform.SendReapplyDrivenProperties(this.rectTransform);
 						}
@@ -176,7 +176,7 @@ namespace UnityEditor
 						vector4.y = ((!flag2) ? MathUtils.RoundBasedOnMinimumDifference(vector4.y, minDragDifference.y) : this.anchoredPosition.y);
 					}
 					this.rectTransform.anchoredPosition = vector4;
-					if (this.rectTransform.drivenByObject != null)
+					if (this.rectTransform.IsDriven())
 					{
 						RectTransform.SendReapplyDrivenProperties(this.rectTransform);
 					}

@@ -44,7 +44,7 @@ namespace UnityEditor
 			public static string insertion = "PR Insertion";
 		}
 
-		internal class ListViewElementsEnumerator : IEnumerator<ListViewElement>, IDisposable, IEnumerator
+		internal class ListViewElementsEnumerator : IEnumerator<ListViewElement>, IEnumerator, IDisposable
 		{
 			private int[] colWidths;
 

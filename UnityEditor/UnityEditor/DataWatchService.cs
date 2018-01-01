@@ -11,30 +11,88 @@ namespace UnityEditor
 		{
 			public readonly int handleID;
 
-			public readonly VisualElement watcher;
+			public readonly Action<UnityEngine.Object> onDataChanged;
 
-			public readonly Action onDataChanged;
-
-			public Spy(int handleID, VisualElement watcher, Action onDataChanged)
+			public Spy(int handleID, Action<UnityEngine.Object> onDataChanged)
 			{
 				this.handleID = handleID;
-				this.watcher = watcher;
 				this.onDataChanged = onDataChanged;
 			}
 		}
 
-		private struct Watchers
+		private class Watchers
 		{
 			public List<DataWatchService.Spy> spyList;
 
 			public ChangeTrackerHandle tracker;
+
+			public IScheduledItem scheduledItem;
+
+			public UnityEngine.Object watchedObject;
+
+			private DataWatchService service
+			{
+				get
+				{
+					return DataWatchService.sharedInstance;
+				}
+			}
+
+			public bool isModified
+			{
+				get;
+				set;
+			}
+
+			public Watchers(UnityEngine.Object watched)
+			{
+				this.spyList = new List<DataWatchService.Spy>();
+				this.tracker = ChangeTrackerHandle.AcquireTracker(watched);
+				this.watchedObject = watched;
+			}
+
+			public void AddSpy(int handle, Action<UnityEngine.Object> onDataChanged)
+			{
+				this.spyList.Add(new DataWatchService.Spy(handle, onDataChanged));
+			}
+
+			public bool IsEmpty()
+			{
+				return this.spyList == null;
+			}
+
+			public void OnTimerPoolForChanges(TimerState ts)
+			{
+				if (this.PollForChanges())
+				{
+					this.isModified = false;
+					this.service.NotifyDataChanged(this);
+				}
+			}
+
+			public bool PollForChanges()
+			{
+				if (this.watchedObject == null)
+				{
+					this.isModified = true;
+				}
+				else if (this.tracker.PollForChanges())
+				{
+					this.isModified = true;
+				}
+				return this.isModified;
+			}
 		}
 
-		private HashSet<UnityEngine.Object> m_DirtySet = new HashSet<UnityEngine.Object>();
+		public static DataWatchService sharedInstance = new DataWatchService();
+
+		private TimerEventScheduler m_Scheduler = new TimerEventScheduler();
 
 		private Dictionary<int, DataWatchHandle> m_Handles = new Dictionary<int, DataWatchHandle>();
 
 		private Dictionary<UnityEngine.Object, DataWatchService.Watchers> m_Watched = new Dictionary<UnityEngine.Object, DataWatchService.Watchers>();
+
+		private static List<DataWatchService.Spy> notificationTmpSpies = new List<DataWatchService.Spy>();
 
 		private static int s_WatchID;
 
@@ -56,56 +114,53 @@ namespace UnityEditor
 				PropertyModification currentValue = undoPropertyModification.currentValue;
 				if (currentValue != null && !(currentValue.target == null))
 				{
-					if (this.m_Watched.ContainsKey(currentValue.target))
+					DataWatchService.Watchers watchers;
+					if (this.m_Watched.TryGetValue(currentValue.target, out watchers))
 					{
-						this.m_DirtySet.Add(currentValue.target);
+						watchers.isModified = true;
 					}
 				}
 			}
 			return modifications;
 		}
 
+		public void ForceDirtyNextPoll(UnityEngine.Object obj)
+		{
+			DataWatchService.Watchers watchers;
+			if (this.m_Watched.TryGetValue(obj, out watchers))
+			{
+				watchers.tracker.ForceDirtyNextPoll();
+				watchers.isModified = true;
+			}
+		}
+
 		public void PollNativeData()
 		{
-			foreach (KeyValuePair<UnityEngine.Object, DataWatchService.Watchers> current in this.m_Watched)
-			{
-				if (current.Key == null || current.Value.tracker.PollForChanges())
-				{
-					this.m_DirtySet.Add(current.Key);
-				}
-			}
+			this.m_Scheduler.UpdateScheduledEvents();
 		}
 
-		public void ProcessNotificationQueue()
+		private void NotifyDataChanged(DataWatchService.Watchers w)
 		{
-			this.PollNativeData();
-			HashSet<UnityEngine.Object> dirtySet = this.m_DirtySet;
-			this.m_DirtySet = new HashSet<UnityEngine.Object>();
-			List<DataWatchService.Spy> list = new List<DataWatchService.Spy>();
-			foreach (UnityEngine.Object current in dirtySet)
+			DataWatchService.notificationTmpSpies.Clear();
+			DataWatchService.notificationTmpSpies.AddRange(w.spyList);
+			foreach (DataWatchService.Spy current in DataWatchService.notificationTmpSpies)
 			{
-				DataWatchService.Watchers watchers;
-				if (this.m_Watched.TryGetValue(current, out watchers))
-				{
-					list.Clear();
-					list.AddRange(watchers.spyList);
-					foreach (DataWatchService.Spy current2 in list)
-					{
-						if (current2.watcher.panel != null)
-						{
-							current2.onDataChanged();
-						}
-						else
-						{
-							Debug.Log("Leaking Data Spies from element: " + current2.watcher);
-						}
-					}
-				}
+				current.onDataChanged(w.watchedObject);
 			}
-			dirtySet.Clear();
+			if (w.watchedObject == null)
+			{
+				this.DoRemoveWatcher(w);
+			}
 		}
 
-		public IDataWatchHandle AddWatch(VisualElement watcher, UnityEngine.Object watched, Action onDataChanged)
+		private void DoRemoveWatcher(DataWatchService.Watchers watchers)
+		{
+			this.m_Watched.Remove(watchers.watchedObject);
+			this.m_Scheduler.Unschedule(watchers.scheduledItem);
+			watchers.tracker.ReleaseTracker();
+		}
+
+		public IDataWatchHandle AddWatch(UnityEngine.Object watched, Action<UnityEngine.Object> onDataChanged)
 		{
 			if (watched == null)
 			{
@@ -113,17 +168,14 @@ namespace UnityEditor
 			}
 			DataWatchHandle dataWatchHandle = new DataWatchHandle(++DataWatchService.s_WatchID, this, watched);
 			this.m_Handles[dataWatchHandle.id] = dataWatchHandle;
-			DataWatchService.Watchers value;
-			if (!this.m_Watched.TryGetValue(watched, out value))
+			DataWatchService.Watchers watchers;
+			if (!this.m_Watched.TryGetValue(watched, out watchers))
 			{
-				value = new DataWatchService.Watchers
-				{
-					spyList = new List<DataWatchService.Spy>(),
-					tracker = ChangeTrackerHandle.AcquireTracker(watched)
-				};
-				this.m_Watched[watched] = value;
+				watchers = new DataWatchService.Watchers(watched);
+				this.m_Watched[watched] = watchers;
+				watchers.scheduledItem = this.m_Scheduler.ScheduleUntil(new Action<TimerState>(watchers.OnTimerPoolForChanges), 0L, 0L, null);
 			}
-			value.spyList.Add(new DataWatchService.Spy(dataWatchHandle.id, watcher, onDataChanged));
+			watchers.spyList.Add(new DataWatchService.Spy(dataWatchHandle.id, onDataChanged));
 			return dataWatchHandle;
 		}
 
@@ -141,10 +193,9 @@ namespace UnityEditor
 						if (spyList[i].handleID == dataWatchHandle.id)
 						{
 							spyList.RemoveAt(i);
-							if (watchers.spyList.Count == 0)
+							if (watchers.IsEmpty())
 							{
-								watchers.tracker.ReleaseTracker();
-								this.m_Watched.Remove(dataWatchHandle.watched);
+								this.DoRemoveWatcher(watchers);
 							}
 							return;
 						}

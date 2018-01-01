@@ -195,7 +195,6 @@ namespace UnityEditor
 
 		private void OnLostFocus()
 		{
-			EditorGUI.EndEditingActiveTextField();
 			this.m_LabelGUI.OnLostFocus();
 		}
 
@@ -623,21 +622,26 @@ namespace UnityEditor
 			this.editorDragging.HandleDraggingToBottomArea(rect, this.m_Tracker);
 		}
 
+		private static bool HasLabel(UnityEngine.Object target)
+		{
+			string assetPath = AssetDatabase.GetAssetPath(target);
+			return assetPath.StartsWith("assets", StringComparison.OrdinalIgnoreCase) && !Directory.Exists(assetPath);
+		}
+
 		private UnityEngine.Object[] GetInspectedAssets()
 		{
 			Editor firstNonImportInspectorEditor = this.GetFirstNonImportInspectorEditor(this.tracker.activeEditors);
 			UnityEngine.Object[] result;
-			if (firstNonImportInspectorEditor != null && firstNonImportInspectorEditor.targets.Length == 1)
+			if (firstNonImportInspectorEditor != null && firstNonImportInspectorEditor.targets.Length == 1 && InspectorWindow.HasLabel(firstNonImportInspectorEditor.target))
 			{
-				string assetPath = AssetDatabase.GetAssetPath(firstNonImportInspectorEditor.target);
-				bool flag = assetPath.ToLower().StartsWith("assets") && !Directory.Exists(assetPath);
-				if (flag)
-				{
-					result = firstNonImportInspectorEditor.targets;
-					return result;
-				}
+				result = firstNonImportInspectorEditor.targets;
 			}
-			result = Selection.GetFiltered(typeof(UnityEngine.Object), SelectionMode.Assets);
+			else
+			{
+				result = (from o in Selection.GetFiltered(typeof(UnityEngine.Object), SelectionMode.Assets)
+				where InspectorWindow.HasLabel(o)
+				select o).ToArray<UnityEngine.Object>();
+			}
 			return result;
 		}
 
@@ -1119,7 +1123,12 @@ namespace UnityEditor
 						this.DisplayDeprecationMessageIfNecessary(editor);
 						EditorGUIUtility.ResetGUIState();
 						Rect rect = default(Rect);
-						using (new EditorGUI.DisabledScope(!editor.IsEnabled()))
+						bool flag6 = ModuleMetadata.GetModuleIncludeSettingForObject(target) == ModuleIncludeSetting.ForceExclude;
+						if (flag6)
+						{
+							EditorGUILayout.HelpBox("The module which implements this component type has been force excluded in player settings. This object will be removed in play mode and from any builds you make.", MessageType.Warning);
+						}
+						using (new EditorGUI.DisabledScope(!editor.IsEnabled() || flag6))
 						{
 							GenericInspector genericInspector = editor as GenericInspector;
 							if (genericInspector)
@@ -1198,6 +1207,12 @@ namespace UnityEditor
 					}
 				}
 			}
+		}
+
+		internal void RepaintImmediately(bool rebuildOptimizedGUIBlocks)
+		{
+			this.m_InvalidateGUIBlockCache = rebuildOptimizedGUIBlocks;
+			base.RepaintImmediately();
 		}
 
 		public bool EditorHasLargeHeader(int editorIndex, Editor[] trackerActiveEditors)

@@ -159,6 +159,16 @@ namespace UnityEngine
 			set;
 		}
 
+		public extern bool allowDynamicResolution
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
 		public extern float orthographicSize
 		{
 			[GeneratedByOldBindingsGenerator]
@@ -347,6 +357,20 @@ namespace UnityEngine
 			get;
 		}
 
+		public extern int scaledPixelWidth
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+		}
+
+		public extern int scaledPixelHeight
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+		}
+
 		public Matrix4x4 cameraToWorldMatrix
 		{
 			get
@@ -409,6 +433,16 @@ namespace UnityEngine
 			set;
 		}
 
+		public Matrix4x4 previousViewProjectionMatrix
+		{
+			get
+			{
+				Matrix4x4 result;
+				this.INTERNAL_get_previousViewProjectionMatrix(out result);
+				return result;
+			}
+		}
+
 		public Vector3 velocity
 		{
 			get
@@ -466,6 +500,7 @@ namespace UnityEngine
 			set;
 		}
 
+		[Obsolete("This property is no longer supported. Please use single pass stereo rendering instead.", true)]
 		public extern bool stereoMirrorMode
 		{
 			[GeneratedByOldBindingsGenerator]
@@ -728,6 +763,10 @@ namespace UnityEngine
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern void INTERNAL_set_nonJitteredProjectionMatrix(ref Matrix4x4 value);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void INTERNAL_get_previousViewProjectionMatrix(out Matrix4x4 value);
 
 		public void ResetProjectionMatrix()
 		{
@@ -1125,6 +1164,16 @@ namespace UnityEngine
 		{
 		}
 
+		public Matrix4x4 GetStereoNonJitteredProjectionMatrix(Camera.StereoscopicEye eye)
+		{
+			Matrix4x4 result;
+			this.GetStereoNonJitteredProjectionMatrix_Injected(eye, out result);
+			return result;
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public extern void CopyStereoDeviceProjectionMatrixToNonJittered(Camera.StereoscopicEye eye);
+
 		[EditorBrowsable(EditorBrowsableState.Never), Obsolete("Property GetScreenWidth() has been deprecated. Use Screen.width instead (UnityUpgradable) -> Screen.width", true)]
 		public float GetScreenWidth()
 		{
@@ -1141,5 +1190,8 @@ namespace UnityEngine
 		public void DoClear()
 		{
 		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void GetStereoNonJitteredProjectionMatrix_Injected(Camera.StereoscopicEye eye, out Matrix4x4 ret);
 	}
 }

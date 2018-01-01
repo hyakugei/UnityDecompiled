@@ -105,6 +105,10 @@ namespace UnityEditor.Web
 			}
 		}
 
+		public virtual void OnLocationChanged(string url)
+		{
+		}
+
 		public void ToggleMaximize()
 		{
 			base.maximized = !base.maximized;

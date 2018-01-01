@@ -1,4 +1,5 @@
 using System;
+using UnityEditor.Experimental.U2D;
 using UnityEngine;
 using UnityEngine.U2D.Interface;
 
@@ -42,6 +43,11 @@ namespace UnityEditor
 			get;
 		}
 
+		ISpriteEditorDataProvider spriteEditorDataProvider
+		{
+			get;
+		}
+
 		void HandleSpriteSelection();
 
 		void RequestRepaint();
@@ -53,5 +59,7 @@ namespace UnityEditor
 		void ClearProgressBar();
 
 		ITexture2D GetReadableTexture2D();
+
+		void ApplyOrRevertModification(bool apply);
 	}
 }

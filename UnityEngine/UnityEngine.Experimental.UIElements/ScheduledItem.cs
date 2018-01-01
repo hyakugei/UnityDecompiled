@@ -2,42 +2,73 @@ using System;
 
 namespace UnityEngine.Experimental.UIElements
 {
-	internal class ScheduledItem
+	internal abstract class ScheduledItem : IScheduledItem
 	{
-		public Action<TimerState> timerUpdateEvent;
-
 		public Func<bool> timerUpdateStopCondition;
 
-		public IEventHandler handler;
+		public static readonly Func<bool> OnceCondition = () => true;
 
-		public long start
+		public static readonly Func<bool> ForeverCondition = () => false;
+
+		public long startMs
 		{
 			get;
 			set;
 		}
 
-		public long delay
+		public long delayMs
 		{
 			get;
 			set;
 		}
 
-		public long interval
+		public long intervalMs
 		{
 			get;
 			set;
 		}
 
-		public ScheduledItem(Action<TimerState> timerUpdateEvent, IEventHandler handler)
+		public long endTimeMs
 		{
-			this.timerUpdateEvent = timerUpdateEvent;
-			this.handler = handler;
-			this.start = (long)(Time.realtimeSinceStartup * 1000f);
+			get;
+			private set;
 		}
 
-		public bool IsUpdatable()
+		public ScheduledItem()
 		{
-			return this.delay > 0L || this.interval > 0L;
+			this.ResetStartTime();
+			this.timerUpdateStopCondition = ScheduledItem.OnceCondition;
+		}
+
+		protected void ResetStartTime()
+		{
+			this.startMs = (long)(Time.realtimeSinceStartup * 1000f);
+		}
+
+		public void SetDuration(long durationMs)
+		{
+			this.endTimeMs = this.startMs + durationMs;
+		}
+
+		public abstract void PerformTimerUpdate(TimerState state);
+
+		internal virtual void OnItemUnscheduled()
+		{
+		}
+
+		public virtual bool ShouldUnschedule()
+		{
+			bool result;
+			if (this.endTimeMs > 0L)
+			{
+				if (Time.realtimeSinceStartup * 1000f > (float)this.endTimeMs)
+				{
+					result = true;
+					return result;
+				}
+			}
+			result = (this.timerUpdateStopCondition != null && this.timerUpdateStopCondition());
+			return result;
 		}
 	}
 }

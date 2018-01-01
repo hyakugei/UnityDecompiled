@@ -338,6 +338,7 @@ namespace UnityEditor
 
 		private void SetAsStartupSnapshot(AudioMixerSnapshotController snapshot)
 		{
+			Undo.RecordObject(this.m_Controller, "Set start snapshot");
 			this.m_Controller.startSnapshot = snapshot;
 		}
 

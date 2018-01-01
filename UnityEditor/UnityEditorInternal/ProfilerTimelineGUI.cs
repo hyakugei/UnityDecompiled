@@ -66,7 +66,7 @@ namespace UnityEditorInternal
 				color = color;
 				this.bar.hover.textColor = color;
 				arg_FD_0.textColor = color;
-				this.profilerGraphBackground.overflow.left = -169;
+				this.profilerGraphBackground.overflow.left = -179;
 				this.leftPane.padding.left = 15;
 			}
 		}
@@ -276,7 +276,7 @@ namespace UnityEditorInternal
 
 		private bool DrawBar(Rect r, float y, float height, string name, bool group, bool expanded, bool indent)
 		{
-			Rect position = new Rect(r.x - 170f, y, 170f, height);
+			Rect position = new Rect(r.x - 180f, y, 180f, height);
 			Rect position2 = new Rect(r.x, y, r.width, height);
 			if (Event.current.type == EventType.Repaint)
 			{
@@ -664,7 +664,7 @@ namespace UnityEditorInternal
 		public void DoGUI(int frameIndex, float width, float ypos, float height)
 		{
 			Rect drawRect = new Rect(0f, ypos - 1f, width, height + 1f);
-			float num = 169f;
+			float num = 179f;
 			if (Event.current.type == EventType.Repaint)
 			{
 				ProfilerTimelineGUI.styles.profilerGraphBackground.Draw(drawRect, false, false, false, false);
@@ -687,7 +687,7 @@ namespace UnityEditorInternal
 			{
 				NativeProfilerTimeline_InitializeArgs nativeProfilerTimeline_InitializeArgs = default(NativeProfilerTimeline_InitializeArgs);
 				nativeProfilerTimeline_InitializeArgs.Reset();
-				nativeProfilerTimeline_InitializeArgs.profilerColors = ProfilerColors.colors;
+				nativeProfilerTimeline_InitializeArgs.profilerColors = ProfilerColors.currentColors;
 				nativeProfilerTimeline_InitializeArgs.allocationSampleColor = ProfilerColors.allocationSample;
 				nativeProfilerTimeline_InitializeArgs.internalSampleColor = ProfilerColors.internalSample;
 				nativeProfilerTimeline_InitializeArgs.ghostAlpha = 0.3f;

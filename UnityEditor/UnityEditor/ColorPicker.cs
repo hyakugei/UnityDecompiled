@@ -73,7 +73,7 @@ namespace UnityEditor
 
 			public GUIStyle toggle = new GUIStyle(EditorStyles.toggle);
 
-			public GUIContent eyeDropper = EditorGUIUtility.IconContent("EyeDropper.Large", "|Pick a color from the screen.");
+			public GUIContent eyeDropper = EditorGUIUtility.IconContent("EyeDropper.Large", "Pick a color from the screen.");
 
 			public GUIContent colorCycle = EditorGUIUtility.IconContent("ColorPicker.CycleColor");
 
@@ -97,7 +97,9 @@ namespace UnityEditor
 
 		private static ColorPicker s_SharedColorPicker;
 
-		private static readonly ColorPickerHDRConfig m_DefaultHDRConfig = new ColorPickerHDRConfig(0f, 99f, 0.01010101f, 3f);
+		private const float kMaxfp16 = 65536f;
+
+		private static readonly ColorPickerHDRConfig m_DefaultHDRConfig = new ColorPickerHDRConfig(0f, 65536f, 1.52587891E-05f, 3f);
 
 		[SerializeField]
 		private bool m_HDR;
@@ -164,9 +166,6 @@ namespace UnityEditor
 
 		[SerializeField]
 		private bool m_IsOSColorPicker = false;
-
-		[SerializeField]
-		private bool m_resetKeyboardControl = false;
 
 		[SerializeField]
 		private bool m_ShowAlpha = true;
@@ -301,7 +300,7 @@ namespace UnityEditor
 
 		private const float kFixedWindowWidth = 233f;
 
-		private const float kHDRFieldWidth = 40f;
+		private const float kHDRFieldWidth = 45f;
 
 		private const float kLDRFieldWidth = 30f;
 
@@ -310,6 +309,8 @@ namespace UnityEditor
 		private static Texture2D s_LeftGradientTexture;
 
 		private static Texture2D s_RightGradientTexture;
+
+		private Action<Color> m_OnColorChanged;
 
 		public static string presetsEditorPrefID
 		{
@@ -337,7 +338,7 @@ namespace UnityEditor
 		{
 			get
 			{
-				return (!this.m_HDR) ? 30f : 40f;
+				return (!this.m_HDR) ? 30f : 45f;
 			}
 		}
 
@@ -403,12 +404,6 @@ namespace UnityEditor
 				this.InitIfNeeded();
 				this.m_ColorLibraryEditor.currentLibraryWithoutExtension = value;
 			}
-		}
-
-		private void OnSelectionChange()
-		{
-			this.m_resetKeyboardControl = true;
-			base.Repaint();
 		}
 
 		private void RGBToHSV()
@@ -1089,7 +1084,7 @@ namespace UnityEditor
 				float labelWidth = EditorGUIUtility.labelWidth;
 				EditorGUI.BeginChangeCheck();
 				EditorGUI.indentLevel++;
-				EditorGUIUtility.labelWidth = availableWidth - 40f - EditorGUI.indent;
+				EditorGUIUtility.labelWidth = availableWidth - 45f - EditorGUI.indent;
 				Color color = EditorGUILayout.ColorBrightnessField(GUIContent.Temp("Current Brightness"), ColorPicker.color, this.m_HDRConfig.minBrightness, this.m_HDRConfig.maxBrightness, new GUILayoutOption[0]);
 				EditorGUI.indentLevel--;
 				if (EditorGUI.EndChangeCheck())
@@ -1194,11 +1189,6 @@ namespace UnityEditor
 		private void OnGUI()
 		{
 			this.InitIfNeeded();
-			if (this.m_resetKeyboardControl)
-			{
-				GUIUtility.keyboardControl = 0;
-				this.m_resetKeyboardControl = false;
-			}
 			EventType type = Event.current.type;
 			if (type == EventType.ExecuteCommand)
 			{
@@ -1578,6 +1568,11 @@ namespace UnityEditor
 					GUIUtility.ExitGUI();
 				}
 			}
+			if (this.m_OnColorChanged != null)
+			{
+				this.m_OnColorChanged(ColorPicker.color);
+				base.Repaint();
+			}
 		}
 
 		private void SetNormalizedColor(Color c)
@@ -1618,7 +1613,6 @@ namespace UnityEditor
 					{
 						Debug.LogError(string.Format("Invalid normalized color: {0}, normalize value: {1}", c, this.m_HDRValues.m_HDRScaleFactor));
 					}
-					this.m_resetKeyboardControl = true;
 					this.SetNormalizedColor(c);
 					base.Repaint();
 				}
@@ -1630,12 +1624,11 @@ namespace UnityEditor
 			ColorPicker.Show(viewToUpdate, col, true, false, null);
 		}
 
-		public static void Show(GUIView viewToUpdate, Color col, bool showAlpha, bool hdr, ColorPickerHDRConfig hdrConfig)
+		protected static ColorPicker PrepareShow(Color col, bool showAlpha, bool hdr, ColorPickerHDRConfig hdrConfig)
 		{
 			ColorPicker get = ColorPicker.get;
 			get.m_HDR = hdr;
 			get.m_HDRConfig = new ColorPickerHDRConfig(hdrConfig ?? ColorPicker.defaultHDRConfig);
-			get.m_DelegateView = viewToUpdate;
 			get.SetColor(col);
 			get.m_OriginalColor = ColorPicker.get.m_Color;
 			get.m_ShowAlpha = showAlpha;
@@ -1657,6 +1650,21 @@ namespace UnityEditor
 				get.InitIfNeeded();
 				get.ShowAuxWindow();
 			}
+			return get;
+		}
+
+		public static void Show(Action<Color> onColorChanged, Color col, bool showAlpha, bool hdr, ColorPickerHDRConfig hdrConfig)
+		{
+			ColorPicker colorPicker = ColorPicker.PrepareShow(col, showAlpha, hdr, hdrConfig);
+			colorPicker.m_DelegateView = null;
+			colorPicker.m_OnColorChanged = onColorChanged;
+		}
+
+		public static void Show(GUIView viewToUpdate, Color col, bool showAlpha, bool hdr, ColorPickerHDRConfig hdrConfig)
+		{
+			ColorPicker colorPicker = ColorPicker.PrepareShow(col, showAlpha, hdr, hdrConfig);
+			colorPicker.m_DelegateView = viewToUpdate;
+			colorPicker.m_OnColorChanged = null;
 		}
 
 		private void PollOSColorPicker()

@@ -10,14 +10,14 @@ namespace UnityEngine.Experimental.Rendering
 	{
 		[CompilerGenerated, UnsafeValueType]
 		[StructLayout(LayoutKind.Sequential, Size = 160)]
-		public struct <_cullingPlanes>__FixedBuffer2
+		public struct <_cullingPlanes>__FixedBuffer6
 		{
 			public float FixedElementField;
 		}
 
 		public int cullingPlaneCount;
 
-		private ShadowSplitData.<_cullingPlanes>__FixedBuffer2 _cullingPlanes;
+		private ShadowSplitData.<_cullingPlanes>__FixedBuffer6 _cullingPlanes;
 
 		public Vector4 cullingSphere;
 

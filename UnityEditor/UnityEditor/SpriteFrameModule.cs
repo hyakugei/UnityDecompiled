@@ -54,7 +54,7 @@ namespace UnityEditor
 
 		public override bool CanBeActivated()
 		{
-			return SpriteUtility.GetSpriteImportMode(base.assetDatabase, base.spriteEditor.selectedTexture) != SpriteImportMode.Polygon;
+			return SpriteUtility.GetSpriteImportMode(base.spriteEditor.spriteEditorDataProvider) != SpriteImportMode.Polygon;
 		}
 
 		private string GetUniqueName(string prefix, int startIndex)

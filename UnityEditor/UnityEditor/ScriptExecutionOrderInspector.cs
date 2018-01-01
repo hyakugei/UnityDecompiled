@@ -346,25 +346,30 @@ namespace UnityEditor
 			{
 				ScriptExecutionOrderInspector.m_Instances.Add(this);
 			}
-			EditorApplication.playmodeStateChanged = (EditorApplication.CallbackFunction)Delegate.Combine(EditorApplication.playmodeStateChanged, new EditorApplication.CallbackFunction(this.OnPlayModeChanged));
+			EditorApplication.playModeStateChanged += new Action<PlayModeStateChange>(this.OnPlayModeStateChanged);
 		}
 
 		public void OnDisable()
 		{
-			EditorApplication.playmodeStateChanged = (EditorApplication.CallbackFunction)Delegate.Remove(EditorApplication.playmodeStateChanged, new EditorApplication.CallbackFunction(this.OnPlayModeChanged));
+			EditorApplication.playModeStateChanged -= new Action<PlayModeStateChange>(this.OnPlayModeStateChanged);
 		}
 
-		private void OnPlayModeChanged()
+		private void AskApplyRevertIfNecessary()
 		{
-			if (!EditorApplication.isPlaying && EditorApplication.isPlayingOrWillChangePlaymode)
+			if (this.m_DirtyOrders)
 			{
-				if (this.m_DirtyOrders)
+				if (EditorUtility.DisplayDialog("Unapplied execution order", "Unapplied script execution order", "Apply", "Revert"))
 				{
-					if (EditorUtility.DisplayDialog("Unapplied execution order", "Unapplied script execution order", "Apply", "Revert"))
-					{
-						this.Apply();
-					}
+					this.Apply();
 				}
+			}
+		}
+
+		private void OnPlayModeStateChanged(PlayModeStateChange state)
+		{
+			if (state == PlayModeStateChange.ExitingEditMode)
+			{
+				this.AskApplyRevertIfNecessary();
 			}
 		}
 
@@ -511,13 +516,7 @@ namespace UnityEditor
 			}
 			if (!Application.isPlaying)
 			{
-				if (this.m_DirtyOrders)
-				{
-					if (EditorUtility.DisplayDialog("Unapplied execution order", "Unapplied script execution order", "Apply", "Revert"))
-					{
-						this.Apply();
-					}
-				}
+				this.AskApplyRevertIfNecessary();
 			}
 		}
 

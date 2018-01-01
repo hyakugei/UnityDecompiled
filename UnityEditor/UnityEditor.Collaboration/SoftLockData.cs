@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using UnityEditor.Web;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -131,7 +130,7 @@ namespace UnityEditor.Collaboration
 				throw new ArgumentNullException("assetGuid");
 			}
 			bool result;
-			if (!CollabAccess.Instance.IsServiceEnabled() || assetGuid.Length == 0)
+			if (!Collab.instance.IsCollabEnabledForCurrentProject() || assetGuid.Length == 0)
 			{
 				softLocks = new List<SoftLock>();
 				result = false;

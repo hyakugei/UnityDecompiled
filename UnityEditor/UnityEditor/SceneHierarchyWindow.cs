@@ -462,7 +462,6 @@ namespace UnityEditor
 		private void OnLostFocus()
 		{
 			this.treeView.EndNameEditing(true);
-			EditorGUI.EndEditingActiveTextField();
 		}
 
 		public static bool IsSceneHeaderInHierarchyWindow(Scene scene)
@@ -1098,22 +1097,6 @@ namespace UnityEditor
 			return list;
 		}
 
-		private List<int> GetSelectedGameObjects()
-		{
-			List<int> list = new List<int>();
-			int[] selection = this.m_TreeView.GetSelection();
-			int[] array = selection;
-			for (int i = 0; i < array.Length; i++)
-			{
-				int num = array[i];
-				if (!SceneHierarchyWindow.IsSceneHeaderInHierarchyWindow(EditorSceneManager.GetSceneByHandle(num)))
-				{
-					list.Add(num);
-				}
-			}
-			return list;
-		}
-
 		private void ContextClickOutsideItems()
 		{
 			Event current = Event.current;
@@ -1225,12 +1208,12 @@ namespace UnityEditor
 
 		private bool UserAllowedDiscardingChanges(Scene[] modifiedScenes)
 		{
-			string localizedString = LocalizationDatabase.GetLocalizedString("Discard Changes");
-			string text = LocalizationDatabase.GetLocalizedString("Are you sure you want to discard the changes in the following scenes:\n\n   {0}\n\nYour changes will be lost.");
+			string title = "Discard Changes";
+			string text = "Are you sure you want to discard the changes in the following scenes:\n\n   {0}\n\nYour changes will be lost.";
 			string arg = string.Join("\n   ", (from scene in modifiedScenes
 			select scene.name).ToArray<string>());
 			text = string.Format(text, arg);
-			return EditorUtility.DisplayDialog(localizedString, text, LocalizationDatabase.GetLocalizedString("OK"), LocalizationDatabase.GetLocalizedString("Cancel"));
+			return EditorUtility.DisplayDialog(title, text, "OK", "Cancel");
 		}
 
 		private void DiscardChangesInSelectedScenes(object userData)

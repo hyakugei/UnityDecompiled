@@ -53,19 +53,10 @@ namespace UnityEngine.AI
 			{
 				throw new ArgumentNullException("sources");
 			}
-			return NavMeshBuilder.BuildNavMeshData(buildSettings, sources, localBounds, position, rotation, default(NavMeshBuildDebugSettings));
-		}
-
-		private static NavMeshData BuildNavMeshData(NavMeshBuildSettings buildSettings, List<NavMeshBuildSource> sources, Bounds localBounds, Vector3 position, Quaternion rotation, NavMeshBuildDebugSettings debug)
-		{
-			if (sources == null)
-			{
-				throw new ArgumentNullException("sources");
-			}
 			NavMeshData navMeshData = new NavMeshData(buildSettings.agentTypeID);
 			navMeshData.position = position;
 			navMeshData.rotation = rotation;
-			NavMeshBuilder.UpdateNavMeshDataListInternal(navMeshData, buildSettings, sources, localBounds, debug);
+			NavMeshBuilder.UpdateNavMeshDataListInternal(navMeshData, buildSettings, sources, localBounds);
 			return navMeshData;
 		}
 
@@ -79,30 +70,17 @@ namespace UnityEngine.AI
 			{
 				throw new ArgumentNullException("sources");
 			}
-			return NavMeshBuilder.UpdateNavMeshData(data, buildSettings, sources, localBounds, default(NavMeshBuildDebugSettings));
+			return NavMeshBuilder.UpdateNavMeshDataListInternal(data, buildSettings, sources, localBounds);
 		}
 
-		private static bool UpdateNavMeshData(NavMeshData data, NavMeshBuildSettings buildSettings, List<NavMeshBuildSource> sources, Bounds localBounds, NavMeshBuildDebugSettings debug)
+		private static bool UpdateNavMeshDataListInternal(NavMeshData data, NavMeshBuildSettings buildSettings, object sources, Bounds localBounds)
 		{
-			if (data == null)
-			{
-				throw new ArgumentNullException("data");
-			}
-			if (sources == null)
-			{
-				throw new ArgumentNullException("sources");
-			}
-			return NavMeshBuilder.UpdateNavMeshDataListInternal(data, buildSettings, sources, localBounds, debug);
-		}
-
-		private static bool UpdateNavMeshDataListInternal(NavMeshData data, NavMeshBuildSettings buildSettings, object sources, Bounds localBounds, NavMeshBuildDebugSettings debug)
-		{
-			return NavMeshBuilder.INTERNAL_CALL_UpdateNavMeshDataListInternal(data, ref buildSettings, sources, ref localBounds, ref debug);
+			return NavMeshBuilder.INTERNAL_CALL_UpdateNavMeshDataListInternal(data, ref buildSettings, sources, ref localBounds);
 		}
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern bool INTERNAL_CALL_UpdateNavMeshDataListInternal(NavMeshData data, ref NavMeshBuildSettings buildSettings, object sources, ref Bounds localBounds, ref NavMeshBuildDebugSettings debug);
+		private static extern bool INTERNAL_CALL_UpdateNavMeshDataListInternal(NavMeshData data, ref NavMeshBuildSettings buildSettings, object sources, ref Bounds localBounds);
 
 		public static AsyncOperation UpdateNavMeshDataAsync(NavMeshData data, NavMeshBuildSettings buildSettings, List<NavMeshBuildSource> sources, Bounds localBounds)
 		{
@@ -114,33 +92,20 @@ namespace UnityEngine.AI
 			{
 				throw new ArgumentNullException("sources");
 			}
-			return NavMeshBuilder.UpdateNavMeshDataAsync(data, buildSettings, sources, localBounds, default(NavMeshBuildDebugSettings));
-		}
-
-		private static AsyncOperation UpdateNavMeshDataAsync(NavMeshData data, NavMeshBuildSettings buildSettings, List<NavMeshBuildSource> sources, Bounds localBounds, NavMeshBuildDebugSettings debug)
-		{
-			if (data == null)
-			{
-				throw new ArgumentNullException("data");
-			}
-			if (sources == null)
-			{
-				throw new ArgumentNullException("sources");
-			}
-			return NavMeshBuilder.UpdateNavMeshDataAsyncListInternal(data, buildSettings, sources, localBounds, debug);
+			return NavMeshBuilder.UpdateNavMeshDataAsyncListInternal(data, buildSettings, sources, localBounds);
 		}
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void Cancel(NavMeshData data);
 
-		private static AsyncOperation UpdateNavMeshDataAsyncListInternal(NavMeshData data, NavMeshBuildSettings buildSettings, object sources, Bounds localBounds, NavMeshBuildDebugSettings debug)
+		private static AsyncOperation UpdateNavMeshDataAsyncListInternal(NavMeshData data, NavMeshBuildSettings buildSettings, object sources, Bounds localBounds)
 		{
-			return NavMeshBuilder.INTERNAL_CALL_UpdateNavMeshDataAsyncListInternal(data, ref buildSettings, sources, ref localBounds, ref debug);
+			return NavMeshBuilder.INTERNAL_CALL_UpdateNavMeshDataAsyncListInternal(data, ref buildSettings, sources, ref localBounds);
 		}
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern AsyncOperation INTERNAL_CALL_UpdateNavMeshDataAsyncListInternal(NavMeshData data, ref NavMeshBuildSettings buildSettings, object sources, ref Bounds localBounds, ref NavMeshBuildDebugSettings debug);
+		private static extern AsyncOperation INTERNAL_CALL_UpdateNavMeshDataAsyncListInternal(NavMeshData data, ref NavMeshBuildSettings buildSettings, object sources, ref Bounds localBounds);
 	}
 }

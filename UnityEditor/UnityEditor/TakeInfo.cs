@@ -1,7 +1,10 @@
 using System;
+using UnityEngine.Bindings;
+using UnityEngine.Scripting;
 
 namespace UnityEditor
 {
+	[NativeType(Header = "Editor/Src/AssetPipeline/ModelImporting/ModelImporter.h"), UsedByNativeCode]
 	public struct TakeInfo
 	{
 		public string name;

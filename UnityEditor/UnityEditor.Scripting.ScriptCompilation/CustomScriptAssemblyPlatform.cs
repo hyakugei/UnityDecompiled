@@ -9,20 +9,32 @@ namespace UnityEditor.Scripting.ScriptCompilation
 		public string Name
 		{
 			get;
-			set;
+			private set;
+		}
+
+		public string DisplayName
+		{
+			get;
+			private set;
 		}
 
 		public BuildTarget BuildTarget
 		{
 			get;
-			set;
+			private set;
+		}
+
+		public CustomScriptAssemblyPlatform(string name, string displayName, BuildTarget buildTarget)
+		{
+			this = default(CustomScriptAssemblyPlatform);
+			this.Name = name;
+			this.DisplayName = displayName;
+			this.BuildTarget = buildTarget;
 		}
 
 		public CustomScriptAssemblyPlatform(string name, BuildTarget buildTarget)
 		{
-			this = default(CustomScriptAssemblyPlatform);
-			this.Name = name;
-			this.BuildTarget = buildTarget;
+			this = new CustomScriptAssemblyPlatform(name, name, buildTarget);
 		}
 	}
 }

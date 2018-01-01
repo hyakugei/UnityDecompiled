@@ -33,10 +33,6 @@ namespace UnityEditor
 
 		public override void OnInspectorGUI(InitialModuleUI initial)
 		{
-			if (ExternalForcesModuleUI.s_Texts == null)
-			{
-				ExternalForcesModuleUI.s_Texts = new ExternalForcesModuleUI.Texts();
-			}
 			ModuleUI.GUIFloat(ExternalForcesModuleUI.s_Texts.multiplier, this.m_Multiplier, new GUILayoutOption[0]);
 		}
 

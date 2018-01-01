@@ -26,21 +26,21 @@ namespace UnityEditorInternal
 
 		internal static IL2CPPBuilder RunIl2Cpp(string tempFolder, string stagingAreaData, IIl2CppPlatformProvider platformProvider, Action<string> modifyOutputBeforeCompile, RuntimeClassRegistry runtimeClassRegistry, bool debugBuild)
 		{
-			IL2CPPBuilder iL2CPPBuilder = new IL2CPPBuilder(tempFolder, stagingAreaData, platformProvider, modifyOutputBeforeCompile, runtimeClassRegistry, debugBuild);
+			IL2CPPBuilder iL2CPPBuilder = new IL2CPPBuilder(tempFolder, stagingAreaData, platformProvider, modifyOutputBeforeCompile, runtimeClassRegistry, debugBuild, IL2CPPUtils.UseIl2CppCodegenWithMonoBackend(BuildPipeline.GetBuildTargetGroup(platformProvider.target)));
 			iL2CPPBuilder.Run();
 			return iL2CPPBuilder;
 		}
 
 		internal static IL2CPPBuilder RunIl2Cpp(string stagingAreaData, IIl2CppPlatformProvider platformProvider, Action<string> modifyOutputBeforeCompile, RuntimeClassRegistry runtimeClassRegistry, bool debugBuild)
 		{
-			IL2CPPBuilder iL2CPPBuilder = new IL2CPPBuilder(stagingAreaData, stagingAreaData, platformProvider, modifyOutputBeforeCompile, runtimeClassRegistry, debugBuild);
+			IL2CPPBuilder iL2CPPBuilder = new IL2CPPBuilder(stagingAreaData, stagingAreaData, platformProvider, modifyOutputBeforeCompile, runtimeClassRegistry, debugBuild, IL2CPPUtils.UseIl2CppCodegenWithMonoBackend(BuildPipeline.GetBuildTargetGroup(platformProvider.target)));
 			iL2CPPBuilder.Run();
 			return iL2CPPBuilder;
 		}
 
 		internal static IL2CPPBuilder RunCompileAndLink(string tempFolder, string stagingAreaData, IIl2CppPlatformProvider platformProvider, Action<string> modifyOutputBeforeCompile, RuntimeClassRegistry runtimeClassRegistry, bool debugBuild)
 		{
-			IL2CPPBuilder iL2CPPBuilder = new IL2CPPBuilder(tempFolder, stagingAreaData, platformProvider, modifyOutputBeforeCompile, runtimeClassRegistry, debugBuild);
+			IL2CPPBuilder iL2CPPBuilder = new IL2CPPBuilder(tempFolder, stagingAreaData, platformProvider, modifyOutputBeforeCompile, runtimeClassRegistry, debugBuild, IL2CPPUtils.UseIl2CppCodegenWithMonoBackend(BuildPipeline.GetBuildTargetGroup(platformProvider.target)));
 			iL2CPPBuilder.RunCompileAndLink();
 			return iL2CPPBuilder;
 		}
@@ -114,18 +114,23 @@ namespace UnityEditorInternal
 			switch (compatibilityLevel)
 			{
 			case ApiCompatibilityLevel.NET_2_0:
-				result = "Net20";
+				result = "net20";
 				break;
 			case ApiCompatibilityLevel.NET_2_0_Subset:
-				result = "Unity";
+				result = "legacyunity";
 				break;
 			case ApiCompatibilityLevel.NET_4_6:
-				result = "Net45";
+				result = "net45";
 				break;
 			default:
 				throw new NotSupportedException(string.Format("ApiCompatibilityLevel.{0} is not supported by IL2CPP!", compatibilityLevel));
 			}
 			return result;
+		}
+
+		internal static bool UseIl2CppCodegenWithMonoBackend(BuildTargetGroup targetGroup)
+		{
+			return EditorApplication.scriptingRuntimeVersion == ScriptingRuntimeVersion.Latest && EditorApplication.useLibmonoBackendForIl2cpp && PlayerSettings.GetScriptingBackend(targetGroup) == ScriptingImplementation.IL2CPP;
 		}
 	}
 }

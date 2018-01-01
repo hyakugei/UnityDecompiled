@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -96,6 +97,16 @@ namespace UnityEngine
 		}
 
 		[SecuritySafeCritical]
+		public void SetData<T>(List<T> data)
+		{
+			if (data == null)
+			{
+				throw new ArgumentNullException("data");
+			}
+			this.InternalSetData(NoAllocHelpers.ExtractArrayFromList(data), 0, 0, NoAllocHelpers.SafeLength<T>(data), Marshal.SizeOf(typeof(T)));
+		}
+
+		[SecuritySafeCritical]
 		public void SetData(Array data, int managedBufferStartIndex, int computeBufferStartIndex, int count)
 		{
 			if (data == null)
@@ -107,6 +118,20 @@ namespace UnityEngine
 				throw new ArgumentOutOfRangeException(string.Format("Bad indices/count arguments (managedBufferStartIndex:{0} computeBufferStartIndex:{1} count:{2})", managedBufferStartIndex, computeBufferStartIndex, count));
 			}
 			this.InternalSetData(data, managedBufferStartIndex, computeBufferStartIndex, count, Marshal.SizeOf(data.GetType().GetElementType()));
+		}
+
+		[SecuritySafeCritical]
+		public void SetData<T>(List<T> data, int managedBufferStartIndex, int computeBufferStartIndex, int count)
+		{
+			if (data == null)
+			{
+				throw new ArgumentNullException("data");
+			}
+			if (managedBufferStartIndex < 0 || computeBufferStartIndex < 0 || count < 0 || managedBufferStartIndex + count > data.Count)
+			{
+				throw new ArgumentOutOfRangeException(string.Format("Bad indices/count arguments (managedBufferStartIndex:{0} computeBufferStartIndex:{1} count:{2})", managedBufferStartIndex, computeBufferStartIndex, count));
+			}
+			this.InternalSetData(NoAllocHelpers.ExtractArrayFromList(data), managedBufferStartIndex, computeBufferStartIndex, count, Marshal.SizeOf(typeof(T)));
 		}
 
 		[SecurityCritical, GeneratedByOldBindingsGenerator]

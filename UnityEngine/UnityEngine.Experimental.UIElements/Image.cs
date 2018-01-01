@@ -21,6 +21,32 @@ namespace UnityEngine.Experimental.UIElements
 			this.scaleMode = ScaleMode.ScaleAndCrop;
 		}
 
+		protected internal override Vector2 DoMeasure(float width, VisualElement.MeasureMode widthMode, float height, VisualElement.MeasureMode heightMode)
+		{
+			float num = float.NaN;
+			float num2 = float.NaN;
+			Vector2 result;
+			if (this.image == null)
+			{
+				result = new Vector2(num, num2);
+			}
+			else
+			{
+				num = (float)this.image.width;
+				num2 = (float)this.image.height;
+				if (widthMode == VisualElement.MeasureMode.AtMost)
+				{
+					num = Mathf.Min(num, width);
+				}
+				if (heightMode == VisualElement.MeasureMode.AtMost)
+				{
+					num2 = Mathf.Min(num2, height);
+				}
+				result = new Vector2(num, num2);
+			}
+			return result;
+		}
+
 		internal override void DoRepaint(IStylePainter painter)
 		{
 			if (this.image == null)
@@ -29,7 +55,14 @@ namespace UnityEngine.Experimental.UIElements
 			}
 			else
 			{
-				painter.DrawTexture(base.contentRect, this.image, GUI.color, this.scaleMode, 0f, 0f, 0, 0, 0, 0);
+				TextureStylePainterParameters painterParams = new TextureStylePainterParameters
+				{
+					layout = base.contentRect,
+					texture = this.image,
+					color = GUI.color,
+					scaleMode = this.scaleMode
+				};
+				painter.DrawTexture(painterParams);
 			}
 		}
 	}

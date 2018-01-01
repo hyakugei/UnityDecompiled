@@ -11,8 +11,6 @@ namespace UnityEditor
 	{
 		private class Styles
 		{
-			public GUIStyle optionsButton = "PaneOptions";
-
 			public GUIContent header = new GUIContent("Groups", "An Audio Mixer Group is used by e.g Audio Sources to modify the audio output before it reaches the Audio Listener. An Audio Mixer Group will route its output to another Audio Mixer Group if it is made a child of that group. The Master Group will route its output to the Audio Listener if it doesn't route its output into another Mixer.");
 
 			public GUIContent addText = new GUIContent("+", "Add child group");
@@ -27,8 +25,6 @@ namespace UnityEditor
 		private TreeViewState m_AudioGroupTreeState;
 
 		private TreeViewController m_AudioGroupTree;
-
-		private int m_TreeViewKeyboardControlID;
 
 		private AudioGroupTreeViewGUI m_TreeViewGUI;
 
@@ -87,7 +83,6 @@ namespace UnityEditor
 			if (this.m_Controller != null)
 			{
 				this.m_Controller.SanitizeGroupViews();
-				this.m_Controller.OnSubAssetChanged();
 			}
 		}
 
@@ -171,8 +166,9 @@ namespace UnityEditor
 			if (recordUndo)
 			{
 				Undo.RecordObject(this.m_Controller, "Duplicate group" + AudioMixerGroupTreeView.PluralIfNeeded(groups.Count));
+				Undo.RecordObject(this.m_Controller.masterGroup, "");
 			}
-			List<AudioMixerGroupController> list = this.m_Controller.DuplicateGroups(groups.ToArray());
+			List<AudioMixerGroupController> list = this.m_Controller.DuplicateGroups(groups.ToArray(), recordUndo);
 			if (list.Count > 0)
 			{
 				this.ReloadTree();

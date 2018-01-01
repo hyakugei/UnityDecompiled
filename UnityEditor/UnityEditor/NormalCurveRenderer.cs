@@ -102,7 +102,12 @@ namespace UnityEditor
 			this.m_CustomRangeEnd = end;
 		}
 
-		public float EvaluateCurveSlow(float time)
+		public virtual float ClampedValue(float value)
+		{
+			return value;
+		}
+
+		public virtual float EvaluateCurveSlow(float time)
 		{
 			return this.m_Curve.Evaluate(time);
 		}
@@ -110,7 +115,7 @@ namespace UnityEditor
 		public float EvaluateCurveDeltaSlow(float time)
 		{
 			float num = 0.0001f;
-			return (this.m_Curve.Evaluate(time + num) - this.m_Curve.Evaluate(time - num)) / (num * 2f);
+			return (this.EvaluateCurveSlow(time + num) - this.EvaluateCurveSlow(time - num)) / (num * 2f);
 		}
 
 		private Vector3[] GetPoints()
@@ -208,7 +213,7 @@ namespace UnityEditor
 			return result;
 		}
 
-		private static int GetSegmentResolution(float minTime, float maxTime, float keyTime, float nextKeyTime)
+		protected virtual int GetSegmentResolution(float minTime, float maxTime, float keyTime, float nextKeyTime)
 		{
 			float num = maxTime - minTime;
 			float num2 = nextKeyTime - keyTime;
@@ -216,12 +221,19 @@ namespace UnityEditor
 			return Mathf.Clamp(value, 1, 50);
 		}
 
+		protected virtual void AddPoint(ref List<Vector3> points, ref float lastTime, float sampleTime, ref float lastValue, float sampleValue)
+		{
+			points.Add(new Vector3(sampleTime, sampleValue));
+			lastTime = sampleTime;
+			lastValue = sampleValue;
+		}
+
 		private void AddPoints(ref List<Vector3> points, float minTime, float maxTime, float visibleMinTime, float visibleMaxTime)
 		{
 			if (this.m_Curve[0].time >= minTime)
 			{
-				points.Add(new Vector3(this.rangeStart, this.m_Curve[0].value));
-				points.Add(new Vector3(this.m_Curve[0].time, this.m_Curve[0].value));
+				points.Add(new Vector3(this.rangeStart, this.ClampedValue(this.m_Curve[0].value)));
+				points.Add(new Vector3(this.m_Curve[0].time, this.ClampedValue(this.m_Curve[0].value)));
 			}
 			for (int i = 0; i < this.m_Curve.length - 1; i++)
 			{
@@ -230,24 +242,30 @@ namespace UnityEditor
 				if (keyframe2.time >= minTime && keyframe.time <= maxTime)
 				{
 					points.Add(new Vector3(keyframe.time, keyframe.value));
-					int segmentResolution = NormalCurveRenderer.GetSegmentResolution(visibleMinTime, visibleMaxTime, keyframe.time, keyframe2.time);
+					int segmentResolution = this.GetSegmentResolution(visibleMinTime, visibleMaxTime, keyframe.time, keyframe2.time);
 					float num = Mathf.Lerp(keyframe.time, keyframe2.time, 0.001f / (float)segmentResolution);
-					points.Add(new Vector3(num, this.m_Curve.Evaluate(num)));
-					for (float num2 = 1f; num2 < (float)segmentResolution; num2 += 1f)
+					float time = keyframe.time;
+					float num2 = this.ClampedValue(keyframe.value);
+					float sampleValue = this.EvaluateCurveSlow(num);
+					this.AddPoint(ref points, ref time, num, ref num2, sampleValue);
+					for (float num3 = 1f; num3 < (float)segmentResolution; num3 += 1f)
 					{
-						num = Mathf.Lerp(keyframe.time, keyframe2.time, num2 / (float)segmentResolution);
-						points.Add(new Vector3(num, this.m_Curve.Evaluate(num)));
+						num = Mathf.Lerp(keyframe.time, keyframe2.time, num3 / (float)segmentResolution);
+						sampleValue = this.EvaluateCurveSlow(num);
+						this.AddPoint(ref points, ref time, num, ref num2, sampleValue);
 					}
 					num = Mathf.Lerp(keyframe.time, keyframe2.time, 1f - 0.001f / (float)segmentResolution);
-					points.Add(new Vector3(num, this.m_Curve.Evaluate(num)));
+					sampleValue = this.EvaluateCurveSlow(num);
+					this.AddPoint(ref points, ref time, num, ref num2, sampleValue);
 					num = keyframe2.time;
-					points.Add(new Vector3(num, keyframe2.value));
+					this.AddPoint(ref points, ref time, num, ref num2, sampleValue);
 				}
 			}
 			if (this.m_Curve[this.m_Curve.length - 1].time <= maxTime)
 			{
-				points.Add(new Vector3(this.m_Curve[this.m_Curve.length - 1].time, this.m_Curve[this.m_Curve.length - 1].value));
-				points.Add(new Vector3(this.rangeEnd, this.m_Curve[this.m_Curve.length - 1].value));
+				float y = this.ClampedValue(this.m_Curve[this.m_Curve.length - 1].value);
+				points.Add(new Vector3(this.m_Curve[this.m_Curve.length - 1].time, y));
+				points.Add(new Vector3(this.rangeEnd, y));
 			}
 		}
 
@@ -325,6 +343,14 @@ namespace UnityEditor
 					{
 						num = Mathf.FloorToInt((minTime - rangeStart) / (rangeEnd - rangeStart));
 						num2 = Mathf.CeilToInt((maxTime - rangeEnd) / (rangeEnd - rangeStart));
+						if (num < -100)
+						{
+							preWrap = WrapMode.Once;
+						}
+						if (num2 > 100)
+						{
+							postWrap = WrapMode.Once;
+						}
 					}
 					else
 					{

@@ -5,6 +5,12 @@ namespace UnityEngine.Bindings
 	[AttributeUsage(AttributeTargets.Property)]
 	internal class NativePropertyAttribute : NativeMethodAttribute
 	{
+		public TargetType TargetType
+		{
+			get;
+			set;
+		}
+
 		public NativePropertyAttribute()
 		{
 		}
@@ -13,12 +19,19 @@ namespace UnityEngine.Bindings
 		{
 		}
 
-		public NativePropertyAttribute(string name, bool isFreeFunction) : base(name, isFreeFunction)
+		public NativePropertyAttribute(string name, TargetType targetType) : base(name)
 		{
+			this.TargetType = targetType;
 		}
 
-		public NativePropertyAttribute(string name, bool isFreeFunction, bool isThreadSafe) : base(name, isFreeFunction, isThreadSafe)
+		public NativePropertyAttribute(string name, bool isFree, TargetType targetType) : base(name, isFree)
 		{
+			this.TargetType = targetType;
+		}
+
+		public NativePropertyAttribute(string name, bool isFree, TargetType targetType, bool isThreadSafe) : base(name, isFree, isThreadSafe)
+		{
+			this.TargetType = targetType;
 		}
 	}
 }

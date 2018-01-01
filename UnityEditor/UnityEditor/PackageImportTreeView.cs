@@ -244,6 +244,7 @@ namespace UnityEditor
 				EditorGUIUtility.SetIconSize(new Vector2(this.k_IconWidth, this.k_IconWidth));
 				GUIStyle lineStyle = TreeViewGUI.Styles.lineStyle;
 				lineStyle.padding.left = 0;
+				contentRect.height += 5f;
 				if (Event.current.type == EventType.Repaint)
 				{
 					lineStyle.Draw(contentRect, GUIContent.Temp(item.displayName, this.GetIconForItem(item)), false, false, selected, focused);

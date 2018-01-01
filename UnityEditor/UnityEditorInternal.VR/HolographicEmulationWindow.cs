@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.VR;
+using UnityEngine.XR;
 
 namespace UnityEditorInternal.VR
 {
@@ -14,7 +14,7 @@ namespace UnityEditorInternal.VR
 
 		private bool m_OperatingSystemValid = false;
 
-		private HolographicStreamerConnectionState m_ConnectionState = HolographicStreamerConnectionState.Disconnected;
+		private HolographicStreamerConnectionState m_LastConnectionState = HolographicStreamerConnectionState.Disconnected;
 
 		[SerializeField]
 		private EmulationMode m_Mode = EmulationMode.None;
@@ -125,7 +125,7 @@ namespace UnityEditorInternal.VR
 		private void OnEnable()
 		{
 			base.titleContent = new GUIContent("Holographic");
-			EditorApplication.playmodeStateChanged = (EditorApplication.CallbackFunction)Delegate.Combine(EditorApplication.playmodeStateChanged, new EditorApplication.CallbackFunction(this.OnPlayModeChanged));
+			EditorApplication.playModeStateChanged += new Action<PlayModeStateChange>(this.OnPlayModeStateChanged);
 			this.m_InPlayMode = EditorApplication.isPlayingOrWillChangePlaymode;
 			this.m_RemoteMachineHistory = EditorPrefs.GetString("HolographicRemoting.RemoteMachineHistory").Split(new char[]
 			{
@@ -135,7 +135,7 @@ namespace UnityEditorInternal.VR
 
 		private void OnDisable()
 		{
-			EditorApplication.playmodeStateChanged = (EditorApplication.CallbackFunction)Delegate.Remove(EditorApplication.playmodeStateChanged, new EditorApplication.CallbackFunction(this.OnPlayModeChanged));
+			EditorApplication.playModeStateChanged -= new Action<PlayModeStateChange>(this.OnPlayModeStateChanged);
 		}
 
 		private void LoadCurrentRoom()
@@ -149,15 +149,12 @@ namespace UnityEditorInternal.VR
 
 		private void InitializeSimulation()
 		{
-			if (this.m_ConnectionState != HolographicStreamerConnectionState.Disconnected)
-			{
-				this.Disconnect();
-			}
+			this.Disconnect();
 			HolographicEmulation.Initialize();
 			this.LoadCurrentRoom();
 		}
 
-		private void OnPlayModeChanged()
+		private void OnPlayModeStateChanged(PlayModeStateChange state)
 		{
 			bool inPlayMode = this.m_InPlayMode;
 			this.m_InPlayMode = EditorApplication.isPlayingOrWillChangePlaymode;
@@ -202,7 +199,15 @@ namespace UnityEditorInternal.VR
 
 		private void Disconnect()
 		{
-			PerceptionRemotingPlugin.Disconnect();
+			if (PerceptionRemotingPlugin.GetConnectionState() != HolographicStreamerConnectionState.Disconnected)
+			{
+				PerceptionRemotingPlugin.Disconnect();
+			}
+		}
+
+		private bool IsConnectedToRemoteDevice()
+		{
+			return PerceptionRemotingPlugin.GetConnectionState() == HolographicStreamerConnectionState.Connected;
 		}
 
 		private void HandleButtonPress()
@@ -211,17 +216,21 @@ namespace UnityEditorInternal.VR
 			{
 				Debug.LogError("Unable to connect / disconnect remoting while playing.");
 			}
-			else if (this.m_ConnectionState == HolographicStreamerConnectionState.Connecting || this.m_ConnectionState == HolographicStreamerConnectionState.Connected)
-			{
-				this.Disconnect();
-			}
-			else if (this.RemoteMachineNameSpecified)
-			{
-				this.Connect();
-			}
 			else
 			{
-				Debug.LogError("Cannot connect without a remote machine address specified");
+				HolographicStreamerConnectionState connectionState = PerceptionRemotingPlugin.GetConnectionState();
+				if (connectionState == HolographicStreamerConnectionState.Connecting || connectionState == HolographicStreamerConnectionState.Connected)
+				{
+					this.Disconnect();
+				}
+				else if (this.RemoteMachineNameSpecified)
+				{
+					this.Connect();
+				}
+				else
+				{
+					Debug.LogError("Cannot connect without a remote machine address specified");
+				}
 			}
 		}
 
@@ -278,27 +287,27 @@ namespace UnityEditorInternal.VR
 			Texture2D image;
 			GUIContent label;
 			GUIContent content;
-			switch (this.m_ConnectionState)
+			switch (PerceptionRemotingPlugin.GetConnectionState())
 			{
 			case HolographicStreamerConnectionState.Disconnected:
-				IL_5E:
+				IL_5D:
 				image = HolographicEmulationWindow.s_DisconnectedTexture;
 				label = HolographicEmulationWindow.s_ConnectionStateDisconnectedText;
 				content = HolographicEmulationWindow.s_ConnectionButtonConnectText;
-				goto IL_A3;
+				goto IL_A2;
 			case HolographicStreamerConnectionState.Connecting:
 				image = HolographicEmulationWindow.s_ConnectingTexture;
 				label = HolographicEmulationWindow.s_ConnectionStateConnectingText;
 				content = HolographicEmulationWindow.s_ConnectionButtonDisconnectText;
-				goto IL_A3;
+				goto IL_A2;
 			case HolographicStreamerConnectionState.Connected:
 				image = HolographicEmulationWindow.s_ConnectedTexture;
 				label = HolographicEmulationWindow.s_ConnectionStateConnectedText;
 				content = HolographicEmulationWindow.s_ConnectionButtonDisconnectText;
-				goto IL_A3;
+				goto IL_A2;
 			}
-			goto IL_5E;
-			IL_A3:
+			goto IL_5D;
+			IL_A2:
 			EditorGUILayout.BeginHorizontal(new GUILayoutOption[0]);
 			EditorGUILayout.PrefixLabel(HolographicEmulationWindow.s_ConnectionStatusText, "Button");
 			float singleLineHeight = EditorGUIUtility.singleLineHeight;
@@ -314,18 +323,31 @@ namespace UnityEditorInternal.VR
 			EditorGUI.EndDisabledGroup();
 			if (flag)
 			{
-				this.HandleButtonPress();
+				if (EditorGUIUtility.editingTextField)
+				{
+					EditorGUIUtility.editingTextField = false;
+					GUIUtility.keyboardControl = 0;
+				}
+				EditorApplication.CallDelayed(delegate
+				{
+					this.HandleButtonPress();
+				}, 0f);
 			}
 		}
 
-		private bool IsHoloLensCurrentTarget()
+		private bool IsWindowsMixedRealityCurrentTarget()
 		{
-			return PlayerSettings.virtualRealitySupported && Array.IndexOf<string>(VRSettings.supportedDevices, "HoloLens") >= 0;
+			return PlayerSettings.virtualRealitySupported && Array.IndexOf<string>(XRSettings.supportedDevices, "WindowsMR") >= 0;
 		}
 
 		private void DrawRemotingMode()
 		{
+			EditorGUI.BeginChangeCheck();
 			this.m_Mode = (EmulationMode)EditorGUILayout.Popup(HolographicEmulationWindow.s_EmulationModeText, (int)this.m_Mode, HolographicEmulationWindow.s_ModeStrings, new GUILayoutOption[0]);
+			if (EditorGUI.EndChangeCheck() && this.m_Mode != EmulationMode.RemoteDevice)
+			{
+				this.Disconnect();
+			}
 		}
 
 		private bool CheckOperatingSystem()
@@ -344,9 +366,9 @@ namespace UnityEditorInternal.VR
 			{
 				EditorGUILayout.HelpBox("You must be running Windows build 14318 or later to use Holographic Simulation or Remoting.", MessageType.Warning);
 			}
-			else if (!this.IsHoloLensCurrentTarget())
+			else if (!this.IsWindowsMixedRealityCurrentTarget())
 			{
-				EditorGUILayout.HelpBox("You must enable Virtual Reality support in settings and add Windows Holographic to the devices to use Holographic Emulation.", MessageType.Warning);
+				EditorGUILayout.HelpBox("You must enable Virtual Reality support in settings and add Windows Mixed Reality to the devices to use Holographic Emulation.", MessageType.Warning);
 			}
 			else
 			{
@@ -375,7 +397,7 @@ namespace UnityEditorInternal.VR
 				}
 				else
 				{
-					EditorGUI.BeginDisabledGroup(this.m_ConnectionState != HolographicStreamerConnectionState.Disconnected);
+					EditorGUI.BeginDisabledGroup(this.IsConnectedToRemoteDevice());
 					this.RemotingPreferencesOnGUI();
 					EditorGUI.EndDisabledGroup();
 					this.ConnectionStateGUI();
@@ -390,9 +412,8 @@ namespace UnityEditorInternal.VR
 			{
 				if (mode == EmulationMode.RemoteDevice)
 				{
-					HolographicStreamerConnectionState connectionState = this.m_ConnectionState;
-					this.m_ConnectionState = PerceptionRemotingPlugin.GetConnectionState();
-					if (connectionState != this.m_ConnectionState)
+					HolographicStreamerConnectionState connectionState = PerceptionRemotingPlugin.GetConnectionState();
+					if (connectionState != this.m_LastConnectionState)
 					{
 						base.Repaint();
 					}
@@ -406,6 +427,7 @@ namespace UnityEditorInternal.VR
 					{
 						Debug.LogError("Disconnected with error " + holographicStreamerConnectionFailureReason);
 					}
+					this.m_LastConnectionState = connectionState;
 				}
 			}
 			else

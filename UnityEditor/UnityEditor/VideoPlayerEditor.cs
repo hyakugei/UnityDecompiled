@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEditor.AnimatedValues;
+using UnityEditor.Build;
+using UnityEditorInternal.VR;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Video;
@@ -38,9 +40,11 @@ namespace UnityEditor
 
 			public GUIContent alphaContent = EditorGUIUtility.TextContent("Alpha|A value less than 1.0 will reveal the content behind the video.");
 
+			public GUIContent camera3DLayout = EditorGUIUtility.TextContent("3D Layout|Layout of 3D content in the source video.");
+
 			public GUIContent audioOutputModeContent = EditorGUIUtility.TextContent("Audio Output Mode|Where the audio in the movie will be output.");
 
-			public GUIContent audioSourceContent = EditorGUIUtility.TextContent("Audio Source|AudioSource component tha will receive this track's audio samples.");
+			public GUIContent audioSourceContent = EditorGUIUtility.TextContent("Audio Source|AudioSource component that will receive this track's audio samples.");
 
 			public GUIContent aspectRatioLabel = EditorGUIUtility.TextContent("Aspect Ratio");
 
@@ -130,6 +134,8 @@ namespace UnityEditor
 
 		private SerializedProperty m_TargetCameraAlpha;
 
+		private SerializedProperty m_TargetCamera3DLayout;
+
 		private SerializedProperty m_AudioOutputMode;
 
 		private SerializedProperty m_ControlledAudioTrackCount;
@@ -201,6 +207,7 @@ namespace UnityEditor
 			this.m_TargetMaterialProperty = base.serializedObject.FindProperty("m_TargetMaterialProperty");
 			this.m_AspectRatio = base.serializedObject.FindProperty("m_AspectRatio");
 			this.m_TargetCameraAlpha = base.serializedObject.FindProperty("m_TargetCameraAlpha");
+			this.m_TargetCamera3DLayout = base.serializedObject.FindProperty("m_TargetCamera3DLayout");
 			this.m_AudioOutputMode = base.serializedObject.FindProperty("m_AudioOutputMode");
 			this.m_ControlledAudioTrackCount = base.serializedObject.FindProperty("m_ControlledAudioTrackCount");
 			this.m_EnabledAudioTracks = base.serializedObject.FindProperty("m_EnabledAudioTracks");
@@ -210,12 +217,12 @@ namespace UnityEditor
 			this.m_ShowRenderTexture.value = (this.m_RenderMode.intValue == 2);
 			this.m_ShowTargetCamera.value = (this.m_RenderMode.intValue == 0 || this.m_RenderMode.intValue == 1);
 			this.m_ShowRenderer.value = (this.m_RenderMode.intValue == 3);
-			UnityEngine.Object[] arg_30B_0 = base.targets;
+			UnityEngine.Object[] arg_321_0 = base.targets;
 			if (VideoPlayerEditor.<>f__mg$cache0 == null)
 			{
 				VideoPlayerEditor.<>f__mg$cache0 = new VideoPlayerEditor.EntryGenerator(VideoPlayerEditor.GetMaterialPropertyNames);
 			}
-			this.m_MaterialPropertyPopupContent = VideoPlayerEditor.BuildPopupEntries(arg_30B_0, VideoPlayerEditor.<>f__mg$cache0, out this.m_MaterialPropertyPopupSelection, out this.m_MaterialPropertyPopupInvalidSelections);
+			this.m_MaterialPropertyPopupContent = VideoPlayerEditor.BuildPopupEntries(arg_321_0, VideoPlayerEditor.<>f__mg$cache0, out this.m_MaterialPropertyPopupSelection, out this.m_MaterialPropertyPopupInvalidSelections);
 			this.m_MaterialPropertyPopupContentHash = VideoPlayerEditor.GetMaterialPropertyPopupHash(base.targets);
 			this.m_ShowMaterialProperty.value = (base.targets.Count<UnityEngine.Object>() > 1 || (this.m_MaterialPropertyPopupSelection >= 0 && this.m_MaterialPropertyPopupContent.Length > 0));
 			this.m_DataSourceIsClip.value = (this.m_DataSource.intValue == 0);
@@ -451,6 +458,16 @@ namespace UnityEditor
 			{
 				EditorGUILayout.PropertyField(this.m_TargetCamera, VideoPlayerEditor.s_Styles.cameraContent, new GUILayoutOption[0]);
 				EditorGUILayout.Slider(this.m_TargetCameraAlpha, 0f, 1f, VideoPlayerEditor.s_Styles.alphaContent, new GUILayoutOption[0]);
+				BuildPlatform[] buildPlatforms = BuildPlatforms.instance.buildPlatforms;
+				for (int i = 0; i < buildPlatforms.Length; i++)
+				{
+					BuildPlatform buildPlatform = buildPlatforms[i];
+					if (VREditor.GetVREnabledOnTargetGroup(buildPlatform.targetGroup))
+					{
+						EditorGUILayout.PropertyField(this.m_TargetCamera3DLayout, VideoPlayerEditor.s_Styles.camera3DLayout, new GUILayoutOption[0]);
+						break;
+					}
+				}
 			}
 			EditorGUILayout.EndFadeGroup();
 			this.m_ShowRenderer.target = (currentRenderMode == VideoRenderMode.MaterialOverride);
@@ -476,12 +493,12 @@ namespace UnityEditor
 				int materialPropertyPopupHash = VideoPlayerEditor.GetMaterialPropertyPopupHash(base.targets);
 				if (this.m_MaterialPropertyPopupContentHash != materialPropertyPopupHash)
 				{
-					UnityEngine.Object[] arg_1CE_0 = base.targets;
+					UnityEngine.Object[] arg_22D_0 = base.targets;
 					if (VideoPlayerEditor.<>f__mg$cache1 == null)
 					{
 						VideoPlayerEditor.<>f__mg$cache1 = new VideoPlayerEditor.EntryGenerator(VideoPlayerEditor.GetMaterialPropertyNames);
 					}
-					this.m_MaterialPropertyPopupContent = VideoPlayerEditor.BuildPopupEntries(arg_1CE_0, VideoPlayerEditor.<>f__mg$cache1, out this.m_MaterialPropertyPopupSelection, out this.m_MaterialPropertyPopupInvalidSelections);
+					this.m_MaterialPropertyPopupContent = VideoPlayerEditor.BuildPopupEntries(arg_22D_0, VideoPlayerEditor.<>f__mg$cache1, out this.m_MaterialPropertyPopupSelection, out this.m_MaterialPropertyPopupInvalidSelections);
 				}
 				VideoPlayerEditor.HandlePopup(VideoPlayerEditor.s_Styles.materialPropertyContent, this.m_TargetMaterialProperty, this.m_MaterialPropertyPopupContent, this.m_MaterialPropertyPopupSelection);
 				if (this.m_MaterialPropertyPopupInvalidSelections > 0 || this.m_MaterialPropertyPopupContent.Length == 0)

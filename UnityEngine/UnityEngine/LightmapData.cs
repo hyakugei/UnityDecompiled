@@ -15,7 +15,7 @@ namespace UnityEngine
 
 		internal Texture2D m_ShadowMask;
 
-		[Obsolete("Use lightmapColor property (UnityUpgradable) -> lightmapColor")]
+		[Obsolete("Use lightmapColor property (UnityUpgradable) -> lightmapColor", false)]
 		public Texture2D lightmapLight
 		{
 			get

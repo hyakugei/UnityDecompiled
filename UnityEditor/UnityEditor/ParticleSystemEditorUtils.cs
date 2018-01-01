@@ -68,6 +68,26 @@ namespace UnityEditor
 			set;
 		}
 
+		internal static extern bool editorPreviewAll
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		internal static extern bool editorRenderInSceneView
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
 		internal static extern ParticleSystem lockedParticleSystem
 		{
 			[GeneratedByOldBindingsGenerator]

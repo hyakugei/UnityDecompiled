@@ -206,8 +206,6 @@ namespace UnityEditor
 
 		private static Mesh s_SphereMesh;
 
-		private static Mesh s_PlaneMesh;
-
 		private Material m_ReflectiveMaterial;
 
 		private Matrix4x4 m_OldLocalSpace = Matrix4x4.identity;
@@ -490,7 +488,7 @@ namespace UnityEditor
 			GUI.changed = false;
 			EditMode.SceneViewEditMode editMode = EditMode.editMode;
 			EditorGUI.BeginChangeCheck();
-			EditMode.DoInspectorToolbar(ReflectionProbeEditor.Styles.sceneViewEditModes, ReflectionProbeEditor.Styles.toolContents, this.GetBounds(), this);
+			EditMode.DoInspectorToolbar(ReflectionProbeEditor.Styles.sceneViewEditModes, ReflectionProbeEditor.Styles.toolContents, this);
 			if (EditorGUI.EndChangeCheck())
 			{
 				ReflectionProbeEditor.s_LastInteractedEditor = this;
@@ -632,19 +630,9 @@ namespace UnityEditor
 			base.serializedObject.ApplyModifiedProperties();
 		}
 
-		private Bounds GetBounds()
+		internal override Bounds GetWorldBoundsOfTarget(UnityEngine.Object targetObject)
 		{
-			Bounds result;
-			if (base.target is ReflectionProbe)
-			{
-				ReflectionProbe reflectionProbe = (ReflectionProbe)base.target;
-				result = reflectionProbe.bounds;
-			}
-			else
-			{
-				result = default(Bounds);
-			}
-			return result;
+			return ((ReflectionProbe)targetObject).bounds;
 		}
 
 		private bool ValidPreviewSetup()

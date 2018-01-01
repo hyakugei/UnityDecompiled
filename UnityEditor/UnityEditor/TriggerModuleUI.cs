@@ -31,11 +31,11 @@ namespace UnityEditor
 
 			public GUIContent visualizeBounds = EditorGUIUtility.TextContent("Visualize Bounds|Render the collision bounds of the particles.");
 
-			public string[] overlapOptions = new string[]
+			public GUIContent[] overlapOptions = new GUIContent[]
 			{
-				"Ignore",
-				"Kill",
-				"Callback"
+				EditorGUIUtility.TextContent("Ignore"),
+				EditorGUIUtility.TextContent("Kill"),
+				EditorGUIUtility.TextContent("Callback")
 			};
 		}
 
@@ -66,34 +66,33 @@ namespace UnityEditor
 
 		protected override void Init()
 		{
-			if (TriggerModuleUI.s_Texts == null)
+			if (this.m_Inside == null)
 			{
-				TriggerModuleUI.s_Texts = new TriggerModuleUI.Texts();
-			}
-			List<SerializedProperty> list = new List<SerializedProperty>();
-			for (int i = 0; i < this.m_CollisionShapes.Length; i++)
-			{
-				this.m_CollisionShapes[i] = base.GetProperty("collisionShape" + i);
-				if (i == 0 || this.m_CollisionShapes[i].objectReferenceValue != null)
+				if (TriggerModuleUI.s_Texts == null)
 				{
-					list.Add(this.m_CollisionShapes[i]);
+					TriggerModuleUI.s_Texts = new TriggerModuleUI.Texts();
 				}
+				List<SerializedProperty> list = new List<SerializedProperty>();
+				for (int i = 0; i < this.m_CollisionShapes.Length; i++)
+				{
+					this.m_CollisionShapes[i] = base.GetProperty("collisionShape" + i);
+					if (i == 0 || this.m_CollisionShapes[i].objectReferenceValue != null)
+					{
+						list.Add(this.m_CollisionShapes[i]);
+					}
+				}
+				this.m_ShownCollisionShapes = list.ToArray();
+				this.m_Inside = base.GetProperty("inside");
+				this.m_Outside = base.GetProperty("outside");
+				this.m_Enter = base.GetProperty("enter");
+				this.m_Exit = base.GetProperty("exit");
+				this.m_RadiusScale = base.GetProperty("radiusScale");
+				TriggerModuleUI.s_VisualizeBounds = EditorPrefs.GetBool("VisualizeTriggerBounds", false);
 			}
-			this.m_ShownCollisionShapes = list.ToArray();
-			this.m_Inside = base.GetProperty("inside");
-			this.m_Outside = base.GetProperty("outside");
-			this.m_Enter = base.GetProperty("enter");
-			this.m_Exit = base.GetProperty("exit");
-			this.m_RadiusScale = base.GetProperty("radiusScale");
-			TriggerModuleUI.s_VisualizeBounds = EditorPrefs.GetBool("VisualizeTriggerBounds", false);
 		}
 
 		public override void OnInspectorGUI(InitialModuleUI initial)
 		{
-			if (TriggerModuleUI.s_Texts == null)
-			{
-				TriggerModuleUI.s_Texts = new TriggerModuleUI.Texts();
-			}
 			this.DoListOfCollisionShapesGUI();
 			ModuleUI.GUIPopup(TriggerModuleUI.s_Texts.inside, this.m_Inside, TriggerModuleUI.s_Texts.overlapOptions, new GUILayoutOption[0]);
 			ModuleUI.GUIPopup(TriggerModuleUI.s_Texts.outside, this.m_Outside, TriggerModuleUI.s_Texts.overlapOptions, new GUILayoutOption[0]);

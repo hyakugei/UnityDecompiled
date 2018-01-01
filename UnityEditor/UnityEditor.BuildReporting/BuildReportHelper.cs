@@ -1,5 +1,6 @@
 using System;
 using UnityEditor.Modules;
+using UnityEngine.Scripting;
 
 namespace UnityEditor.BuildReporting
 {
@@ -25,6 +26,7 @@ namespace UnityEditor.BuildReporting
 			return cachedAnalyzer;
 		}
 
+		[RequiredByNativeCode]
 		public static void OnAddedExecutable(BuildReport report, int fileIndex)
 		{
 			IBuildAnalyzer analyzerForTarget = BuildReportHelper.GetAnalyzerForTarget(report.buildTarget);

@@ -64,10 +64,10 @@ namespace UnityEditor.Modules
 			internal virtual void Reset(PluginImporterInspector inspector)
 			{
 				string platformData = inspector.importer.GetPlatformData(this.platformName, this.key);
-				this.ParseStringValue(platformData);
+				this.ParseStringValue(inspector, platformData, false);
 			}
 
-			protected void ParseStringValue(string valueString)
+			protected void ParseStringValue(PluginImporterInspector inspector, string valueString, bool muteWarnings = false)
 			{
 				try
 				{
@@ -76,22 +76,25 @@ namespace UnityEditor.Modules
 				catch
 				{
 					this.value = this.defaultValue;
-					if (!string.IsNullOrEmpty(valueString))
+					if (!muteWarnings && !string.IsNullOrEmpty(valueString))
 					{
-						Debug.LogWarning(string.Concat(new object[]
+						if (inspector.importer.GetCompatibleWithPlatform(this.platformName))
 						{
-							"Failed to parse value ('",
-							valueString,
-							"') for ",
-							this.key,
-							", platform: ",
-							this.platformName,
-							", type: ",
-							this.type,
-							". Default value will be set '",
-							this.defaultValue,
-							"'"
-						}));
+							Debug.LogWarning(string.Concat(new object[]
+							{
+								"Failed to parse value ('",
+								valueString,
+								"') for ",
+								this.key,
+								", platform: ",
+								this.platformName,
+								", type: ",
+								this.type,
+								". Default value will be set '",
+								this.defaultValue,
+								"'"
+							}));
+						}
 					}
 				}
 			}

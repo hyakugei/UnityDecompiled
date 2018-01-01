@@ -10,6 +10,7 @@ namespace UnityEngine.StyleSheets
 		Class,
 		PseudoClass,
 		RecursivePseudoClass,
-		ID
+		ID,
+		Predicate
 	}
 }

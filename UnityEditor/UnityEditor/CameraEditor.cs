@@ -72,6 +72,8 @@ namespace UnityEditor
 
 		private SerializedProperty m_AllowMSAA;
 
+		private SerializedProperty m_AllowDynamicResolution;
+
 		private SerializedProperty[] m_NearAndFarClippingPlanes;
 
 		private SerializedProperty m_StereoConvergence;
@@ -110,7 +112,7 @@ namespace UnityEditor
 
 		private const float kPreviewNormalizedSize = 0.2f;
 
-		private readonly GUIContent m_ViewportLabel = new GUIContent("Viewport Rect");
+		private readonly GUIContent m_ViewportLabel = EditorGUIUtility.TextContent("Viewport Rect|Four values that indicate where on the screen this camera view will be drawn. Measured in Viewport Coordinates (values 0–1).");
 
 		private bool m_CommandBuffersShown = true;
 
@@ -177,6 +179,7 @@ namespace UnityEditor
 			this.m_TargetTexture = base.serializedObject.FindProperty("m_TargetTexture");
 			this.m_HDR = base.serializedObject.FindProperty("m_HDR");
 			this.m_AllowMSAA = base.serializedObject.FindProperty("m_AllowMSAA");
+			this.m_AllowDynamicResolution = base.serializedObject.FindProperty("m_AllowDynamicResolution");
 			this.m_StereoConvergence = base.serializedObject.FindProperty("m_StereoConvergence");
 			this.m_StereoSeparation = base.serializedObject.FindProperty("m_StereoSeparation");
 			this.m_TargetDisplay = base.serializedObject.FindProperty("m_TargetDisplay");
@@ -326,10 +329,10 @@ namespace UnityEditor
 			this.m_ShowBGColorOptions.target = (!this.m_ClearFlags.hasMultipleDifferentValues && (camera.clearFlags == CameraClearFlags.Color || camera.clearFlags == CameraClearFlags.Skybox));
 			this.m_ShowOrthoOptions.target = (!this.m_Orthographic.hasMultipleDifferentValues && camera.orthographic);
 			this.m_ShowTargetEyeOption.target = (this.m_TargetEye.intValue != 3 || PlayerSettings.virtualRealitySupported);
-			EditorGUILayout.PropertyField(this.m_ClearFlags, new GUILayoutOption[0]);
+			EditorGUILayout.PropertyField(this.m_ClearFlags, EditorGUIUtility.TextContent("Clear Flags|What to display in empty areas of this Camera's view.\n\nChoose Skybox to display a skybox in empty areas, defaulting to a background color if no skybox is found.\n\nChoose Solid Color to display a background color in empty areas.\n\nChoose Depth Only to display nothing in empty areas.\n\nChoose Don't Clear to display whatever was displayed in the previous frame in empty areas."), new GUILayoutOption[0]);
 			if (EditorGUILayout.BeginFadeGroup(this.m_ShowBGColorOptions.faded))
 			{
-				EditorGUILayout.PropertyField(this.m_BackgroundColor, new GUIContent("Background", "Camera clears the screen to this color before rendering."), new GUILayoutOption[0]);
+				EditorGUILayout.PropertyField(this.m_BackgroundColor, EditorGUIUtility.TextContent("Background|The Camera clears the screen to this color before rendering."), new GUILayoutOption[0]);
 			}
 			EditorGUILayout.EndFadeGroup();
 			EditorGUILayout.PropertyField(this.m_CullingMask, new GUILayoutOption[0]);
@@ -337,7 +340,7 @@ namespace UnityEditor
 			CameraEditor.ProjectionType projectionType = (!this.m_Orthographic.boolValue) ? CameraEditor.ProjectionType.Perspective : CameraEditor.ProjectionType.Orthographic;
 			EditorGUI.BeginChangeCheck();
 			EditorGUI.showMixedValue = this.m_Orthographic.hasMultipleDifferentValues;
-			projectionType = (CameraEditor.ProjectionType)EditorGUILayout.EnumPopup("Projection", projectionType, new GUILayoutOption[0]);
+			projectionType = (CameraEditor.ProjectionType)EditorGUILayout.EnumPopup(EditorGUIUtility.TextContent("Projection|How the Camera renders perspective.\n\nChoose Perspective to render objects with perspective.\n\nChoose Orthographic to render objects uniformly, with no sense of perspective."), projectionType, new GUILayoutOption[0]);
 			EditorGUI.showMixedValue = false;
 			if (EditorGUI.EndChangeCheck())
 			{
@@ -352,7 +355,7 @@ namespace UnityEditor
 				EditorGUILayout.EndFadeGroup();
 				if (EditorGUILayout.BeginFadeGroup(1f - this.m_ShowOrthoOptions.faded))
 				{
-					EditorGUILayout.Slider(this.m_FieldOfView, 1f, 179f, new GUIContent("Field of View"), new GUILayoutOption[0]);
+					EditorGUILayout.Slider(this.m_FieldOfView, 1f, 179f, EditorGUIUtility.TextContent("Field of View|The width of the Camera’s view angle, measured in degrees along the local Y axis."), new GUILayoutOption[0]);
 				}
 				EditorGUILayout.EndFadeGroup();
 			}
@@ -377,6 +380,7 @@ namespace UnityEditor
 			EditorGUILayout.PropertyField(this.m_OcclusionCulling, new GUILayoutOption[0]);
 			EditorGUILayout.PropertyField(this.m_HDR, EditorGUIUtility.TempContent("Allow HDR"), new GUILayoutOption[0]);
 			EditorGUILayout.PropertyField(this.m_AllowMSAA, new GUILayoutOption[0]);
+			EditorGUILayout.PropertyField(this.m_AllowDynamicResolution, new GUILayoutOption[0]);
 			this.DisplayCameraWarnings();
 			if (PlayerSettings.virtualRealitySupported)
 			{
@@ -446,8 +450,6 @@ namespace UnityEditor
 						mainGameViewTargetSize.y = mainGameViewTargetSize.x / num;
 					}
 					Rect rect2 = GUILayoutUtility.GetRect(mainGameViewTargetSize.x, mainGameViewTargetSize.y);
-					rect2 = EditorGUIUtility.PointsToPixels(rect2);
-					rect2.y = (sceneView.position.height + 1f) * EditorGUIUtility.pixelsPerPoint - rect2.y - rect2.height;
 					if (Event.current.type == EventType.Repaint)
 					{
 						this.previewCamera.CopyFrom(camera);
@@ -465,10 +467,13 @@ namespace UnityEditor
 								component.enabled = false;
 							}
 						}
-						this.previewCamera.targetTexture = null;
-						this.previewCamera.pixelRect = rect2;
+						this.previewCamera.targetTexture = RenderTexture.GetTemporary((int)mainGameViewTargetSize.x, (int)mainGameViewTargetSize.y, 24, (!this.previewCamera.allowHDR) ? RenderTextureFormat.ARGB32 : RenderTextureFormat.ARGBHalf);
 						Handles.EmitGUIGeometryForCamera(camera, this.previewCamera);
 						this.previewCamera.Render();
+						GL.sRGBWrite = (QualitySettings.activeColorSpace == ColorSpace.Linear);
+						GUI.DrawTexture(rect2, this.previewCamera.targetTexture, ScaleMode.StretchToFill, false);
+						GL.sRGBWrite = false;
+						RenderTexture.ReleaseTemporary(this.previewCamera.targetTexture);
 					}
 				}
 			}

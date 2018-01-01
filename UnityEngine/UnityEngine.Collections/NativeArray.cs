@@ -1,14 +1,15 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 
 namespace UnityEngine.Collections
 {
-	[DebuggerDisplay("Length = {Length}"), DebuggerTypeProxy(typeof(NativeArrayDebugView<>)), NativeContainer, NativeContainerSupportsMinMaxWriteRestriction]
+	[DebuggerDisplay("Length = {Length}"), DebuggerTypeProxy(typeof(NativeArrayDebugView<>)), NativeContainer, NativeContainerSupportsDeallocateOnJobCompletion, NativeContainerSupportsMinMaxWriteRestriction]
 	public struct NativeArray<T> : IDisposable, IEnumerable<T>, IEnumerable where T : struct
 	{
-		public struct Enumerator : IEnumerator<T>, IDisposable, IEnumerator
+		public struct Enumerator : IEnumerator<T>, IEnumerator, IDisposable
 		{
 			private NativeArray<T> array;
 
@@ -52,21 +53,19 @@ namespace UnityEngine.Collections
 			}
 		}
 
-		private IntPtr m_Buffer;
+		internal IntPtr m_Buffer;
 
-		private int m_Length;
+		internal int m_Length;
 
-		private int m_Stride;
+		internal int m_MinIndex;
 
-		private readonly int m_MinIndex;
+		internal int m_MaxIndex;
 
-		private readonly int m_MaxIndex;
+		internal AtomicSafetyHandle m_Safety;
 
-		private readonly AtomicSafetyHandle m_Safety;
+		internal DisposeSentinel m_DisposeSentinel;
 
-		private DisposeSentinel m_DisposeSentinel;
-
-		private readonly Allocator m_AllocatorLabel;
+		private Allocator m_AllocatorLabel;
 
 		public int Length
 		{
@@ -80,8 +79,12 @@ namespace UnityEngine.Collections
 		{
 			get
 			{
+				if (this.m_Buffer == IntPtr.Zero)
+				{
+					throw new InvalidOperationException("NativeArray not properly initialized");
+				}
 				AtomicSafetyHandleVersionMask* ptr = (AtomicSafetyHandleVersionMask*)((void*)this.m_Safety.versionNode);
-				if ((this.m_Safety.version & AtomicSafetyHandleVersionMask.Read) == (AtomicSafetyHandleVersionMask)0 && this.m_Safety.version != (*ptr & AtomicSafetyHandleVersionMask.ReadInv))
+				if ((this.m_Safety.version & AtomicSafetyHandleVersionMask.Read) == (AtomicSafetyHandleVersionMask)0 && this.m_Safety.version != (*ptr & AtomicSafetyHandleVersionMask.WriteInv))
 				{
 					AtomicSafetyHandle.CheckReadAndThrowNoEarlyOut(this.m_Safety);
 				}
@@ -89,12 +92,16 @@ namespace UnityEngine.Collections
 				{
 					this.FailOutOfRangeError(index);
 				}
-				return UnsafeUtility.ReadArrayElement<T>(this.m_Buffer, index * this.m_Stride);
+				return UnsafeUtility.ReadArrayElement<T>(this.m_Buffer, index);
 			}
 			set
 			{
+				if (this.m_Buffer == IntPtr.Zero)
+				{
+					throw new InvalidOperationException("NativeArray not properly initialized");
+				}
 				AtomicSafetyHandleVersionMask* ptr = (AtomicSafetyHandleVersionMask*)((void*)this.m_Safety.versionNode);
-				if ((this.m_Safety.version & AtomicSafetyHandleVersionMask.Write) == (AtomicSafetyHandleVersionMask)0 && this.m_Safety.version != (*ptr & AtomicSafetyHandleVersionMask.WriteInv))
+				if ((this.m_Safety.version & AtomicSafetyHandleVersionMask.Write) == (AtomicSafetyHandleVersionMask)0 && this.m_Safety.version != (*ptr & AtomicSafetyHandleVersionMask.ReadInv))
 				{
 					AtomicSafetyHandle.CheckWriteAndThrowNoEarlyOut(this.m_Safety);
 				}
@@ -102,13 +109,40 @@ namespace UnityEngine.Collections
 				{
 					this.FailOutOfRangeError(index);
 				}
-				UnsafeUtility.WriteArrayElement<T>(this.m_Buffer, index * this.m_Stride, value);
+				UnsafeUtility.WriteArrayElement<T>(this.m_Buffer, index, value);
+			}
+		}
+
+		public bool IsCreated
+		{
+			get
+			{
+				return this.m_Buffer != IntPtr.Zero;
+			}
+		}
+
+		public IntPtr UnsafePtr
+		{
+			get
+			{
+				AtomicSafetyHandle.CheckWriteAndThrow(this.m_Safety);
+				return this.m_Buffer;
+			}
+		}
+
+		public IntPtr UnsafeReadOnlyPtr
+		{
+			get
+			{
+				AtomicSafetyHandle.CheckReadAndThrow(this.m_Safety);
+				return this.m_Buffer;
 			}
 		}
 
 		public NativeArray(int length, Allocator allocMode)
 		{
 			NativeArray<T>.Allocate(length, allocMode, out this);
+			UnsafeUtility.MemClear(this.m_Buffer, this.Length * UnsafeUtility.SizeOf<T>());
 		}
 
 		public NativeArray(T[] array, Allocator allocMode)
@@ -118,104 +152,33 @@ namespace UnityEngine.Collections
 				throw new ArgumentNullException("array");
 			}
 			NativeArray<T>.Allocate(array.Length, allocMode, out this);
-			this.FromArray(array);
+			this.CopyFrom(array);
 		}
 
-		internal NativeArray(IntPtr dataPointer, int length)
+		public NativeArray(NativeArray<T> array, Allocator allocMode)
 		{
-			this = new NativeArray<T>(dataPointer, length, Allocator.None);
+			NativeArray<T>.Allocate(array.Length, allocMode, out this);
+			this.CopyFrom(array);
 		}
 
-		internal NativeArray(IntPtr dataPointer, int length, int stride, AtomicSafetyHandle safety, Allocator allocMode)
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		internal static NativeArray<T> ConvertExistingDataToNativeArrayInternal(IntPtr dataPointer, int length, AtomicSafetyHandle safety, Allocator allocMode)
 		{
-			this.m_Buffer = dataPointer;
-			this.m_Length = length;
-			this.m_Stride = stride;
-			this.m_AllocatorLabel = allocMode;
-			this.m_MinIndex = 0;
-			this.m_MaxIndex = length - 1;
-			this.m_Safety = safety;
-			this.m_DisposeSentinel = null;
-		}
-
-		private NativeArray(IntPtr dataPointer, int length, Allocator allocMode)
-		{
-			if (dataPointer == IntPtr.Zero)
+			return new NativeArray<T>
 			{
-				throw new ArgumentOutOfRangeException("dataPointer", "Pointer must not be zero");
-			}
-			if (length < 0)
-			{
-				throw new ArgumentOutOfRangeException("length", "Length must be >= 0");
-			}
-			this.m_Buffer = dataPointer;
-			this.m_Length = length;
-			this.m_Stride = UnsafeUtility.SizeOf<T>();
-			this.m_AllocatorLabel = allocMode;
-			this.m_MinIndex = 0;
-			this.m_MaxIndex = length - 1;
-			this.m_Safety = AtomicSafetyHandle.Create();
-			this.m_DisposeSentinel = ((allocMode != Allocator.None) ? DisposeSentinel.Create(IntPtr.Zero, Allocator.Invalid, 0, null) : null);
+				m_Buffer = dataPointer,
+				m_Length = length,
+				m_AllocatorLabel = allocMode,
+				m_MinIndex = 0,
+				m_MaxIndex = length - 1,
+				m_Safety = safety,
+				m_DisposeSentinel = null
+			};
 		}
 
-		public void Dispose()
+		private static void Allocate(int length, Allocator allocator, out NativeArray<T> array)
 		{
-			AtomicSafetyHandle.CheckDeallocateAndThrow(this.m_Safety);
-			AtomicSafetyHandle.Release(this.m_Safety);
-			DisposeSentinel.Clear(ref this.m_DisposeSentinel);
-			UnsafeUtility.Free(this.m_Buffer, this.m_AllocatorLabel);
-			this.m_Buffer = IntPtr.Zero;
-			this.m_Length = 0;
-		}
-
-		public IntPtr GetUnsafeReadBufferPtr()
-		{
-			AtomicSafetyHandle.CheckReadAndThrow(this.m_Safety);
-			return this.m_Buffer;
-		}
-
-		public IntPtr GetUnsafeWriteBufferPtr()
-		{
-			AtomicSafetyHandle.CheckWriteAndThrow(this.m_Safety);
-			return this.m_Buffer;
-		}
-
-		public void FromArray(T[] array)
-		{
-			AtomicSafetyHandle.CheckWriteAndThrow(this.m_Safety);
-			if (this.Length != array.Length)
-			{
-				throw new ArgumentException("Array length does not match the length of this instance");
-			}
-			for (int i = 0; i < this.Length; i++)
-			{
-				UnsafeUtility.WriteArrayElement<T>(this.m_Buffer, i * this.m_Stride, array[i]);
-			}
-		}
-
-		public T[] ToArray()
-		{
-			AtomicSafetyHandle.CheckReadAndThrow(this.m_Safety);
-			T[] array = new T[this.Length];
-			for (int i = 0; i < this.Length; i++)
-			{
-				array[i] = UnsafeUtility.ReadArrayElement<T>(this.m_Buffer, i * this.m_Stride);
-			}
-			return array;
-		}
-
-		private void FailOutOfRangeError(int index)
-		{
-			if (index < this.Length && (this.m_MinIndex != 0 || this.m_MaxIndex != this.Length - 1))
-			{
-				throw new IndexOutOfRangeException(string.Format("Index {0} is out of restricted IComputeForEach range [{1}...{2}] in ReadWriteBuffer.\nReadWriteBuffers are restricted to only read & write the element at the job index. You can use double buffering strategies to avoid race conditions due to reading & writing in parallel to the same elements from a job.", index, this.m_MinIndex, this.m_MaxIndex));
-			}
-			throw new IndexOutOfRangeException(string.Format("Index {0} is out of range of '{1}' Length.", index, this.Length));
-		}
-
-		private static void Allocate(int length, Allocator allocMode, out NativeArray<T> outArray)
-		{
-			if (allocMode <= Allocator.None)
+			if (allocator <= Allocator.None)
 			{
 				throw new ArgumentOutOfRangeException("allocMode", "Allocator must be Temp, Job or Persistent");
 			}
@@ -228,7 +191,84 @@ namespace UnityEngine.Collections
 			{
 				throw new ArgumentOutOfRangeException("length", "Length * sizeof(T) cannot exceed " + 2147483647 + "bytes");
 			}
-			outArray = new NativeArray<T>(UnsafeUtility.Malloc((int)num, UnsafeUtility.AlignOf<T>(), allocMode), length, allocMode);
+			array.m_Buffer = UnsafeUtility.Malloc((int)num, UnsafeUtility.AlignOf<T>(), allocator);
+			array.m_Length = length;
+			array.m_AllocatorLabel = allocator;
+			array.m_MinIndex = 0;
+			array.m_MaxIndex = length - 1;
+			DisposeSentinel.Create(array.m_Buffer, allocator, out array.m_Safety, out array.m_DisposeSentinel, 1, null);
+		}
+
+		public void Dispose()
+		{
+			DisposeSentinel.Dispose(this.m_Safety, ref this.m_DisposeSentinel);
+			UnsafeUtility.Free(this.m_Buffer, this.m_AllocatorLabel);
+			this.m_Buffer = IntPtr.Zero;
+			this.m_Length = 0;
+		}
+
+		internal void GetUnsafeBufferPointerWithoutChecksInternal(out AtomicSafetyHandle handle, out IntPtr ptr)
+		{
+			ptr = this.m_Buffer;
+			handle = this.m_Safety;
+		}
+
+		public void CopyFrom(T[] array)
+		{
+			AtomicSafetyHandle.CheckWriteAndThrow(this.m_Safety);
+			if (this.Length != array.Length)
+			{
+				throw new ArgumentException("Array length does not match the length of this instance");
+			}
+			for (int i = 0; i < this.Length; i++)
+			{
+				UnsafeUtility.WriteArrayElement<T>(this.m_Buffer, i, array[i]);
+			}
+		}
+
+		public void CopyFrom(NativeArray<T> array)
+		{
+			array.CopyTo(this);
+		}
+
+		public void CopyTo(T[] array)
+		{
+			AtomicSafetyHandle.CheckReadAndThrow(this.m_Safety);
+			if (this.Length != array.Length)
+			{
+				throw new ArgumentException("Array length does not match the length of this instance");
+			}
+			for (int i = 0; i < this.Length; i++)
+			{
+				array[i] = UnsafeUtility.ReadArrayElement<T>(this.m_Buffer, i);
+			}
+		}
+
+		public void CopyTo(NativeArray<T> array)
+		{
+			AtomicSafetyHandle.CheckReadAndThrow(this.m_Safety);
+			AtomicSafetyHandle.CheckWriteAndThrow(array.m_Safety);
+			if (this.Length != array.Length)
+			{
+				throw new ArgumentException("Array length does not match the length of this instance");
+			}
+			UnsafeUtility.MemCpy(array.m_Buffer, this.m_Buffer, this.Length * UnsafeUtility.SizeOf<T>());
+		}
+
+		public T[] ToArray()
+		{
+			T[] array = new T[this.Length];
+			this.CopyTo(array);
+			return array;
+		}
+
+		private void FailOutOfRangeError(int index)
+		{
+			if (index < this.Length && (this.m_MinIndex != 0 || this.m_MaxIndex != this.Length - 1))
+			{
+				throw new IndexOutOfRangeException(string.Format("Index {0} is out of restricted IJobParallelFor range [{1}...{2}] in ReadWriteBuffer.\nReadWriteBuffers are restricted to only read & write the element at the job index. You can use double buffering strategies to avoid race conditions due to reading & writing in parallel to the same elements from a job.", index, this.m_MinIndex, this.m_MaxIndex));
+			}
+			throw new IndexOutOfRangeException(string.Format("Index {0} is out of range of '{1}' Length.", index, this.Length));
 		}
 
 		public IEnumerator<T> GetEnumerator()

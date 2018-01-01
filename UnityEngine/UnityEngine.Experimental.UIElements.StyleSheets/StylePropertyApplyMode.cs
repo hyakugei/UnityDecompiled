@@ -5,7 +5,7 @@ namespace UnityEngine.Experimental.UIElements.StyleSheets
 	internal enum StylePropertyApplyMode
 	{
 		Copy,
-		CopyIfMoreSpecific,
+		CopyIfEqualOrGreaterSpecificity,
 		CopyIfNotInline
 	}
 }

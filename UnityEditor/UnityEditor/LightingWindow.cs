@@ -27,8 +27,8 @@ namespace UnityEditor
 			public static readonly GUIContent[] ModeToggles = new GUIContent[]
 			{
 				EditorGUIUtility.TextContent("Scene"),
-				EditorGUIUtility.TextContent("Global maps"),
-				EditorGUIUtility.TextContent("Object maps")
+				EditorGUIUtility.TextContent("Global Maps"),
+				EditorGUIUtility.TextContent("Object Maps")
 			};
 
 			public static readonly GUIContent ContinuousBakeLabel = EditorGUIUtility.TextContent("Auto Generate|Automatically generates lighting data in the Scene when any changes are made to the lighting systems.");
@@ -65,8 +65,6 @@ namespace UnityEditor
 		public LightingWindowLightingTab m_LightingTab;
 
 		private LightingWindowLightmapPreviewTab m_LightmapPreviewTab;
-
-		private LightModeValidator.Stats m_Stats;
 
 		private PreviewResizer m_PreviewResizer = new PreviewResizer();
 
@@ -143,7 +141,6 @@ namespace UnityEditor
 			EditorGUILayout.BeginHorizontal(new GUILayoutOption[0]);
 			GUILayout.Space(this.toolbarPadding);
 			this.ModeToggle();
-			GUILayout.FlexibleSpace();
 			this.DrawHelpGUI();
 			if (this.m_Mode == LightingWindow.Mode.LightingSettings)
 			{
@@ -216,7 +213,7 @@ namespace UnityEditor
 
 		private void PreviewSection()
 		{
-			if (this.m_Mode != LightingWindow.Mode.LightingSettings)
+			if (this.m_Mode == LightingWindow.Mode.OutputMaps)
 			{
 				EditorGUILayout.BeginHorizontal(GUIContent.none, LightingWindow.Styles.ToolbarStyle, new GUILayoutOption[]
 				{
@@ -231,7 +228,8 @@ namespace UnityEditor
 			{
 				if (mode == LightingWindow.Mode.ObjectSettings)
 				{
-					Rect r = new Rect(0f, 180f, base.position.width, base.position.height - 180f);
+					int num = (LightmapEditorSettings.lightmapper != LightmapEditorSettings.Lightmapper.PathTracer) ? 115 : 185;
+					Rect r = new Rect(0f, (float)num, base.position.width, base.position.height - (float)num);
 					if (Selection.activeGameObject)
 					{
 						this.m_ObjectTab.ObjectPreview(r);
@@ -240,9 +238,9 @@ namespace UnityEditor
 			}
 			else
 			{
-				float num = this.m_PreviewResizer.ResizeHandle(base.position, 100f, 250f, 17f);
-				Rect r2 = new Rect(0f, base.position.height - num, base.position.width, num);
-				if (num > 0f)
+				float num2 = this.m_PreviewResizer.ResizeHandle(base.position, 100f, 250f, 17f);
+				Rect r2 = new Rect(0f, base.position.height - num2, base.position.width, num2);
+				if (num2 > 0f)
 				{
 					this.m_LightmapPreviewTab.LightmapPreview(r2);
 				}
@@ -251,11 +249,11 @@ namespace UnityEditor
 
 		private void ModeToggle()
 		{
-			float width = base.position.width - this.toolbarPadding * 2f;
-			this.m_Mode = (LightingWindow.Mode)GUILayout.Toolbar((int)this.m_Mode, LightingWindow.Styles.ModeToggles, LightingWindow.Styles.ButtonStyle, new GUILayoutOption[]
-			{
-				GUILayout.Width(width)
-			});
+			EditorGUILayout.BeginHorizontal(new GUILayoutOption[0]);
+			GUILayout.FlexibleSpace();
+			this.m_Mode = (LightingWindow.Mode)GUILayout.Toolbar((int)this.m_Mode, LightingWindow.Styles.ModeToggles, LightingWindow.Styles.ButtonStyle, GUI.ToolbarButtonSize.FitToContents, new GUILayoutOption[0]);
+			GUILayout.FlexibleSpace();
+			EditorGUILayout.EndHorizontal();
 		}
 
 		private void BakeDropDownCallback(object data)
@@ -299,7 +297,7 @@ namespace UnityEditor
 				{
 					if (EditorGUI.ButtonWithDropdownList(LightingWindow.Styles.BuildLabel, LightingWindow.s_BakeModeOptions, new GenericMenu.MenuFunction2(this.BakeDropDownCallback), new GUILayoutOption[]
 					{
-						GUILayout.Width(180f)
+						GUILayout.Width(170f)
 					}))
 					{
 						this.DoBake();
@@ -308,7 +306,7 @@ namespace UnityEditor
 				}
 				else
 				{
-					if (LightmapEditorSettings.giBakeBackend == LightmapEditorSettings.GIBakeBackend.PathTracer && LightModeUtil.Get().AreBakedLightmapsEnabled() && GUILayout.Button("Force Stop", new GUILayoutOption[]
+					if (LightmapEditorSettings.lightmapper == LightmapEditorSettings.Lightmapper.PathTracer && LightModeUtil.Get().AreBakedLightmapsEnabled() && GUILayout.Button("Force Stop", new GUILayoutOption[]
 					{
 						GUILayout.Width(150f)
 					}))
@@ -392,15 +390,15 @@ namespace UnityEditor
 			}
 			StringBuilder stringBuilder = new StringBuilder();
 			stringBuilder.Append(num2);
-			stringBuilder.Append((!flag) ? " non-directional" : " directional");
-			stringBuilder.Append(" lightmap");
+			stringBuilder.Append((!flag) ? " Non-Directional" : " Directional");
+			stringBuilder.Append(" Lightmap");
 			if (num2 != 1)
 			{
 				stringBuilder.Append("s");
 			}
 			if (flag2)
 			{
-				stringBuilder.Append(" with shadowmask");
+				stringBuilder.Append(" with Shadowmask");
 				if (num2 != 1)
 				{
 					stringBuilder.Append("s");
@@ -431,10 +429,10 @@ namespace UnityEditor
 			GUILayout.Label((num2 != 0) ? "" : "No Lightmaps", LightingWindow.Styles.LabelStyle, new GUILayoutOption[0]);
 			GUILayout.EndVertical();
 			GUILayout.EndHorizontal();
-			if (LightmapEditorSettings.giBakeBackend == LightmapEditorSettings.GIBakeBackend.PathTracer)
+			if (LightmapEditorSettings.lightmapper == LightmapEditorSettings.Lightmapper.PathTracer)
 			{
 				GUILayout.BeginVertical(new GUILayoutOption[0]);
-				GUILayout.Label("Occupied texels: " + InternalEditorUtility.CountToString(Lightmapping.occupiedTexelCount), LightingWindow.Styles.LabelStyle, new GUILayoutOption[0]);
+				GUILayout.Label("Occupied Texels: " + InternalEditorUtility.CountToString(Lightmapping.occupiedTexelCount), LightingWindow.Styles.LabelStyle, new GUILayoutOption[0]);
 				if (Lightmapping.isRunning)
 				{
 					int num3 = 0;
@@ -479,20 +477,20 @@ namespace UnityEditor
 					}
 					EditorGUILayout.LabelField("Lightmaps in view: " + num3, LightingWindow.Styles.LabelStyle, new GUILayoutOption[0]);
 					EditorGUI.indentLevel++;
-					EditorGUILayout.LabelField("converged: " + num4, LightingWindow.Styles.LabelStyle, new GUILayoutOption[0]);
-					EditorGUILayout.LabelField("not converged: " + num5, LightingWindow.Styles.LabelStyle, new GUILayoutOption[0]);
+					EditorGUILayout.LabelField("Converged: " + num4, LightingWindow.Styles.LabelStyle, new GUILayoutOption[0]);
+					EditorGUILayout.LabelField("Not Converged: " + num5, LightingWindow.Styles.LabelStyle, new GUILayoutOption[0]);
 					EditorGUI.indentLevel--;
-					EditorGUILayout.LabelField("Lightmaps out of view: " + num6, LightingWindow.Styles.LabelStyle, new GUILayoutOption[0]);
+					EditorGUILayout.LabelField("Lightmaps not in view: " + num6, LightingWindow.Styles.LabelStyle, new GUILayoutOption[0]);
 					EditorGUI.indentLevel++;
-					EditorGUILayout.LabelField("converged: " + num7, LightingWindow.Styles.LabelStyle, new GUILayoutOption[0]);
-					EditorGUILayout.LabelField("not converged: " + num8, LightingWindow.Styles.LabelStyle, new GUILayoutOption[0]);
+					EditorGUILayout.LabelField("Converged: " + num7, LightingWindow.Styles.LabelStyle, new GUILayoutOption[0]);
+					EditorGUILayout.LabelField("Not Converged: " + num8, LightingWindow.Styles.LabelStyle, new GUILayoutOption[0]);
 					EditorGUI.indentLevel--;
 				}
 				float lightmapBakeTimeTotal = Lightmapping.GetLightmapBakeTimeTotal();
 				float lightmapBakePerformanceTotal = Lightmapping.GetLightmapBakePerformanceTotal();
 				if ((double)lightmapBakePerformanceTotal >= 0.0)
 				{
-					GUILayout.Label("Bake performance: " + lightmapBakePerformanceTotal.ToString("0.00") + " mrays/sec", LightingWindow.Styles.LabelStyle, new GUILayoutOption[0]);
+					GUILayout.Label("Bake Performance: " + lightmapBakePerformanceTotal.ToString("0.00") + " mrays/sec", LightingWindow.Styles.LabelStyle, new GUILayoutOption[0]);
 				}
 				if (!Lightmapping.isRunning)
 				{
@@ -519,7 +517,7 @@ namespace UnityEditor
 						int num22 = num19;
 						GUILayout.Label(string.Concat(new string[]
 						{
-							"Total bake time: ",
+							"Total Bake Time: ",
 							num12.ToString("0"),
 							":",
 							num13.ToString("00"),
@@ -530,13 +528,13 @@ namespace UnityEditor
 						{
 							GUILayout.Label(string.Concat(new string[]
 							{
-								"(Raw bake time: ",
+								"(Raw Bake Time: ",
 								num16.ToString("0"),
 								":",
 								num17.ToString("00"),
 								":",
 								num18.ToString("00"),
-								", overhead:",
+								", Overhead: ",
 								num20.ToString("0"),
 								":",
 								num21.ToString("00"),

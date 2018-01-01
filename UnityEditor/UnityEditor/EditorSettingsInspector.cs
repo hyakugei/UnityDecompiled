@@ -1,15 +1,15 @@
 using System;
 using System.Collections.Generic;
+using UnityEditor.Collaboration;
 using UnityEditor.Hardware;
 using UnityEditor.VersionControl;
-using UnityEditor.Web;
 using UnityEditorInternal;
 using UnityEngine;
 
 namespace UnityEditor
 {
 	[CustomEditor(typeof(EditorSettings))]
-	internal class EditorSettingsInspector : Editor
+	internal class EditorSettingsInspector : ProjectSettingsBaseEditor
 	{
 		private struct PopupElement
 		{
@@ -70,6 +70,13 @@ namespace UnityEditor
 			new EditorSettingsInspector.PopupElement("Always Enabled")
 		};
 
+		private EditorSettingsInspector.PopupElement[] lineEndingsPopupList = new EditorSettingsInspector.PopupElement[]
+		{
+			new EditorSettingsInspector.PopupElement("OS Native"),
+			new EditorSettingsInspector.PopupElement("Unix"),
+			new EditorSettingsInspector.PopupElement("Windows")
+		};
+
 		private EditorSettingsInspector.PopupElement[] spritePackerPaddingPowerPopupList = new EditorSettingsInspector.PopupElement[]
 		{
 			new EditorSettingsInspector.PopupElement("1"),
@@ -112,6 +119,34 @@ namespace UnityEditor
 			"Off",
 			"Premerge",
 			"Ask"
+		};
+
+		private EditorSettingsInspector.PopupElement[] etcTextureCompressorPopupList = new EditorSettingsInspector.PopupElement[]
+		{
+			new EditorSettingsInspector.PopupElement("Legacy"),
+			new EditorSettingsInspector.PopupElement("Default"),
+			new EditorSettingsInspector.PopupElement("Custom")
+		};
+
+		private EditorSettingsInspector.PopupElement[] etcTextureFastCompressorPopupList = new EditorSettingsInspector.PopupElement[]
+		{
+			new EditorSettingsInspector.PopupElement("etcpak"),
+			new EditorSettingsInspector.PopupElement("ETCPACK Fast")
+		};
+
+		private EditorSettingsInspector.PopupElement[] etcTextureNormalCompressorPopupList = new EditorSettingsInspector.PopupElement[]
+		{
+			new EditorSettingsInspector.PopupElement("etcpak"),
+			new EditorSettingsInspector.PopupElement("ETCPACK Fast"),
+			new EditorSettingsInspector.PopupElement("Etc2Comp Fast"),
+			new EditorSettingsInspector.PopupElement("Etc2Comp Best")
+		};
+
+		private EditorSettingsInspector.PopupElement[] etcTextureBestCompressorPopupList = new EditorSettingsInspector.PopupElement[]
+		{
+			new EditorSettingsInspector.PopupElement("Etc2Comp Fast"),
+			new EditorSettingsInspector.PopupElement("Etc2Comp Best"),
+			new EditorSettingsInspector.PopupElement("ETCPACK Best")
 		};
 
 		public void OnEnable()
@@ -167,7 +202,7 @@ namespace UnityEditor
 			bool enabled = GUI.enabled;
 			this.ShowUnityRemoteGUI(enabled);
 			GUILayout.Space(10f);
-			bool flag = CollabAccess.Instance.IsServiceEnabled();
+			bool flag = Collab.instance.IsCollabEnabledForCurrentProject();
 			using (new EditorGUI.DisabledScope(!flag))
 			{
 				GUI.enabled = !flag;
@@ -307,9 +342,11 @@ namespace UnityEditor
 			selectedIndex = Mathf.Clamp((int)EditorSettings.spritePackerMode, 0, this.spritePackerPopupList.Length - 1);
 			this.CreatePopupMenu("Mode", this.spritePackerPopupList, selectedIndex, new GenericMenu.MenuFunction2(this.SetSpritePackerMode));
 			selectedIndex = Mathf.Clamp(EditorSettings.spritePackerPaddingPower - 1, 0, 2);
-			this.CreatePopupMenu("Padding Power", this.spritePackerPaddingPowerPopupList, selectedIndex, new GenericMenu.MenuFunction2(this.SetSpritePackerPaddingPower));
+			this.CreatePopupMenu("Padding Power (Legacy Sprite Packer)", this.spritePackerPaddingPowerPopupList, selectedIndex, new GenericMenu.MenuFunction2(this.SetSpritePackerPaddingPower));
 			this.DoProjectGenerationSettings();
+			this.DoEtcTextureCompressionSettings();
 			this.DoInternalSettings();
+			this.DoLineEndingsSettings();
 		}
 
 		private void DoProjectGenerationSettings()
@@ -335,14 +372,46 @@ namespace UnityEditor
 			if (EditorPrefs.GetBool("InternalMode", false))
 			{
 				GUILayout.Space(10f);
-				GUILayout.Label("Internal settings", EditorStyles.boldLabel, new GUILayoutOption[0]);
-				string internal_UserGeneratedProjectSuffix = EditorSettings.Internal_UserGeneratedProjectSuffix;
-				string text = EditorGUILayout.DelayedTextField("Assembly suffix", internal_UserGeneratedProjectSuffix, new GUILayoutOption[0]);
-				if (text != internal_UserGeneratedProjectSuffix)
+				GUILayout.Label("Internal Settings", EditorStyles.boldLabel, new GUILayoutOption[0]);
+				string text = "-testable";
+				EditorGUI.BeginChangeCheck();
+				bool flag = EditorSettings.Internal_UserGeneratedProjectSuffix == text;
+				flag = EditorGUILayout.Toggle("Internals visible in user scripts", flag, new GUILayoutOption[0]);
+				if (EditorGUI.EndChangeCheck())
 				{
-					EditorSettings.Internal_UserGeneratedProjectSuffix = text;
+					EditorSettings.Internal_UserGeneratedProjectSuffix = ((!flag) ? "" : text);
+				}
+				if (flag)
+				{
+					EditorGUILayout.HelpBox("If you want this to be set for other people, remember to manually add ProjectSettings/EditorSettings.asset to the repository", MessageType.Info);
 				}
 			}
+		}
+
+		private void DoEtcTextureCompressionSettings()
+		{
+			GUILayout.Space(10f);
+			GUILayout.Label("ETC Texture Compressor", EditorStyles.boldLabel, new GUILayoutOption[0]);
+			int num = Mathf.Clamp(EditorSettings.etcTextureCompressorBehavior, 0, this.etcTextureCompressorPopupList.Length - 1);
+			this.CreatePopupMenu("Behavior", this.etcTextureCompressorPopupList, num, new GenericMenu.MenuFunction2(this.SetEtcTextureCompressorBehavior));
+			EditorGUI.indentLevel++;
+			EditorGUI.BeginDisabledGroup(num < 2);
+			num = Mathf.Clamp(EditorSettings.etcTextureFastCompressor, 0, this.etcTextureFastCompressorPopupList.Length - 1);
+			this.CreatePopupMenu("Fast", this.etcTextureFastCompressorPopupList, num, new GenericMenu.MenuFunction2(this.SetEtcTextureFastCompressor));
+			num = Mathf.Clamp(EditorSettings.etcTextureNormalCompressor, 0, this.etcTextureNormalCompressorPopupList.Length - 1);
+			this.CreatePopupMenu("Normal", this.etcTextureNormalCompressorPopupList, num, new GenericMenu.MenuFunction2(this.SetEtcTextureNormalCompressor));
+			num = Mathf.Clamp(EditorSettings.etcTextureBestCompressor, 0, this.etcTextureBestCompressorPopupList.Length - 1);
+			this.CreatePopupMenu("Best", this.etcTextureBestCompressorPopupList, num, new GenericMenu.MenuFunction2(this.SetEtcTextureBestCompressor));
+			EditorGUI.EndDisabledGroup();
+			EditorGUI.indentLevel--;
+		}
+
+		private void DoLineEndingsSettings()
+		{
+			GUILayout.Space(10f);
+			GUILayout.Label("Line Endings For New Scripts", EditorStyles.boldLabel, new GUILayoutOption[0]);
+			int lineEndingsForNewScripts = (int)EditorSettings.lineEndingsForNewScripts;
+			this.CreatePopupMenu("Mode", this.lineEndingsPopupList, lineEndingsForNewScripts, new GenericMenu.MenuFunction2(this.SetLineEndingsForNewScripts));
 		}
 
 		private static int GetIndexById(DevDevice[] elements, string id, int defaultIndex)
@@ -501,7 +570,7 @@ namespace UnityEditor
 		private bool VersionControlSystemHasGUI()
 		{
 			bool result;
-			if (!CollabAccess.Instance.IsServiceEnabled())
+			if (!Collab.instance.IsCollabEnabledForCurrentProject())
 			{
 				ExternalVersionControl d = EditorSettings.externalVersionControl;
 				result = (d != ExternalVersionControl.Disabled && d != ExternalVersionControl.AutoDetect && d != ExternalVersionControl.Generic);
@@ -575,6 +644,44 @@ namespace UnityEditor
 		{
 			int num = (int)data;
 			EditorSettings.spritePackerPaddingPower = num + 1;
+		}
+
+		private void SetEtcTextureCompressorBehavior(object data)
+		{
+			int num = (int)data;
+			if (EditorSettings.etcTextureCompressorBehavior != num)
+			{
+				EditorSettings.etcTextureCompressorBehavior = num;
+				if (num == 0)
+				{
+					EditorSettings.SetEtcTextureCompressorLegacyBehavior();
+				}
+				else
+				{
+					EditorSettings.SetEtcTextureCompressorDefaultBehavior();
+				}
+			}
+		}
+
+		private void SetEtcTextureFastCompressor(object data)
+		{
+			EditorSettings.etcTextureFastCompressor = (int)data;
+		}
+
+		private void SetEtcTextureNormalCompressor(object data)
+		{
+			EditorSettings.etcTextureNormalCompressor = (int)data;
+		}
+
+		private void SetEtcTextureBestCompressor(object data)
+		{
+			EditorSettings.etcTextureBestCompressor = (int)data;
+		}
+
+		private void SetLineEndingsForNewScripts(object data)
+		{
+			int lineEndingsForNewScripts = (int)data;
+			EditorSettings.lineEndingsForNewScripts = (LineEndingsMode)lineEndingsForNewScripts;
 		}
 	}
 }

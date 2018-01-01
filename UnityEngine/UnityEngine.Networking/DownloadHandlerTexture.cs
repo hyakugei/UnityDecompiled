@@ -1,7 +1,6 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using UnityEngine.Scripting;
 
 namespace UnityEngine.Networking
 {
@@ -27,20 +26,23 @@ namespace UnityEngine.Networking
 			this.InternalCreateTexture(true);
 		}
 
-		[RequiredByNativeCode]
 		public DownloadHandlerTexture(bool readable)
 		{
 			this.InternalCreateTexture(readable);
 			this.mNonReadable = !readable;
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern void InternalCreateTexture(bool readable);
+		private static extern IntPtr Create(DownloadHandlerTexture obj, bool readable);
+
+		private void InternalCreateTexture(bool readable)
+		{
+			this.m_Ptr = DownloadHandlerTexture.Create(this, readable);
+		}
 
 		protected override byte[] GetData()
 		{
-			return this.InternalGetData();
+			return DownloadHandler.InternalGetByteArray(this);
 		}
 
 		private Texture2D InternalGetTexture()
@@ -61,13 +63,8 @@ namespace UnityEngine.Networking
 			return this.mTexture;
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern Texture2D InternalGetTextureNative();
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern byte[] InternalGetData();
 
 		public static Texture2D GetContent(UnityWebRequest www)
 		{

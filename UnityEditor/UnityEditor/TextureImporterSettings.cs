@@ -47,6 +47,7 @@ namespace UnityEditor
 		[SerializeField]
 		private int m_IsReadable;
 
+		[SerializeField]
 		private int m_NPOTScale;
 
 		[SerializeField]

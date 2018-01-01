@@ -16,52 +16,48 @@ namespace UnityEngine
 			set;
 		}
 
-		public extern Transform rootBone
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
 		public extern SkinQuality quality
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		public extern Mesh sharedMesh
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern bool updateWhenOffscreen
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public extern Transform rootBone
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		internal extern Transform actualRootBone
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+		}
+
+		public extern Mesh sharedMesh
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern bool skinnedMotionVectors
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
@@ -70,41 +66,39 @@ namespace UnityEngine
 		{
 			get
 			{
-				Bounds result;
-				this.INTERNAL_get_localBounds(out result);
-				return result;
+				return this.GetLocalAABB();
 			}
 			set
 			{
-				this.INTERNAL_set_localBounds(ref value);
+				this.SetLocalAABB(value);
 			}
 		}
 
-		internal extern Transform actualRootBone
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void INTERNAL_get_localBounds(out Bounds value);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void INTERNAL_set_localBounds(ref Bounds value);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern void BakeMesh(Mesh mesh);
-
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern float GetBlendShapeWeight(int index);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern void SetBlendShapeWeight(int index, float value);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public extern void BakeMesh(Mesh mesh);
+
+		private Bounds GetLocalAABB()
+		{
+			Bounds result;
+			this.GetLocalAABB_Injected(out result);
+			return result;
+		}
+
+		private void SetLocalAABB(Bounds b)
+		{
+			this.SetLocalAABB_Injected(ref b);
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void GetLocalAABB_Injected(out Bounds ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void SetLocalAABB_Injected(ref Bounds b);
 	}
 }

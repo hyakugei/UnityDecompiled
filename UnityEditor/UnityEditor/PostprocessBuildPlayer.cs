@@ -174,6 +174,12 @@ namespace UnityEditor
 			return result;
 		}
 
+		public static bool SupportsLz4Compression(BuildTargetGroup targetGroup, BuildTarget target)
+		{
+			IBuildPostprocessor buildPostProcessor = ModuleManager.GetBuildPostProcessor(targetGroup, target);
+			return buildPostProcessor != null && buildPostProcessor.SupportsLz4Compression();
+		}
+
 		public static void Launch(BuildTargetGroup targetGroup, BuildTarget buildTarget, string path, string productName, BuildOptions options, BuildReport buildReport)
 		{
 			try
@@ -249,6 +255,7 @@ namespace UnityEditor
 				args.installPath = path;
 				args.productName = productName;
 				args.options = options;
+				args.report = buildReport;
 				buildPostProcessor.LaunchPlayer(args);
 			}
 		}
@@ -312,40 +319,6 @@ namespace UnityEditor
 			string standardOutputAsString = program.GetStandardOutputAsString();
 			program.Dispose();
 			return standardOutputAsString;
-		}
-
-		internal static string GetArchitectureForTarget(BuildTarget target)
-		{
-			string result;
-			if (target != BuildTarget.StandaloneOSXIntel && target != BuildTarget.StandaloneWindows)
-			{
-				switch (target)
-				{
-				case BuildTarget.StandaloneLinux:
-					goto IL_44;
-				case (BuildTarget)18:
-					IL_24:
-					if (target == BuildTarget.StandaloneLinux64)
-					{
-						goto IL_39;
-					}
-					if (target != BuildTarget.StandaloneLinuxUniversal)
-					{
-						result = string.Empty;
-						return result;
-					}
-					goto IL_44;
-				case BuildTarget.StandaloneWindows64:
-					goto IL_39;
-				}
-				goto IL_24;
-				IL_39:
-				result = "x86_64";
-				return result;
-			}
-			IL_44:
-			result = "x86";
-			return result;
 		}
 	}
 }

@@ -8,15 +8,11 @@ namespace UnityEditor
 	{
 		private class Styles
 		{
-			public GUIStyle toolbar = "toolbar";
-
 			public GUIStyle toggle = "OL Toggle";
 
 			public GUIStyle listEvenBg = "ObjectPickerResultsOdd";
 
 			public GUIStyle listOddBg = "ObjectPickerResultsEven";
-
-			public GUIStyle listSectionHeaderBg = "ObjectPickerResultsEven";
 
 			public GUIStyle background = "grey_border";
 
@@ -75,8 +71,6 @@ namespace UnityEditor
 		private List<AInfo> m_ScriptAnnotations;
 
 		private Vector2 m_ScrollPosition;
-
-		private const float k_AnimDuration = 0.4f;
 
 		private bool m_SyncWithState;
 
@@ -405,7 +399,7 @@ namespace UnityEditor
 			float num3 = num;
 			float num4 = 120f;
 			float num5 = 20f;
-			Rect position = new Rect(num2 - 2f, num3, num4, num5);
+			Rect position = new Rect(num2, num3, num4, num5);
 			AnnotationUtility.use3dGizmos = GUI.Toggle(position, AnnotationUtility.use3dGizmos, this.icon3dGizmoContent);
 			float iconSize = AnnotationUtility.iconSize;
 			if (AnnotationWindow.s_Debug)
@@ -417,7 +411,7 @@ namespace UnityEditor
 			{
 				float num6 = base.position.width - num2 - num4;
 				float num7 = AnnotationWindow.ConvertTexelWorldSizeTo01(iconSize);
-				Rect position3 = new Rect(base.position.width - num2 - num6, num3, num6, num5);
+				Rect position3 = new Rect(num4 + num2, num3, num6 - num2, num5);
 				num7 = GUI.HorizontalSlider(position3, num7, 0f, 1f);
 				if (GUI.changed)
 				{
@@ -428,12 +422,10 @@ namespace UnityEditor
 			num3 += num5;
 			using (new EditorGUI.DisabledScope(this.m_IsGameView))
 			{
-				position = new Rect(num2 - 2f, num3, num4, num5);
+				position = new Rect(num2, num3, num4, num5);
 				AnnotationUtility.showGrid = GUI.Toggle(position, AnnotationUtility.showGrid, this.showGridContent);
-				num3 += num5;
 				position.y += num5;
 				AnnotationUtility.showSelectionOutline = GUI.Toggle(position, AnnotationUtility.showSelectionOutline, this.showOutlineContent);
-				num3 += num5;
 				position.y += num5;
 				AnnotationUtility.showSelectionWire = GUI.Toggle(position, AnnotationUtility.showSelectionWire, this.showWireframeContent);
 			}

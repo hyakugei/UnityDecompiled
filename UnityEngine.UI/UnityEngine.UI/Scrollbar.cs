@@ -219,7 +219,7 @@ namespace UnityEngine.UI
 
 		protected override void OnDisable()
 		{
-			this.m_Tracker.Clear();
+			this.m_Tracker.Clear(true);
 			base.OnDisable();
 		}
 
@@ -270,7 +270,7 @@ namespace UnityEngine.UI
 			{
 				this.UpdateCachedReferences();
 			}
-			this.m_Tracker.Clear();
+			this.m_Tracker.Clear(true);
 			if (this.m_ContainerRect != null)
 			{
 				this.m_Tracker.Add(this, this.m_HandleRect, DrivenTransformProperties.Anchors);

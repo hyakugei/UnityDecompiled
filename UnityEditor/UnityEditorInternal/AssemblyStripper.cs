@@ -122,7 +122,11 @@ namespace UnityEditorInternal
 		internal static void GenerateInternalCallSummaryFile(string icallSummaryPath, string managedAssemblyFolderPath, string strippedDLLPath)
 		{
 			string exe = Path.Combine(MonoInstallationFinder.GetFrameWorksFolder(), "Tools/InternalCallRegistrationWriter/InternalCallRegistrationWriter.exe");
-			string args = string.Format("-assembly=\"{0}\" -output=\"{1}\" -summary=\"{2}\"", Path.Combine(strippedDLLPath, "UnityEngine.dll"), Path.Combine(managedAssemblyFolderPath, "UnityICallRegistration.cpp"), icallSummaryPath);
+			IEnumerable<string> source = Directory.GetFiles(strippedDLLPath, "UnityEngine.*Module.dll").Concat(new string[]
+			{
+				Path.Combine(strippedDLLPath, "UnityEngine.dll")
+			});
+			string args = string.Format("-output=\"{0}\" -summary=\"{1}\" -assembly=\"{2}\"", Path.Combine(managedAssemblyFolderPath, "UnityICallRegistration.cpp"), icallSummaryPath, source.Aggregate((string dllArg, string next) => dllArg + ";" + next));
 			Runner.RunManagedProgram(exe, args);
 		}
 
@@ -163,7 +167,8 @@ namespace UnityEditorInternal
 			{
 				enumerable = enumerable.Concat(new string[]
 				{
-					AssemblyStripper.WriteMethodsToPreserveBlackList(stagingAreaData, rcr),
+					AssemblyStripper.WriteMethodsToPreserveBlackList(stagingAreaData, rcr, platformProvider.target),
+					AssemblyStripper.WriteUnityEngineBlackList(stagingAreaData),
 					MonoAssemblyStripping.GenerateLinkXmlToPreserveDerivedTypes(stagingAreaData, managedAssemblyFolderPath, rcr)
 				});
 			}
@@ -269,15 +274,23 @@ namespace UnityEditorInternal
 			Directory.Delete(fullPath);
 		}
 
-		private static string WriteMethodsToPreserveBlackList(string stagingAreaData, RuntimeClassRegistry rcr)
+		private static string WriteMethodsToPreserveBlackList(string stagingAreaData, RuntimeClassRegistry rcr, BuildTarget target)
 		{
 			string text = (!Path.IsPathRooted(stagingAreaData)) ? (Directory.GetCurrentDirectory() + "/") : "";
 			text = text + stagingAreaData + "/methods_pointedto_by_uievents.xml";
-			File.WriteAllText(text, AssemblyStripper.GetMethodPreserveBlacklistContents(rcr));
+			File.WriteAllText(text, AssemblyStripper.GetMethodPreserveBlacklistContents(rcr, target));
 			return text;
 		}
 
-		private static string GetMethodPreserveBlacklistContents(RuntimeClassRegistry rcr)
+		private static string WriteUnityEngineBlackList(string stagingAreaData)
+		{
+			string text = (!Path.IsPathRooted(stagingAreaData)) ? (Directory.GetCurrentDirectory() + "/") : "";
+			text = text + stagingAreaData + "/UnityEngine.xml";
+			File.WriteAllText(text, "<linker><assembly fullname=\"UnityEngine\" preserve=\"nothing\"/></linker>");
+			return text;
+		}
+
+		private static string GetMethodPreserveBlacklistContents(RuntimeClassRegistry rcr, BuildTarget target)
 		{
 			StringBuilder stringBuilder = new StringBuilder();
 			stringBuilder.AppendLine("<linker>");
@@ -285,7 +298,15 @@ namespace UnityEditorInternal
 			group m by m.assembly;
 			foreach (IGrouping<string, RuntimeClassRegistry.MethodDescription> current in enumerable)
 			{
-				stringBuilder.AppendLine(string.Format("\t<assembly fullname=\"{0}\">", current.Key));
+				string key = current.Key;
+				if (AssemblyHelper.IsUnityEngineModule(key) && !BuildPipeline.IsFeatureSupported("ENABLE_MODULAR_UNITYENGINE_ASSEMBLIES", target))
+				{
+					stringBuilder.AppendLine(string.Format("\t<assembly fullname=\"{0}\">", "UnityEngine"));
+				}
+				else
+				{
+					stringBuilder.AppendLine(string.Format("\t<assembly fullname=\"{0}\">", key));
+				}
 				IEnumerable<IGrouping<string, RuntimeClassRegistry.MethodDescription>> enumerable2 = from m in current
 				group m by m.fullTypeName;
 				foreach (IGrouping<string, RuntimeClassRegistry.MethodDescription> current2 in enumerable2)

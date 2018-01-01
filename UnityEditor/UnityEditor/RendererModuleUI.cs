@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using UnityEditorInternal;
 using UnityEngine;
 
@@ -65,50 +64,55 @@ namespace UnityEditor
 
 			public GUIContent useCustomVertexStreams = EditorGUIUtility.TextContent("Custom Vertex Streams|Choose whether to send custom particle data to the shader.");
 
-			public string[] particleTypes = new string[]
+			public GUIContent[] particleTypes = new GUIContent[]
 			{
-				"Billboard",
-				"Stretched Billboard",
-				"Horizontal Billboard",
-				"Vertical Billboard",
-				"Mesh",
-				"None"
+				EditorGUIUtility.TextContent("Billboard"),
+				EditorGUIUtility.TextContent("Stretched Billboard"),
+				EditorGUIUtility.TextContent("Horizontal Billboard"),
+				EditorGUIUtility.TextContent("Vertical Billboard"),
+				EditorGUIUtility.TextContent("Mesh"),
+				EditorGUIUtility.TextContent("None")
 			};
 
-			public string[] sortTypes = new string[]
+			public GUIContent[] sortTypes = new GUIContent[]
 			{
-				"None",
-				"By Distance",
-				"Oldest in Front",
-				"Youngest in Front"
+				EditorGUIUtility.TextContent("None"),
+				EditorGUIUtility.TextContent("By Distance"),
+				EditorGUIUtility.TextContent("Oldest in Front"),
+				EditorGUIUtility.TextContent("Youngest in Front")
 			};
 
-			public string[] spaces = new string[]
+			public GUIContent[] spaces = new GUIContent[]
 			{
-				"View",
-				"World",
-				"Local",
-				"Facing",
-				"Velocity"
+				EditorGUIUtility.TextContent("View"),
+				EditorGUIUtility.TextContent("World"),
+				EditorGUIUtility.TextContent("Local"),
+				EditorGUIUtility.TextContent("Facing"),
+				EditorGUIUtility.TextContent("Velocity")
 			};
 
-			public string[] motionVectorOptions = new string[]
+			public GUIContent[] localSpace = new GUIContent[]
 			{
-				"Camera Motion Only",
-				"Per Object Motion",
-				"Force No Motion"
+				EditorGUIUtility.TextContent("Local")
 			};
 
-			public GUIContent maskingMode = EditorGUIUtility.TextContent("Masking|Defines the masking behaviour of the particle renderer.");
-
-			public string[] maskInteraction = new string[]
+			public GUIContent[] motionVectorOptions = new GUIContent[]
 			{
-				"No Masking",
-				"Visible Inside Mask",
-				"Visible Outside Mask"
+				EditorGUIUtility.TextContent("Camera Motion Only"),
+				EditorGUIUtility.TextContent("Per Object Motion"),
+				EditorGUIUtility.TextContent("Force No Motion")
 			};
 
-			public string[] vertexStreamsMenu = new string[]
+			public GUIContent maskingMode = EditorGUIUtility.TextContent("Masking|Defines the masking behavior of the particles. See Sprite Masking documentation for more details.");
+
+			public GUIContent[] maskInteractions = new GUIContent[]
+			{
+				EditorGUIUtility.TextContent("No Masking"),
+				EditorGUIUtility.TextContent("Visible Inside Mask"),
+				EditorGUIUtility.TextContent("Visible Outside Mask")
+			};
+
+			private string[] vertexStreamsMenu = new string[]
 			{
 				"Position",
 				"Normal",
@@ -264,16 +268,27 @@ namespace UnityEditor
 			};
 
 			public string channels = "xyzw|xyz";
+
+			public GUIContent[] vertexStreamsMenuContent;
+
+			public Texts()
+			{
+				this.vertexStreamsMenuContent = (from x in this.vertexStreamsMenu
+				select new GUIContent(x)).ToArray<GUIContent>();
+			}
 		}
 
 		private class StreamCallbackData
 		{
+			public ReorderableList list;
+
 			public SerializedProperty streamProp;
 
 			public int stream;
 
-			public StreamCallbackData(SerializedProperty prop, int s)
+			public StreamCallbackData(ReorderableList l, SerializedProperty prop, int s)
 			{
+				this.list = l;
 				this.streamProp = prop;
 				this.stream = s;
 			}
@@ -343,9 +358,6 @@ namespace UnityEditor
 
 		private static RendererModuleUI.Texts s_Texts;
 
-		[CompilerGenerated]
-		private static GenericMenu.MenuFunction2 <>f__mg$cache0;
-
 		public RendererModuleUI(ParticleSystemUI owner, SerializedObject o, string displayName) : base(owner, o, "ParticleSystemRenderer", displayName, ModuleUI.VisibilityState.VisibleAndFolded)
 		{
 			this.m_ToolTip = "Specifies how the particles are rendered.";
@@ -355,6 +367,10 @@ namespace UnityEditor
 		{
 			if (this.m_CastShadows == null)
 			{
+				if (RendererModuleUI.s_Texts == null)
+				{
+					RendererModuleUI.s_Texts = new RendererModuleUI.Texts();
+				}
 				this.m_CastShadows = base.GetProperty0("m_CastShadows");
 				this.m_ReceiveShadows = base.GetProperty0("m_ReceiveShadows");
 				this.m_MotionVectors = base.GetProperty0("m_MotionVectors");
@@ -403,10 +419,6 @@ namespace UnityEditor
 
 		public override void OnInspectorGUI(InitialModuleUI initial)
 		{
-			if (RendererModuleUI.s_Texts == null)
-			{
-				RendererModuleUI.s_Texts = new RendererModuleUI.Texts();
-			}
 			EditorGUI.BeginChangeCheck();
 			RendererModuleUI.RenderMode renderMode = (RendererModuleUI.RenderMode)ModuleUI.GUIPopup(RendererModuleUI.s_Texts.renderMode, this.m_RenderMode, RendererModuleUI.s_Texts.particleTypes, new GUILayoutOption[0]);
 			bool flag = EditorGUI.EndChangeCheck();
@@ -464,10 +476,7 @@ namespace UnityEditor
 						{
 							using (new EditorGUI.DisabledScope(true))
 							{
-								ModuleUI.GUIPopup(RendererModuleUI.s_Texts.space, 0, new string[]
-								{
-									RendererModuleUI.s_Texts.spaces[2]
-								}, new GUILayoutOption[0]);
+								ModuleUI.GUIPopup(RendererModuleUI.s_Texts.space, 0, RendererModuleUI.s_Texts.localSpace, new GUILayoutOption[0]);
 							}
 							GUIContent gUIContent = EditorGUIUtility.TextContent("Using Align to Direction in the Shape Module forces the system to be rendered using Local Render Alignment.");
 							EditorGUILayout.HelpBox(gUIContent.text, MessageType.Info, true);
@@ -485,7 +494,7 @@ namespace UnityEditor
 						EditorPrefs.SetBool("VisualizePivot", RendererModuleUI.s_VisualizePivot);
 					}
 				}
-				ModuleUI.GUIPopup(RendererModuleUI.s_Texts.maskingMode, this.m_MaskInteraction, RendererModuleUI.s_Texts.maskInteraction, new GUILayoutOption[0]);
+				ModuleUI.GUIPopup(RendererModuleUI.s_Texts.maskingMode, this.m_MaskInteraction, RendererModuleUI.s_Texts.maskInteractions, new GUILayoutOption[0]);
 				if (!this.m_RenderMode.hasMultipleDifferentValues)
 				{
 					if (ModuleUI.GUIToggle(RendererModuleUI.s_Texts.useCustomVertexStreams, this.m_UseCustomVertexStreams, new GUILayoutOption[0]))
@@ -493,7 +502,7 @@ namespace UnityEditor
 						this.DoVertexStreamsGUI(renderMode);
 					}
 					EditorGUILayout.Space();
-					ModuleUI.GUIPopup(RendererModuleUI.s_Texts.castShadows, this.m_CastShadows, this.m_CastShadows.enumDisplayNames, new GUILayoutOption[0]);
+					ModuleUI.GUIPopup(RendererModuleUI.s_Texts.castShadows, this.m_CastShadows, EditorGUIUtility.TempContent(this.m_CastShadows.enumDisplayNames), new GUILayoutOption[0]);
 					using (new EditorGUI.DisabledScope(SceneView.IsUsingDeferredRenderingPath()))
 					{
 						ModuleUI.GUIToggle(RendererModuleUI.s_Texts.receiveShadows, this.m_ReceiveShadows, new GUILayoutOption[0]);
@@ -541,13 +550,13 @@ namespace UnityEditor
 			}
 		}
 
-		private static void SelectVertexStreamCallback(object obj)
+		private void SelectVertexStreamCallback(object obj)
 		{
 			RendererModuleUI.StreamCallbackData streamCallbackData = (RendererModuleUI.StreamCallbackData)obj;
-			int arraySize = streamCallbackData.streamProp.arraySize;
-			streamCallbackData.streamProp.InsertArrayElementAtIndex(arraySize);
-			SerializedProperty arrayElementAtIndex = streamCallbackData.streamProp.GetArrayElementAtIndex(arraySize);
+			ReorderableList.defaultBehaviours.DoAddButton(streamCallbackData.list);
+			SerializedProperty arrayElementAtIndex = streamCallbackData.streamProp.GetArrayElementAtIndex(streamCallbackData.list.index);
 			arrayElementAtIndex.intValue = streamCallbackData.stream;
+			this.m_ParticleSystemUI.m_RendererSerializedObject.ApplyModifiedProperties();
 		}
 
 		private void DoVertexStreamsGUI(RendererModuleUI.RenderMode renderMode)
@@ -648,14 +657,7 @@ namespace UnityEditor
 			GenericMenu genericMenu = new GenericMenu();
 			for (int k = 0; k < list2.Count; k++)
 			{
-				GenericMenu arg_CC_0 = genericMenu;
-				GUIContent arg_CC_1 = new GUIContent(RendererModuleUI.s_Texts.vertexStreamsMenu[list2[k]]);
-				bool arg_CC_2 = false;
-				if (RendererModuleUI.<>f__mg$cache0 == null)
-				{
-					RendererModuleUI.<>f__mg$cache0 = new GenericMenu.MenuFunction2(RendererModuleUI.SelectVertexStreamCallback);
-				}
-				arg_CC_0.AddItem(arg_CC_1, arg_CC_2, RendererModuleUI.<>f__mg$cache0, new RendererModuleUI.StreamCallbackData(this.m_VertexStreams, list2[k]));
+				genericMenu.AddItem(RendererModuleUI.s_Texts.vertexStreamsMenuContent[list2[k]], false, new GenericMenu.MenuFunction2(this.SelectVertexStreamCallback), new RendererModuleUI.StreamCallbackData(list, this.m_VertexStreams, list2[k]));
 			}
 			genericMenu.ShowAsContext();
 			Event.current.Use();

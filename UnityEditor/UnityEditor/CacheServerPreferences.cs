@@ -124,7 +124,7 @@ namespace UnityEditor
 		}
 
 		[PreferenceItem("Cache Server")]
-		public static void OnGUI()
+		private static void OnGUI()
 		{
 			EventType type = Event.current.type;
 			if (CacheServerPreferences.s_Constants == null)
@@ -222,7 +222,7 @@ namespace UnityEditor
 								}
 								else
 								{
-									EditorUtility.DisplayDialog("Invalid Cache Location", "The directory " + text + " contains some files which don't look like Unity Cache server files. Please delete the directory contents or choose another directory.", "OK");
+									EditorUtility.DisplayDialog("Invalid Cache Location", string.Format("The directory {0} contains some files which don't look like Unity Cache server files. Please delete the directory contents or choose another directory.", text), "OK");
 								}
 								GUIUtility.ExitGUI();
 							}

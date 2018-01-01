@@ -1,9 +1,11 @@
 using System;
 using System.Runtime.CompilerServices;
+using UnityEngine.Bindings;
 using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
+	[NativeType("Runtime/Animation/AnimationClip.h")]
 	public sealed class AnimationClip : Motion
 	{
 		public extern float length

@@ -99,9 +99,9 @@ namespace UnityEditor
 					text2,
 					"\" --port ",
 					_port,
-					" --path ",
+					" --path \"",
 					this.path,
-					" --nolegacy --monitor-parent-process ",
+					"\" --nolegacy --monitor-parent-process ",
 					Process.GetCurrentProcess().Id,
 					" --silent --size ",
 					_size
@@ -149,12 +149,14 @@ namespace UnityEditor
 
 		public static bool WaitForServerToComeAlive(int port)
 		{
+			DateTime now = DateTime.Now;
+			DateTime t = now.AddSeconds(5.0);
 			bool result;
-			for (int i = 0; i < 500; i++)
+			while (DateTime.Now < t)
 			{
 				if (LocalCacheServer.PingHost("localhost", port, 10))
 				{
-					Console.WriteLine("Server Came alive after " + i * 10 + "ms");
+					Console.WriteLine("Server Came alive after {0} ms", (DateTime.Now - now).TotalMilliseconds);
 					result = true;
 					return result;
 				}

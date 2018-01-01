@@ -174,7 +174,7 @@ namespace UnityEditor
 			return result;
 		}
 
-		private static FieldInfo GetFieldInfoFromProperty(SerializedProperty property, out Type type)
+		internal static FieldInfo GetFieldInfoFromProperty(SerializedProperty property, out Type type)
 		{
 			Type scriptTypeFromProperty = ScriptAttributeUtility.GetScriptTypeFromProperty(property);
 			FieldInfo result;

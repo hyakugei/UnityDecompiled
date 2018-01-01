@@ -17,5 +17,16 @@ namespace UnityEditor.Purchasing
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
+
+		internal static extern bool enabledForPlatform
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void ApplyEnableSettings(BuildTarget target);
 	}
 }

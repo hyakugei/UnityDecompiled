@@ -4,285 +4,13 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using UnityEngine.Rendering;
 using UnityEngine.Scripting;
+using UnityEngineInternal;
 
 namespace UnityEngine
 {
 	[RequireComponent(typeof(Transform))]
 	public class Renderer : Component
 	{
-		internal extern Transform staticBatchRootTransform
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		internal extern int staticBatchIndex
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-		}
-
-		public extern bool isPartOfStaticBatch
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-		}
-
-		public Matrix4x4 worldToLocalMatrix
-		{
-			get
-			{
-				Matrix4x4 result;
-				this.INTERNAL_get_worldToLocalMatrix(out result);
-				return result;
-			}
-		}
-
-		public Matrix4x4 localToWorldMatrix
-		{
-			get
-			{
-				Matrix4x4 result;
-				this.INTERNAL_get_localToWorldMatrix(out result);
-				return result;
-			}
-		}
-
-		public extern bool enabled
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		public extern ShadowCastingMode shadowCastingMode
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		public extern bool receiveShadows
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		public extern Material material
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		public extern Material sharedMaterial
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		public extern Material[] materials
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		public extern Material[] sharedMaterials
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		public Bounds bounds
-		{
-			get
-			{
-				Bounds result;
-				this.INTERNAL_get_bounds(out result);
-				return result;
-			}
-		}
-
-		public extern int lightmapIndex
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		public extern int realtimeLightmapIndex
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		public Vector4 lightmapScaleOffset
-		{
-			get
-			{
-				Vector4 result;
-				this.INTERNAL_get_lightmapScaleOffset(out result);
-				return result;
-			}
-			set
-			{
-				this.INTERNAL_set_lightmapScaleOffset(ref value);
-			}
-		}
-
-		public extern MotionVectorGenerationMode motionVectorGenerationMode
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		public Vector4 realtimeLightmapScaleOffset
-		{
-			get
-			{
-				Vector4 result;
-				this.INTERNAL_get_realtimeLightmapScaleOffset(out result);
-				return result;
-			}
-			set
-			{
-				this.INTERNAL_set_realtimeLightmapScaleOffset(ref value);
-			}
-		}
-
-		public extern bool isVisible
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-		}
-
-		public extern LightProbeUsage lightProbeUsage
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		public extern GameObject lightProbeProxyVolumeOverride
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		public extern Transform probeAnchor
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		public extern ReflectionProbeUsage reflectionProbeUsage
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		public extern string sortingLayerName
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		public extern int sortingLayerID
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		public extern int sortingOrder
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		internal extern int sortingGroupID
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-		}
-
-		internal extern int sortingGroupOrder
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-		}
-
 		[EditorBrowsable(EditorBrowsableState.Never), Obsolete("Property lightmapTilingOffset has been deprecated. Use lightmapScaleOffset (UnityUpgradable) -> lightmapScaleOffset", true)]
 		public Vector4 lightmapTilingOffset
 		{
@@ -347,37 +75,269 @@ namespace UnityEngine
 			}
 		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern void SetStaticBatchInfo(int firstSubMesh, int subMeshCount);
+		public Bounds bounds
+		{
+			get
+			{
+				Bounds result;
+				this.get_bounds_Injected(out result);
+				return result;
+			}
+		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void INTERNAL_get_worldToLocalMatrix(out Matrix4x4 value);
+		public extern bool enabled
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void INTERNAL_get_localToWorldMatrix(out Matrix4x4 value);
+		public extern bool isVisible
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void INTERNAL_get_bounds(out Bounds value);
+		public extern ShadowCastingMode shadowCastingMode
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void INTERNAL_get_lightmapScaleOffset(out Vector4 value);
+		public extern bool receiveShadows
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void INTERNAL_set_lightmapScaleOffset(ref Vector4 value);
+		public extern MotionVectorGenerationMode motionVectorGenerationMode
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void INTERNAL_get_realtimeLightmapScaleOffset(out Vector4 value);
+		public extern LightProbeUsage lightProbeUsage
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void INTERNAL_set_realtimeLightmapScaleOffset(ref Vector4 value);
+		public extern ReflectionProbeUsage reflectionProbeUsage
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public extern string sortingLayerName
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public extern int sortingLayerID
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public extern int sortingOrder
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		internal extern int sortingGroupID
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		internal extern int sortingGroupOrder
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public extern bool allowOcclusionWhenDynamic
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		internal extern Transform staticBatchRootTransform
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		internal extern int staticBatchIndex
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+		}
+
+		public extern bool isPartOfStaticBatch
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+		}
+
+		public Matrix4x4 worldToLocalMatrix
+		{
+			get
+			{
+				Matrix4x4 result;
+				this.get_worldToLocalMatrix_Injected(out result);
+				return result;
+			}
+		}
+
+		public Matrix4x4 localToWorldMatrix
+		{
+			get
+			{
+				Matrix4x4 result;
+				this.get_localToWorldMatrix_Injected(out result);
+				return result;
+			}
+		}
+
+		public extern GameObject lightProbeProxyVolumeOverride
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public extern Transform probeAnchor
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public int lightmapIndex
+		{
+			get
+			{
+				return this.GetLightmapIndex(LightmapType.StaticLightmap);
+			}
+			set
+			{
+				this.SetLightmapIndex(value, LightmapType.StaticLightmap);
+			}
+		}
+
+		public int realtimeLightmapIndex
+		{
+			get
+			{
+				return this.GetLightmapIndex(LightmapType.DynamicLightmap);
+			}
+			set
+			{
+				this.SetLightmapIndex(value, LightmapType.DynamicLightmap);
+			}
+		}
+
+		public Vector4 lightmapScaleOffset
+		{
+			get
+			{
+				return this.GetLightmapST(LightmapType.StaticLightmap);
+			}
+			set
+			{
+				this.SetStaticLightmapST(value);
+			}
+		}
+
+		public Vector4 realtimeLightmapScaleOffset
+		{
+			get
+			{
+				return this.GetLightmapST(LightmapType.DynamicLightmap);
+			}
+			set
+			{
+				this.SetLightmapST(value, LightmapType.DynamicLightmap);
+			}
+		}
+
+		public Material material
+		{
+			get
+			{
+				return this.GetMaterial();
+			}
+			set
+			{
+				this.SetMaterial(value);
+			}
+		}
+
+		public Material sharedMaterial
+		{
+			get
+			{
+				return this.GetSharedMaterial();
+			}
+			set
+			{
+				this.SetMaterial(value);
+			}
+		}
+
+		public Material[] materials
+		{
+			get
+			{
+				return this.GetMaterialArray();
+			}
+			set
+			{
+				this.SetMaterialArray(value);
+			}
+		}
+
+		public Material[] sharedMaterials
+		{
+			get
+			{
+				return this.GetSharedMaterialArray();
+			}
+			set
+			{
+				this.SetMaterialArray(value);
+			}
+		}
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -399,5 +359,76 @@ namespace UnityEngine
 		{
 			this.GetClosestReflectionProbesInternal(result);
 		}
+
+		private void SetStaticLightmapST(Vector4 st)
+		{
+			this.SetStaticLightmapST_Injected(ref st);
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern Material GetMaterial();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern Material GetSharedMaterial();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void SetMaterial(Material m);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern Material[] GetMaterialArray();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern Material[] GetSharedMaterialArray();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void SetMaterialArrayImpl(Material[] m);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern void SetStaticBatchInfo(int firstSubMesh, int subMeshCount);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern int GetLightmapIndex(LightmapType lt);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void SetLightmapIndex(int index, LightmapType lt);
+
+		private Vector4 GetLightmapST(LightmapType lt)
+		{
+			Vector4 result;
+			this.GetLightmapST_Injected(lt, out result);
+			return result;
+		}
+
+		private void SetLightmapST(Vector4 st, LightmapType lt)
+		{
+			this.SetLightmapST_Injected(ref st, lt);
+		}
+
+		private void SetMaterialArray(Material[] m)
+		{
+			if (m == null)
+			{
+				throw new NullReferenceException("material array is null");
+			}
+			this.SetMaterialArrayImpl(m);
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void get_bounds_Injected(out Bounds ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void SetStaticLightmapST_Injected(ref Vector4 st);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void get_worldToLocalMatrix_Injected(out Matrix4x4 ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void get_localToWorldMatrix_Injected(out Matrix4x4 ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void GetLightmapST_Injected(LightmapType lt, out Vector4 ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void SetLightmapST_Injected(ref Vector4 st, LightmapType lt);
 	}
 }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using UnityEngine.Internal;
-using UnityEngine.Scripting;
+using UnityEngine.Rendering;
 
 namespace UnityEngine
 {
@@ -27,85 +27,6 @@ namespace UnityEngine
 			Color = 2
 		}
 
-		public extern bool isReadable
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-		}
-
-		internal extern bool canAccess
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-		}
-
-		public extern int blendShapeCount
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-		}
-
-		public extern int vertexBufferCount
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-		}
-
-		public Bounds bounds
-		{
-			get
-			{
-				Bounds result;
-				this.INTERNAL_get_bounds(out result);
-				return result;
-			}
-			set
-			{
-				this.INTERNAL_set_bounds(ref value);
-			}
-		}
-
-		public extern int vertexCount
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-		}
-
-		public extern int subMeshCount
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		public extern BoneWeight[] boneWeights
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		public extern Matrix4x4[] bindposes
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
 		[EditorBrowsable(EditorBrowsableState.Never), Obsolete("Property Mesh.uv1 has been deprecated. Use Mesh.uv2 instead (UnityUpgradable) -> uv2", true)]
 		public Vector2[] uv1
 		{
@@ -115,6 +36,82 @@ namespace UnityEngine
 			}
 			set
 			{
+			}
+		}
+
+		public extern IndexFormat indexFormat
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public extern int vertexBufferCount
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+		}
+
+		public extern int blendShapeCount
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+		}
+
+		public extern BoneWeight[] boneWeights
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public extern Matrix4x4[] bindposes
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public extern bool isReadable
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+		}
+
+		internal extern bool canAccess
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+		}
+
+		public extern int vertexCount
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+		}
+
+		public extern int subMeshCount
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public Bounds bounds
+		{
+			get
+			{
+				Bounds result;
+				this.get_bounds_Injected(out result);
+				return result;
+			}
+			set
+			{
+				this.set_bounds_Injected(ref value);
 			}
 		}
 
@@ -233,11 +230,11 @@ namespace UnityEngine
 				int[] result;
 				if (this.canAccess)
 				{
-					result = this.GetTrianglesImpl(-1);
+					result = this.GetTrianglesImpl(-1, true);
 				}
 				else
 				{
-					this.PrintErrorCantAccessMeshForIndices();
+					this.PrintErrorCantAccessIndices();
 					result = new int[0];
 				}
 				return result;
@@ -246,11 +243,11 @@ namespace UnityEngine
 			{
 				if (this.canAccess)
 				{
-					this.SetTrianglesImpl(-1, value, this.SafeLength(value));
+					this.SetTrianglesImpl(-1, value, NoAllocHelpers.SafeLength(value), true, 0);
 				}
 				else
 				{
-					this.PrintErrorCantAccessMeshForIndices();
+					this.PrintErrorCantAccessIndices();
 				}
 			}
 		}
@@ -260,277 +257,113 @@ namespace UnityEngine
 			Mesh.Internal_Create(this);
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern void Internal_Create([Writable] Mesh mono);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern void Clear([UnityEngine.Internal.DefaultValue("true")] bool keepVertexLayout);
+		internal static extern Mesh FromInstanceID(int id);
 
-		[ExcludeFromDocs]
-		public void Clear()
-		{
-			bool keepVertexLayout = true;
-			this.Clear(keepVertexLayout);
-		}
-
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern void PrintErrorCantAccessMesh(Mesh.InternalShaderChannel channel);
+		private extern uint GetIndexStartImpl(int submesh);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern void PrintErrorCantAccessMeshForIndices();
+		private extern uint GetIndexCountImpl(int submesh);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern void PrintErrorBadSubmeshIndexTriangles();
+		private extern uint GetBaseVertexImpl(int submesh);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern void PrintErrorBadSubmeshIndexIndices();
+		private extern int[] GetTrianglesImpl(int submesh, bool applyBaseVertex);
 
-		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern int[] GetIndicesImpl(int submesh, bool applyBaseVertex);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void SetIndicesImpl(int submesh, MeshTopology topology, Array indices, int arraySize, bool calculateBounds, int baseVertex);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void GetTrianglesNonAllocImpl(Array values, int submesh, bool applyBaseVertex);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void GetIndicesNonAllocImpl(Array values, int submesh, bool applyBaseVertex);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void PrintErrorCantAccessChannel(Mesh.InternalShaderChannel ch);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern bool HasChannel(Mesh.InternalShaderChannel ch);
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern void SetArrayForChannelImpl(Mesh.InternalShaderChannel channel, Mesh.InternalVertexChannelType format, int dim, Array values, int arraySize);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern Array GetAllocArrayFromChannelImpl(Mesh.InternalShaderChannel channel, Mesh.InternalVertexChannelType format, int dim);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern void GetArrayFromChannelImpl(Mesh.InternalShaderChannel channel, Mesh.InternalVertexChannelType format, int dim, Array values);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern bool HasChannel(Mesh.InternalShaderChannel channel);
+		public extern IntPtr GetNativeVertexBufferPtr(int index);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void ResizeList(object list, int size);
+		public extern IntPtr GetNativeIndexBufferPtr();
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern Array ExtractArrayFromList(object list);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern int[] GetTrianglesImpl(int submesh);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void GetTrianglesNonAllocImpl(object values, int submesh);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern int[] GetIndicesImpl(int submesh);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void GetIndicesNonAllocImpl(object values, int submesh);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void SetTrianglesImpl(int submesh, Array triangles, int arraySize, [UnityEngine.Internal.DefaultValue("true")] bool calculateBounds);
-
-		[ExcludeFromDocs]
-		private void SetTrianglesImpl(int submesh, Array triangles, int arraySize)
-		{
-			bool calculateBounds = true;
-			this.SetTrianglesImpl(submesh, triangles, arraySize, calculateBounds);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void SetIndicesImpl(int submesh, MeshTopology topology, Array indices, int arraySize, [UnityEngine.Internal.DefaultValue("true")] bool calculateBounds);
-
-		[ExcludeFromDocs]
-		private void SetIndicesImpl(int submesh, MeshTopology topology, Array indices, int arraySize)
-		{
-			bool calculateBounds = true;
-			this.SetIndicesImpl(submesh, topology, indices, arraySize, calculateBounds);
-		}
-
-		[ExcludeFromDocs]
-		public void SetTriangles(int[] triangles, int submesh)
-		{
-			bool calculateBounds = true;
-			this.SetTriangles(triangles, submesh, calculateBounds);
-		}
-
-		public void SetTriangles(int[] triangles, int submesh, [UnityEngine.Internal.DefaultValue("true")] bool calculateBounds)
-		{
-			if (this.CheckCanAccessSubmeshTriangles(submesh))
-			{
-				this.SetTrianglesImpl(submesh, triangles, this.SafeLength(triangles), calculateBounds);
-			}
-		}
-
-		[ExcludeFromDocs]
-		public void SetTriangles(List<int> triangles, int submesh)
-		{
-			bool calculateBounds = true;
-			this.SetTriangles(triangles, submesh, calculateBounds);
-		}
-
-		public void SetTriangles(List<int> triangles, int submesh, [UnityEngine.Internal.DefaultValue("true")] bool calculateBounds)
-		{
-			if (this.CheckCanAccessSubmeshTriangles(submesh))
-			{
-				this.SetTrianglesImpl(submesh, Mesh.ExtractArrayFromList(triangles), this.SafeLength<int>(triangles), calculateBounds);
-			}
-		}
-
-		[ExcludeFromDocs]
-		public void SetIndices(int[] indices, MeshTopology topology, int submesh)
-		{
-			bool calculateBounds = true;
-			this.SetIndices(indices, topology, submesh, calculateBounds);
-		}
-
-		public void SetIndices(int[] indices, MeshTopology topology, int submesh, [UnityEngine.Internal.DefaultValue("true")] bool calculateBounds)
-		{
-			if (this.CheckCanAccessSubmeshIndices(submesh))
-			{
-				this.SetIndicesImpl(submesh, topology, indices, this.SafeLength(indices), calculateBounds);
-			}
-		}
-
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern void ClearBlendShapes();
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern string GetBlendShapeName(int shapeIndex);
 
-		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public extern int GetBlendShapeIndex(string blendShapeName);
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern int GetBlendShapeFrameCount(int shapeIndex);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern float GetBlendShapeFrameWeight(int shapeIndex, int frameIndex);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern void GetBlendShapeFrameVertices(int shapeIndex, int frameIndex, Vector3[] deltaVertices, Vector3[] deltaNormals, Vector3[] deltaTangents);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern void AddBlendShapeFrame(string shapeName, float frameWeight, Vector3[] deltaVertices, Vector3[] deltaNormals, Vector3[] deltaTangents);
 
-		public IntPtr GetNativeVertexBufferPtr(int bufferIndex)
-		{
-			IntPtr result;
-			Mesh.INTERNAL_CALL_GetNativeVertexBufferPtr(this, bufferIndex, out result);
-			return result;
-		}
-
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_GetNativeVertexBufferPtr(Mesh self, int bufferIndex, out IntPtr value);
+		private extern int GetBoneWeightCount();
 
-		public IntPtr GetNativeIndexBufferPtr()
-		{
-			IntPtr result;
-			Mesh.INTERNAL_CALL_GetNativeIndexBufferPtr(this, out result);
-			return result;
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_GetNativeIndexBufferPtr(Mesh self, out IntPtr value);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void INTERNAL_get_bounds(out Bounds value);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void INTERNAL_set_bounds(ref Bounds value);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern void RecalculateBounds();
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern void RecalculateNormals();
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern void RecalculateTangents();
-
-		[EditorBrowsable(EditorBrowsableState.Never), Obsolete("This method is no longer supported (UnityUpgradable)", true), GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern void Optimize();
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern MeshTopology GetTopology(int submesh);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern uint GetIndexStart(int submesh);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern uint GetIndexCount(int submesh);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern void CombineMeshes(CombineInstance[] combine, [UnityEngine.Internal.DefaultValue("true")] bool mergeSubMeshes, [UnityEngine.Internal.DefaultValue("true")] bool useMatrices, [UnityEngine.Internal.DefaultValue("false")] bool hasLightmapData);
-
-		[ExcludeFromDocs]
-		public void CombineMeshes(CombineInstance[] combine, bool mergeSubMeshes, bool useMatrices)
-		{
-			bool hasLightmapData = false;
-			this.CombineMeshes(combine, mergeSubMeshes, useMatrices, hasLightmapData);
-		}
-
-		[ExcludeFromDocs]
-		public void CombineMeshes(CombineInstance[] combine, bool mergeSubMeshes)
-		{
-			bool hasLightmapData = false;
-			bool useMatrices = true;
-			this.CombineMeshes(combine, mergeSubMeshes, useMatrices, hasLightmapData);
-		}
-
-		[ExcludeFromDocs]
-		public void CombineMeshes(CombineInstance[] combine)
-		{
-			bool hasLightmapData = false;
-			bool useMatrices = true;
-			bool mergeSubMeshes = true;
-			this.CombineMeshes(combine, mergeSubMeshes, useMatrices, hasLightmapData);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void GetBoneWeightsNonAllocImpl(object values);
-
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern int GetBindposeCount();
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void GetBindposesNonAllocImpl(object values);
+		private extern void GetBoneWeightsNonAllocImpl(Array values);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern void MarkDynamic();
+		private extern void GetBindposesNonAllocImpl(Array values);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern void UploadMeshData(bool markNoLogerReadable);
+		private extern void ClearImpl(bool keepVertexLayout);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern int GetBlendShapeIndex(string blendShapeName);
+		private extern void RecalculateBoundsImpl();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void RecalculateNormalsImpl();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void RecalculateTangentsImpl();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void MarkDynamicImpl();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void UploadMeshDataImpl(bool markNoLogerReadable);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern MeshTopology GetTopologyImpl(int submesh);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void CombineMeshesImpl(CombineInstance[] combine, bool mergeSubMeshes, bool useMatrices, bool hasLightmapData);
 
 		internal Mesh.InternalShaderChannel GetUVChannel(int uvIndex)
 		{
@@ -576,7 +409,7 @@ namespace UnityEngine
 			}
 			else
 			{
-				this.PrintErrorCantAccessMesh(channel);
+				this.PrintErrorCantAccessChannel(channel);
 			}
 			result = new T[0];
 			return result;
@@ -587,16 +420,6 @@ namespace UnityEngine
 			return this.GetAllocArrayFromChannel<T>(channel, Mesh.InternalVertexChannelType.Float, Mesh.DefaultDimensionForChannel(channel));
 		}
 
-		private int SafeLength(Array values)
-		{
-			return (values == null) ? 0 : values.Length;
-		}
-
-		private int SafeLength<T>(List<T> values)
-		{
-			return (values == null) ? 0 : values.Count;
-		}
-
 		private void SetSizedArrayForChannel(Mesh.InternalShaderChannel channel, Mesh.InternalVertexChannelType format, int dim, Array values, int valuesCount)
 		{
 			if (this.canAccess)
@@ -605,28 +428,28 @@ namespace UnityEngine
 			}
 			else
 			{
-				this.PrintErrorCantAccessMesh(channel);
+				this.PrintErrorCantAccessChannel(channel);
 			}
 		}
 
 		private void SetArrayForChannel<T>(Mesh.InternalShaderChannel channel, Mesh.InternalVertexChannelType format, int dim, T[] values)
 		{
-			this.SetSizedArrayForChannel(channel, format, dim, values, this.SafeLength(values));
+			this.SetSizedArrayForChannel(channel, format, dim, values, NoAllocHelpers.SafeLength(values));
 		}
 
 		private void SetArrayForChannel<T>(Mesh.InternalShaderChannel channel, T[] values)
 		{
-			this.SetSizedArrayForChannel(channel, Mesh.InternalVertexChannelType.Float, Mesh.DefaultDimensionForChannel(channel), values, this.SafeLength(values));
+			this.SetSizedArrayForChannel(channel, Mesh.InternalVertexChannelType.Float, Mesh.DefaultDimensionForChannel(channel), values, NoAllocHelpers.SafeLength(values));
 		}
 
 		private void SetListForChannel<T>(Mesh.InternalShaderChannel channel, Mesh.InternalVertexChannelType format, int dim, List<T> values)
 		{
-			this.SetSizedArrayForChannel(channel, format, dim, Mesh.ExtractArrayFromList(values), this.SafeLength<T>(values));
+			this.SetSizedArrayForChannel(channel, format, dim, NoAllocHelpers.ExtractArrayFromList(values), NoAllocHelpers.SafeLength<T>(values));
 		}
 
 		private void SetListForChannel<T>(Mesh.InternalShaderChannel channel, List<T> values)
 		{
-			this.SetSizedArrayForChannel(channel, Mesh.InternalVertexChannelType.Float, Mesh.DefaultDimensionForChannel(channel), Mesh.ExtractArrayFromList(values), this.SafeLength<T>(values));
+			this.SetSizedArrayForChannel(channel, Mesh.InternalVertexChannelType.Float, Mesh.DefaultDimensionForChannel(channel), NoAllocHelpers.ExtractArrayFromList(values), NoAllocHelpers.SafeLength<T>(values));
 		}
 
 		private void GetListForChannel<T>(List<T> buffer, int capacity, Mesh.InternalShaderChannel channel, int dim)
@@ -639,12 +462,12 @@ namespace UnityEngine
 			buffer.Clear();
 			if (!this.canAccess)
 			{
-				this.PrintErrorCantAccessMesh(channel);
+				this.PrintErrorCantAccessChannel(channel);
 			}
 			else if (this.HasChannel(channel))
 			{
 				this.PrepareUserBuffer<T>(buffer, capacity);
-				this.GetArrayFromChannelImpl(channel, channelType, dim, Mesh.ExtractArrayFromList(buffer));
+				this.GetArrayFromChannelImpl(channel, channelType, dim, NoAllocHelpers.ExtractArrayFromList(buffer));
 			}
 		}
 
@@ -655,7 +478,7 @@ namespace UnityEngine
 			{
 				buffer.Capacity = capacity;
 			}
-			Mesh.ResizeList(buffer, capacity);
+			NoAllocHelpers.ResizeList(buffer, capacity);
 		}
 
 		public void GetVertices(List<Vector3> vertices)
@@ -783,24 +606,22 @@ namespace UnityEngine
 			this.GetUVsImpl<Vector4>(channel, uvs, 4);
 		}
 
+		private void PrintErrorCantAccessIndices()
+		{
+			Debug.LogError(string.Format("Not allowed to access triangles/indices on mesh '{0}' (isReadable is false; Read/Write must be enabled in import settings)", base.name));
+		}
+
 		private bool CheckCanAccessSubmesh(int submesh, bool errorAboutTriangles)
 		{
 			bool result;
 			if (!this.canAccess)
 			{
-				this.PrintErrorCantAccessMeshForIndices();
+				this.PrintErrorCantAccessIndices();
 				result = false;
 			}
 			else if (submesh < 0 || submesh >= this.subMeshCount)
 			{
-				if (errorAboutTriangles)
-				{
-					this.PrintErrorBadSubmeshIndexTriangles();
-				}
-				else
-				{
-					this.PrintErrorBadSubmeshIndexIndices();
-				}
+				Debug.LogError(string.Format("Failed getting {0}. Submesh index is out of bounds.", (!errorAboutTriangles) ? "indices" : "triangles"), this);
 				result = false;
 			}
 			else
@@ -822,10 +643,20 @@ namespace UnityEngine
 
 		public int[] GetTriangles(int submesh)
 		{
-			return (!this.CheckCanAccessSubmeshTriangles(submesh)) ? new int[0] : this.GetTrianglesImpl(submesh);
+			return this.GetTriangles(submesh, true);
+		}
+
+		public int[] GetTriangles(int submesh, [UnityEngine.Internal.DefaultValue("true")] bool applyBaseVertex)
+		{
+			return (!this.CheckCanAccessSubmeshTriangles(submesh)) ? new int[0] : this.GetTrianglesImpl(submesh, applyBaseVertex);
 		}
 
 		public void GetTriangles(List<int> triangles, int submesh)
+		{
+			this.GetTriangles(triangles, submesh, true);
+		}
+
+		public void GetTriangles(List<int> triangles, int submesh, [UnityEngine.Internal.DefaultValue("true")] bool applyBaseVertex)
 		{
 			if (triangles == null)
 			{
@@ -836,15 +667,25 @@ namespace UnityEngine
 				throw new IndexOutOfRangeException("Specified sub mesh is out of range. Must be greater or equal to 0 and less than subMeshCount.");
 			}
 			this.PrepareUserBuffer<int>(triangles, (int)this.GetIndexCount(submesh));
-			this.GetTrianglesNonAllocImpl(triangles, submesh);
+			this.GetTrianglesNonAllocImpl(NoAllocHelpers.ExtractArrayFromList(triangles), submesh, applyBaseVertex);
 		}
 
 		public int[] GetIndices(int submesh)
 		{
-			return (!this.CheckCanAccessSubmeshIndices(submesh)) ? new int[0] : this.GetIndicesImpl(submesh);
+			return this.GetIndices(submesh, true);
+		}
+
+		public int[] GetIndices(int submesh, [UnityEngine.Internal.DefaultValue("true")] bool applyBaseVertex)
+		{
+			return (!this.CheckCanAccessSubmeshIndices(submesh)) ? new int[0] : this.GetIndicesImpl(submesh, applyBaseVertex);
 		}
 
 		public void GetIndices(List<int> indices, int submesh)
+		{
+			this.GetIndices(indices, submesh, true);
+		}
+
+		public void GetIndices(List<int> indices, int submesh, [UnityEngine.Internal.DefaultValue("true")] bool applyBaseVertex)
 		{
 			if (indices == null)
 			{
@@ -855,8 +696,93 @@ namespace UnityEngine
 				throw new IndexOutOfRangeException("Specified sub mesh is out of range. Must be greater or equal to 0 and less than subMeshCount.");
 			}
 			this.PrepareUserBuffer<int>(indices, (int)this.GetIndexCount(submesh));
-			indices.Clear();
-			this.GetIndicesNonAllocImpl(indices, submesh);
+			this.GetIndicesNonAllocImpl(NoAllocHelpers.ExtractArrayFromList(indices), submesh, applyBaseVertex);
+		}
+
+		public uint GetIndexStart(int submesh)
+		{
+			if (submesh < 0 || submesh >= this.subMeshCount)
+			{
+				throw new IndexOutOfRangeException("Specified sub mesh is out of range. Must be greater or equal to 0 and less than subMeshCount.");
+			}
+			return this.GetIndexStartImpl(submesh);
+		}
+
+		public uint GetIndexCount(int submesh)
+		{
+			if (submesh < 0 || submesh >= this.subMeshCount)
+			{
+				throw new IndexOutOfRangeException("Specified sub mesh is out of range. Must be greater or equal to 0 and less than subMeshCount.");
+			}
+			return this.GetIndexCountImpl(submesh);
+		}
+
+		public uint GetBaseVertex(int submesh)
+		{
+			if (submesh < 0 || submesh >= this.subMeshCount)
+			{
+				throw new IndexOutOfRangeException("Specified sub mesh is out of range. Must be greater or equal to 0 and less than subMeshCount.");
+			}
+			return this.GetBaseVertexImpl(submesh);
+		}
+
+		private void SetTrianglesImpl(int submesh, Array triangles, int arraySize, bool calculateBounds, int baseVertex)
+		{
+			this.SetIndicesImpl(submesh, MeshTopology.Triangles, triangles, arraySize, calculateBounds, baseVertex);
+		}
+
+		public void SetTriangles(int[] triangles, int submesh)
+		{
+			this.SetTriangles(triangles, submesh, true, 0);
+		}
+
+		public void SetTriangles(int[] triangles, int submesh, bool calculateBounds)
+		{
+			this.SetTriangles(triangles, submesh, calculateBounds, 0);
+		}
+
+		public void SetTriangles(int[] triangles, int submesh, [UnityEngine.Internal.DefaultValue("true")] bool calculateBounds, [UnityEngine.Internal.DefaultValue("0")] int baseVertex)
+		{
+			if (this.CheckCanAccessSubmeshTriangles(submesh))
+			{
+				this.SetTrianglesImpl(submesh, triangles, NoAllocHelpers.SafeLength(triangles), calculateBounds, baseVertex);
+			}
+		}
+
+		public void SetTriangles(List<int> triangles, int submesh)
+		{
+			this.SetTriangles(triangles, submesh, true, 0);
+		}
+
+		public void SetTriangles(List<int> triangles, int submesh, bool calculateBounds)
+		{
+			this.SetTriangles(triangles, submesh, calculateBounds, 0);
+		}
+
+		public void SetTriangles(List<int> triangles, int submesh, [UnityEngine.Internal.DefaultValue("true")] bool calculateBounds, [UnityEngine.Internal.DefaultValue("0")] int baseVertex)
+		{
+			if (this.CheckCanAccessSubmeshTriangles(submesh))
+			{
+				this.SetTrianglesImpl(submesh, NoAllocHelpers.ExtractArrayFromList(triangles), NoAllocHelpers.SafeLength<int>(triangles), calculateBounds, baseVertex);
+			}
+		}
+
+		public void SetIndices(int[] indices, MeshTopology topology, int submesh)
+		{
+			this.SetIndices(indices, topology, submesh, true, 0);
+		}
+
+		public void SetIndices(int[] indices, MeshTopology topology, int submesh, bool calculateBounds)
+		{
+			this.SetIndices(indices, topology, submesh, calculateBounds, 0);
+		}
+
+		public void SetIndices(int[] indices, MeshTopology topology, int submesh, [UnityEngine.Internal.DefaultValue("true")] bool calculateBounds, [UnityEngine.Internal.DefaultValue("0")] int baseVertex)
+		{
+			if (this.CheckCanAccessSubmeshIndices(submesh))
+			{
+				this.SetIndicesImpl(submesh, topology, indices, NoAllocHelpers.SafeLength(indices), calculateBounds, baseVertex);
+			}
 		}
 
 		public void GetBindposes(List<Matrix4x4> bindposes)
@@ -866,7 +792,7 @@ namespace UnityEngine
 				throw new ArgumentNullException("The result bindposes list cannot be null.", "bindposes");
 			}
 			this.PrepareUserBuffer<Matrix4x4>(bindposes, this.GetBindposeCount());
-			this.GetBindposesNonAllocImpl(bindposes);
+			this.GetBindposesNonAllocImpl(NoAllocHelpers.ExtractArrayFromList(bindposes));
 		}
 
 		public void GetBoneWeights(List<BoneWeight> boneWeights)
@@ -875,8 +801,116 @@ namespace UnityEngine
 			{
 				throw new ArgumentNullException("The result boneWeights list cannot be null.", "boneWeights");
 			}
-			this.PrepareUserBuffer<BoneWeight>(boneWeights, this.vertexCount);
-			this.GetBoneWeightsNonAllocImpl(boneWeights);
+			this.PrepareUserBuffer<BoneWeight>(boneWeights, this.GetBoneWeightCount());
+			this.GetBoneWeightsNonAllocImpl(NoAllocHelpers.ExtractArrayFromList(boneWeights));
 		}
+
+		public void Clear(bool keepVertexLayout)
+		{
+			this.ClearImpl(keepVertexLayout);
+		}
+
+		public void Clear()
+		{
+			this.ClearImpl(true);
+		}
+
+		public void RecalculateBounds()
+		{
+			if (this.canAccess)
+			{
+				this.RecalculateBoundsImpl();
+			}
+			else
+			{
+				Debug.LogError(string.Format("Not allowed to call RecalculateBounds() on mesh '{0}'", base.name));
+			}
+		}
+
+		public void RecalculateNormals()
+		{
+			if (this.canAccess)
+			{
+				this.RecalculateNormalsImpl();
+			}
+			else
+			{
+				Debug.LogError(string.Format("Not allowed to call RecalculateNormals() on mesh '{0}'", base.name));
+			}
+		}
+
+		public void RecalculateTangents()
+		{
+			if (this.canAccess)
+			{
+				this.RecalculateTangentsImpl();
+			}
+			else
+			{
+				Debug.LogError(string.Format("Not allowed to call RecalculateTangents() on mesh '{0}'", base.name));
+			}
+		}
+
+		public void MarkDynamic()
+		{
+			if (this.canAccess)
+			{
+				this.MarkDynamicImpl();
+			}
+		}
+
+		public void UploadMeshData(bool markNoLogerReadable)
+		{
+			if (this.canAccess)
+			{
+				this.UploadMeshDataImpl(markNoLogerReadable);
+			}
+		}
+
+		public MeshTopology GetTopology(int submesh)
+		{
+			MeshTopology result;
+			if (submesh < 0 || submesh >= this.subMeshCount)
+			{
+				Debug.LogError(string.Format("Failed getting topology. Submesh index is out of bounds.", new object[0]), this);
+				result = MeshTopology.Triangles;
+			}
+			else
+			{
+				result = this.GetTopologyImpl(submesh);
+			}
+			return result;
+		}
+
+		public void CombineMeshes(CombineInstance[] combine, [UnityEngine.Internal.DefaultValue("true")] bool mergeSubMeshes, [UnityEngine.Internal.DefaultValue("true")] bool useMatrices, [UnityEngine.Internal.DefaultValue("false")] bool hasLightmapData)
+		{
+			this.CombineMeshesImpl(combine, mergeSubMeshes, useMatrices, hasLightmapData);
+		}
+
+		public void CombineMeshes(CombineInstance[] combine, bool mergeSubMeshes, bool useMatrices)
+		{
+			this.CombineMeshesImpl(combine, mergeSubMeshes, useMatrices, false);
+		}
+
+		public void CombineMeshes(CombineInstance[] combine, bool mergeSubMeshes)
+		{
+			this.CombineMeshesImpl(combine, mergeSubMeshes, true, false);
+		}
+
+		public void CombineMeshes(CombineInstance[] combine)
+		{
+			this.CombineMeshesImpl(combine, true, true, false);
+		}
+
+		[EditorBrowsable(EditorBrowsableState.Never), Obsolete("This method is no longer supported (UnityUpgradable)", true)]
+		public void Optimize()
+		{
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void get_bounds_Injected(out Bounds ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void set_bounds_Injected(ref Bounds value);
 	}
 }

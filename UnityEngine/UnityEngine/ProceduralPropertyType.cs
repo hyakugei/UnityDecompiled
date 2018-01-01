@@ -12,6 +12,7 @@ namespace UnityEngine
 		Color3,
 		Color4,
 		Enum,
-		Texture
+		Texture,
+		String
 	}
 }
