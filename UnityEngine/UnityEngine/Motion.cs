@@ -51,6 +51,7 @@ namespace UnityEngine
 			get;
 		}
 
+		/*
 		[Obsolete("isAnimatorMotion is not supported anymore, please use !legacy instead.", true)]
 		public bool isAnimatorMotion
 		{
@@ -60,6 +61,7 @@ namespace UnityEngine
 				return this.<isAnimatorMotion>k__BackingField;
 			}
 		}
+		*/
 
 		protected Motion()
 		{

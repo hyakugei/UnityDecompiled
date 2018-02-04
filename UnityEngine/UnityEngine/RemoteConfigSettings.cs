@@ -18,6 +18,7 @@ namespace UnityEngine
 		{
 			add
 			{
+				/*
 				Action<bool> action = this.Updated;
 				Action<bool> action2;
 				do
@@ -26,9 +27,11 @@ namespace UnityEngine
 					action = Interlocked.CompareExchange<Action<bool>>(ref this.Updated, (Action<bool>)Delegate.Combine(action2, value), action);
 				}
 				while (action != action2);
+				*/
 			}
 			remove
 			{
+				/*
 				Action<bool> action = this.Updated;
 				Action<bool> action2;
 				do
@@ -37,6 +40,7 @@ namespace UnityEngine
 					action = Interlocked.CompareExchange<Action<bool>>(ref this.Updated, (Action<bool>)Delegate.Remove(action2, value), action);
 				}
 				while (action != action2);
+				*/
 			}
 		}
 
@@ -46,8 +50,10 @@ namespace UnityEngine
 
 		public RemoteConfigSettings(string configKey)
 		{
+			/*
 			this.m_Ptr = RemoteConfigSettings.Internal_Create(this, configKey);
 			this.Updated = null;
+			*/
 		}
 
 		~RemoteConfigSettings()
@@ -79,11 +85,13 @@ namespace UnityEngine
 		[RequiredByNativeCode]
 		internal static void RemoteConfigSettingsUpdated(RemoteConfigSettings rcs, bool wasLastUpdatedFromServer)
 		{
+			/*
 			Action<bool> updated = rcs.Updated;
 			if (updated != null)
 			{
 				updated(wasLastUpdatedFromServer);
 			}
+			*/
 		}
 
 		[MethodImpl(MethodImplOptions.InternalCall)]

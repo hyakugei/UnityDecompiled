@@ -31,6 +31,7 @@ namespace UnityEngine.Experimental.UIElements
 		{
 			add
 			{
+				/*
 				Action<float> action = this.valueChanged;
 				Action<float> action2;
 				do
@@ -39,9 +40,11 @@ namespace UnityEngine.Experimental.UIElements
 					action = Interlocked.CompareExchange<Action<float>>(ref this.valueChanged, (Action<float>)Delegate.Combine(action2, value), action);
 				}
 				while (action != action2);
+				*/
 			}
 			remove
 			{
+				/*
 				Action<float> action = this.valueChanged;
 				Action<float> action2;
 				do
@@ -50,6 +53,7 @@ namespace UnityEngine.Experimental.UIElements
 					action = Interlocked.CompareExchange<Action<float>>(ref this.valueChanged, (Action<float>)Delegate.Remove(action2, value), action);
 				}
 				while (action != action2);
+				*/
 			}
 		}
 
@@ -129,6 +133,7 @@ namespace UnityEngine.Experimental.UIElements
 				float num = Mathf.Clamp(value, this.lowValue, this.highValue);
 				if (!Mathf.Approximately(this.m_SliderValue.m_Value, num))
 				{
+					/*
 					this.m_SliderValue.m_Value = num;
 					this.UpdateDragElementPosition();
 					if (this.valueChanged != null)
@@ -137,6 +142,7 @@ namespace UnityEngine.Experimental.UIElements
 					}
 					base.Dirty(ChangeType.Repaint);
 					base.SavePersistentData();
+					*/
 				}
 			}
 		}
@@ -165,7 +171,7 @@ namespace UnityEngine.Experimental.UIElements
 
 		public Slider(float start, float end, Action<float> valueChanged, Slider.Direction direction = Slider.Direction.Horizontal, float pageSize = 10f)
 		{
-			this.valueChanged = valueChanged;
+			//this.valueChanged = valueChanged;
 			this.direction = direction;
 			this.pageSize = pageSize;
 			this.lowValue = start;

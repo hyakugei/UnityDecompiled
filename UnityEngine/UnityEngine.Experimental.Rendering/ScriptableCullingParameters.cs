@@ -8,6 +8,7 @@ namespace UnityEngine.Experimental.Rendering
 	[UsedByNativeCode]
 	public struct ScriptableCullingParameters
 	{
+		/*
 		[CompilerGenerated, UnsafeValueType]
 		[StructLayout(LayoutKind.Sequential, Size = 160)]
 		public struct <m_CullingPlanes>__FixedBuffer4
@@ -21,12 +22,13 @@ namespace UnityEngine.Experimental.Rendering
 		{
 			public float FixedElementField;
 		}
+		*/
 
 		private int m_IsOrthographic;
 
 		private LODParameters m_LodParameters;
 
-		private ScriptableCullingParameters.<m_CullingPlanes>__FixedBuffer4 m_CullingPlanes;
+		//private ScriptableCullingParameters.<m_CullingPlanes>__FixedBuffer4 m_CullingPlanes;
 
 		private int m_CullingPlaneCount;
 
@@ -34,7 +36,7 @@ namespace UnityEngine.Experimental.Rendering
 
 		private long m_SceneMask;
 
-		private ScriptableCullingParameters.<m_LayerFarCullDistances>__FixedBuffer5 m_LayerFarCullDistances;
+		//private ScriptableCullingParameters.<m_LayerFarCullDistances>__FixedBuffer5 m_LayerFarCullDistances;
 
 		private int m_LayerCull;
 
@@ -212,7 +214,8 @@ namespace UnityEngine.Experimental.Rendering
 			{
 				throw new IndexOutOfRangeException("Invalid layer index");
 			}
-			return *(ref this.m_LayerFarCullDistances.FixedElementField + (IntPtr)layerIndex * 4);
+			//return *(ref this.m_LayerFarCullDistances.FixedElementField + (IntPtr)layerIndex * 4);
+			return 0.0f;
 		}
 
 		public unsafe void SetLayerCullDistance(int layerIndex, float distance)
@@ -221,10 +224,12 @@ namespace UnityEngine.Experimental.Rendering
 			{
 				throw new IndexOutOfRangeException("Invalid layer index");
 			}
+			/*
 			fixed (float* ptr = &this.m_LayerFarCullDistances.FixedElementField)
 			{
 				ptr[(IntPtr)layerIndex * 4] = distance;
 			}
+			*/
 		}
 
 		public unsafe Plane GetCullingPlane(int index)
@@ -233,7 +238,8 @@ namespace UnityEngine.Experimental.Rendering
 			{
 				throw new IndexOutOfRangeException("Invalid plane index");
 			}
-			return new Plane(new Vector3(*(ref this.m_CullingPlanes.FixedElementField + (IntPtr)(index * 4) * 4), *(ref this.m_CullingPlanes.FixedElementField + (IntPtr)(index * 4 + 1) * 4), *(ref this.m_CullingPlanes.FixedElementField + (IntPtr)(index * 4 + 2) * 4)), *(ref this.m_CullingPlanes.FixedElementField + (IntPtr)(index * 4 + 3) * 4));
+			//return new Plane(new Vector3(*(ref this.m_CullingPlanes.FixedElementField + (IntPtr)(index * 4) * 4), *(ref this.m_CullingPlanes.FixedElementField + (IntPtr)(index * 4 + 1) * 4), *(ref this.m_CullingPlanes.FixedElementField + (IntPtr)(index * 4 + 2) * 4)), *(ref this.m_CullingPlanes.FixedElementField + (IntPtr)(index * 4 + 3) * 4));
+			return new Plane();
 		}
 
 		public unsafe void SetCullingPlane(int index, Plane plane)
@@ -242,6 +248,7 @@ namespace UnityEngine.Experimental.Rendering
 			{
 				throw new IndexOutOfRangeException("Invalid plane index");
 			}
+			/*
 			fixed (float* ptr = &this.m_CullingPlanes.FixedElementField)
 			{
 				ptr[(IntPtr)(index * 4) * 4] = plane.normal.x;
@@ -249,6 +256,7 @@ namespace UnityEngine.Experimental.Rendering
 				ptr[(IntPtr)(index * 4 + 2) * 4] = plane.normal.z;
 				ptr[(IntPtr)(index * 4 + 3) * 4] = plane.distance;
 			}
+			*/
 		}
 	}
 }

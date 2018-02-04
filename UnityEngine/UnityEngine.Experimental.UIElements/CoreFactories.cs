@@ -5,6 +5,7 @@ namespace UnityEngine.Experimental.UIElements
 {
 	internal static class CoreFactories
 	{
+		/*
 		[CompilerGenerated]
 		private static Func<IUxmlAttributes, CreationContext, VisualElement> <>f__mg$cache0;
 
@@ -28,9 +29,11 @@ namespace UnityEngine.Experimental.UIElements
 
 		[CompilerGenerated]
 		private static Func<IUxmlAttributes, CreationContext, VisualElement> <>f__mg$cache7;
+		*/
 
 		internal static void RegisterAll()
 		{
+			/*
 			if (CoreFactories.<>f__mg$cache0 == null)
 			{
 				CoreFactories.<>f__mg$cache0 = new Func<IUxmlAttributes, CreationContext, VisualElement>(CoreFactories.CreateButton);
@@ -77,6 +80,7 @@ namespace UnityEngine.Experimental.UIElements
 				CoreFactories.<>f__mg$cache7 = new Func<IUxmlAttributes, CreationContext, VisualElement>(CoreFactories.CreateTemplate);
 			}
 			Factories.RegisterFactory<TemplateContainer>(CoreFactories.<>f__mg$cache7);
+			*/
 		}
 
 		private static VisualElement CreateButton(IUxmlAttributes bag, CreationContext ctx)

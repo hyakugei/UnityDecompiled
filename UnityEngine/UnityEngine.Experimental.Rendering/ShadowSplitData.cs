@@ -8,16 +8,18 @@ namespace UnityEngine.Experimental.Rendering
 	[UsedByNativeCode]
 	public struct ShadowSplitData
 	{
+		/*
 		[CompilerGenerated, UnsafeValueType]
 		[StructLayout(LayoutKind.Sequential, Size = 160)]
 		public struct <_cullingPlanes>__FixedBuffer6
 		{
 			public float FixedElementField;
 		}
+		*/
 
 		public int cullingPlaneCount;
 
-		private ShadowSplitData.<_cullingPlanes>__FixedBuffer6 _cullingPlanes;
+		//private ShadowSplitData.<_cullingPlanes>__FixedBuffer6 _cullingPlanes;
 
 		public Vector4 cullingSphere;
 
@@ -27,7 +29,8 @@ namespace UnityEngine.Experimental.Rendering
 			{
 				throw new IndexOutOfRangeException("Invalid plane index");
 			}
-			return new Plane(new Vector3(*(ref this._cullingPlanes.FixedElementField + (IntPtr)(index * 4) * 4), *(ref this._cullingPlanes.FixedElementField + (IntPtr)(index * 4 + 1) * 4), *(ref this._cullingPlanes.FixedElementField + (IntPtr)(index * 4 + 2) * 4)), *(ref this._cullingPlanes.FixedElementField + (IntPtr)(index * 4 + 3) * 4));
+			return new Plane();
+			//return new Plane(new Vector3(*(ref this._cullingPlanes.FixedElementField + (IntPtr)(index * 4) * 4), *(ref this._cullingPlanes.FixedElementField + (IntPtr)(index * 4 + 1) * 4), *(ref this._cullingPlanes.FixedElementField + (IntPtr)(index * 4 + 2) * 4)), *(ref this._cullingPlanes.FixedElementField + (IntPtr)(index * 4 + 3) * 4));
 		}
 
 		public unsafe void SetCullingPlane(int index, Plane plane)
@@ -36,6 +39,7 @@ namespace UnityEngine.Experimental.Rendering
 			{
 				throw new IndexOutOfRangeException("Invalid plane index");
 			}
+			/*
 			fixed (float* ptr = &this._cullingPlanes.FixedElementField)
 			{
 				ptr[(IntPtr)(index * 4) * 4] = plane.normal.x;
@@ -43,6 +47,7 @@ namespace UnityEngine.Experimental.Rendering
 				ptr[(IntPtr)(index * 4 + 2) * 4] = plane.normal.z;
 				ptr[(IntPtr)(index * 4 + 3) * 4] = plane.distance;
 			}
+			*/
 		}
 	}
 }

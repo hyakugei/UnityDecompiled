@@ -6,18 +6,22 @@ namespace UnityEngine
 {
 	internal sealed class UnhandledExceptionHandler
 	{
+		/*
 		[CompilerGenerated]
 		private static UnhandledExceptionEventHandler <>f__mg$cache0;
+		*/
 
 		[RequiredByNativeCode]
 		private static void RegisterUECatcher()
 		{
+			/*
 			AppDomain arg_23_0 = AppDomain.CurrentDomain;
 			if (UnhandledExceptionHandler.<>f__mg$cache0 == null)
 			{
 				UnhandledExceptionHandler.<>f__mg$cache0 = new UnhandledExceptionEventHandler(UnhandledExceptionHandler.HandleUnhandledException);
 			}
 			arg_23_0.UnhandledException += UnhandledExceptionHandler.<>f__mg$cache0;
+			*/
 		}
 
 		private static void HandleUnhandledException(object sender, UnhandledExceptionEventArgs args)

@@ -15,6 +15,7 @@ namespace UnityEngine.XR.WSA
 		{
 			add
 			{
+				/*
 				WorldManager.OnPositionalLocatorStateChangedDelegate onPositionalLocatorStateChangedDelegate = WorldManager.OnPositionalLocatorStateChanged;
 				WorldManager.OnPositionalLocatorStateChangedDelegate onPositionalLocatorStateChangedDelegate2;
 				do
@@ -23,9 +24,11 @@ namespace UnityEngine.XR.WSA
 					onPositionalLocatorStateChangedDelegate = Interlocked.CompareExchange<WorldManager.OnPositionalLocatorStateChangedDelegate>(ref WorldManager.OnPositionalLocatorStateChanged, (WorldManager.OnPositionalLocatorStateChangedDelegate)Delegate.Combine(onPositionalLocatorStateChangedDelegate2, value), onPositionalLocatorStateChangedDelegate);
 				}
 				while (onPositionalLocatorStateChangedDelegate != onPositionalLocatorStateChangedDelegate2);
+				*/
 			}
 			remove
 			{
+				/*
 				WorldManager.OnPositionalLocatorStateChangedDelegate onPositionalLocatorStateChangedDelegate = WorldManager.OnPositionalLocatorStateChanged;
 				WorldManager.OnPositionalLocatorStateChangedDelegate onPositionalLocatorStateChangedDelegate2;
 				do
@@ -34,6 +37,7 @@ namespace UnityEngine.XR.WSA
 					onPositionalLocatorStateChangedDelegate = Interlocked.CompareExchange<WorldManager.OnPositionalLocatorStateChangedDelegate>(ref WorldManager.OnPositionalLocatorStateChanged, (WorldManager.OnPositionalLocatorStateChangedDelegate)Delegate.Remove(onPositionalLocatorStateChangedDelegate2, value), onPositionalLocatorStateChangedDelegate);
 				}
 				while (onPositionalLocatorStateChangedDelegate != onPositionalLocatorStateChangedDelegate2);
+				*/
 			}
 		}
 
@@ -61,10 +65,12 @@ namespace UnityEngine.XR.WSA
 		[RequiredByNativeCode]
 		private static void Internal_TriggerPositionalLocatorStateChanged(PositionalLocatorState oldState, PositionalLocatorState newState)
 		{
+			/*
 			if (WorldManager.OnPositionalLocatorStateChanged != null)
 			{
 				WorldManager.OnPositionalLocatorStateChanged(oldState, newState);
 			}
+			*/
 		}
 
 		public static IntPtr GetNativeISpatialCoordinateSystemPtr()

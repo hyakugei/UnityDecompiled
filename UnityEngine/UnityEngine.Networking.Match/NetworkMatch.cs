@@ -341,11 +341,14 @@ namespace UnityEngine.Networking.Match
 		[DebuggerHidden]
 		private IEnumerator ProcessMatchResponse<JSONRESPONSE, USERRESPONSEDELEGATETYPE>(UnityWebRequest client, NetworkMatch.InternalResponseDelegate<JSONRESPONSE, USERRESPONSEDELEGATETYPE> internalCallback, USERRESPONSEDELEGATETYPE userCallback) where JSONRESPONSE : Response, new()
 		{
+			/*
 			NetworkMatch.<ProcessMatchResponse>c__Iterator0<JSONRESPONSE, USERRESPONSEDELEGATETYPE> <ProcessMatchResponse>c__Iterator = new NetworkMatch.<ProcessMatchResponse>c__Iterator0<JSONRESPONSE, USERRESPONSEDELEGATETYPE>();
 			<ProcessMatchResponse>c__Iterator.client = client;
 			<ProcessMatchResponse>c__Iterator.internalCallback = internalCallback;
 			<ProcessMatchResponse>c__Iterator.userCallback = userCallback;
 			return <ProcessMatchResponse>c__Iterator;
+			*/
+			return null;
 		}
 	}
 }

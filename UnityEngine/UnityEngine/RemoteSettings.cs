@@ -14,6 +14,7 @@ namespace UnityEngine
 		{
 			add
 			{
+				/*
 				RemoteSettings.UpdatedEventHandler updatedEventHandler = RemoteSettings.Updated;
 				RemoteSettings.UpdatedEventHandler updatedEventHandler2;
 				do
@@ -22,9 +23,11 @@ namespace UnityEngine
 					updatedEventHandler = Interlocked.CompareExchange<RemoteSettings.UpdatedEventHandler>(ref RemoteSettings.Updated, (RemoteSettings.UpdatedEventHandler)Delegate.Combine(updatedEventHandler2, value), updatedEventHandler);
 				}
 				while (updatedEventHandler != updatedEventHandler2);
+				*/
 			}
 			remove
 			{
+				/*
 				RemoteSettings.UpdatedEventHandler updatedEventHandler = RemoteSettings.Updated;
 				RemoteSettings.UpdatedEventHandler updatedEventHandler2;
 				do
@@ -33,6 +36,7 @@ namespace UnityEngine
 					updatedEventHandler = Interlocked.CompareExchange<RemoteSettings.UpdatedEventHandler>(ref RemoteSettings.Updated, (RemoteSettings.UpdatedEventHandler)Delegate.Remove(updatedEventHandler2, value), updatedEventHandler);
 				}
 				while (updatedEventHandler != updatedEventHandler2);
+				*/
 			}
 		}
 
@@ -40,6 +44,7 @@ namespace UnityEngine
 		{
 			add
 			{
+				/*
 				Action action = RemoteSettings.BeforeFetchFromServer;
 				Action action2;
 				do
@@ -48,9 +53,11 @@ namespace UnityEngine
 					action = Interlocked.CompareExchange<Action>(ref RemoteSettings.BeforeFetchFromServer, (Action)Delegate.Combine(action2, value), action);
 				}
 				while (action != action2);
+				*/
 			}
 			remove
 			{
+				/*
 				Action action = RemoteSettings.BeforeFetchFromServer;
 				Action action2;
 				do
@@ -59,27 +66,32 @@ namespace UnityEngine
 					action = Interlocked.CompareExchange<Action>(ref RemoteSettings.BeforeFetchFromServer, (Action)Delegate.Remove(action2, value), action);
 				}
 				while (action != action2);
+				*/
 			}
 		}
 
 		[RequiredByNativeCode]
 		internal static void RemoteSettingsUpdated(bool wasLastUpdatedFromServer)
 		{
+			/*
 			RemoteSettings.UpdatedEventHandler updated = RemoteSettings.Updated;
 			if (updated != null)
 			{
 				updated();
 			}
+			*/
 		}
 
 		[RequiredByNativeCode]
 		internal static void RemoteSettingsBeforeFetchFromServer()
 		{
+			/*
 			Action beforeFetchFromServer = RemoteSettings.BeforeFetchFromServer;
 			if (beforeFetchFromServer != null)
 			{
 				beforeFetchFromServer();
 			}
+			*/
 		}
 
 		[Obsolete("Calling CallOnUpdate() is not necessary any more and should be removed. Use RemoteSettingsUpdated instead", true)]

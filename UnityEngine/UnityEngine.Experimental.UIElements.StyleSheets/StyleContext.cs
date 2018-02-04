@@ -121,8 +121,10 @@ namespace UnityEngine.Experimental.UIElements.StyleSheets
 
 		public StyleContext(VisualElement tree)
 		{
+			/*
 			this.<currentPixelsPerPoint>k__BackingField = 1f;
 			base..ctor();
+			*/
 			this.m_VisualTree = tree;
 		}
 

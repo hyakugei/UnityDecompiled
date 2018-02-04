@@ -575,6 +575,7 @@ namespace UnityEngine.Experimental.UIElements
 		{
 			add
 			{
+				/*
 				OnStylesResolved onStylesResolved = this.onStylesResolved;
 				OnStylesResolved onStylesResolved2;
 				do
@@ -583,9 +584,11 @@ namespace UnityEngine.Experimental.UIElements
 					onStylesResolved = Interlocked.CompareExchange<OnStylesResolved>(ref this.onStylesResolved, (OnStylesResolved)Delegate.Combine(onStylesResolved2, value), onStylesResolved);
 				}
 				while (onStylesResolved != onStylesResolved2);
+				*/
 			}
 			remove
 			{
+				/*
 				OnStylesResolved onStylesResolved = this.onStylesResolved;
 				OnStylesResolved onStylesResolved2;
 				do
@@ -594,6 +597,7 @@ namespace UnityEngine.Experimental.UIElements
 					onStylesResolved = Interlocked.CompareExchange<OnStylesResolved>(ref this.onStylesResolved, (OnStylesResolved)Delegate.Remove(onStylesResolved2, value), onStylesResolved);
 				}
 				while (onStylesResolved != onStylesResolved2);
+				*/
 			}
 		}
 
@@ -1800,11 +1804,14 @@ namespace UnityEngine.Experimental.UIElements
 			{
 				if (this.m_PseudoStates != value)
 				{
+					/*
 					this.m_PseudoStates = value;
-					if ((this.triggerPseudoMask & this.m_PseudoStates) != (PseudoStates)0 || (this.dependencyPseudoMask & ~(this.m_PseudoStates != (PseudoStates)0)) != (PseudoStates)0)
+					if ((this.triggerPseudoMask & this.m_PseudoStates) != (PseudoStates)0 
+						|| (this.dependencyPseudoMask & ~(this.m_PseudoStates != (PseudoStates)0)) != (PseudoStates)0)
 					{
 						this.Dirty(ChangeType.Styles);
 					}
+					*/
 				}
 			}
 		}
@@ -2522,10 +2529,12 @@ namespace UnityEngine.Experimental.UIElements
 					this.m_Style = sharedStyle;
 				}
 				this.m_SharedStyle = sharedStyle;
+				/*
 				if (this.onStylesResolved != null)
 				{
 					this.onStylesResolved(this.m_Style);
 				}
+				*/
 				this.OnStyleResolved(this.m_Style);
 				this.Dirty(ChangeType.Repaint);
 			}

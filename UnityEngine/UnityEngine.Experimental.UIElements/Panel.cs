@@ -27,8 +27,10 @@ namespace UnityEngine.Experimental.UIElements
 
 		private const int kMaxValidateLayoutCount = 5;
 
+		/*
 		[CompilerGenerated]
 		private static TimeMsFunction <>f__mg$cache0;
+		*/
 
 		public override VisualElement visualTree
 		{
@@ -133,11 +135,13 @@ namespace UnityEngine.Experimental.UIElements
 			{
 				if (value == null)
 				{
+					/*
 					if (Panel.<>f__mg$cache0 == null)
 					{
 						Panel.<>f__mg$cache0 = new TimeMsFunction(Panel.DefaultTimeSinceStartupMs);
 					}
 					value = Panel.<>f__mg$cache0;
+					*/
 				}
 				Panel.s_TimeSinceStartup = value;
 			}

@@ -15,8 +15,10 @@ namespace UnityEngine.Jobs
 
 		private DisposeSentinel m_DisposeSentinel;
 
+		/*
 		[CompilerGenerated]
 		private static DisposeSentinel.DeallocateDelegate <>f__mg$cache0;
+		*/
 
 		public bool IsCreated
 		{
@@ -80,11 +82,14 @@ namespace UnityEngine.Jobs
 			IntPtr arg_3F_0 = array.m_TransformArray;
 			Allocator arg_3F_1 = Allocator.Persistent;
 			int arg_3F_4 = 1;
+			array = new TransformAccessArray();
+			/*
 			if (TransformAccessArray.<>f__mg$cache0 == null)
 			{
 				TransformAccessArray.<>f__mg$cache0 = new DisposeSentinel.DeallocateDelegate(TransformAccessArray.DeallocateFromDisposeSentinel);
 			}
 			DisposeSentinel.Create(arg_3F_0, arg_3F_1, out array.m_Safety, out array.m_DisposeSentinel, arg_3F_4, TransformAccessArray.<>f__mg$cache0);
+			*/
 		}
 
 		private static void DeallocateFromDisposeSentinel(IntPtr ptr, Allocator allocator)

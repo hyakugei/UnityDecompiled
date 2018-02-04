@@ -21,6 +21,7 @@ namespace UnityEngine.XR
 		{
 			add
 			{
+				/*
 				Action<XRNodeState> action = InputTracking.trackingAcquired;
 				Action<XRNodeState> action2;
 				do
@@ -29,9 +30,11 @@ namespace UnityEngine.XR
 					action = Interlocked.CompareExchange<Action<XRNodeState>>(ref InputTracking.trackingAcquired, (Action<XRNodeState>)Delegate.Combine(action2, value), action);
 				}
 				while (action != action2);
+				*/
 			}
 			remove
 			{
+				/*
 				Action<XRNodeState> action = InputTracking.trackingAcquired;
 				Action<XRNodeState> action2;
 				do
@@ -40,6 +43,7 @@ namespace UnityEngine.XR
 					action = Interlocked.CompareExchange<Action<XRNodeState>>(ref InputTracking.trackingAcquired, (Action<XRNodeState>)Delegate.Remove(action2, value), action);
 				}
 				while (action != action2);
+				*/
 			}
 		}
 
@@ -47,6 +51,7 @@ namespace UnityEngine.XR
 		{
 			add
 			{
+				/*
 				Action<XRNodeState> action = InputTracking.trackingLost;
 				Action<XRNodeState> action2;
 				do
@@ -55,9 +60,11 @@ namespace UnityEngine.XR
 					action = Interlocked.CompareExchange<Action<XRNodeState>>(ref InputTracking.trackingLost, (Action<XRNodeState>)Delegate.Combine(action2, value), action);
 				}
 				while (action != action2);
+				*/
 			}
 			remove
 			{
+				/*
 				Action<XRNodeState> action = InputTracking.trackingLost;
 				Action<XRNodeState> action2;
 				do
@@ -66,6 +73,7 @@ namespace UnityEngine.XR
 					action = Interlocked.CompareExchange<Action<XRNodeState>>(ref InputTracking.trackingLost, (Action<XRNodeState>)Delegate.Remove(action2, value), action);
 				}
 				while (action != action2);
+				*/
 			}
 		}
 
@@ -73,6 +81,7 @@ namespace UnityEngine.XR
 		{
 			add
 			{
+				/*
 				Action<XRNodeState> action = InputTracking.nodeAdded;
 				Action<XRNodeState> action2;
 				do
@@ -81,9 +90,11 @@ namespace UnityEngine.XR
 					action = Interlocked.CompareExchange<Action<XRNodeState>>(ref InputTracking.nodeAdded, (Action<XRNodeState>)Delegate.Combine(action2, value), action);
 				}
 				while (action != action2);
+				*/
 			}
 			remove
 			{
+				/*
 				Action<XRNodeState> action = InputTracking.nodeAdded;
 				Action<XRNodeState> action2;
 				do
@@ -92,6 +103,7 @@ namespace UnityEngine.XR
 					action = Interlocked.CompareExchange<Action<XRNodeState>>(ref InputTracking.nodeAdded, (Action<XRNodeState>)Delegate.Remove(action2, value), action);
 				}
 				while (action != action2);
+				*/
 			}
 		}
 
@@ -99,6 +111,7 @@ namespace UnityEngine.XR
 		{
 			add
 			{
+				/*
 				Action<XRNodeState> action = InputTracking.nodeRemoved;
 				Action<XRNodeState> action2;
 				do
@@ -107,9 +120,11 @@ namespace UnityEngine.XR
 					action = Interlocked.CompareExchange<Action<XRNodeState>>(ref InputTracking.nodeRemoved, (Action<XRNodeState>)Delegate.Combine(action2, value), action);
 				}
 				while (action != action2);
+				*/
 			}
 			remove
 			{
+				/*
 				Action<XRNodeState> action = InputTracking.nodeRemoved;
 				Action<XRNodeState> action2;
 				do
@@ -118,6 +133,7 @@ namespace UnityEngine.XR
 					action = Interlocked.CompareExchange<Action<XRNodeState>>(ref InputTracking.nodeRemoved, (Action<XRNodeState>)Delegate.Remove(action2, value), action);
 				}
 				while (action != action2);
+				*/
 			}
 		}
 
@@ -139,6 +155,7 @@ namespace UnityEngine.XR
 			obj.nodeType = nodeType;
 			obj.tracked = tracked;
 			Action<XRNodeState> action;
+			/*
 			switch (eventType)
 			{
 			case InputTracking.TrackingStateEventType.NodeAdded:
@@ -160,6 +177,7 @@ namespace UnityEngine.XR
 			{
 				action(obj);
 			}
+			*/
 		}
 
 		public static Vector3 GetLocalPosition(XRNode node)
@@ -208,11 +226,13 @@ namespace UnityEngine.XR
 
 		static InputTracking()
 		{
+			/*
 			// Note: this type is marked as 'beforefieldinit'.
 			InputTracking.trackingAcquired = null;
 			InputTracking.trackingLost = null;
 			InputTracking.nodeAdded = null;
 			InputTracking.nodeRemoved = null;
+			*/
 		}
 	}
 }

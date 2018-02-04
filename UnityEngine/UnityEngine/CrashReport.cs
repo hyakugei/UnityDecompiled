@@ -17,8 +17,10 @@ namespace UnityEngine
 
 		public readonly string text;
 
+		/*
 		[CompilerGenerated]
 		private static Comparison<CrashReport> <>f__mg$cache0;
+		*/
 
 		public static CrashReport[] reports
 		{
@@ -102,11 +104,13 @@ namespace UnityEngine
 						CrashReport.internalReports.Add(new CrashReport(text, dateTime2, reportData));
 					}
 					List<CrashReport> arg_AB_0 = CrashReport.internalReports;
+					/*
 					if (CrashReport.<>f__mg$cache0 == null)
 					{
 						CrashReport.<>f__mg$cache0 = new Comparison<CrashReport>(CrashReport.Compare);
 					}
 					arg_AB_0.Sort(CrashReport.<>f__mg$cache0);
+					*/
 				}
 			}
 		}

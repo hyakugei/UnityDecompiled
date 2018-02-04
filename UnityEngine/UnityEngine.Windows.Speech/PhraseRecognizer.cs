@@ -15,6 +15,7 @@ namespace UnityEngine.Windows.Speech
 		{
 			add
 			{
+				/*
 				PhraseRecognizer.PhraseRecognizedDelegate phraseRecognizedDelegate = this.OnPhraseRecognized;
 				PhraseRecognizer.PhraseRecognizedDelegate phraseRecognizedDelegate2;
 				do
@@ -23,9 +24,11 @@ namespace UnityEngine.Windows.Speech
 					phraseRecognizedDelegate = Interlocked.CompareExchange<PhraseRecognizer.PhraseRecognizedDelegate>(ref this.OnPhraseRecognized, (PhraseRecognizer.PhraseRecognizedDelegate)Delegate.Combine(phraseRecognizedDelegate2, value), phraseRecognizedDelegate);
 				}
 				while (phraseRecognizedDelegate != phraseRecognizedDelegate2);
+				*/
 			}
 			remove
 			{
+				/*
 				PhraseRecognizer.PhraseRecognizedDelegate phraseRecognizedDelegate = this.OnPhraseRecognized;
 				PhraseRecognizer.PhraseRecognizedDelegate phraseRecognizedDelegate2;
 				do
@@ -34,6 +37,7 @@ namespace UnityEngine.Windows.Speech
 					phraseRecognizedDelegate = Interlocked.CompareExchange<PhraseRecognizer.PhraseRecognizedDelegate>(ref this.OnPhraseRecognized, (PhraseRecognizer.PhraseRecognizedDelegate)Delegate.Remove(phraseRecognizedDelegate2, value), phraseRecognizedDelegate);
 				}
 				while (phraseRecognizedDelegate != phraseRecognizedDelegate2);
+				*/
 			}
 		}
 
@@ -130,11 +134,13 @@ namespace UnityEngine.Windows.Speech
 		[RequiredByNativeCode]
 		private void InvokePhraseRecognizedEvent(string text, ConfidenceLevel confidence, SemanticMeaning[] semanticMeanings, long phraseStartFileTime, long phraseDurationTicks)
 		{
+			/*
 			PhraseRecognizer.PhraseRecognizedDelegate onPhraseRecognized = this.OnPhraseRecognized;
 			if (onPhraseRecognized != null)
 			{
 				onPhraseRecognized(new PhraseRecognizedEventArgs(text, confidence, semanticMeanings, DateTime.FromFileTime(phraseStartFileTime), TimeSpan.FromTicks(phraseDurationTicks)));
 			}
+			*/
 		}
 
 		[RequiredByNativeCode]
@@ -144,6 +150,7 @@ namespace UnityEngine.Windows.Speech
 			int num = 0;
 			for (int i = 0; i < valueCount; i++)
 			{
+				/*
 				uint num2 = *(uint*)((byte*)((void*)valueSizes) + (IntPtr)i * 4);
 				SemanticMeaning semanticMeaning = new SemanticMeaning
 				{
@@ -158,6 +165,7 @@ namespace UnityEngine.Windows.Speech
 				}
 				array[i] = semanticMeaning;
 				num += (int)num2;
+				*/
 			}
 			return array;
 		}

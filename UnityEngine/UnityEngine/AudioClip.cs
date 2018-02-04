@@ -15,6 +15,7 @@ namespace UnityEngine
 		{
 			add
 			{
+				/*
 				AudioClip.PCMReaderCallback pCMReaderCallback = this.m_PCMReaderCallback;
 				AudioClip.PCMReaderCallback pCMReaderCallback2;
 				do
@@ -23,9 +24,11 @@ namespace UnityEngine
 					pCMReaderCallback = Interlocked.CompareExchange<AudioClip.PCMReaderCallback>(ref this.m_PCMReaderCallback, (AudioClip.PCMReaderCallback)Delegate.Combine(pCMReaderCallback2, value), pCMReaderCallback);
 				}
 				while (pCMReaderCallback != pCMReaderCallback2);
+				*/
 			}
 			remove
 			{
+				/*
 				AudioClip.PCMReaderCallback pCMReaderCallback = this.m_PCMReaderCallback;
 				AudioClip.PCMReaderCallback pCMReaderCallback2;
 				do
@@ -34,6 +37,7 @@ namespace UnityEngine
 					pCMReaderCallback = Interlocked.CompareExchange<AudioClip.PCMReaderCallback>(ref this.m_PCMReaderCallback, (AudioClip.PCMReaderCallback)Delegate.Remove(pCMReaderCallback2, value), pCMReaderCallback);
 				}
 				while (pCMReaderCallback != pCMReaderCallback2);
+				*/
 			}
 		}
 
@@ -41,6 +45,7 @@ namespace UnityEngine
 		{
 			add
 			{
+				/*
 				AudioClip.PCMSetPositionCallback pCMSetPositionCallback = this.m_PCMSetPositionCallback;
 				AudioClip.PCMSetPositionCallback pCMSetPositionCallback2;
 				do
@@ -49,9 +54,11 @@ namespace UnityEngine
 					pCMSetPositionCallback = Interlocked.CompareExchange<AudioClip.PCMSetPositionCallback>(ref this.m_PCMSetPositionCallback, (AudioClip.PCMSetPositionCallback)Delegate.Combine(pCMSetPositionCallback2, value), pCMSetPositionCallback);
 				}
 				while (pCMSetPositionCallback != pCMSetPositionCallback2);
+				*/
 			}
 			remove
 			{
+				/*
 				AudioClip.PCMSetPositionCallback pCMSetPositionCallback = this.m_PCMSetPositionCallback;
 				AudioClip.PCMSetPositionCallback pCMSetPositionCallback2;
 				do
@@ -60,6 +67,7 @@ namespace UnityEngine
 					pCMSetPositionCallback = Interlocked.CompareExchange<AudioClip.PCMSetPositionCallback>(ref this.m_PCMSetPositionCallback, (AudioClip.PCMSetPositionCallback)Delegate.Remove(pCMSetPositionCallback2, value), pCMSetPositionCallback);
 				}
 				while (pCMSetPositionCallback != pCMSetPositionCallback2);
+				*/
 			}
 		}
 
@@ -136,9 +144,11 @@ namespace UnityEngine
 
 		private AudioClip()
 		{
+			/*
 			this.m_PCMReaderCallback = null;
 			this.m_PCMSetPositionCallback = null;
 			base..ctor();
+			*/
 		}
 
 		[GeneratedByOldBindingsGenerator]
@@ -219,19 +229,23 @@ namespace UnityEngine
 		[RequiredByNativeCode]
 		private void InvokePCMReaderCallback_Internal(float[] data)
 		{
+			/*
 			if (this.m_PCMReaderCallback != null)
 			{
 				this.m_PCMReaderCallback(data);
 			}
+			*/
 		}
 
 		[RequiredByNativeCode]
 		private void InvokePCMSetPositionCallback_Internal(int position)
 		{
+			/*
 			if (this.m_PCMSetPositionCallback != null)
 			{
 				this.m_PCMSetPositionCallback(position);
 			}
+			*/
 		}
 
 		[GeneratedByOldBindingsGenerator]

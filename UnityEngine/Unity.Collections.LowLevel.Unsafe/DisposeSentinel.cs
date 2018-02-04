@@ -50,7 +50,7 @@ namespace Unity.Collections.LowLevel.Unsafe
 			}
 		}
 
-		protected override void Finalize()
+		~DisposeSentinel()
 		{
 			try
 			{
@@ -71,10 +71,7 @@ namespace Unity.Collections.LowLevel.Unsafe
 					}
 				}
 			}
-			finally
-			{
-				base.Finalize();
-			}
+			catch { }
 		}
 
 		public static void UpdateBufferPtr(DisposeSentinel sentinel, IntPtr ptr)

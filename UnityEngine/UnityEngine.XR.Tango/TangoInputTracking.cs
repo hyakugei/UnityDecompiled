@@ -18,6 +18,7 @@ namespace UnityEngine.XR.Tango
 		{
 			add
 			{
+				/*
 				Action<CoordinateFrame> action = TangoInputTracking.trackingAcquired;
 				Action<CoordinateFrame> action2;
 				do
@@ -26,9 +27,11 @@ namespace UnityEngine.XR.Tango
 					action = Interlocked.CompareExchange<Action<CoordinateFrame>>(ref TangoInputTracking.trackingAcquired, (Action<CoordinateFrame>)Delegate.Combine(action2, value), action);
 				}
 				while (action != action2);
+				*/
 			}
 			remove
 			{
+				/*
 				Action<CoordinateFrame> action = TangoInputTracking.trackingAcquired;
 				Action<CoordinateFrame> action2;
 				do
@@ -37,6 +40,7 @@ namespace UnityEngine.XR.Tango
 					action = Interlocked.CompareExchange<Action<CoordinateFrame>>(ref TangoInputTracking.trackingAcquired, (Action<CoordinateFrame>)Delegate.Remove(action2, value), action);
 				}
 				while (action != action2);
+				*/
 			}
 		}
 
@@ -44,6 +48,7 @@ namespace UnityEngine.XR.Tango
 		{
 			add
 			{
+				/*
 				Action<CoordinateFrame> action = TangoInputTracking.trackingLost;
 				Action<CoordinateFrame> action2;
 				do
@@ -52,9 +57,11 @@ namespace UnityEngine.XR.Tango
 					action = Interlocked.CompareExchange<Action<CoordinateFrame>>(ref TangoInputTracking.trackingLost, (Action<CoordinateFrame>)Delegate.Combine(action2, value), action);
 				}
 				while (action != action2);
+				*/
 			}
 			remove
 			{
+				/*
 				Action<CoordinateFrame> action = TangoInputTracking.trackingLost;
 				Action<CoordinateFrame> action2;
 				do
@@ -63,6 +70,7 @@ namespace UnityEngine.XR.Tango
 					action = Interlocked.CompareExchange<Action<CoordinateFrame>>(ref TangoInputTracking.trackingLost, (Action<CoordinateFrame>)Delegate.Remove(action2, value), action);
 				}
 				while (action != action2);
+				*/
 			}
 		}
 
@@ -82,6 +90,7 @@ namespace UnityEngine.XR.Tango
 		[UsedByNativeCode]
 		private static void InvokeTangoTrackingEvent(TangoInputTracking.TrackingStateEventType eventType, CoordinateFrame frame)
 		{
+			/*
 			Action<CoordinateFrame> action;
 			if (eventType != TangoInputTracking.TrackingStateEventType.TrackingAcquired)
 			{
@@ -99,13 +108,16 @@ namespace UnityEngine.XR.Tango
 			{
 				action(frame);
 			}
+			*/
 		}
 
 		static TangoInputTracking()
 		{
+			/*
 			// Note: this type is marked as 'beforefieldinit'.
 			TangoInputTracking.trackingAcquired = null;
 			TangoInputTracking.trackingLost = null;
+			*/
 		}
 	}
 }

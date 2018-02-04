@@ -15,6 +15,7 @@ namespace UnityEngine.XR.WSA
 		{
 			add
 			{
+				/*
 				WorldAnchor.OnTrackingChangedDelegate onTrackingChangedDelegate = this.OnTrackingChanged;
 				WorldAnchor.OnTrackingChangedDelegate onTrackingChangedDelegate2;
 				do
@@ -23,9 +24,11 @@ namespace UnityEngine.XR.WSA
 					onTrackingChangedDelegate = Interlocked.CompareExchange<WorldAnchor.OnTrackingChangedDelegate>(ref this.OnTrackingChanged, (WorldAnchor.OnTrackingChangedDelegate)Delegate.Combine(onTrackingChangedDelegate2, value), onTrackingChangedDelegate);
 				}
 				while (onTrackingChangedDelegate != onTrackingChangedDelegate2);
+				*/
 			}
 			remove
 			{
+				/*
 				WorldAnchor.OnTrackingChangedDelegate onTrackingChangedDelegate = this.OnTrackingChanged;
 				WorldAnchor.OnTrackingChangedDelegate onTrackingChangedDelegate2;
 				do
@@ -34,6 +37,7 @@ namespace UnityEngine.XR.WSA
 					onTrackingChangedDelegate = Interlocked.CompareExchange<WorldAnchor.OnTrackingChangedDelegate>(ref this.OnTrackingChanged, (WorldAnchor.OnTrackingChangedDelegate)Delegate.Remove(onTrackingChangedDelegate2, value), onTrackingChangedDelegate);
 				}
 				while (onTrackingChangedDelegate != onTrackingChangedDelegate2);
+				*/
 			}
 		}
 
@@ -91,10 +95,12 @@ namespace UnityEngine.XR.WSA
 		[RequiredByNativeCode]
 		private static void Internal_TriggerEventOnTrackingLost(WorldAnchor self, bool located)
 		{
+			/*
 			if (self != null && self.OnTrackingChanged != null)
 			{
 				self.OnTrackingChanged(self, located);
 			}
+			*/
 		}
 	}
 }

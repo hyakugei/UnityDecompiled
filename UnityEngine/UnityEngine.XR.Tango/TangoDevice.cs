@@ -9,12 +9,14 @@ namespace UnityEngine.XR.Tango
 		private static ARBackgroundRenderer m_BackgroundRenderer = null;
 
 		private static string m_AreaDescriptionUUID = "";
-
+		
+		/*
 		[CompilerGenerated]
 		private static Action <>f__mg$cache0;
 
 		[CompilerGenerated]
 		private static Action <>f__mg$cache1;
+		*/
 
 		internal static extern CoordinateFrame baseCoordinateFrame
 		{
@@ -72,6 +74,7 @@ namespace UnityEngine.XR.Tango
 			}
 			set
 			{
+				/*
 				if (value != null)
 				{
 					if (TangoDevice.m_BackgroundRenderer != null)
@@ -92,6 +95,7 @@ namespace UnityEngine.XR.Tango
 					arg_67_0.backgroundRendererChanged += TangoDevice.<>f__mg$cache1;
 					TangoDevice.OnBackgroundRendererChanged();
 				}
+				*/
 			}
 		}
 

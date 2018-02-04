@@ -18,6 +18,7 @@ namespace UnityEngine.XR
 
 		private CameraClearFlags m_CameraClearFlags = CameraClearFlags.Skybox;
 
+		/*
 		public event Action backgroundRendererChanged
 		{
 			add
@@ -43,6 +44,7 @@ namespace UnityEngine.XR
 				while (action != action2);
 			}
 		}
+		*/
 
 		public Material backgroundMaterial
 		{
@@ -54,6 +56,7 @@ namespace UnityEngine.XR
 			{
 				if (!(this.m_BackgroundMaterial == value))
 				{
+					/*
 					this.RemoveCommandBuffersIfNeeded();
 					this.m_BackgroundMaterial = value;
 					if (this.backgroundRendererChanged != null)
@@ -61,6 +64,7 @@ namespace UnityEngine.XR
 						this.backgroundRendererChanged();
 					}
 					this.ReapplyCommandBuffersIfNeeded();
+					*/
 				}
 			}
 		}
@@ -76,6 +80,7 @@ namespace UnityEngine.XR
 				this.m_BackgroundTexture = value;
 				if (!value)
 				{
+					/*
 					this.RemoveCommandBuffersIfNeeded();
 					this.m_BackgroundTexture = value;
 					if (this.backgroundRendererChanged != null)
@@ -83,6 +88,7 @@ namespace UnityEngine.XR
 						this.backgroundRendererChanged();
 					}
 					this.ReapplyCommandBuffersIfNeeded();
+					*/
 				}
 			}
 		}
@@ -97,6 +103,7 @@ namespace UnityEngine.XR
 			{
 				if (!(this.m_Camera == value))
 				{
+					/*
 					this.RemoveCommandBuffersIfNeeded();
 					this.m_Camera = value;
 					if (this.backgroundRendererChanged != null)
@@ -104,6 +111,7 @@ namespace UnityEngine.XR
 						this.backgroundRendererChanged();
 					}
 					this.ReapplyCommandBuffersIfNeeded();
+					*/
 				}
 			}
 		}
@@ -132,18 +140,22 @@ namespace UnityEngine.XR
 					{
 						this.DisableARBackgroundRendering();
 					}
+					/*
 					if (this.backgroundRendererChanged != null)
 					{
 						this.backgroundRendererChanged();
 					}
+					*/
 				}
 			}
 		}
 
 		public ARBackgroundRenderer()
 		{
+			/*
 			this.backgroundRendererChanged = null;
 			base..ctor();
+			*/
 		}
 
 		protected bool EnableARBackgroundRendering()

@@ -98,7 +98,10 @@ namespace UnityEngine
 		{
 			get
 			{
-				return (!(this.m_Rigidbody != null)) ? this.m_Collider : this.m_Rigidbody;
+				if (m_Rigidbody == null)
+					return m_Collider;
+				else
+					return m_Rigidbody;
 			}
 		}
 

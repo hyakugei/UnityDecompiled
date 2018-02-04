@@ -95,6 +95,7 @@ namespace UnityEngine.Experimental.Rendering
 
 		public SupportedRenderingFeatures()
 		{
+			/*
 			this.<reflectionProbeSupportFlags>k__BackingField = SupportedRenderingFeatures.ReflectionProbeSupportFlags.None;
 			this.<defaultMixedLightingMode>k__BackingField = SupportedRenderingFeatures.LightmapMixedBakeMode.None;
 			this.<supportedMixedLightingModes>k__BackingField = (SupportedRenderingFeatures.LightmapMixedBakeMode.IndirectOnly | SupportedRenderingFeatures.LightmapMixedBakeMode.Subtractive | SupportedRenderingFeatures.LightmapMixedBakeMode.Shadowmask);
@@ -105,6 +106,7 @@ namespace UnityEngine.Experimental.Rendering
 			this.<rendererSupportsReceiveShadows>k__BackingField = true;
 			this.<rendererSupportsReflectionProbes>k__BackingField = true;
 			base..ctor();
+			*/
 		}
 
 		[RequiredByNativeCode]

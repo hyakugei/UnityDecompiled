@@ -8,6 +8,7 @@ namespace UnityEngine.Experimental.Rendering
 	[UsedByNativeCode]
 	public struct CameraProperties
 	{
+		/*
 		[CompilerGenerated, UnsafeValueType]
 		[StructLayout(LayoutKind.Sequential, Size = 96)]
 		public struct <_shadowCullPlanes>__FixedBuffer1
@@ -28,6 +29,7 @@ namespace UnityEngine.Experimental.Rendering
 		{
 			public float FixedElementField;
 		}
+		*/
 
 		private const int kNumLayers = 32;
 
@@ -75,15 +77,15 @@ namespace UnityEngine.Experimental.Rendering
 
 		private uint rendererCount;
 
-		private CameraProperties.<_shadowCullPlanes>__FixedBuffer1 _shadowCullPlanes;
+		//private CameraProperties.<_shadowCullPlanes>__FixedBuffer1 _shadowCullPlanes;
 
-		private CameraProperties.<_cameraCullPlanes>__FixedBuffer2 _cameraCullPlanes;
+		//private CameraProperties.<_cameraCullPlanes>__FixedBuffer2 _cameraCullPlanes;
 
 		private float baseFarDistance;
 
 		private Vector3 shadowCullCenter;
 
-		private CameraProperties.<layerCullDistances>__FixedBuffer3 layerCullDistances;
+		//private CameraProperties.<layerCullDistances>__FixedBuffer3 layerCullDistances;
 
 		private int layerCullSpherical;
 
@@ -93,15 +95,19 @@ namespace UnityEngine.Experimental.Rendering
 
 		public unsafe Plane GetShadowCullingPlane(int index)
 		{
+			/*
 			if (index < 0 || index >= 6)
 			{
 				throw new IndexOutOfRangeException("Invalid plane index");
 			}
 			return new Plane(new Vector3(*(ref this._shadowCullPlanes.FixedElementField + (IntPtr)(index * 4) * 4), *(ref this._shadowCullPlanes.FixedElementField + (IntPtr)(index * 4 + 1) * 4), *(ref this._shadowCullPlanes.FixedElementField + (IntPtr)(index * 4 + 2) * 4)), *(ref this._shadowCullPlanes.FixedElementField + (IntPtr)(index * 4 + 3) * 4));
+			*/
+			return new Plane();
 		}
 
 		public unsafe void SetShadowCullingPlane(int index, Plane plane)
 		{
+			/*
 			if (index < 0 || index >= 6)
 			{
 				throw new IndexOutOfRangeException("Invalid plane index");
@@ -113,19 +119,24 @@ namespace UnityEngine.Experimental.Rendering
 				ptr[(IntPtr)(index * 4 + 2) * 4] = plane.normal.z;
 				ptr[(IntPtr)(index * 4 + 3) * 4] = plane.distance;
 			}
+			*/
 		}
 
 		public unsafe Plane GetCameraCullingPlane(int index)
 		{
+			/*
 			if (index < 0 || index >= 6)
 			{
 				throw new IndexOutOfRangeException("Invalid plane index");
 			}
 			return new Plane(new Vector3(*(ref this._cameraCullPlanes.FixedElementField + (IntPtr)(index * 4) * 4), *(ref this._cameraCullPlanes.FixedElementField + (IntPtr)(index * 4 + 1) * 4), *(ref this._cameraCullPlanes.FixedElementField + (IntPtr)(index * 4 + 2) * 4)), *(ref this._cameraCullPlanes.FixedElementField + (IntPtr)(index * 4 + 3) * 4));
+			*/
+			return new Plane();
 		}
 
 		public unsafe void SetCameraCullingPlane(int index, Plane plane)
 		{
+			/*
 			if (index < 0 || index >= 6)
 			{
 				throw new IndexOutOfRangeException("Invalid plane index");
@@ -137,6 +148,7 @@ namespace UnityEngine.Experimental.Rendering
 				ptr[(IntPtr)(index * 4 + 2) * 4] = plane.normal.z;
 				ptr[(IntPtr)(index * 4 + 3) * 4] = plane.distance;
 			}
+			*/
 		}
 	}
 }

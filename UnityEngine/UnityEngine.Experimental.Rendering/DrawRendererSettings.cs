@@ -7,12 +7,14 @@ namespace UnityEngine.Experimental.Rendering
 {
 	public struct DrawRendererSettings
 	{
+		/*
 		[CompilerGenerated, UnsafeValueType]
 		[StructLayout(LayoutKind.Sequential, Size = 64)]
 		public struct <shaderPassNames>__FixedBuffer0
 		{
 			public int FixedElementField;
 		}
+		*/
 
 		private const int kMaxShaderPasses = 16;
 
@@ -20,7 +22,7 @@ namespace UnityEngine.Experimental.Rendering
 
 		public DrawRendererSortSettings sorting;
 
-		private DrawRendererSettings.<shaderPassNames>__FixedBuffer0 shaderPassNames;
+		//private DrawRendererSettings.<shaderPassNames>__FixedBuffer0 shaderPassNames;
 
 		public RendererConfiguration rendererConfiguration;
 
@@ -36,6 +38,7 @@ namespace UnityEngine.Experimental.Rendering
 			this.flags = DrawRendererFlags.EnableInstancing;
 			this.m_OverrideMaterialInstanceId = 0;
 			this.m_OverrideMaterialPassIdx = 0;
+			/*
 			fixed (int* ptr = &this.shaderPassNames.FixedElementField)
 			{
 				for (int i = 0; i < DrawRendererSettings.maxShaderPasses; i++)
@@ -47,6 +50,7 @@ namespace UnityEngine.Experimental.Rendering
 			{
 				*ptr2 = shaderPassName.nameIndex;
 			}
+			*/
 			this.rendererConfiguration = RendererConfiguration.None;
 			this.flags = DrawRendererFlags.EnableInstancing;
 			DrawRendererSettings.InitializeSortSettings(camera, out this.sorting);
@@ -71,10 +75,12 @@ namespace UnityEngine.Experimental.Rendering
 			{
 				throw new ArgumentOutOfRangeException("index", string.Format("Index should range from 0 - DrawRendererSettings.maxShaderPasses ({0}), was {1}", DrawRendererSettings.maxShaderPasses, index));
 			}
+			/*
 			fixed (int* ptr = &this.shaderPassNames.FixedElementField)
 			{
 				ptr[(IntPtr)index * 4] = shaderPassName.nameIndex;
 			}
+			*/
 		}
 
 		[GeneratedByOldBindingsGenerator]

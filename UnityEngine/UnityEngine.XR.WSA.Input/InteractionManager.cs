@@ -26,13 +26,16 @@ namespace UnityEngine.XR.WSA.Input
 
 		private static InteractionManager.InternalSourceEventHandler m_OnSourceEventHandler;
 
+		/*
 		[CompilerGenerated]
 		private static InteractionManager.InternalSourceEventHandler <>f__mg$cache0;
+		*/
 
 		public static event Action<InteractionSourceDetectedEventArgs> InteractionSourceDetected
 		{
 			add
 			{
+				/*
 				Action<InteractionSourceDetectedEventArgs> action = InteractionManager.InteractionSourceDetected;
 				Action<InteractionSourceDetectedEventArgs> action2;
 				do
@@ -41,9 +44,11 @@ namespace UnityEngine.XR.WSA.Input
 					action = Interlocked.CompareExchange<Action<InteractionSourceDetectedEventArgs>>(ref InteractionManager.InteractionSourceDetected, (Action<InteractionSourceDetectedEventArgs>)Delegate.Combine(action2, value), action);
 				}
 				while (action != action2);
+				*/
 			}
 			remove
 			{
+				/*
 				Action<InteractionSourceDetectedEventArgs> action = InteractionManager.InteractionSourceDetected;
 				Action<InteractionSourceDetectedEventArgs> action2;
 				do
@@ -52,6 +57,7 @@ namespace UnityEngine.XR.WSA.Input
 					action = Interlocked.CompareExchange<Action<InteractionSourceDetectedEventArgs>>(ref InteractionManager.InteractionSourceDetected, (Action<InteractionSourceDetectedEventArgs>)Delegate.Remove(action2, value), action);
 				}
 				while (action != action2);
+				*/
 			}
 		}
 
@@ -59,6 +65,7 @@ namespace UnityEngine.XR.WSA.Input
 		{
 			add
 			{
+				/*
 				Action<InteractionSourceLostEventArgs> action = InteractionManager.InteractionSourceLost;
 				Action<InteractionSourceLostEventArgs> action2;
 				do
@@ -67,9 +74,11 @@ namespace UnityEngine.XR.WSA.Input
 					action = Interlocked.CompareExchange<Action<InteractionSourceLostEventArgs>>(ref InteractionManager.InteractionSourceLost, (Action<InteractionSourceLostEventArgs>)Delegate.Combine(action2, value), action);
 				}
 				while (action != action2);
+				*/
 			}
 			remove
 			{
+				/*
 				Action<InteractionSourceLostEventArgs> action = InteractionManager.InteractionSourceLost;
 				Action<InteractionSourceLostEventArgs> action2;
 				do
@@ -78,6 +87,7 @@ namespace UnityEngine.XR.WSA.Input
 					action = Interlocked.CompareExchange<Action<InteractionSourceLostEventArgs>>(ref InteractionManager.InteractionSourceLost, (Action<InteractionSourceLostEventArgs>)Delegate.Remove(action2, value), action);
 				}
 				while (action != action2);
+				*/
 			}
 		}
 
@@ -85,6 +95,7 @@ namespace UnityEngine.XR.WSA.Input
 		{
 			add
 			{
+				/*
 				Action<InteractionSourcePressedEventArgs> action = InteractionManager.InteractionSourcePressed;
 				Action<InteractionSourcePressedEventArgs> action2;
 				do
@@ -93,9 +104,11 @@ namespace UnityEngine.XR.WSA.Input
 					action = Interlocked.CompareExchange<Action<InteractionSourcePressedEventArgs>>(ref InteractionManager.InteractionSourcePressed, (Action<InteractionSourcePressedEventArgs>)Delegate.Combine(action2, value), action);
 				}
 				while (action != action2);
+				*/
 			}
 			remove
 			{
+				/*
 				Action<InteractionSourcePressedEventArgs> action = InteractionManager.InteractionSourcePressed;
 				Action<InteractionSourcePressedEventArgs> action2;
 				do
@@ -104,6 +117,7 @@ namespace UnityEngine.XR.WSA.Input
 					action = Interlocked.CompareExchange<Action<InteractionSourcePressedEventArgs>>(ref InteractionManager.InteractionSourcePressed, (Action<InteractionSourcePressedEventArgs>)Delegate.Remove(action2, value), action);
 				}
 				while (action != action2);
+				*/
 			}
 		}
 
@@ -111,6 +125,7 @@ namespace UnityEngine.XR.WSA.Input
 		{
 			add
 			{
+				/*
 				Action<InteractionSourceReleasedEventArgs> action = InteractionManager.InteractionSourceReleased;
 				Action<InteractionSourceReleasedEventArgs> action2;
 				do
@@ -119,9 +134,11 @@ namespace UnityEngine.XR.WSA.Input
 					action = Interlocked.CompareExchange<Action<InteractionSourceReleasedEventArgs>>(ref InteractionManager.InteractionSourceReleased, (Action<InteractionSourceReleasedEventArgs>)Delegate.Combine(action2, value), action);
 				}
 				while (action != action2);
+				*/
 			}
 			remove
 			{
+				/*
 				Action<InteractionSourceReleasedEventArgs> action = InteractionManager.InteractionSourceReleased;
 				Action<InteractionSourceReleasedEventArgs> action2;
 				do
@@ -130,6 +147,7 @@ namespace UnityEngine.XR.WSA.Input
 					action = Interlocked.CompareExchange<Action<InteractionSourceReleasedEventArgs>>(ref InteractionManager.InteractionSourceReleased, (Action<InteractionSourceReleasedEventArgs>)Delegate.Remove(action2, value), action);
 				}
 				while (action != action2);
+				*/
 			}
 		}
 
@@ -137,6 +155,7 @@ namespace UnityEngine.XR.WSA.Input
 		{
 			add
 			{
+				/*
 				Action<InteractionSourceUpdatedEventArgs> action = InteractionManager.InteractionSourceUpdated;
 				Action<InteractionSourceUpdatedEventArgs> action2;
 				do
@@ -145,9 +164,11 @@ namespace UnityEngine.XR.WSA.Input
 					action = Interlocked.CompareExchange<Action<InteractionSourceUpdatedEventArgs>>(ref InteractionManager.InteractionSourceUpdated, (Action<InteractionSourceUpdatedEventArgs>)Delegate.Combine(action2, value), action);
 				}
 				while (action != action2);
+				*/
 			}
 			remove
 			{
+				/*
 				Action<InteractionSourceUpdatedEventArgs> action = InteractionManager.InteractionSourceUpdated;
 				Action<InteractionSourceUpdatedEventArgs> action2;
 				do
@@ -156,6 +177,7 @@ namespace UnityEngine.XR.WSA.Input
 					action = Interlocked.CompareExchange<Action<InteractionSourceUpdatedEventArgs>>(ref InteractionManager.InteractionSourceUpdated, (Action<InteractionSourceUpdatedEventArgs>)Delegate.Remove(action2, value), action);
 				}
 				while (action != action2);
+				*/
 			}
 		}
 
@@ -164,6 +186,7 @@ namespace UnityEngine.XR.WSA.Input
 		{
 			add
 			{
+				/*
 				InteractionManager.SourceEventHandler sourceEventHandler = InteractionManager.SourceDetected;
 				InteractionManager.SourceEventHandler sourceEventHandler2;
 				do
@@ -172,9 +195,11 @@ namespace UnityEngine.XR.WSA.Input
 					sourceEventHandler = Interlocked.CompareExchange<InteractionManager.SourceEventHandler>(ref InteractionManager.SourceDetected, (InteractionManager.SourceEventHandler)Delegate.Combine(sourceEventHandler2, value), sourceEventHandler);
 				}
 				while (sourceEventHandler != sourceEventHandler2);
+				*/
 			}
 			remove
 			{
+				/*
 				InteractionManager.SourceEventHandler sourceEventHandler = InteractionManager.SourceDetected;
 				InteractionManager.SourceEventHandler sourceEventHandler2;
 				do
@@ -183,6 +208,7 @@ namespace UnityEngine.XR.WSA.Input
 					sourceEventHandler = Interlocked.CompareExchange<InteractionManager.SourceEventHandler>(ref InteractionManager.SourceDetected, (InteractionManager.SourceEventHandler)Delegate.Remove(sourceEventHandler2, value), sourceEventHandler);
 				}
 				while (sourceEventHandler != sourceEventHandler2);
+				*/
 			}
 		}
 
@@ -191,6 +217,7 @@ namespace UnityEngine.XR.WSA.Input
 		{
 			add
 			{
+				/*
 				InteractionManager.SourceEventHandler sourceEventHandler = InteractionManager.SourceLost;
 				InteractionManager.SourceEventHandler sourceEventHandler2;
 				do
@@ -199,9 +226,11 @@ namespace UnityEngine.XR.WSA.Input
 					sourceEventHandler = Interlocked.CompareExchange<InteractionManager.SourceEventHandler>(ref InteractionManager.SourceLost, (InteractionManager.SourceEventHandler)Delegate.Combine(sourceEventHandler2, value), sourceEventHandler);
 				}
 				while (sourceEventHandler != sourceEventHandler2);
+				*/
 			}
 			remove
 			{
+				/*
 				InteractionManager.SourceEventHandler sourceEventHandler = InteractionManager.SourceLost;
 				InteractionManager.SourceEventHandler sourceEventHandler2;
 				do
@@ -210,6 +239,7 @@ namespace UnityEngine.XR.WSA.Input
 					sourceEventHandler = Interlocked.CompareExchange<InteractionManager.SourceEventHandler>(ref InteractionManager.SourceLost, (InteractionManager.SourceEventHandler)Delegate.Remove(sourceEventHandler2, value), sourceEventHandler);
 				}
 				while (sourceEventHandler != sourceEventHandler2);
+				*/
 			}
 		}
 
@@ -218,6 +248,7 @@ namespace UnityEngine.XR.WSA.Input
 		{
 			add
 			{
+				/*
 				InteractionManager.SourceEventHandler sourceEventHandler = InteractionManager.SourcePressed;
 				InteractionManager.SourceEventHandler sourceEventHandler2;
 				do
@@ -226,9 +257,11 @@ namespace UnityEngine.XR.WSA.Input
 					sourceEventHandler = Interlocked.CompareExchange<InteractionManager.SourceEventHandler>(ref InteractionManager.SourcePressed, (InteractionManager.SourceEventHandler)Delegate.Combine(sourceEventHandler2, value), sourceEventHandler);
 				}
 				while (sourceEventHandler != sourceEventHandler2);
+				*/
 			}
 			remove
 			{
+				/*
 				InteractionManager.SourceEventHandler sourceEventHandler = InteractionManager.SourcePressed;
 				InteractionManager.SourceEventHandler sourceEventHandler2;
 				do
@@ -237,6 +270,7 @@ namespace UnityEngine.XR.WSA.Input
 					sourceEventHandler = Interlocked.CompareExchange<InteractionManager.SourceEventHandler>(ref InteractionManager.SourcePressed, (InteractionManager.SourceEventHandler)Delegate.Remove(sourceEventHandler2, value), sourceEventHandler);
 				}
 				while (sourceEventHandler != sourceEventHandler2);
+				*/
 			}
 		}
 
@@ -245,6 +279,7 @@ namespace UnityEngine.XR.WSA.Input
 		{
 			add
 			{
+				/*
 				InteractionManager.SourceEventHandler sourceEventHandler = InteractionManager.SourceReleased;
 				InteractionManager.SourceEventHandler sourceEventHandler2;
 				do
@@ -253,9 +288,11 @@ namespace UnityEngine.XR.WSA.Input
 					sourceEventHandler = Interlocked.CompareExchange<InteractionManager.SourceEventHandler>(ref InteractionManager.SourceReleased, (InteractionManager.SourceEventHandler)Delegate.Combine(sourceEventHandler2, value), sourceEventHandler);
 				}
 				while (sourceEventHandler != sourceEventHandler2);
+				*/
 			}
 			remove
 			{
+				/*
 				InteractionManager.SourceEventHandler sourceEventHandler = InteractionManager.SourceReleased;
 				InteractionManager.SourceEventHandler sourceEventHandler2;
 				do
@@ -264,6 +301,7 @@ namespace UnityEngine.XR.WSA.Input
 					sourceEventHandler = Interlocked.CompareExchange<InteractionManager.SourceEventHandler>(ref InteractionManager.SourceReleased, (InteractionManager.SourceEventHandler)Delegate.Remove(sourceEventHandler2, value), sourceEventHandler);
 				}
 				while (sourceEventHandler != sourceEventHandler2);
+				*/
 			}
 		}
 
@@ -272,6 +310,7 @@ namespace UnityEngine.XR.WSA.Input
 		{
 			add
 			{
+				/*
 				InteractionManager.SourceEventHandler sourceEventHandler = InteractionManager.SourceUpdated;
 				InteractionManager.SourceEventHandler sourceEventHandler2;
 				do
@@ -280,9 +319,11 @@ namespace UnityEngine.XR.WSA.Input
 					sourceEventHandler = Interlocked.CompareExchange<InteractionManager.SourceEventHandler>(ref InteractionManager.SourceUpdated, (InteractionManager.SourceEventHandler)Delegate.Combine(sourceEventHandler2, value), sourceEventHandler);
 				}
 				while (sourceEventHandler != sourceEventHandler2);
+				*/
 			}
 			remove
 			{
+				/*
 				InteractionManager.SourceEventHandler sourceEventHandler = InteractionManager.SourceUpdated;
 				InteractionManager.SourceEventHandler sourceEventHandler2;
 				do
@@ -291,6 +332,7 @@ namespace UnityEngine.XR.WSA.Input
 					sourceEventHandler = Interlocked.CompareExchange<InteractionManager.SourceEventHandler>(ref InteractionManager.SourceUpdated, (InteractionManager.SourceEventHandler)Delegate.Remove(sourceEventHandler2, value), sourceEventHandler);
 				}
 				while (sourceEventHandler != sourceEventHandler2);
+				*/
 			}
 		}
 
@@ -299,6 +341,7 @@ namespace UnityEngine.XR.WSA.Input
 		{
 			add
 			{
+				/*
 				InteractionManager.SourceEventHandler sourceEventHandler = InteractionManager.InteractionSourceDetectedLegacy;
 				InteractionManager.SourceEventHandler sourceEventHandler2;
 				do
@@ -307,9 +350,11 @@ namespace UnityEngine.XR.WSA.Input
 					sourceEventHandler = Interlocked.CompareExchange<InteractionManager.SourceEventHandler>(ref InteractionManager.InteractionSourceDetectedLegacy, (InteractionManager.SourceEventHandler)Delegate.Combine(sourceEventHandler2, value), sourceEventHandler);
 				}
 				while (sourceEventHandler != sourceEventHandler2);
+				*/
 			}
 			remove
 			{
+				/*
 				InteractionManager.SourceEventHandler sourceEventHandler = InteractionManager.InteractionSourceDetectedLegacy;
 				InteractionManager.SourceEventHandler sourceEventHandler2;
 				do
@@ -318,6 +363,7 @@ namespace UnityEngine.XR.WSA.Input
 					sourceEventHandler = Interlocked.CompareExchange<InteractionManager.SourceEventHandler>(ref InteractionManager.InteractionSourceDetectedLegacy, (InteractionManager.SourceEventHandler)Delegate.Remove(sourceEventHandler2, value), sourceEventHandler);
 				}
 				while (sourceEventHandler != sourceEventHandler2);
+				*/
 			}
 		}
 
@@ -326,6 +372,7 @@ namespace UnityEngine.XR.WSA.Input
 		{
 			add
 			{
+				/*
 				InteractionManager.SourceEventHandler sourceEventHandler = InteractionManager.InteractionSourceLostLegacy;
 				InteractionManager.SourceEventHandler sourceEventHandler2;
 				do
@@ -334,9 +381,11 @@ namespace UnityEngine.XR.WSA.Input
 					sourceEventHandler = Interlocked.CompareExchange<InteractionManager.SourceEventHandler>(ref InteractionManager.InteractionSourceLostLegacy, (InteractionManager.SourceEventHandler)Delegate.Combine(sourceEventHandler2, value), sourceEventHandler);
 				}
 				while (sourceEventHandler != sourceEventHandler2);
+				*/
 			}
 			remove
 			{
+				/*
 				InteractionManager.SourceEventHandler sourceEventHandler = InteractionManager.InteractionSourceLostLegacy;
 				InteractionManager.SourceEventHandler sourceEventHandler2;
 				do
@@ -345,6 +394,7 @@ namespace UnityEngine.XR.WSA.Input
 					sourceEventHandler = Interlocked.CompareExchange<InteractionManager.SourceEventHandler>(ref InteractionManager.InteractionSourceLostLegacy, (InteractionManager.SourceEventHandler)Delegate.Remove(sourceEventHandler2, value), sourceEventHandler);
 				}
 				while (sourceEventHandler != sourceEventHandler2);
+				*/
 			}
 		}
 
@@ -353,6 +403,7 @@ namespace UnityEngine.XR.WSA.Input
 		{
 			add
 			{
+				/*
 				InteractionManager.SourceEventHandler sourceEventHandler = InteractionManager.InteractionSourcePressedLegacy;
 				InteractionManager.SourceEventHandler sourceEventHandler2;
 				do
@@ -361,9 +412,11 @@ namespace UnityEngine.XR.WSA.Input
 					sourceEventHandler = Interlocked.CompareExchange<InteractionManager.SourceEventHandler>(ref InteractionManager.InteractionSourcePressedLegacy, (InteractionManager.SourceEventHandler)Delegate.Combine(sourceEventHandler2, value), sourceEventHandler);
 				}
 				while (sourceEventHandler != sourceEventHandler2);
+				*/
 			}
 			remove
 			{
+				/*
 				InteractionManager.SourceEventHandler sourceEventHandler = InteractionManager.InteractionSourcePressedLegacy;
 				InteractionManager.SourceEventHandler sourceEventHandler2;
 				do
@@ -372,6 +425,7 @@ namespace UnityEngine.XR.WSA.Input
 					sourceEventHandler = Interlocked.CompareExchange<InteractionManager.SourceEventHandler>(ref InteractionManager.InteractionSourcePressedLegacy, (InteractionManager.SourceEventHandler)Delegate.Remove(sourceEventHandler2, value), sourceEventHandler);
 				}
 				while (sourceEventHandler != sourceEventHandler2);
+				*/
 			}
 		}
 
@@ -380,6 +434,7 @@ namespace UnityEngine.XR.WSA.Input
 		{
 			add
 			{
+				/*
 				InteractionManager.SourceEventHandler sourceEventHandler = InteractionManager.InteractionSourceReleasedLegacy;
 				InteractionManager.SourceEventHandler sourceEventHandler2;
 				do
@@ -388,9 +443,11 @@ namespace UnityEngine.XR.WSA.Input
 					sourceEventHandler = Interlocked.CompareExchange<InteractionManager.SourceEventHandler>(ref InteractionManager.InteractionSourceReleasedLegacy, (InteractionManager.SourceEventHandler)Delegate.Combine(sourceEventHandler2, value), sourceEventHandler);
 				}
 				while (sourceEventHandler != sourceEventHandler2);
+				*/
 			}
 			remove
 			{
+				/*
 				InteractionManager.SourceEventHandler sourceEventHandler = InteractionManager.InteractionSourceReleasedLegacy;
 				InteractionManager.SourceEventHandler sourceEventHandler2;
 				do
@@ -399,6 +456,7 @@ namespace UnityEngine.XR.WSA.Input
 					sourceEventHandler = Interlocked.CompareExchange<InteractionManager.SourceEventHandler>(ref InteractionManager.InteractionSourceReleasedLegacy, (InteractionManager.SourceEventHandler)Delegate.Remove(sourceEventHandler2, value), sourceEventHandler);
 				}
 				while (sourceEventHandler != sourceEventHandler2);
+				*/
 			}
 		}
 
@@ -407,6 +465,7 @@ namespace UnityEngine.XR.WSA.Input
 		{
 			add
 			{
+				/*
 				InteractionManager.SourceEventHandler sourceEventHandler = InteractionManager.InteractionSourceUpdatedLegacy;
 				InteractionManager.SourceEventHandler sourceEventHandler2;
 				do
@@ -415,9 +474,11 @@ namespace UnityEngine.XR.WSA.Input
 					sourceEventHandler = Interlocked.CompareExchange<InteractionManager.SourceEventHandler>(ref InteractionManager.InteractionSourceUpdatedLegacy, (InteractionManager.SourceEventHandler)Delegate.Combine(sourceEventHandler2, value), sourceEventHandler);
 				}
 				while (sourceEventHandler != sourceEventHandler2);
+				*/
 			}
 			remove
 			{
+				/*
 				InteractionManager.SourceEventHandler sourceEventHandler = InteractionManager.InteractionSourceUpdatedLegacy;
 				InteractionManager.SourceEventHandler sourceEventHandler2;
 				do
@@ -426,6 +487,7 @@ namespace UnityEngine.XR.WSA.Input
 					sourceEventHandler = Interlocked.CompareExchange<InteractionManager.SourceEventHandler>(ref InteractionManager.InteractionSourceUpdatedLegacy, (InteractionManager.SourceEventHandler)Delegate.Remove(sourceEventHandler2, value), sourceEventHandler);
 				}
 				while (sourceEventHandler != sourceEventHandler2);
+				*/
 			}
 		}
 
@@ -438,12 +500,14 @@ namespace UnityEngine.XR.WSA.Input
 
 		static InteractionManager()
 		{
+			/*
 			if (InteractionManager.<>f__mg$cache0 == null)
 			{
 				InteractionManager.<>f__mg$cache0 = new InteractionManager.InternalSourceEventHandler(InteractionManager.OnSourceEvent);
 			}
 			InteractionManager.m_OnSourceEventHandler = InteractionManager.<>f__mg$cache0;
 			InteractionManager.Initialize(Marshal.GetFunctionPointerForDelegate(InteractionManager.m_OnSourceEventHandler));
+			*/
 		}
 
 		public static int GetCurrentReading(InteractionSourceState[] sourceStates)
@@ -477,6 +541,7 @@ namespace UnityEngine.XR.WSA.Input
 		[MonoPInvokeCallback(typeof(InteractionManager.InternalSourceEventHandler))]
 		private static void OnSourceEvent(InteractionManager.EventType eventType, InteractionSourceState state, InteractionSourcePressType pressType)
 		{
+			/*
 			switch (eventType)
 			{
 			case InteractionManager.EventType.SourceDetected:
@@ -552,6 +617,7 @@ namespace UnityEngine.XR.WSA.Input
 			default:
 				throw new ArgumentException("OnSourceEvent: Invalid EventType");
 			}
+			*/
 		}
 
 		[GeneratedByOldBindingsGenerator]

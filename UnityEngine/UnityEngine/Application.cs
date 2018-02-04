@@ -32,6 +32,7 @@ namespace UnityEngine
 		{
 			add
 			{
+				/*
 				Application.LowMemoryCallback lowMemoryCallback = Application.lowMemory;
 				Application.LowMemoryCallback lowMemoryCallback2;
 				do
@@ -40,9 +41,11 @@ namespace UnityEngine
 					lowMemoryCallback = Interlocked.CompareExchange<Application.LowMemoryCallback>(ref Application.lowMemory, (Application.LowMemoryCallback)Delegate.Combine(lowMemoryCallback2, value), lowMemoryCallback);
 				}
 				while (lowMemoryCallback != lowMemoryCallback2);
+				*/
 			}
 			remove
 			{
+				/*
 				Application.LowMemoryCallback lowMemoryCallback = Application.lowMemory;
 				Application.LowMemoryCallback lowMemoryCallback2;
 				do
@@ -51,6 +54,7 @@ namespace UnityEngine
 					lowMemoryCallback = Interlocked.CompareExchange<Application.LowMemoryCallback>(ref Application.lowMemory, (Application.LowMemoryCallback)Delegate.Remove(lowMemoryCallback2, value), lowMemoryCallback);
 				}
 				while (lowMemoryCallback != lowMemoryCallback2);
+				*/
 			}
 		}
 
@@ -96,6 +100,7 @@ namespace UnityEngine
 		{
 			add
 			{
+				/*
 				Func<bool> func = Application.wantsToQuit;
 				Func<bool> func2;
 				do
@@ -104,9 +109,11 @@ namespace UnityEngine
 					func = Interlocked.CompareExchange<Func<bool>>(ref Application.wantsToQuit, (Func<bool>)Delegate.Combine(func2, value), func);
 				}
 				while (func != func2);
+				*/
 			}
 			remove
 			{
+				/*
 				Func<bool> func = Application.wantsToQuit;
 				Func<bool> func2;
 				do
@@ -115,6 +122,7 @@ namespace UnityEngine
 					func = Interlocked.CompareExchange<Func<bool>>(ref Application.wantsToQuit, (Func<bool>)Delegate.Remove(func2, value), func);
 				}
 				while (func != func2);
+				*/
 			}
 		}
 
@@ -122,6 +130,7 @@ namespace UnityEngine
 		{
 			add
 			{
+				/*
 				Action action = Application.quitting;
 				Action action2;
 				do
@@ -130,9 +139,11 @@ namespace UnityEngine
 					action = Interlocked.CompareExchange<Action>(ref Application.quitting, (Action)Delegate.Combine(action2, value), action);
 				}
 				while (action != action2);
+				*/
 			}
 			remove
 			{
+				/*
 				Action action = Application.quitting;
 				Action action2;
 				do
@@ -141,6 +152,7 @@ namespace UnityEngine
 					action = Interlocked.CompareExchange<Action>(ref Application.quitting, (Action)Delegate.Remove(action2, value), action);
 				}
 				while (action != action2);
+				*/
 			}
 		}
 
@@ -208,30 +220,13 @@ namespace UnityEngine
 			get
 			{
 				RuntimePlatform platform = Application.platform;
-				bool result;
 				switch (platform)
 				{
-				case RuntimePlatform.MetroPlayerX86:
-				case RuntimePlatform.MetroPlayerX64:
-				case RuntimePlatform.MetroPlayerARM:
-				case RuntimePlatform.TizenPlayer:
-					goto IL_45;
-				case RuntimePlatform.WP8Player:
-				case RuntimePlatform.BB10Player:
-					IL_28:
-					switch (platform)
-					{
 					case RuntimePlatform.IPhonePlayer:
 					case RuntimePlatform.Android:
-						goto IL_45;
-					}
-					result = false;
-					return result;
+						return true;
 				}
-				goto IL_28;
-				IL_45:
-				result = true;
-				return result;
+				return false;
 			}
 		}
 
@@ -298,7 +293,7 @@ namespace UnityEngine
 			get;
 		}
 
-		[SecurityCritical]
+		//[SecurityCritical]
 		public static extern string persistentDataPath
 		{
 			[GeneratedByOldBindingsGenerator]
@@ -512,11 +507,13 @@ namespace UnityEngine
 		[RequiredByNativeCode]
 		private static void CallLowMemory()
 		{
+			/*
 			Application.LowMemoryCallback lowMemoryCallback = Application.lowMemory;
 			if (lowMemoryCallback != null)
 			{
 				lowMemoryCallback();
 			}
+			*/
 		}
 
 		[GeneratedByOldBindingsGenerator]
@@ -765,6 +762,7 @@ namespace UnityEngine
 		private static bool Internal_ApplicationWantsToQuit()
 		{
 			bool result;
+			/*
 			if (Application.wantsToQuit != null)
 			{
 				Delegate[] invocationList = Application.wantsToQuit.GetInvocationList();
@@ -785,6 +783,7 @@ namespace UnityEngine
 					}
 				}
 			}
+			*/
 			result = true;
 			return result;
 		}
@@ -792,10 +791,12 @@ namespace UnityEngine
 		[RequiredByNativeCode]
 		private static void Internal_ApplicationQuit()
 		{
+			/*
 			if (Application.quitting != null)
 			{
 				Application.quitting();
 			}
+			*/
 		}
 
 		[RequiredByNativeCode]

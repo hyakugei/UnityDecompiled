@@ -20,6 +20,7 @@ namespace UnityEngine.Video
 		{
 			add
 			{
+				/*
 				VideoPlayer.EventHandler eventHandler = this.prepareCompleted;
 				VideoPlayer.EventHandler eventHandler2;
 				do
@@ -28,9 +29,11 @@ namespace UnityEngine.Video
 					eventHandler = Interlocked.CompareExchange<VideoPlayer.EventHandler>(ref this.prepareCompleted, (VideoPlayer.EventHandler)Delegate.Combine(eventHandler2, value), eventHandler);
 				}
 				while (eventHandler != eventHandler2);
+				*/
 			}
 			remove
 			{
+				/*
 				VideoPlayer.EventHandler eventHandler = this.prepareCompleted;
 				VideoPlayer.EventHandler eventHandler2;
 				do
@@ -39,6 +42,7 @@ namespace UnityEngine.Video
 					eventHandler = Interlocked.CompareExchange<VideoPlayer.EventHandler>(ref this.prepareCompleted, (VideoPlayer.EventHandler)Delegate.Remove(eventHandler2, value), eventHandler);
 				}
 				while (eventHandler != eventHandler2);
+				*/
 			}
 		}
 
@@ -46,6 +50,7 @@ namespace UnityEngine.Video
 		{
 			add
 			{
+				/*
 				VideoPlayer.EventHandler eventHandler = this.loopPointReached;
 				VideoPlayer.EventHandler eventHandler2;
 				do
@@ -54,9 +59,11 @@ namespace UnityEngine.Video
 					eventHandler = Interlocked.CompareExchange<VideoPlayer.EventHandler>(ref this.loopPointReached, (VideoPlayer.EventHandler)Delegate.Combine(eventHandler2, value), eventHandler);
 				}
 				while (eventHandler != eventHandler2);
+				*/
 			}
 			remove
 			{
+				/*
 				VideoPlayer.EventHandler eventHandler = this.loopPointReached;
 				VideoPlayer.EventHandler eventHandler2;
 				do
@@ -65,6 +72,7 @@ namespace UnityEngine.Video
 					eventHandler = Interlocked.CompareExchange<VideoPlayer.EventHandler>(ref this.loopPointReached, (VideoPlayer.EventHandler)Delegate.Remove(eventHandler2, value), eventHandler);
 				}
 				while (eventHandler != eventHandler2);
+				*/
 			}
 		}
 
@@ -72,6 +80,7 @@ namespace UnityEngine.Video
 		{
 			add
 			{
+				/*
 				VideoPlayer.EventHandler eventHandler = this.started;
 				VideoPlayer.EventHandler eventHandler2;
 				do
@@ -80,9 +89,11 @@ namespace UnityEngine.Video
 					eventHandler = Interlocked.CompareExchange<VideoPlayer.EventHandler>(ref this.started, (VideoPlayer.EventHandler)Delegate.Combine(eventHandler2, value), eventHandler);
 				}
 				while (eventHandler != eventHandler2);
+				*/
 			}
 			remove
 			{
+				/*
 				VideoPlayer.EventHandler eventHandler = this.started;
 				VideoPlayer.EventHandler eventHandler2;
 				do
@@ -91,6 +102,7 @@ namespace UnityEngine.Video
 					eventHandler = Interlocked.CompareExchange<VideoPlayer.EventHandler>(ref this.started, (VideoPlayer.EventHandler)Delegate.Remove(eventHandler2, value), eventHandler);
 				}
 				while (eventHandler != eventHandler2);
+				*/
 			}
 		}
 
@@ -98,6 +110,7 @@ namespace UnityEngine.Video
 		{
 			add
 			{
+				/*
 				VideoPlayer.EventHandler eventHandler = this.frameDropped;
 				VideoPlayer.EventHandler eventHandler2;
 				do
@@ -106,9 +119,11 @@ namespace UnityEngine.Video
 					eventHandler = Interlocked.CompareExchange<VideoPlayer.EventHandler>(ref this.frameDropped, (VideoPlayer.EventHandler)Delegate.Combine(eventHandler2, value), eventHandler);
 				}
 				while (eventHandler != eventHandler2);
+				*/
 			}
 			remove
 			{
+				/*
 				VideoPlayer.EventHandler eventHandler = this.frameDropped;
 				VideoPlayer.EventHandler eventHandler2;
 				do
@@ -117,6 +132,7 @@ namespace UnityEngine.Video
 					eventHandler = Interlocked.CompareExchange<VideoPlayer.EventHandler>(ref this.frameDropped, (VideoPlayer.EventHandler)Delegate.Remove(eventHandler2, value), eventHandler);
 				}
 				while (eventHandler != eventHandler2);
+				*/
 			}
 		}
 
@@ -124,6 +140,7 @@ namespace UnityEngine.Video
 		{
 			add
 			{
+				/*
 				VideoPlayer.ErrorEventHandler errorEventHandler = this.errorReceived;
 				VideoPlayer.ErrorEventHandler errorEventHandler2;
 				do
@@ -132,9 +149,11 @@ namespace UnityEngine.Video
 					errorEventHandler = Interlocked.CompareExchange<VideoPlayer.ErrorEventHandler>(ref this.errorReceived, (VideoPlayer.ErrorEventHandler)Delegate.Combine(errorEventHandler2, value), errorEventHandler);
 				}
 				while (errorEventHandler != errorEventHandler2);
+				*/
 			}
 			remove
 			{
+				/*
 				VideoPlayer.ErrorEventHandler errorEventHandler = this.errorReceived;
 				VideoPlayer.ErrorEventHandler errorEventHandler2;
 				do
@@ -143,6 +162,7 @@ namespace UnityEngine.Video
 					errorEventHandler = Interlocked.CompareExchange<VideoPlayer.ErrorEventHandler>(ref this.errorReceived, (VideoPlayer.ErrorEventHandler)Delegate.Remove(errorEventHandler2, value), errorEventHandler);
 				}
 				while (errorEventHandler != errorEventHandler2);
+				*/
 			}
 		}
 
@@ -150,6 +170,7 @@ namespace UnityEngine.Video
 		{
 			add
 			{
+				/*
 				VideoPlayer.EventHandler eventHandler = this.seekCompleted;
 				VideoPlayer.EventHandler eventHandler2;
 				do
@@ -158,9 +179,11 @@ namespace UnityEngine.Video
 					eventHandler = Interlocked.CompareExchange<VideoPlayer.EventHandler>(ref this.seekCompleted, (VideoPlayer.EventHandler)Delegate.Combine(eventHandler2, value), eventHandler);
 				}
 				while (eventHandler != eventHandler2);
+				*/
 			}
 			remove
 			{
+				/*
 				VideoPlayer.EventHandler eventHandler = this.seekCompleted;
 				VideoPlayer.EventHandler eventHandler2;
 				do
@@ -169,6 +192,7 @@ namespace UnityEngine.Video
 					eventHandler = Interlocked.CompareExchange<VideoPlayer.EventHandler>(ref this.seekCompleted, (VideoPlayer.EventHandler)Delegate.Remove(eventHandler2, value), eventHandler);
 				}
 				while (eventHandler != eventHandler2);
+				*/
 			}
 		}
 
@@ -176,6 +200,7 @@ namespace UnityEngine.Video
 		{
 			add
 			{
+				/*
 				VideoPlayer.TimeEventHandler timeEventHandler = this.clockResyncOccurred;
 				VideoPlayer.TimeEventHandler timeEventHandler2;
 				do
@@ -184,9 +209,11 @@ namespace UnityEngine.Video
 					timeEventHandler = Interlocked.CompareExchange<VideoPlayer.TimeEventHandler>(ref this.clockResyncOccurred, (VideoPlayer.TimeEventHandler)Delegate.Combine(timeEventHandler2, value), timeEventHandler);
 				}
 				while (timeEventHandler != timeEventHandler2);
+				*/
 			}
 			remove
 			{
+				/*
 				VideoPlayer.TimeEventHandler timeEventHandler = this.clockResyncOccurred;
 				VideoPlayer.TimeEventHandler timeEventHandler2;
 				do
@@ -195,6 +222,7 @@ namespace UnityEngine.Video
 					timeEventHandler = Interlocked.CompareExchange<VideoPlayer.TimeEventHandler>(ref this.clockResyncOccurred, (VideoPlayer.TimeEventHandler)Delegate.Remove(timeEventHandler2, value), timeEventHandler);
 				}
 				while (timeEventHandler != timeEventHandler2);
+				*/
 			}
 		}
 
@@ -202,6 +230,7 @@ namespace UnityEngine.Video
 		{
 			add
 			{
+				/*
 				VideoPlayer.FrameReadyEventHandler frameReadyEventHandler = this.frameReady;
 				VideoPlayer.FrameReadyEventHandler frameReadyEventHandler2;
 				do
@@ -210,9 +239,11 @@ namespace UnityEngine.Video
 					frameReadyEventHandler = Interlocked.CompareExchange<VideoPlayer.FrameReadyEventHandler>(ref this.frameReady, (VideoPlayer.FrameReadyEventHandler)Delegate.Combine(frameReadyEventHandler2, value), frameReadyEventHandler);
 				}
 				while (frameReadyEventHandler != frameReadyEventHandler2);
+				*/
 			}
 			remove
 			{
+				/*
 				VideoPlayer.FrameReadyEventHandler frameReadyEventHandler = this.frameReady;
 				VideoPlayer.FrameReadyEventHandler frameReadyEventHandler2;
 				do
@@ -221,6 +252,7 @@ namespace UnityEngine.Video
 					frameReadyEventHandler = Interlocked.CompareExchange<VideoPlayer.FrameReadyEventHandler>(ref this.frameReady, (VideoPlayer.FrameReadyEventHandler)Delegate.Remove(frameReadyEventHandler2, value), frameReadyEventHandler);
 				}
 				while (frameReadyEventHandler != frameReadyEventHandler2);
+				*/
 			}
 		}
 
@@ -678,73 +710,89 @@ namespace UnityEngine.Video
 		[RequiredByNativeCode]
 		private static void InvokePrepareCompletedCallback_Internal(VideoPlayer source)
 		{
+			/*
 			if (source.prepareCompleted != null)
 			{
 				source.prepareCompleted(source);
 			}
+			*/
 		}
 
 		[RequiredByNativeCode]
 		private static void InvokeFrameReadyCallback_Internal(VideoPlayer source, long frameIdx)
 		{
+			/*
 			if (source.frameReady != null)
 			{
 				source.frameReady(source, frameIdx);
 			}
+			*/
 		}
 
 		[RequiredByNativeCode]
 		private static void InvokeLoopPointReachedCallback_Internal(VideoPlayer source)
 		{
+			/*
 			if (source.loopPointReached != null)
 			{
 				source.loopPointReached(source);
 			}
+			*/
 		}
 
 		[RequiredByNativeCode]
 		private static void InvokeStartedCallback_Internal(VideoPlayer source)
 		{
+			/*
 			if (source.started != null)
 			{
 				source.started(source);
 			}
+			*/
 		}
 
 		[RequiredByNativeCode]
 		private static void InvokeFrameDroppedCallback_Internal(VideoPlayer source)
 		{
+			/*
 			if (source.frameDropped != null)
 			{
 				source.frameDropped(source);
 			}
+			*/
 		}
 
 		[RequiredByNativeCode]
 		private static void InvokeErrorReceivedCallback_Internal(VideoPlayer source, string errorStr)
 		{
+			/*
 			if (source.errorReceived != null)
 			{
 				source.errorReceived(source, errorStr);
 			}
+			*/
 		}
 
 		[RequiredByNativeCode]
 		private static void InvokeSeekCompletedCallback_Internal(VideoPlayer source)
 		{
+			/*
 			if (source.seekCompleted != null)
 			{
 				source.seekCompleted(source);
 			}
+			*/
 		}
 
 		[RequiredByNativeCode]
 		private static void InvokeClockResyncOccurredCallback_Internal(VideoPlayer source, double seconds)
 		{
+			/*
 			if (source.clockResyncOccurred != null)
 			{
 				source.clockResyncOccurred(source, seconds);
 			}
+			*/
 		}
 	}
 }

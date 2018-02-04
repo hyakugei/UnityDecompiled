@@ -16,19 +16,23 @@ namespace UnityEngine.Jobs
 
 			public static IntPtr jobReflectionData;
 
+			/*
 			[CompilerGenerated]
 			private static IJobParallelForTransformExtensions.TransformParallelForLoopStruct<T>.ExecuteJobFunction <>f__mg$cache0;
+			*/
 
 			public static IntPtr Initialize()
 			{
 				if (IJobParallelForTransformExtensions.TransformParallelForLoopStruct<T>.jobReflectionData == IntPtr.Zero)
 				{
+					/*
 					Type arg_3E_0 = typeof(T);
 					if (IJobParallelForTransformExtensions.TransformParallelForLoopStruct<T>.<>f__mg$cache0 == null)
 					{
 						IJobParallelForTransformExtensions.TransformParallelForLoopStruct<T>.<>f__mg$cache0 = new IJobParallelForTransformExtensions.TransformParallelForLoopStruct<T>.ExecuteJobFunction(IJobParallelForTransformExtensions.TransformParallelForLoopStruct<T>.Execute);
 					}
 					IJobParallelForTransformExtensions.TransformParallelForLoopStruct<T>.jobReflectionData = JobsUtility.CreateJobReflectionData(arg_3E_0, IJobParallelForTransformExtensions.TransformParallelForLoopStruct<T>.<>f__mg$cache0, null, null);
+					*/
 				}
 				return IJobParallelForTransformExtensions.TransformParallelForLoopStruct<T>.jobReflectionData;
 			}
@@ -52,7 +56,7 @@ namespace UnityEngine.Jobs
 			}
 		}
 
-		public static JobHandle Schedule<T>(this T jobData, TransformAccessArray transforms, JobHandle dependsOn = default(JobHandle)) where T : struct, IJobParallelForTransform
+		public static JobHandle Schedule<T>(T jobData, TransformAccessArray transforms, JobHandle dependsOn = default(JobHandle)) where T : struct, IJobParallelForTransform
 		{
 			JobsUtility.JobScheduleParameters jobScheduleParameters = new JobsUtility.JobScheduleParameters(UnsafeUtility.AddressOf<T>(ref jobData), IJobParallelForTransformExtensions.TransformParallelForLoopStruct<T>.Initialize(), dependsOn, ScheduleMode.Batched);
 			return JobsUtility.ScheduleParallelForTransform(ref jobScheduleParameters, transforms.GetTransformAccessArrayForSchedule());

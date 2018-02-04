@@ -18,6 +18,7 @@ namespace UnityEngine.Experimental.UIElements
 
 		internal static Action<IMGUIContainer> s_EndContainerCallback;
 
+		/*
 		[CompilerGenerated]
 		private static Action <>f__mg$cache0;
 
@@ -32,6 +33,7 @@ namespace UnityEngine.Experimental.UIElements
 
 		[CompilerGenerated]
 		private static Func<Exception, bool> <>f__mg$cache4;
+		*/
 
 		internal static IEventDispatcher eventDispatcher
 		{
@@ -47,6 +49,7 @@ namespace UnityEngine.Experimental.UIElements
 
 		static UIElementsUtility()
 		{
+			/*
 			UIElementsUtility.s_ContainerStack = new Stack<IMGUIContainer>();
 			UIElementsUtility.s_UIElementsCache = new Dictionary<int, Panel>();
 			UIElementsUtility.s_EventInstance = new Event();
@@ -80,6 +83,7 @@ namespace UnityEngine.Experimental.UIElements
 				UIElementsUtility.<>f__mg$cache4 = new Func<Exception, bool>(UIElementsUtility.EndContainerGUIFromException);
 			}
 			GUIUtility.endContainerGUIFromException = (Func<Exception, bool>)Delegate.Combine(arg_105_0, UIElementsUtility.<>f__mg$cache4);
+			*/
 		}
 
 		internal static void ClearDispatcher()

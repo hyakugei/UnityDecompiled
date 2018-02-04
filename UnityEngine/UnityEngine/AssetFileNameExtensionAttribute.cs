@@ -13,7 +13,7 @@ namespace UnityEngine
 			[CompilerGenerated]
 			get
 			{
-				return this.<preferredExtension>k__BackingField;
+				return ""; // this.<preferredExtension>k__BackingField;
 			}
 		}
 
@@ -22,14 +22,14 @@ namespace UnityEngine
 			[CompilerGenerated]
 			get
 			{
-				return this.<otherExtensions>k__BackingField;
+				return new List<string>(); // this.<otherExtensions>k__BackingField;
 			}
 		}
 
 		public AssetFileNameExtensionAttribute(string preferredExtension, params string[] otherExtensions)
 		{
-			this.<preferredExtension>k__BackingField = preferredExtension;
-			this.<otherExtensions>k__BackingField = otherExtensions;
+			//this.<preferredExtension>k__BackingField = preferredExtension;
+			//this.<otherExtensions>k__BackingField = otherExtensions;
 		}
 	}
 }

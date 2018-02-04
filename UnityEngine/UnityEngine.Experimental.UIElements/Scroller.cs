@@ -10,6 +10,7 @@ namespace UnityEngine.Experimental.UIElements
 		{
 			add
 			{
+				/*
 				Action<float> action = this.valueChanged;
 				Action<float> action2;
 				do
@@ -18,9 +19,11 @@ namespace UnityEngine.Experimental.UIElements
 					action = Interlocked.CompareExchange<Action<float>>(ref this.valueChanged, (Action<float>)Delegate.Combine(action2, value), action);
 				}
 				while (action != action2);
+				*/
 			}
 			remove
 			{
+				/*
 				Action<float> action = this.valueChanged;
 				Action<float> action2;
 				do
@@ -29,6 +32,7 @@ namespace UnityEngine.Experimental.UIElements
 					action = Interlocked.CompareExchange<Action<float>>(ref this.valueChanged, (Action<float>)Delegate.Remove(action2, value), action);
 				}
 				while (action != action2);
+				*/
 			}
 		}
 
@@ -110,7 +114,7 @@ namespace UnityEngine.Experimental.UIElements
 		public Scroller(float lowValue, float highValue, Action<float> valueChanged, Slider.Direction direction = Slider.Direction.Vertical)
 		{
 			this.direction = direction;
-			this.valueChanged = valueChanged;
+			//this.valueChanged = valueChanged;
 			this.slider = new Slider(lowValue, highValue, new Action<float>(this.OnSliderValueChange), direction, 10f)
 			{
 				name = "Slider",
@@ -138,10 +142,12 @@ namespace UnityEngine.Experimental.UIElements
 		private void OnSliderValueChange(float newValue)
 		{
 			this.value = newValue;
+			/*
 			if (this.valueChanged != null)
 			{
 				this.valueChanged(this.slider.value);
 			}
+			*/
 			base.Dirty(ChangeType.Repaint);
 		}
 

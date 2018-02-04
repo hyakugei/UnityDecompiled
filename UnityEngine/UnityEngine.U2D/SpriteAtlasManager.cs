@@ -9,13 +9,16 @@ namespace UnityEngine.U2D
 	{
 		public delegate void RequestAtlasCallback(string tag, Action<SpriteAtlas> action);
 
+		/*
 		[CompilerGenerated]
 		private static Action<SpriteAtlas> <>f__mg$cache0;
+		*/
 
 		public static event SpriteAtlasManager.RequestAtlasCallback atlasRequested
 		{
 			add
 			{
+				/*
 				SpriteAtlasManager.RequestAtlasCallback requestAtlasCallback = SpriteAtlasManager.atlasRequested;
 				SpriteAtlasManager.RequestAtlasCallback requestAtlasCallback2;
 				do
@@ -24,9 +27,11 @@ namespace UnityEngine.U2D
 					requestAtlasCallback = Interlocked.CompareExchange<SpriteAtlasManager.RequestAtlasCallback>(ref SpriteAtlasManager.atlasRequested, (SpriteAtlasManager.RequestAtlasCallback)Delegate.Combine(requestAtlasCallback2, value), requestAtlasCallback);
 				}
 				while (requestAtlasCallback != requestAtlasCallback2);
+				*/
 			}
 			remove
 			{
+				/*
 				SpriteAtlasManager.RequestAtlasCallback requestAtlasCallback = SpriteAtlasManager.atlasRequested;
 				SpriteAtlasManager.RequestAtlasCallback requestAtlasCallback2;
 				do
@@ -35,13 +40,15 @@ namespace UnityEngine.U2D
 					requestAtlasCallback = Interlocked.CompareExchange<SpriteAtlasManager.RequestAtlasCallback>(ref SpriteAtlasManager.atlasRequested, (SpriteAtlasManager.RequestAtlasCallback)Delegate.Remove(requestAtlasCallback2, value), requestAtlasCallback);
 				}
 				while (requestAtlasCallback != requestAtlasCallback2);
+				*/
 			}
 		}
 
 		[RequiredByNativeCode]
 		private static bool RequestAtlas(string tag)
 		{
-			bool result;
+			bool result = false;
+			/*
 			if (SpriteAtlasManager.atlasRequested != null)
 			{
 				SpriteAtlasManager.RequestAtlasCallback arg_2F_0 = SpriteAtlasManager.atlasRequested;
@@ -56,6 +63,7 @@ namespace UnityEngine.U2D
 			{
 				result = false;
 			}
+			*/
 			return result;
 		}
 
@@ -66,7 +74,7 @@ namespace UnityEngine.U2D
 		static SpriteAtlasManager()
 		{
 			// Note: this type is marked as 'beforefieldinit'.
-			SpriteAtlasManager.atlasRequested = null;
+			//SpriteAtlasManager.atlasRequested = null;
 		}
 	}
 }

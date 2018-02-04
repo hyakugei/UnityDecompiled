@@ -28,6 +28,7 @@ namespace UnityEngine
 		{
 			add
 			{
+				/*
 				RectTransform.ReapplyDrivenProperties reapplyDrivenProperties = RectTransform.reapplyDrivenProperties;
 				RectTransform.ReapplyDrivenProperties reapplyDrivenProperties2;
 				do
@@ -36,9 +37,11 @@ namespace UnityEngine
 					reapplyDrivenProperties = Interlocked.CompareExchange<RectTransform.ReapplyDrivenProperties>(ref RectTransform.reapplyDrivenProperties, (RectTransform.ReapplyDrivenProperties)Delegate.Combine(reapplyDrivenProperties2, value), reapplyDrivenProperties);
 				}
 				while (reapplyDrivenProperties != reapplyDrivenProperties2);
+				*/
 			}
 			remove
 			{
+				/*
 				RectTransform.ReapplyDrivenProperties reapplyDrivenProperties = RectTransform.reapplyDrivenProperties;
 				RectTransform.ReapplyDrivenProperties reapplyDrivenProperties2;
 				do
@@ -47,6 +50,7 @@ namespace UnityEngine
 					reapplyDrivenProperties = Interlocked.CompareExchange<RectTransform.ReapplyDrivenProperties>(ref RectTransform.reapplyDrivenProperties, (RectTransform.ReapplyDrivenProperties)Delegate.Remove(reapplyDrivenProperties2, value), reapplyDrivenProperties);
 				}
 				while (reapplyDrivenProperties != reapplyDrivenProperties2);
+				*/
 			}
 		}
 
@@ -241,10 +245,12 @@ namespace UnityEngine
 		[RequiredByNativeCode]
 		internal static void SendReapplyDrivenProperties(RectTransform driven)
 		{
+			/*
 			if (RectTransform.reapplyDrivenProperties != null)
 			{
 				RectTransform.reapplyDrivenProperties(driven);
 			}
+			*/
 		}
 
 		public void GetLocalCorners(Vector3[] fourCornersArray)

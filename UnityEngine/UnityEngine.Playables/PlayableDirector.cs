@@ -12,6 +12,7 @@ namespace UnityEngine.Playables
 		{
 			add
 			{
+				/*
 				Action<PlayableDirector> action = this.played;
 				Action<PlayableDirector> action2;
 				do
@@ -20,9 +21,11 @@ namespace UnityEngine.Playables
 					action = Interlocked.CompareExchange<Action<PlayableDirector>>(ref this.played, (Action<PlayableDirector>)Delegate.Combine(action2, value), action);
 				}
 				while (action != action2);
+				*/
 			}
 			remove
 			{
+				/*
 				Action<PlayableDirector> action = this.played;
 				Action<PlayableDirector> action2;
 				do
@@ -31,6 +34,7 @@ namespace UnityEngine.Playables
 					action = Interlocked.CompareExchange<Action<PlayableDirector>>(ref this.played, (Action<PlayableDirector>)Delegate.Remove(action2, value), action);
 				}
 				while (action != action2);
+				*/
 			}
 		}
 
@@ -38,6 +42,7 @@ namespace UnityEngine.Playables
 		{
 			add
 			{
+				/*
 				Action<PlayableDirector> action = this.paused;
 				Action<PlayableDirector> action2;
 				do
@@ -46,9 +51,11 @@ namespace UnityEngine.Playables
 					action = Interlocked.CompareExchange<Action<PlayableDirector>>(ref this.paused, (Action<PlayableDirector>)Delegate.Combine(action2, value), action);
 				}
 				while (action != action2);
+				*/
 			}
 			remove
 			{
+				/*
 				Action<PlayableDirector> action = this.paused;
 				Action<PlayableDirector> action2;
 				do
@@ -57,6 +64,7 @@ namespace UnityEngine.Playables
 					action = Interlocked.CompareExchange<Action<PlayableDirector>>(ref this.paused, (Action<PlayableDirector>)Delegate.Remove(action2, value), action);
 				}
 				while (action != action2);
+				*/
 			}
 		}
 
@@ -64,6 +72,7 @@ namespace UnityEngine.Playables
 		{
 			add
 			{
+				/*
 				Action<PlayableDirector> action = this.stopped;
 				Action<PlayableDirector> action2;
 				do
@@ -72,9 +81,11 @@ namespace UnityEngine.Playables
 					action = Interlocked.CompareExchange<Action<PlayableDirector>>(ref this.stopped, (Action<PlayableDirector>)Delegate.Combine(action2, value), action);
 				}
 				while (action != action2);
+				*/
 			}
 			remove
 			{
+				/*
 				Action<PlayableDirector> action = this.stopped;
 				Action<PlayableDirector> action2;
 				do
@@ -83,6 +94,7 @@ namespace UnityEngine.Playables
 					action = Interlocked.CompareExchange<Action<PlayableDirector>>(ref this.stopped, (Action<PlayableDirector>)Delegate.Remove(action2, value), action);
 				}
 				while (action != action2);
+				*/
 			}
 		}
 
@@ -277,28 +289,34 @@ namespace UnityEngine.Playables
 		[RequiredByNativeCode]
 		private void SendOnPlayableDirectorPlay()
 		{
+			/*
 			if (this.played != null)
 			{
 				this.played(this);
 			}
+			*/
 		}
 
 		[RequiredByNativeCode]
 		private void SendOnPlayableDirectorPause()
 		{
+			/*
 			if (this.paused != null)
 			{
 				this.paused(this);
 			}
+			*/
 		}
 
 		[RequiredByNativeCode]
 		private void SendOnPlayableDirectorStop()
 		{
+			/*
 			if (this.stopped != null)
 			{
 				this.stopped(this);
 			}
+			*/
 		}
 
 		[MethodImpl(MethodImplOptions.InternalCall)]

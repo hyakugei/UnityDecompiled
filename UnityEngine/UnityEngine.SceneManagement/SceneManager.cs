@@ -14,6 +14,7 @@ namespace UnityEngine.SceneManagement
 		{
 			add
 			{
+				/*
 				UnityAction<Scene, LoadSceneMode> unityAction = SceneManager.sceneLoaded;
 				UnityAction<Scene, LoadSceneMode> unityAction2;
 				do
@@ -22,9 +23,11 @@ namespace UnityEngine.SceneManagement
 					unityAction = Interlocked.CompareExchange<UnityAction<Scene, LoadSceneMode>>(ref SceneManager.sceneLoaded, (UnityAction<Scene, LoadSceneMode>)Delegate.Combine(unityAction2, value), unityAction);
 				}
 				while (unityAction != unityAction2);
+				*/
 			}
 			remove
 			{
+				/*
 				UnityAction<Scene, LoadSceneMode> unityAction = SceneManager.sceneLoaded;
 				UnityAction<Scene, LoadSceneMode> unityAction2;
 				do
@@ -33,6 +36,7 @@ namespace UnityEngine.SceneManagement
 					unityAction = Interlocked.CompareExchange<UnityAction<Scene, LoadSceneMode>>(ref SceneManager.sceneLoaded, (UnityAction<Scene, LoadSceneMode>)Delegate.Remove(unityAction2, value), unityAction);
 				}
 				while (unityAction != unityAction2);
+				*/
 			}
 		}
 
@@ -40,6 +44,7 @@ namespace UnityEngine.SceneManagement
 		{
 			add
 			{
+				/*
 				UnityAction<Scene> unityAction = SceneManager.sceneUnloaded;
 				UnityAction<Scene> unityAction2;
 				do
@@ -48,9 +53,11 @@ namespace UnityEngine.SceneManagement
 					unityAction = Interlocked.CompareExchange<UnityAction<Scene>>(ref SceneManager.sceneUnloaded, (UnityAction<Scene>)Delegate.Combine(unityAction2, value), unityAction);
 				}
 				while (unityAction != unityAction2);
+				*/
 			}
 			remove
 			{
+				/*
 				UnityAction<Scene> unityAction = SceneManager.sceneUnloaded;
 				UnityAction<Scene> unityAction2;
 				do
@@ -59,6 +66,7 @@ namespace UnityEngine.SceneManagement
 					unityAction = Interlocked.CompareExchange<UnityAction<Scene>>(ref SceneManager.sceneUnloaded, (UnityAction<Scene>)Delegate.Remove(unityAction2, value), unityAction);
 				}
 				while (unityAction != unityAction2);
+				*/
 			}
 		}
 
@@ -66,6 +74,7 @@ namespace UnityEngine.SceneManagement
 		{
 			add
 			{
+				/*
 				UnityAction<Scene, Scene> unityAction = SceneManager.activeSceneChanged;
 				UnityAction<Scene, Scene> unityAction2;
 				do
@@ -74,9 +83,11 @@ namespace UnityEngine.SceneManagement
 					unityAction = Interlocked.CompareExchange<UnityAction<Scene, Scene>>(ref SceneManager.activeSceneChanged, (UnityAction<Scene, Scene>)Delegate.Combine(unityAction2, value), unityAction);
 				}
 				while (unityAction != unityAction2);
+				*/
 			}
 			remove
 			{
+				/*
 				UnityAction<Scene, Scene> unityAction = SceneManager.activeSceneChanged;
 				UnityAction<Scene, Scene> unityAction2;
 				do
@@ -85,6 +96,7 @@ namespace UnityEngine.SceneManagement
 					unityAction = Interlocked.CompareExchange<UnityAction<Scene, Scene>>(ref SceneManager.activeSceneChanged, (UnityAction<Scene, Scene>)Delegate.Remove(unityAction2, value), unityAction);
 				}
 				while (unityAction != unityAction2);
+				*/
 			}
 		}
 
@@ -322,28 +334,34 @@ namespace UnityEngine.SceneManagement
 		[RequiredByNativeCode]
 		private static void Internal_SceneLoaded(Scene scene, LoadSceneMode mode)
 		{
+			/*
 			if (SceneManager.sceneLoaded != null)
 			{
 				SceneManager.sceneLoaded(scene, mode);
 			}
+			*/
 		}
 
 		[RequiredByNativeCode]
 		private static void Internal_SceneUnloaded(Scene scene)
 		{
+			/*
 			if (SceneManager.sceneUnloaded != null)
 			{
 				SceneManager.sceneUnloaded(scene);
 			}
+			*/
 		}
 
 		[RequiredByNativeCode]
 		private static void Internal_ActiveSceneChanged(Scene previousActiveScene, Scene newActiveScene)
 		{
+			/*
 			if (SceneManager.activeSceneChanged != null)
 			{
 				SceneManager.activeSceneChanged(previousActiveScene, newActiveScene);
 			}
+			*/
 		}
 	}
 }

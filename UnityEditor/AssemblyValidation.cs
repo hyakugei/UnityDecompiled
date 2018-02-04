@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
+//using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using UnityEngine;
@@ -41,6 +41,7 @@ internal class AssemblyValidation
 	{
 		if (AssemblyValidation._rulesByPlatform == null)
 		{
+			/*
 			AssemblyValidation._rulesByPlatform = new Dictionary<RuntimePlatform, List<Type>>();
 			Assembly assembly = typeof(AssemblyValidation).Assembly;
 			IEnumerable<Type> arg_4E_0 = assembly.GetTypes();
@@ -52,6 +53,7 @@ internal class AssemblyValidation
 			{
 				AssemblyValidation.RegisterValidationRule(current);
 			}
+			*/
 		}
 	}
 

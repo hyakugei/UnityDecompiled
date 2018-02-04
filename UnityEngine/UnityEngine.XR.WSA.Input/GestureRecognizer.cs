@@ -46,6 +46,7 @@ namespace UnityEngine.XR.WSA.Input
 		{
 			add
 			{
+				/*
 				Action<HoldCanceledEventArgs> action = this.HoldCanceled;
 				Action<HoldCanceledEventArgs> action2;
 				do
@@ -54,9 +55,11 @@ namespace UnityEngine.XR.WSA.Input
 					action = Interlocked.CompareExchange<Action<HoldCanceledEventArgs>>(ref this.HoldCanceled, (Action<HoldCanceledEventArgs>)Delegate.Combine(action2, value), action);
 				}
 				while (action != action2);
+				*/
 			}
 			remove
 			{
+				/*
 				Action<HoldCanceledEventArgs> action = this.HoldCanceled;
 				Action<HoldCanceledEventArgs> action2;
 				do
@@ -65,6 +68,7 @@ namespace UnityEngine.XR.WSA.Input
 					action = Interlocked.CompareExchange<Action<HoldCanceledEventArgs>>(ref this.HoldCanceled, (Action<HoldCanceledEventArgs>)Delegate.Remove(action2, value), action);
 				}
 				while (action != action2);
+				*/
 			}
 		}
 
@@ -72,6 +76,7 @@ namespace UnityEngine.XR.WSA.Input
 		{
 			add
 			{
+				/*
 				Action<HoldCompletedEventArgs> action = this.HoldCompleted;
 				Action<HoldCompletedEventArgs> action2;
 				do
@@ -80,9 +85,11 @@ namespace UnityEngine.XR.WSA.Input
 					action = Interlocked.CompareExchange<Action<HoldCompletedEventArgs>>(ref this.HoldCompleted, (Action<HoldCompletedEventArgs>)Delegate.Combine(action2, value), action);
 				}
 				while (action != action2);
+				*/
 			}
 			remove
 			{
+				/*
 				Action<HoldCompletedEventArgs> action = this.HoldCompleted;
 				Action<HoldCompletedEventArgs> action2;
 				do
@@ -91,6 +98,7 @@ namespace UnityEngine.XR.WSA.Input
 					action = Interlocked.CompareExchange<Action<HoldCompletedEventArgs>>(ref this.HoldCompleted, (Action<HoldCompletedEventArgs>)Delegate.Remove(action2, value), action);
 				}
 				while (action != action2);
+				*/
 			}
 		}
 
@@ -98,6 +106,7 @@ namespace UnityEngine.XR.WSA.Input
 		{
 			add
 			{
+				/*
 				Action<HoldStartedEventArgs> action = this.HoldStarted;
 				Action<HoldStartedEventArgs> action2;
 				do
@@ -106,9 +115,11 @@ namespace UnityEngine.XR.WSA.Input
 					action = Interlocked.CompareExchange<Action<HoldStartedEventArgs>>(ref this.HoldStarted, (Action<HoldStartedEventArgs>)Delegate.Combine(action2, value), action);
 				}
 				while (action != action2);
+				*/
 			}
 			remove
 			{
+				/*
 				Action<HoldStartedEventArgs> action = this.HoldStarted;
 				Action<HoldStartedEventArgs> action2;
 				do
@@ -117,6 +128,7 @@ namespace UnityEngine.XR.WSA.Input
 					action = Interlocked.CompareExchange<Action<HoldStartedEventArgs>>(ref this.HoldStarted, (Action<HoldStartedEventArgs>)Delegate.Remove(action2, value), action);
 				}
 				while (action != action2);
+				*/
 			}
 		}
 
