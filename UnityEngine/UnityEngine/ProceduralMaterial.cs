@@ -101,7 +101,7 @@ namespace UnityEngine
 			get;
 		}
 
-		internal ProceduralMaterial() : base(null)
+		internal ProceduralMaterial() : base((Material)null)
 		{
 		}
 

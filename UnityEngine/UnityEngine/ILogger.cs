@@ -26,7 +26,7 @@ namespace UnityEngine
 
 		void Log(LogType logType, object message);
 
-		void Log(LogType logType, object message, Object context);
+		void LogContext(LogType logType, object message, Object context);
 
 		void Log(LogType logType, string tag, object message);
 

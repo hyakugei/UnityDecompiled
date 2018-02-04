@@ -299,6 +299,7 @@ namespace UnityEditor
 		[NonSerialized]
 		private Vector3[] cablepoints = new Vector3[20];
 
+		/*
 		[CompilerGenerated]
 		private static GenericMenu.MenuFunction2 <>f__mg$cache0;
 
@@ -307,6 +308,7 @@ namespace UnityEditor
 
 		[CompilerGenerated]
 		private static GenericMenu.MenuFunction2 <>f__mg$cache2;
+		*/
 
 		public bool requiresRepaint
 		{

@@ -23,6 +23,7 @@ namespace UnityEngine
 		{
 			add
 			{
+				/*
 				Display.DisplaysUpdatedDelegate displaysUpdatedDelegate = Display.onDisplaysUpdated;
 				Display.DisplaysUpdatedDelegate displaysUpdatedDelegate2;
 				do
@@ -31,9 +32,11 @@ namespace UnityEngine
 					displaysUpdatedDelegate = Interlocked.CompareExchange<Display.DisplaysUpdatedDelegate>(ref Display.onDisplaysUpdated, (Display.DisplaysUpdatedDelegate)Delegate.Combine(displaysUpdatedDelegate2, value), displaysUpdatedDelegate);
 				}
 				while (displaysUpdatedDelegate != displaysUpdatedDelegate2);
+				*/
 			}
 			remove
 			{
+				/*
 				Display.DisplaysUpdatedDelegate displaysUpdatedDelegate = Display.onDisplaysUpdated;
 				Display.DisplaysUpdatedDelegate displaysUpdatedDelegate2;
 				do
@@ -42,6 +45,7 @@ namespace UnityEngine
 					displaysUpdatedDelegate = Interlocked.CompareExchange<Display.DisplaysUpdatedDelegate>(ref Display.onDisplaysUpdated, (Display.DisplaysUpdatedDelegate)Delegate.Remove(displaysUpdatedDelegate2, value), displaysUpdatedDelegate);
 				}
 				while (displaysUpdatedDelegate != displaysUpdatedDelegate2);
+				*/
 			}
 		}
 
@@ -190,10 +194,12 @@ namespace UnityEngine
 		[RequiredByNativeCode]
 		private static void FireDisplaysUpdated()
 		{
+			/*
 			if (Display.onDisplaysUpdated != null)
 			{
 				Display.onDisplaysUpdated();
 			}
+			*/
 		}
 
 		[GeneratedByOldBindingsGenerator]
@@ -231,7 +237,7 @@ namespace UnityEngine
 		static Display()
 		{
 			// Note: this type is marked as 'beforefieldinit'.
-			Display.onDisplaysUpdated = null;
+			//Display.onDisplaysUpdated = null;
 		}
 	}
 }

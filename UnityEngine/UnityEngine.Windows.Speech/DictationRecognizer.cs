@@ -21,6 +21,7 @@ namespace UnityEngine.Windows.Speech
 		{
 			add
 			{
+				/*
 				DictationRecognizer.DictationHypothesisDelegate dictationHypothesisDelegate = this.DictationHypothesis;
 				DictationRecognizer.DictationHypothesisDelegate dictationHypothesisDelegate2;
 				do
@@ -29,9 +30,11 @@ namespace UnityEngine.Windows.Speech
 					dictationHypothesisDelegate = Interlocked.CompareExchange<DictationRecognizer.DictationHypothesisDelegate>(ref this.DictationHypothesis, (DictationRecognizer.DictationHypothesisDelegate)Delegate.Combine(dictationHypothesisDelegate2, value), dictationHypothesisDelegate);
 				}
 				while (dictationHypothesisDelegate != dictationHypothesisDelegate2);
+				*/
 			}
 			remove
 			{
+				/*
 				DictationRecognizer.DictationHypothesisDelegate dictationHypothesisDelegate = this.DictationHypothesis;
 				DictationRecognizer.DictationHypothesisDelegate dictationHypothesisDelegate2;
 				do
@@ -40,6 +43,7 @@ namespace UnityEngine.Windows.Speech
 					dictationHypothesisDelegate = Interlocked.CompareExchange<DictationRecognizer.DictationHypothesisDelegate>(ref this.DictationHypothesis, (DictationRecognizer.DictationHypothesisDelegate)Delegate.Remove(dictationHypothesisDelegate2, value), dictationHypothesisDelegate);
 				}
 				while (dictationHypothesisDelegate != dictationHypothesisDelegate2);
+				*/
 			}
 		}
 
@@ -47,6 +51,7 @@ namespace UnityEngine.Windows.Speech
 		{
 			add
 			{
+				/*
 				DictationRecognizer.DictationResultDelegate dictationResultDelegate = this.DictationResult;
 				DictationRecognizer.DictationResultDelegate dictationResultDelegate2;
 				do
@@ -55,9 +60,11 @@ namespace UnityEngine.Windows.Speech
 					dictationResultDelegate = Interlocked.CompareExchange<DictationRecognizer.DictationResultDelegate>(ref this.DictationResult, (DictationRecognizer.DictationResultDelegate)Delegate.Combine(dictationResultDelegate2, value), dictationResultDelegate);
 				}
 				while (dictationResultDelegate != dictationResultDelegate2);
+				*/
 			}
 			remove
 			{
+				/*
 				DictationRecognizer.DictationResultDelegate dictationResultDelegate = this.DictationResult;
 				DictationRecognizer.DictationResultDelegate dictationResultDelegate2;
 				do
@@ -66,6 +73,7 @@ namespace UnityEngine.Windows.Speech
 					dictationResultDelegate = Interlocked.CompareExchange<DictationRecognizer.DictationResultDelegate>(ref this.DictationResult, (DictationRecognizer.DictationResultDelegate)Delegate.Remove(dictationResultDelegate2, value), dictationResultDelegate);
 				}
 				while (dictationResultDelegate != dictationResultDelegate2);
+				*/
 			}
 		}
 
@@ -73,6 +81,7 @@ namespace UnityEngine.Windows.Speech
 		{
 			add
 			{
+				/*
 				DictationRecognizer.DictationCompletedDelegate dictationCompletedDelegate = this.DictationComplete;
 				DictationRecognizer.DictationCompletedDelegate dictationCompletedDelegate2;
 				do
@@ -81,9 +90,11 @@ namespace UnityEngine.Windows.Speech
 					dictationCompletedDelegate = Interlocked.CompareExchange<DictationRecognizer.DictationCompletedDelegate>(ref this.DictationComplete, (DictationRecognizer.DictationCompletedDelegate)Delegate.Combine(dictationCompletedDelegate2, value), dictationCompletedDelegate);
 				}
 				while (dictationCompletedDelegate != dictationCompletedDelegate2);
+				*/
 			}
 			remove
 			{
+				/*
 				DictationRecognizer.DictationCompletedDelegate dictationCompletedDelegate = this.DictationComplete;
 				DictationRecognizer.DictationCompletedDelegate dictationCompletedDelegate2;
 				do
@@ -92,6 +103,7 @@ namespace UnityEngine.Windows.Speech
 					dictationCompletedDelegate = Interlocked.CompareExchange<DictationRecognizer.DictationCompletedDelegate>(ref this.DictationComplete, (DictationRecognizer.DictationCompletedDelegate)Delegate.Remove(dictationCompletedDelegate2, value), dictationCompletedDelegate);
 				}
 				while (dictationCompletedDelegate != dictationCompletedDelegate2);
+				*/
 			}
 		}
 
@@ -99,6 +111,7 @@ namespace UnityEngine.Windows.Speech
 		{
 			add
 			{
+				/*
 				DictationRecognizer.DictationErrorHandler dictationErrorHandler = this.DictationError;
 				DictationRecognizer.DictationErrorHandler dictationErrorHandler2;
 				do
@@ -107,9 +120,11 @@ namespace UnityEngine.Windows.Speech
 					dictationErrorHandler = Interlocked.CompareExchange<DictationRecognizer.DictationErrorHandler>(ref this.DictationError, (DictationRecognizer.DictationErrorHandler)Delegate.Combine(dictationErrorHandler2, value), dictationErrorHandler);
 				}
 				while (dictationErrorHandler != dictationErrorHandler2);
+				*/
 			}
 			remove
 			{
+				/*
 				DictationRecognizer.DictationErrorHandler dictationErrorHandler = this.DictationError;
 				DictationRecognizer.DictationErrorHandler dictationErrorHandler2;
 				do
@@ -118,6 +133,7 @@ namespace UnityEngine.Windows.Speech
 					dictationErrorHandler = Interlocked.CompareExchange<DictationRecognizer.DictationErrorHandler>(ref this.DictationError, (DictationRecognizer.DictationErrorHandler)Delegate.Remove(dictationErrorHandler2, value), dictationErrorHandler);
 				}
 				while (dictationErrorHandler != dictationErrorHandler2);
+				*/
 			}
 		}
 
@@ -280,41 +296,49 @@ namespace UnityEngine.Windows.Speech
 		[RequiredByNativeCode]
 		private void DictationRecognizer_InvokeHypothesisGeneratedEvent(string keyword)
 		{
+			/*
 			DictationRecognizer.DictationHypothesisDelegate dictationHypothesis = this.DictationHypothesis;
 			if (dictationHypothesis != null)
 			{
 				dictationHypothesis(keyword);
 			}
+			*/
 		}
 
 		[RequiredByNativeCode]
 		private void DictationRecognizer_InvokeResultGeneratedEvent(string keyword, ConfidenceLevel minimumConfidence)
 		{
+			/*
 			DictationRecognizer.DictationResultDelegate dictationResult = this.DictationResult;
 			if (dictationResult != null)
 			{
 				dictationResult(keyword, minimumConfidence);
 			}
+			*/
 		}
 
 		[RequiredByNativeCode]
 		private void DictationRecognizer_InvokeCompletedEvent(DictationCompletionCause cause)
 		{
+			/*
 			DictationRecognizer.DictationCompletedDelegate dictationComplete = this.DictationComplete;
 			if (dictationComplete != null)
 			{
 				dictationComplete(cause);
 			}
+			*/
 		}
 
 		[RequiredByNativeCode]
 		private void DictationRecognizer_InvokeErrorEvent(string error, int hresult)
 		{
+			/*
 			DictationRecognizer.DictationErrorHandler dictationError = this.DictationError;
 			if (dictationError != null)
 			{
 				dictationError(error, hresult);
 			}
+			*/
 		}
 	}
 }

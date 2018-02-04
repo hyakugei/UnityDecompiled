@@ -215,8 +215,10 @@ namespace UnityEditor
 
 		private Dictionary<string, IAudioEffectPluginGUI> m_CustomEffectGUIs = new Dictionary<string, IAudioEffectPluginGUI>();
 
+		/*
 		[CompilerGenerated]
 		private static GenericMenu.MenuFunction2 <>f__mg$cache0;
+		*/
 
 		public AudioMixerEffectView()
 		{
@@ -604,11 +606,13 @@ namespace UnityEditor
 			GenericMenu arg_3A_0 = genericMenu;
 			GUIContent arg_3A_1 = EditorGUIUtility.TrTextContent("None", null, null);
 			bool arg_3A_2 = false;
+			/*
 			if (AudioMixerEffectView.<>f__mg$cache0 == null)
 			{
 				AudioMixerEffectView.<>f__mg$cache0 = new GenericMenu.MenuFunction2(AudioMixerChannelStripView.ConnectSendPopupCallback);
 			}
 			arg_3A_0.AddItem(arg_3A_1, arg_3A_2, AudioMixerEffectView.<>f__mg$cache0, new AudioMixerChannelStripView.ConnectSendContext(effect, null));
+			*/
 			genericMenu.AddSeparator("");
 			AudioMixerChannelStripView.AddMenuItemsForReturns(genericMenu, string.Empty, effectIndex, group, allGroups, effectMap, effect, true);
 			if (genericMenu.GetItemCount() == 2)

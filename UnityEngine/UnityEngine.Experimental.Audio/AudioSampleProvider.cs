@@ -26,6 +26,7 @@ namespace UnityEngine.Experimental.Audio
 		{
 			add
 			{
+				/*
 				AudioSampleProvider.SampleFramesHandler sampleFramesHandler = this.sampleFramesAvailable;
 				AudioSampleProvider.SampleFramesHandler sampleFramesHandler2;
 				do
@@ -34,9 +35,11 @@ namespace UnityEngine.Experimental.Audio
 					sampleFramesHandler = Interlocked.CompareExchange<AudioSampleProvider.SampleFramesHandler>(ref this.sampleFramesAvailable, (AudioSampleProvider.SampleFramesHandler)Delegate.Combine(sampleFramesHandler2, value), sampleFramesHandler);
 				}
 				while (sampleFramesHandler != sampleFramesHandler2);
+				*/
 			}
 			remove
 			{
+				/*
 				AudioSampleProvider.SampleFramesHandler sampleFramesHandler = this.sampleFramesAvailable;
 				AudioSampleProvider.SampleFramesHandler sampleFramesHandler2;
 				do
@@ -45,6 +48,7 @@ namespace UnityEngine.Experimental.Audio
 					sampleFramesHandler = Interlocked.CompareExchange<AudioSampleProvider.SampleFramesHandler>(ref this.sampleFramesAvailable, (AudioSampleProvider.SampleFramesHandler)Delegate.Remove(sampleFramesHandler2, value), sampleFramesHandler);
 				}
 				while (sampleFramesHandler != sampleFramesHandler2);
+				*/
 			}
 		}
 
@@ -52,6 +56,7 @@ namespace UnityEngine.Experimental.Audio
 		{
 			add
 			{
+				/*
 				AudioSampleProvider.SampleFramesHandler sampleFramesHandler = this.sampleFramesOverflow;
 				AudioSampleProvider.SampleFramesHandler sampleFramesHandler2;
 				do
@@ -60,9 +65,11 @@ namespace UnityEngine.Experimental.Audio
 					sampleFramesHandler = Interlocked.CompareExchange<AudioSampleProvider.SampleFramesHandler>(ref this.sampleFramesOverflow, (AudioSampleProvider.SampleFramesHandler)Delegate.Combine(sampleFramesHandler2, value), sampleFramesHandler);
 				}
 				while (sampleFramesHandler != sampleFramesHandler2);
+				*/
 			}
 			remove
 			{
+				/*
 				AudioSampleProvider.SampleFramesHandler sampleFramesHandler = this.sampleFramesOverflow;
 				AudioSampleProvider.SampleFramesHandler sampleFramesHandler2;
 				do
@@ -71,6 +78,7 @@ namespace UnityEngine.Experimental.Audio
 					sampleFramesHandler = Interlocked.CompareExchange<AudioSampleProvider.SampleFramesHandler>(ref this.sampleFramesOverflow, (AudioSampleProvider.SampleFramesHandler)Delegate.Remove(sampleFramesHandler2, value), sampleFramesHandler);
 				}
 				while (sampleFramesHandler != sampleFramesHandler2);
+				*/
 			}
 		}
 
@@ -262,19 +270,23 @@ namespace UnityEngine.Experimental.Audio
 		[RequiredByNativeCode]
 		private void InvokeSampleFramesAvailable(int sampleFrameCount)
 		{
+			/*
 			if (this.sampleFramesAvailable != null)
 			{
 				this.sampleFramesAvailable(this, (uint)sampleFrameCount);
 			}
+			*/
 		}
 
 		[RequiredByNativeCode]
 		private void InvokeSampleFramesOverflow(int droppedSampleFrameCount)
 		{
+			/*
 			if (this.sampleFramesOverflow != null)
 			{
 				this.sampleFramesOverflow(this, (uint)droppedSampleFrameCount);
 			}
+			*/
 		}
 
 		[MethodImpl(MethodImplOptions.InternalCall)]

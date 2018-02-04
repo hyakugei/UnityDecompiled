@@ -53,8 +53,10 @@ namespace UnityEditor
 			"Green"
 		};
 
+		/*
 		[CompilerGenerated]
 		private static GenericMenu.MenuFunction2 <>f__mg$cache0;
+		*/
 
 		private static string[] GetColorNames()
 		{
@@ -84,6 +86,7 @@ namespace UnityEditor
 				bool flag = groups.Length == 1 && i == groups[0].userColorIndex;
 				GUIContent arg_73_1 = new GUIContent(array[i]);
 				bool arg_73_2 = flag;
+				/*
 				if (AudioMixerColorCodes.<>f__mg$cache0 == null)
 				{
 					AudioMixerColorCodes.<>f__mg$cache0 = new GenericMenu.MenuFunction2(AudioMixerColorCodes.ItemCallback);
@@ -93,6 +96,7 @@ namespace UnityEditor
 					groups = groups,
 					index = i
 				});
+				*/
 			}
 		}
 

@@ -10,7 +10,7 @@ namespace UnityEngineInternal
 			return Delegate.CreateDelegate(delegateType, target, self);
 		}
 
-		public static MethodInfo GetMethodInfo(this Delegate self)
+		public static MethodInfo GetMethodInfoSelf(this Delegate self)
 		{
 			return self.Method;
 		}

@@ -15,6 +15,7 @@ namespace UnityEngine
 		{
 			add
 			{
+				/*
 				CanvasRenderer.OnRequestRebuild onRequestRebuild = CanvasRenderer.onRequestRebuild;
 				CanvasRenderer.OnRequestRebuild onRequestRebuild2;
 				do
@@ -23,9 +24,11 @@ namespace UnityEngine
 					onRequestRebuild = Interlocked.CompareExchange<CanvasRenderer.OnRequestRebuild>(ref CanvasRenderer.onRequestRebuild, (CanvasRenderer.OnRequestRebuild)Delegate.Combine(onRequestRebuild2, value), onRequestRebuild);
 				}
 				while (onRequestRebuild != onRequestRebuild2);
+				*/
 			}
 			remove
 			{
+				/*
 				CanvasRenderer.OnRequestRebuild onRequestRebuild = CanvasRenderer.onRequestRebuild;
 				CanvasRenderer.OnRequestRebuild onRequestRebuild2;
 				do
@@ -34,6 +37,7 @@ namespace UnityEngine
 					onRequestRebuild = Interlocked.CompareExchange<CanvasRenderer.OnRequestRebuild>(ref CanvasRenderer.onRequestRebuild, (CanvasRenderer.OnRequestRebuild)Delegate.Remove(onRequestRebuild2, value), onRequestRebuild);
 				}
 				while (onRequestRebuild != onRequestRebuild2);
+				*/
 			}
 		}
 
@@ -299,10 +303,12 @@ namespace UnityEngine
 		[RequiredByNativeCode]
 		private static void RequestRefresh()
 		{
+			/*
 			if (CanvasRenderer.onRequestRebuild != null)
 			{
 				CanvasRenderer.onRequestRebuild();
 			}
+			*/
 		}
 	}
 }

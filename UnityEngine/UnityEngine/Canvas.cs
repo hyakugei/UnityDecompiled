@@ -14,6 +14,7 @@ namespace UnityEngine
 		{
 			add
 			{
+				/*
 				Canvas.WillRenderCanvases willRenderCanvases = Canvas.willRenderCanvases;
 				Canvas.WillRenderCanvases willRenderCanvases2;
 				do
@@ -22,9 +23,11 @@ namespace UnityEngine
 					willRenderCanvases = Interlocked.CompareExchange<Canvas.WillRenderCanvases>(ref Canvas.willRenderCanvases, (Canvas.WillRenderCanvases)Delegate.Combine(willRenderCanvases2, value), willRenderCanvases);
 				}
 				while (willRenderCanvases != willRenderCanvases2);
+				*/
 			}
 			remove
 			{
+				/*
 				Canvas.WillRenderCanvases willRenderCanvases = Canvas.willRenderCanvases;
 				Canvas.WillRenderCanvases willRenderCanvases2;
 				do
@@ -33,6 +36,7 @@ namespace UnityEngine
 					willRenderCanvases = Interlocked.CompareExchange<Canvas.WillRenderCanvases>(ref Canvas.willRenderCanvases, (Canvas.WillRenderCanvases)Delegate.Remove(willRenderCanvases2, value), willRenderCanvases);
 				}
 				while (willRenderCanvases != willRenderCanvases2);
+				*/
 			}
 		}
 
@@ -244,10 +248,12 @@ namespace UnityEngine
 		[RequiredByNativeCode]
 		private static void SendWillRenderCanvases()
 		{
+			/*
 			if (Canvas.willRenderCanvases != null)
 			{
 				Canvas.willRenderCanvases();
 			}
+			*/
 		}
 
 		public static void ForceUpdateCanvases()

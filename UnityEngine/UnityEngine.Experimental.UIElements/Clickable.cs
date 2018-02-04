@@ -15,6 +15,7 @@ namespace UnityEngine.Experimental.UIElements
 		{
 			add
 			{
+				/*
 				Action action = this.clicked;
 				Action action2;
 				do
@@ -23,9 +24,11 @@ namespace UnityEngine.Experimental.UIElements
 					action = Interlocked.CompareExchange<Action>(ref this.clicked, (Action)Delegate.Combine(action2, value), action);
 				}
 				while (action != action2);
+				*/
 			}
 			remove
 			{
+				/*
 				Action action = this.clicked;
 				Action action2;
 				do
@@ -34,6 +37,7 @@ namespace UnityEngine.Experimental.UIElements
 					action = Interlocked.CompareExchange<Action>(ref this.clicked, (Action)Delegate.Remove(action2, value), action);
 				}
 				while (action != action2);
+				*/
 			}
 		}
 
@@ -51,7 +55,7 @@ namespace UnityEngine.Experimental.UIElements
 
 		public Clickable(Action handler)
 		{
-			this.clicked = handler;
+			//this.clicked = handler;
 			base.activators.Add(new ManipulatorActivationFilter
 			{
 				button = MouseButton.LeftMouse
@@ -60,6 +64,7 @@ namespace UnityEngine.Experimental.UIElements
 
 		private void OnTimer(TimerState timerState)
 		{
+			/*
 			if (this.clicked != null && this.IsRepeatable())
 			{
 				if (base.target.ContainsPoint(this.lastMousePosition))
@@ -72,6 +77,7 @@ namespace UnityEngine.Experimental.UIElements
 					base.target.pseudoStates &= ~PseudoStates.Active;
 				}
 			}
+			*/
 		}
 
 		private bool IsRepeatable()
@@ -101,10 +107,12 @@ namespace UnityEngine.Experimental.UIElements
 				this.lastMousePosition = evt.localMousePosition;
 				if (this.IsRepeatable())
 				{
+					/*
 					if (this.clicked != null && base.target.ContainsPoint(evt.localMousePosition))
 					{
 						this.clicked();
 					}
+					*/
 					if (this.m_Repeater == null)
 					{
 						this.m_Repeater = base.target.schedule.Execute(new Action<TimerState>(this.OnTimer)).Every(this.m_Interval).StartingIn(this.m_Delay);
@@ -140,10 +148,12 @@ namespace UnityEngine.Experimental.UIElements
 						this.m_Repeater.Pause();
 					}
 				}
+				/*
 				else if (this.clicked != null && base.target.ContainsPoint(evt.localMousePosition))
 				{
 					this.clicked();
 				}
+				*/
 				base.target.pseudoStates &= ~PseudoStates.Active;
 				evt.StopPropagation();
 			}

@@ -14,6 +14,7 @@ namespace UnityEngine
 		{
 			add
 			{
+				/*
 				AudioSettings.AudioConfigurationChangeHandler audioConfigurationChangeHandler = AudioSettings.OnAudioConfigurationChanged;
 				AudioSettings.AudioConfigurationChangeHandler audioConfigurationChangeHandler2;
 				do
@@ -22,9 +23,11 @@ namespace UnityEngine
 					audioConfigurationChangeHandler = Interlocked.CompareExchange<AudioSettings.AudioConfigurationChangeHandler>(ref AudioSettings.OnAudioConfigurationChanged, (AudioSettings.AudioConfigurationChangeHandler)Delegate.Combine(audioConfigurationChangeHandler2, value), audioConfigurationChangeHandler);
 				}
 				while (audioConfigurationChangeHandler != audioConfigurationChangeHandler2);
+				*/
 			}
 			remove
 			{
+				/*
 				AudioSettings.AudioConfigurationChangeHandler audioConfigurationChangeHandler = AudioSettings.OnAudioConfigurationChanged;
 				AudioSettings.AudioConfigurationChangeHandler audioConfigurationChangeHandler2;
 				do
@@ -33,6 +36,7 @@ namespace UnityEngine
 					audioConfigurationChangeHandler = Interlocked.CompareExchange<AudioSettings.AudioConfigurationChangeHandler>(ref AudioSettings.OnAudioConfigurationChanged, (AudioSettings.AudioConfigurationChangeHandler)Delegate.Remove(audioConfigurationChangeHandler2, value), audioConfigurationChangeHandler);
 				}
 				while (audioConfigurationChangeHandler != audioConfigurationChangeHandler2);
+				*/
 			}
 		}
 
@@ -155,10 +159,12 @@ namespace UnityEngine
 		[RequiredByNativeCode]
 		internal static void InvokeOnAudioConfigurationChanged(bool deviceWasChanged)
 		{
+			/*
 			if (AudioSettings.OnAudioConfigurationChanged != null)
 			{
 				AudioSettings.OnAudioConfigurationChanged(deviceWasChanged);
 			}
+			*/
 		}
 
 		[RequiredByNativeCode]

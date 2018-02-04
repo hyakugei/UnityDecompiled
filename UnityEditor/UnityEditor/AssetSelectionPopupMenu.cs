@@ -8,8 +8,10 @@ namespace UnityEditor
 {
 	internal class AssetSelectionPopupMenu
 	{
+		/*
 		[CompilerGenerated]
 		private static GenericMenu.MenuFunction2 <>f__mg$cache0;
+		*/
 
 		public static void Show(Rect buttonRect, string[] classNames, int initialSelectedInstanceID)
 		{
@@ -25,11 +27,13 @@ namespace UnityEditor
 					GenericMenu arg_8E_0 = genericMenu;
 					GUIContent arg_8E_1 = gUIContent;
 					bool arg_8E_2 = flag;
+					/*
 					if (AssetSelectionPopupMenu.<>f__mg$cache0 == null)
 					{
 						AssetSelectionPopupMenu.<>f__mg$cache0 = new GenericMenu.MenuFunction2(AssetSelectionPopupMenu.SelectCallback);
 					}
 					arg_8E_0.AddItem(arg_8E_1, arg_8E_2, AssetSelectionPopupMenu.<>f__mg$cache0, current);
+					*/
 				}
 			}
 			else

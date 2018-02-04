@@ -196,7 +196,7 @@ namespace UnityEngine
 		{
 			if (!condition)
 			{
-				Debug.unityLogger.Log(LogType.Assert, "Assertion failed", context);
+				Debug.unityLogger.LogContext(LogType.Assert, "Assertion failed", context);
 			}
 		}
 

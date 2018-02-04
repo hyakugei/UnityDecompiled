@@ -11,6 +11,7 @@ namespace UnityEngine.WSA
 		{
 			add
 			{
+				/*
 				WindowSizeChanged windowSizeChanged = Application.windowSizeChanged;
 				WindowSizeChanged windowSizeChanged2;
 				do
@@ -19,9 +20,11 @@ namespace UnityEngine.WSA
 					windowSizeChanged = Interlocked.CompareExchange<WindowSizeChanged>(ref Application.windowSizeChanged, (WindowSizeChanged)Delegate.Combine(windowSizeChanged2, value), windowSizeChanged);
 				}
 				while (windowSizeChanged != windowSizeChanged2);
+				*/
 			}
 			remove
 			{
+				/*
 				WindowSizeChanged windowSizeChanged = Application.windowSizeChanged;
 				WindowSizeChanged windowSizeChanged2;
 				do
@@ -30,6 +33,7 @@ namespace UnityEngine.WSA
 					windowSizeChanged = Interlocked.CompareExchange<WindowSizeChanged>(ref Application.windowSizeChanged, (WindowSizeChanged)Delegate.Remove(windowSizeChanged2, value), windowSizeChanged);
 				}
 				while (windowSizeChanged != windowSizeChanged2);
+				*/
 			}
 		}
 
@@ -37,6 +41,7 @@ namespace UnityEngine.WSA
 		{
 			add
 			{
+				/*
 				WindowActivated windowActivated = Application.windowActivated;
 				WindowActivated windowActivated2;
 				do
@@ -45,9 +50,11 @@ namespace UnityEngine.WSA
 					windowActivated = Interlocked.CompareExchange<WindowActivated>(ref Application.windowActivated, (WindowActivated)Delegate.Combine(windowActivated2, value), windowActivated);
 				}
 				while (windowActivated != windowActivated2);
+				*/
 			}
 			remove
 			{
+				/*
 				WindowActivated windowActivated = Application.windowActivated;
 				WindowActivated windowActivated2;
 				do
@@ -56,6 +63,7 @@ namespace UnityEngine.WSA
 					windowActivated = Interlocked.CompareExchange<WindowActivated>(ref Application.windowActivated, (WindowActivated)Delegate.Remove(windowActivated2, value), windowActivated);
 				}
 				while (windowActivated != windowActivated2);
+				*/
 			}
 		}
 
@@ -87,18 +95,22 @@ namespace UnityEngine.WSA
 
 		internal static void InvokeWindowSizeChangedEvent(int width, int height)
 		{
+			/*
 			if (Application.windowSizeChanged != null)
 			{
 				Application.windowSizeChanged(width, height);
 			}
+			*/
 		}
 
 		internal static void InvokeWindowActivatedEvent(WindowActivationState state)
 		{
+			/*
 			if (Application.windowActivated != null)
 			{
 				Application.windowActivated(state);
 			}
+			*/
 		}
 
 		public static void InvokeOnAppThread(AppCallbackItem item, bool waitUntilDone)

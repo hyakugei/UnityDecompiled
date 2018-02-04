@@ -28,6 +28,7 @@ namespace UnityEditor
 				public AudioMixerGroupViewList list;
 			}
 
+			/*
 			[CompilerGenerated]
 			private static GenericMenu.MenuFunction2 <>f__mg$cache0;
 
@@ -36,6 +37,7 @@ namespace UnityEditor
 
 			[CompilerGenerated]
 			private static GenericMenu.MenuFunction2 <>f__mg$cache2;
+			*/
 
 			public static void Show(Rect buttonRect, int viewIndex, AudioMixerGroupViewList list)
 			{
@@ -48,27 +50,33 @@ namespace UnityEditor
 				GenericMenu arg_49_0 = genericMenu;
 				GUIContent arg_49_1 = EditorGUIUtility.TrTextContent("Rename", null, null);
 				bool arg_49_2 = false;
+				/*
 				if (AudioMixerGroupViewList.ViewsContexttMenu.<>f__mg$cache0 == null)
 				{
 					AudioMixerGroupViewList.ViewsContexttMenu.<>f__mg$cache0 = new GenericMenu.MenuFunction2(AudioMixerGroupViewList.ViewsContexttMenu.Rename);
 				}
 				arg_49_0.AddItem(arg_49_1, arg_49_2, AudioMixerGroupViewList.ViewsContexttMenu.<>f__mg$cache0, userData);
+				*/
 				GenericMenu arg_7A_0 = genericMenu;
 				GUIContent arg_7A_1 = EditorGUIUtility.TrTextContent("Duplicate", null, null);
 				bool arg_7A_2 = false;
+				/*
 				if (AudioMixerGroupViewList.ViewsContexttMenu.<>f__mg$cache1 == null)
 				{
 					AudioMixerGroupViewList.ViewsContexttMenu.<>f__mg$cache1 = new GenericMenu.MenuFunction2(AudioMixerGroupViewList.ViewsContexttMenu.Duplicate);
 				}
 				arg_7A_0.AddItem(arg_7A_1, arg_7A_2, AudioMixerGroupViewList.ViewsContexttMenu.<>f__mg$cache1, userData);
+				*/
 				GenericMenu arg_AB_0 = genericMenu;
 				GUIContent arg_AB_1 = EditorGUIUtility.TrTextContent("Delete", null, null);
 				bool arg_AB_2 = false;
+				/*
 				if (AudioMixerGroupViewList.ViewsContexttMenu.<>f__mg$cache2 == null)
 				{
 					AudioMixerGroupViewList.ViewsContexttMenu.<>f__mg$cache2 = new GenericMenu.MenuFunction2(AudioMixerGroupViewList.ViewsContexttMenu.Delete);
 				}
 				arg_AB_0.AddItem(arg_AB_1, arg_AB_2, AudioMixerGroupViewList.ViewsContexttMenu.<>f__mg$cache2, userData);
+				*/
 				genericMenu.DropDown(buttonRect);
 			}
 

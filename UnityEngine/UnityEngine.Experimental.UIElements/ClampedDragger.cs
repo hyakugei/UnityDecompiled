@@ -18,6 +18,7 @@ namespace UnityEngine.Experimental.UIElements
 		{
 			add
 			{
+				/*
 				Action action = this.dragging;
 				Action action2;
 				do
@@ -26,9 +27,11 @@ namespace UnityEngine.Experimental.UIElements
 					action = Interlocked.CompareExchange<Action>(ref this.dragging, (Action)Delegate.Combine(action2, value), action);
 				}
 				while (action != action2);
+				*/
 			}
 			remove
 			{
+				/*
 				Action action = this.dragging;
 				Action action2;
 				do
@@ -37,6 +40,7 @@ namespace UnityEngine.Experimental.UIElements
 					action = Interlocked.CompareExchange<Action>(ref this.dragging, (Action)Delegate.Remove(action2, value), action);
 				}
 				while (action != action2);
+				*/
 			}
 		}
 
@@ -108,10 +112,12 @@ namespace UnityEngine.Experimental.UIElements
 				}
 				if (this.dragDirection == ClampedDragger.DragDirection.Free)
 				{
+					/*
 					if (this.dragging != null)
 					{
 						this.dragging();
 					}
+					*/
 				}
 			}
 		}

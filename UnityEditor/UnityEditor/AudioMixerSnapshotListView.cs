@@ -30,6 +30,7 @@ namespace UnityEditor
 				public AudioMixerSnapshotListView list;
 			}
 
+			/*
 			[CompilerGenerated]
 			private static GenericMenu.MenuFunction2 <>f__mg$cache0;
 
@@ -41,6 +42,7 @@ namespace UnityEditor
 
 			[CompilerGenerated]
 			private static GenericMenu.MenuFunction2 <>f__mg$cache3;
+			*/
 
 			public static void Show(Rect buttonRect, AudioMixerSnapshotController snapshot, AudioMixerSnapshotListView list)
 			{
@@ -53,36 +55,44 @@ namespace UnityEditor
 				GenericMenu arg_49_0 = genericMenu;
 				GUIContent arg_49_1 = EditorGUIUtility.TrTextContent("Set as start Snapshot", null, null);
 				bool arg_49_2 = false;
+				/*
 				if (AudioMixerSnapshotListView.SnapshotMenu.<>f__mg$cache0 == null)
 				{
 					AudioMixerSnapshotListView.SnapshotMenu.<>f__mg$cache0 = new GenericMenu.MenuFunction2(AudioMixerSnapshotListView.SnapshotMenu.SetAsStartupSnapshot);
 				}
 				arg_49_0.AddItem(arg_49_1, arg_49_2, AudioMixerSnapshotListView.SnapshotMenu.<>f__mg$cache0, userData);
+				*/
 				genericMenu.AddSeparator("");
 				GenericMenu arg_85_0 = genericMenu;
 				GUIContent arg_85_1 = EditorGUIUtility.TrTextContent("Rename", null, null);
 				bool arg_85_2 = false;
+				/*
 				if (AudioMixerSnapshotListView.SnapshotMenu.<>f__mg$cache1 == null)
 				{
 					AudioMixerSnapshotListView.SnapshotMenu.<>f__mg$cache1 = new GenericMenu.MenuFunction2(AudioMixerSnapshotListView.SnapshotMenu.Rename);
 				}
 				arg_85_0.AddItem(arg_85_1, arg_85_2, AudioMixerSnapshotListView.SnapshotMenu.<>f__mg$cache1, userData);
+				*/
 				GenericMenu arg_B6_0 = genericMenu;
 				GUIContent arg_B6_1 = EditorGUIUtility.TrTextContent("Duplicate", null, null);
 				bool arg_B6_2 = false;
+				/*
 				if (AudioMixerSnapshotListView.SnapshotMenu.<>f__mg$cache2 == null)
 				{
 					AudioMixerSnapshotListView.SnapshotMenu.<>f__mg$cache2 = new GenericMenu.MenuFunction2(AudioMixerSnapshotListView.SnapshotMenu.Duplicate);
 				}
 				arg_B6_0.AddItem(arg_B6_1, arg_B6_2, AudioMixerSnapshotListView.SnapshotMenu.<>f__mg$cache2, userData);
+				*/
 				GenericMenu arg_E7_0 = genericMenu;
 				GUIContent arg_E7_1 = EditorGUIUtility.TrTextContent("Delete", null, null);
 				bool arg_E7_2 = false;
+				/*
 				if (AudioMixerSnapshotListView.SnapshotMenu.<>f__mg$cache3 == null)
 				{
 					AudioMixerSnapshotListView.SnapshotMenu.<>f__mg$cache3 = new GenericMenu.MenuFunction2(AudioMixerSnapshotListView.SnapshotMenu.Delete);
 				}
 				arg_E7_0.AddItem(arg_E7_1, arg_E7_2, AudioMixerSnapshotListView.SnapshotMenu.<>f__mg$cache3, userData);
+				*/
 				genericMenu.DropDown(buttonRect);
 			}
 

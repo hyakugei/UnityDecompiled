@@ -143,11 +143,13 @@ namespace UnityEditorInternal
 
 		private Dictionary<string, UnityEventDrawer.State> m_States = new Dictionary<string, UnityEventDrawer.State>();
 
+		/*
 		[CompilerGenerated]
 		private static GenericMenu.MenuFunction2 <>f__mg$cache0;
 
 		[CompilerGenerated]
 		private static GenericMenu.MenuFunction2 <>f__mg$cache1;
+		*/
 
 		private static string GetEventParams(UnityEventBase evt)
 		{

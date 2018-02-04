@@ -17,6 +17,7 @@ namespace UnityEngine
 		{
 			add
 			{
+				/*
 				Action<Font> action = Font.textureRebuilt;
 				Action<Font> action2;
 				do
@@ -25,9 +26,11 @@ namespace UnityEngine
 					action = Interlocked.CompareExchange<Action<Font>>(ref Font.textureRebuilt, (Action<Font>)Delegate.Combine(action2, value), action);
 				}
 				while (action != action2);
+				*/
 			}
 			remove
 			{
+				/*
 				Action<Font> action = Font.textureRebuilt;
 				Action<Font> action2;
 				do
@@ -36,6 +39,7 @@ namespace UnityEngine
 					action = Interlocked.CompareExchange<Action<Font>>(ref Font.textureRebuilt, (Action<Font>)Delegate.Remove(action2, value), action);
 				}
 				while (action != action2);
+				*/
 			}
 		}
 
@@ -43,6 +47,7 @@ namespace UnityEngine
 		{
 			add
 			{
+				/*
 				Font.FontTextureRebuildCallback fontTextureRebuildCallback = this.m_FontTextureRebuildCallback;
 				Font.FontTextureRebuildCallback fontTextureRebuildCallback2;
 				do
@@ -51,9 +56,11 @@ namespace UnityEngine
 					fontTextureRebuildCallback = Interlocked.CompareExchange<Font.FontTextureRebuildCallback>(ref this.m_FontTextureRebuildCallback, (Font.FontTextureRebuildCallback)Delegate.Combine(fontTextureRebuildCallback2, value), fontTextureRebuildCallback);
 				}
 				while (fontTextureRebuildCallback != fontTextureRebuildCallback2);
+				*/
 			}
 			remove
 			{
+				/*
 				Font.FontTextureRebuildCallback fontTextureRebuildCallback = this.m_FontTextureRebuildCallback;
 				Font.FontTextureRebuildCallback fontTextureRebuildCallback2;
 				do
@@ -62,6 +69,7 @@ namespace UnityEngine
 					fontTextureRebuildCallback = Interlocked.CompareExchange<Font.FontTextureRebuildCallback>(ref this.m_FontTextureRebuildCallback, (Font.FontTextureRebuildCallback)Delegate.Remove(fontTextureRebuildCallback2, value), fontTextureRebuildCallback);
 				}
 				while (fontTextureRebuildCallback != fontTextureRebuildCallback2);
+				*/
 			}
 		}
 
@@ -93,19 +101,6 @@ namespace UnityEngine
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
-		}
-
-		[EditorBrowsable(EditorBrowsableState.Never), Obsolete("Font.textureRebuildCallback has been deprecated. Use Font.textureRebuilt instead.")]
-		public Font.FontTextureRebuildCallback textureRebuildCallback
-		{
-			get
-			{
-				return this.m_FontTextureRebuildCallback;
-			}
-			set
-			{
-				this.m_FontTextureRebuildCallback = value;
-			}
 		}
 
 		public extern bool dynamic
@@ -206,6 +201,7 @@ namespace UnityEngine
 		[RequiredByNativeCode]
 		private static void InvokeTextureRebuilt_Internal(Font font)
 		{
+			/*
 			Action<Font> action = Font.textureRebuilt;
 			if (action != null)
 			{
@@ -215,6 +211,7 @@ namespace UnityEngine
 			{
 				font.m_FontTextureRebuildCallback();
 			}
+			*/
 		}
 
 		public static int GetMaxVertsForString(string str)

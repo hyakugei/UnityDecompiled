@@ -47,6 +47,7 @@ namespace UnityEngine.EventSystems
 
 		private static readonly List<Transform> s_InternalTransformList;
 
+		/*
 		[CompilerGenerated]
 		private static ExecuteEvents.EventFunction<IPointerEnterHandler> <>f__mg$cache0;
 
@@ -97,6 +98,7 @@ namespace UnityEngine.EventSystems
 
 		[CompilerGenerated]
 		private static ExecuteEvents.EventFunction<ICancelHandler> <>f__mg$cache10;
+		*/
 
 		public static ExecuteEvents.EventFunction<IPointerEnterHandler> pointerEnterHandler
 		{
@@ -468,6 +470,7 @@ namespace UnityEngine.EventSystems
 
 		static ExecuteEvents()
 		{
+			/*
 			// Note: this type is marked as 'beforefieldinit'.
 			if (ExecuteEvents.<>f__mg$cache0 == null)
 			{
@@ -559,6 +562,7 @@ namespace UnityEngine.EventSystems
 				l.Clear();
 			});
 			ExecuteEvents.s_InternalTransformList = new List<Transform>(30);
+			*/
 		}
 	}
 }

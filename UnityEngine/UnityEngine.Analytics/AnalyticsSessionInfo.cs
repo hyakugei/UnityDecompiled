@@ -14,6 +14,7 @@ namespace UnityEngine.Analytics
 		{
 			add
 			{
+				/*
 				AnalyticsSessionInfo.SessionStateChanged sessionStateChanged = AnalyticsSessionInfo.sessionStateChanged;
 				AnalyticsSessionInfo.SessionStateChanged sessionStateChanged2;
 				do
@@ -22,9 +23,11 @@ namespace UnityEngine.Analytics
 					sessionStateChanged = Interlocked.CompareExchange<AnalyticsSessionInfo.SessionStateChanged>(ref AnalyticsSessionInfo.sessionStateChanged, (AnalyticsSessionInfo.SessionStateChanged)Delegate.Combine(sessionStateChanged2, value), sessionStateChanged);
 				}
 				while (sessionStateChanged != sessionStateChanged2);
+				*/
 			}
 			remove
 			{
+				/*
 				AnalyticsSessionInfo.SessionStateChanged sessionStateChanged = AnalyticsSessionInfo.sessionStateChanged;
 				AnalyticsSessionInfo.SessionStateChanged sessionStateChanged2;
 				do
@@ -33,6 +36,7 @@ namespace UnityEngine.Analytics
 					sessionStateChanged = Interlocked.CompareExchange<AnalyticsSessionInfo.SessionStateChanged>(ref AnalyticsSessionInfo.sessionStateChanged, (AnalyticsSessionInfo.SessionStateChanged)Delegate.Remove(sessionStateChanged2, value), sessionStateChanged);
 				}
 				while (sessionStateChanged != sessionStateChanged2);
+				*/
 			}
 		}
 
@@ -63,11 +67,13 @@ namespace UnityEngine.Analytics
 		[RequiredByNativeCode]
 		internal static void CallSessionStateChanged(AnalyticsSessionState sessionState, long sessionId, long sessionElapsedTime, bool sessionChanged)
 		{
+			/*
 			AnalyticsSessionInfo.SessionStateChanged sessionStateChanged = AnalyticsSessionInfo.sessionStateChanged;
 			if (sessionStateChanged != null)
 			{
 				sessionStateChanged(sessionState, sessionId, sessionElapsedTime, sessionChanged);
 			}
+			*/
 		}
 	}
 }

@@ -7,6 +7,7 @@ namespace UnityEditor
 {
 	internal class AssetPopupBackend
 	{
+		/*
 		[CompilerGenerated]
 		private static GenericMenu.MenuFunction2 <>f__mg$cache0;
 
@@ -18,6 +19,7 @@ namespace UnityEditor
 
 		[CompilerGenerated]
 		private static GenericMenu.MenuFunction2 <>f__mg$cache3;
+		*/
 
 		public static void AssetPopup<T>(SerializedProperty serializedProperty, GUIContent label, string fileExtension, string defaultFieldName) where T : UnityEngine.Object, new()
 		{
@@ -70,6 +72,7 @@ namespace UnityEditor
 						GenericMenu arg_124_0 = genericMenu;
 						GUIContent arg_124_1 = new GUIContent(resource.m_Name);
 						bool arg_124_2 = resource.m_InstanceID == num;
+						/*
 						if (AssetPopupBackend.<>f__mg$cache0 == null)
 						{
 							AssetPopupBackend.<>f__mg$cache0 = new GenericMenu.MenuFunction2(AssetPopupBackend.AssetPopupMenuCallback);
@@ -79,6 +82,7 @@ namespace UnityEditor
 							resource.m_InstanceID,
 							serializedProperty
 						});
+						*/
 						array = (from x in array
 						where x != resource
 						select x).ToArray<BuiltinResource>();
@@ -89,6 +93,7 @@ namespace UnityEditor
 			}
 			if (!flag)
 			{
+				/*
 				GenericMenu arg_1A6_0 = genericMenu;
 				GUIContent arg_1A6_1 = new GUIContent(defaultFieldName);
 				bool arg_1A6_2 = num == 0;
@@ -101,6 +106,7 @@ namespace UnityEditor
 					0,
 					serializedProperty
 				});
+				*/
 			}
 			HierarchyProperty hierarchyProperty = new HierarchyProperty(HierarchyType.Assets);
 			SearchFilter searchFilter = new SearchFilter
@@ -114,6 +120,7 @@ namespace UnityEditor
 			hierarchyProperty.Reset();
 			while (hierarchyProperty.Next(null))
 			{
+				/*
 				GenericMenu arg_23D_0 = genericMenu;
 				GUIContent arg_23D_1 = new GUIContent(hierarchyProperty.name);
 				bool arg_23D_2 = hierarchyProperty.instanceID == num;
@@ -126,12 +133,14 @@ namespace UnityEditor
 					hierarchyProperty.instanceID,
 					serializedProperty
 				});
+				*/
 			}
 			if (num2 > 0 && array != null)
 			{
 				BuiltinResource[] array3 = array;
 				for (int j = 0; j < array3.Length; j++)
 				{
+					/*
 					BuiltinResource builtinResource = array3[j];
 					GenericMenu arg_2C7_0 = genericMenu;
 					GUIContent arg_2C7_1 = new GUIContent(builtinResource.m_Name);
@@ -145,6 +154,7 @@ namespace UnityEditor
 						builtinResource.m_InstanceID,
 						serializedProperty
 					});
+					*/
 				}
 			}
 			genericMenu.AddSeparator("");
