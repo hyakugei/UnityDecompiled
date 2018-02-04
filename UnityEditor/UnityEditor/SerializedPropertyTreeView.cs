@@ -29,11 +29,11 @@ namespace UnityEditor
 
 			public static readonly string serializeFilter = "_Filter_";
 
-			public static readonly GUIContent filterSelection = EditorGUIUtility.TextContent("Lock Selection|Limits the table contents to the active selection.");
+			public static readonly GUIContent filterSelection = EditorGUIUtility.TrTextContent("Lock Selection", "Limits the table contents to the active selection.", null);
 
-			public static readonly GUIContent filterDisable = EditorGUIUtility.TextContent("Disable All|Disables all filters.");
+			public static readonly GUIContent filterDisable = EditorGUIUtility.TrTextContent("Disable All", "Disables all filters.", null);
 
-			public static readonly GUIContent filterInvert = EditorGUIUtility.TextContent("Invert Result|Inverts the filtered results.");
+			public static readonly GUIContent filterInvert = EditorGUIUtility.TrTextContent("Invert Result", "Inverts the filtered results.", null);
 		}
 
 		internal class SerializedPropertyItem : TreeViewItem
@@ -157,7 +157,7 @@ namespace UnityEditor
 			base.multiColumnHeader.visibleColumnsChanged += new MultiColumnHeader.HeaderCallback(this.OnVisibleColumnChanged);
 			base.showAlternatingRowBackgrounds = true;
 			base.showBorder = true;
-			base.rowHeight = 18f;
+			base.rowHeight = EditorGUIUtility.singleLineHeight;
 		}
 
 		public void SerializeState(string uid)

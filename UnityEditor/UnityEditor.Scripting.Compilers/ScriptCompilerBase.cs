@@ -13,11 +13,14 @@ namespace UnityEditor.Scripting.Compilers
 
 		private string _responseFile = null;
 
+		private bool _runAPIUpdater;
+
 		protected MonoIsland _island;
 
-		protected ScriptCompilerBase(MonoIsland island)
+		protected ScriptCompilerBase(MonoIsland island, bool runAPIUpdater)
 		{
 			this._island = island;
+			this._runAPIUpdater = runAPIUpdater;
 		}
 
 		protected abstract Program StartCompiler();
@@ -62,10 +65,15 @@ namespace UnityEditor.Scripting.Compilers
 			return this.process == null || this.process.HasExited;
 		}
 
+		public void WaitForCompilationToFinish()
+		{
+			this.process.WaitForExit();
+		}
+
 		protected string GetMonoProfileLibDirectory()
 		{
 			string profile = BuildPipeline.CompatibilityProfileToClassLibFolder(this._island._api_compatibility_level);
-			string monoInstallation = (this._island._api_compatibility_level != ApiCompatibilityLevel.NET_4_6) ? "Mono" : "MonoBleedingEdge";
+			string monoInstallation = (!PlayerSettingsEditor.IsLatestApiCompatibility(this._island._api_compatibility_level)) ? "Mono" : "MonoBleedingEdge";
 			return MonoInstallationFinder.GetProfileDirectory(profile, monoInstallation);
 		}
 
@@ -89,6 +97,59 @@ namespace UnityEditor.Scripting.Compilers
 		{
 			this._responseFile = CommandLineFormatter.GenerateResponseFile(arguments);
 			return this._responseFile;
+		}
+
+		public static string[] GetResponseFileDefinesFromFile(string responseFileName)
+		{
+			string path = Path.Combine("Assets", responseFileName);
+			string[] result;
+			if (!File.Exists(path))
+			{
+				result = new string[0];
+			}
+			else
+			{
+				string responseFileText = File.ReadAllText(path);
+				result = ScriptCompilerBase.GetResponseFileDefinesFromText(responseFileText);
+			}
+			return result;
+		}
+
+		public static string[] GetResponseFileDefinesFromText(string responseFileText)
+		{
+			int length = "-define:".Length;
+			string[] result;
+			if (!responseFileText.Contains("-define:"))
+			{
+				result = new string[0];
+			}
+			else
+			{
+				List<string> list = new List<string>();
+				string[] array = responseFileText.Split(new char[]
+				{
+					' ',
+					'\n'
+				});
+				string[] array2 = array;
+				for (int i = 0; i < array2.Length; i++)
+				{
+					string text = array2[i];
+					string text2 = text.Trim();
+					if (text2.StartsWith("-define:"))
+					{
+						string text3 = text2.Substring(length);
+						string[] collection = text3.Split(new char[]
+						{
+							',',
+							';'
+						});
+						list.AddRange(collection);
+					}
+				}
+				result = list.ToArray();
+			}
+			return result;
 		}
 
 		protected static string PrepareFileName(string fileName)
@@ -153,6 +214,14 @@ namespace UnityEditor.Scripting.Compilers
 					Console.WriteLine(value2);
 				}
 				Console.WriteLine("-----EndCompilerOutput---------------");
+			}
+		}
+
+		protected void RunAPIUpdaterIfRequired(string responseFile)
+		{
+			if (this._runAPIUpdater)
+			{
+				APIUpdaterHelper.UpdateScripts(responseFile, this._island.GetExtensionOfSourceFiles());
 			}
 		}
 	}

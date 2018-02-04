@@ -1,6 +1,5 @@
 using System;
 using System.Runtime.CompilerServices;
-using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
@@ -10,11 +9,19 @@ namespace UnityEngine
 
 		internal static Object ResolveReferenceInternal(IntPtr ptr, PropertyName name, out bool isValid)
 		{
-			return ExposedPropertyResolver.INTERNAL_CALL_ResolveReferenceInternal(ptr, ref name, out isValid);
+			if (ptr == IntPtr.Zero)
+			{
+				throw new ArgumentNullException("Argument \"ptr\" can't be null.");
+			}
+			return ExposedPropertyResolver.ResolveReferenceBindingsInternal(ptr, name, out isValid);
 		}
 
-		[GeneratedByOldBindingsGenerator]
+		private static Object ResolveReferenceBindingsInternal(IntPtr ptr, PropertyName name, out bool isValid)
+		{
+			return ExposedPropertyResolver.ResolveReferenceBindingsInternal_Injected(ptr, ref name, out isValid);
+		}
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern Object INTERNAL_CALL_ResolveReferenceInternal(IntPtr ptr, ref PropertyName name, out bool isValid);
+		private static extern Object ResolveReferenceBindingsInternal_Injected(IntPtr ptr, ref PropertyName name, out bool isValid);
 	}
 }

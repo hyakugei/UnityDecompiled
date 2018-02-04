@@ -76,13 +76,12 @@ namespace UnityEditorInternal
 			switch (current.GetTypeForControl(id))
 			{
 			case EventType.MouseDown:
-				if (((HandleUtility.nearestControl == id && current.button == 0) || (GUIUtility.keyboardControl == id && current.button == 2)) && GUIUtility.hotControl == 0)
+				if (HandleUtility.nearestControl == id && current.button == 0 && GUIUtility.hotControl == 0)
 				{
 					Plane plane = new Plane(Handles.matrix.MultiplyVector(handleDir), Handles.matrix.MultiplyPoint(handlePos));
 					Ray ray = HandleUtility.GUIPointToWorldRay(current.mousePosition);
 					float distance = 0f;
 					plane.Raycast(ray, out distance);
-					GUIUtility.keyboardControl = id;
 					GUIUtility.hotControl = id;
 					Slider2D.s_CurrentMousePosition = current.mousePosition;
 					Slider2D.s_StartPosition = handlePos;
@@ -100,6 +99,12 @@ namespace UnityEditorInternal
 					GUIUtility.hotControl = 0;
 					current.Use();
 					EditorGUIUtility.SetWantsMouseJumping(0);
+				}
+				break;
+			case EventType.MouseMove:
+				if (id == HandleUtility.nearestControl)
+				{
+					HandleUtility.Repaint();
 				}
 				break;
 			case EventType.MouseDrag:
@@ -134,13 +139,18 @@ namespace UnityEditorInternal
 					Vector3 vector2 = handlePos + offset;
 					Quaternion rotation = Quaternion.LookRotation(handleDir, slideDir1);
 					Color color = Color.white;
-					if (id == GUIUtility.keyboardControl)
+					if (id == GUIUtility.hotControl)
 					{
 						color = Handles.color;
 						Handles.color = Handles.selectedColor;
 					}
+					else if (id == HandleUtility.nearestControl && GUIUtility.hotControl == 0)
+					{
+						color = Handles.color;
+						Handles.color = Handles.preselectionColor;
+					}
 					drawFunc(id, vector2, rotation, handleSize);
-					if (id == GUIUtility.keyboardControl)
+					if (id == GUIUtility.hotControl || (id == HandleUtility.nearestControl && GUIUtility.hotControl == 0))
 					{
 						Handles.color = color;
 					}
@@ -199,15 +209,14 @@ namespace UnityEditorInternal
 			switch (current.GetTypeForControl(id))
 			{
 			case EventType.MouseDown:
-				if (((HandleUtility.nearestControl == id && current.button == 0) || (GUIUtility.keyboardControl == id && current.button == 2)) && GUIUtility.hotControl == 0)
+				if (HandleUtility.nearestControl == id && current.button == 0 && GUIUtility.hotControl == 0)
 				{
+					Slider2D.s_CurrentMousePosition = current.mousePosition;
 					bool flag = true;
 					Vector3 a = Handles.inverseMatrix.MultiplyPoint(Slider2D.GetMousePosition(handleDir, handlePos, ref flag));
 					if (flag)
 					{
-						GUIUtility.keyboardControl = id;
 						GUIUtility.hotControl = id;
-						Slider2D.s_CurrentMousePosition = current.mousePosition;
 						Slider2D.s_StartPosition = handlePos;
 						Vector3 lhs = a - handlePos;
 						Slider2D.s_StartPlaneOffset.x = Vector3.Dot(lhs, slideDir1);
@@ -223,6 +232,12 @@ namespace UnityEditorInternal
 					GUIUtility.hotControl = 0;
 					current.Use();
 					EditorGUIUtility.SetWantsMouseJumping(0);
+				}
+				break;
+			case EventType.MouseMove:
+				if (id == HandleUtility.nearestControl)
+				{
+					HandleUtility.Repaint();
 				}
 				break;
 			case EventType.MouseDrag:
@@ -250,13 +265,18 @@ namespace UnityEditorInternal
 				if (capFunction != null)
 				{
 					Color color = Color.white;
-					if (id == GUIUtility.keyboardControl)
+					if (id == GUIUtility.hotControl)
 					{
 						color = Handles.color;
 						Handles.color = Handles.selectedColor;
 					}
+					else if (id == HandleUtility.nearestControl && GUIUtility.hotControl == 0)
+					{
+						color = Handles.color;
+						Handles.color = Handles.preselectionColor;
+					}
 					capFunction(id, vector, rotation, handleSize, EventType.Repaint);
-					if (id == GUIUtility.keyboardControl)
+					if (id == GUIUtility.hotControl || (id == HandleUtility.nearestControl && GUIUtility.hotControl == 0))
 					{
 						Handles.color = color;
 					}
@@ -296,7 +316,7 @@ namespace UnityEditorInternal
 			if (Camera.current != null)
 			{
 				Plane plane = new Plane(Handles.matrix.MultiplyVector(handleDirection), Handles.matrix.MultiplyPoint(handlePosition));
-				Ray ray = HandleUtility.GUIPointToWorldRay(Event.current.mousePosition);
+				Ray ray = HandleUtility.GUIPointToWorldRay(Slider2D.s_CurrentMousePosition);
 				float distance = 0f;
 				success = plane.Raycast(ray, out distance);
 				result = ray.GetPoint(distance);
@@ -304,7 +324,7 @@ namespace UnityEditorInternal
 			else
 			{
 				success = true;
-				result = Event.current.mousePosition;
+				result = Slider2D.s_CurrentMousePosition;
 			}
 			return result;
 		}

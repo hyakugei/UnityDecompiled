@@ -16,6 +16,7 @@ namespace UnityEngineInternal
 		BakedAlbedo,
 		BakedEmissive,
 		BakedCharting,
-		BakedTexelValidity
+		BakedTexelValidity,
+		BakedUVOverlap
 	}
 }

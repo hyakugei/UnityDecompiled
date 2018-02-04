@@ -18,14 +18,13 @@ namespace UnityEditor.Networking.PlayerConnection
 		private PlayerEditorConnectionEvents m_PlayerEditorConnectionEvents = new PlayerEditorConnectionEvents();
 
 		[SerializeField]
-		private List<int> m_connectedPlayers = new List<int>();
+		private List<ConnectedPlayer> m_connectedPlayers = new List<ConnectedPlayer>();
 
 		public List<ConnectedPlayer> ConnectedPlayers
 		{
 			get
 			{
-				return (from x in this.m_connectedPlayers
-				select new ConnectedPlayer(x)).ToList<ConnectedPlayer>();
+				return this.m_connectedPlayers;
 			}
 		}
 
@@ -79,9 +78,9 @@ namespace UnityEditor.Networking.PlayerConnection
 
 		public void RegisterConnection(UnityAction<int> callback)
 		{
-			foreach (int current in this.m_connectedPlayers)
+			foreach (ConnectedPlayer current in this.m_connectedPlayers)
 			{
-				callback(current);
+				callback(current.playerId);
 			}
 			this.m_PlayerEditorConnectionEvents.connectionEvent.AddPersistentListener(callback, UnityEventCallState.EditorAndRuntime);
 		}
@@ -105,6 +104,11 @@ namespace UnityEditor.Networking.PlayerConnection
 			this.Send(messageId, data, 0);
 		}
 
+		public void DisconnectAll()
+		{
+			this.GetEditorConnectionNativeApi().DisconnectAll();
+		}
+
 		[RequiredByNativeCode]
 		private static void MessageCallbackInternal(IntPtr data, ulong size, ulong guid, string messageId)
 		{
@@ -118,21 +122,17 @@ namespace UnityEditor.Networking.PlayerConnection
 		}
 
 		[RequiredByNativeCode]
-		private static void ConnectedCallbackInternal(int playerId)
+		private static void ConnectedCallbackInternal(int playerId, string playerName)
 		{
-			ScriptableSingleton<EditorConnection>.instance.m_connectedPlayers.Add(playerId);
+			ScriptableSingleton<EditorConnection>.instance.m_connectedPlayers.Add(new ConnectedPlayer(playerId, playerName));
 			ScriptableSingleton<EditorConnection>.instance.m_PlayerEditorConnectionEvents.connectionEvent.Invoke(playerId);
 		}
 
 		[RequiredByNativeCode]
 		private static void DisconnectedCallback(int playerId)
 		{
-			ScriptableSingleton<EditorConnection>.instance.m_connectedPlayers.Remove(playerId);
+			ScriptableSingleton<EditorConnection>.instance.m_connectedPlayers.RemoveAll((ConnectedPlayer c) => c.playerId == playerId);
 			ScriptableSingleton<EditorConnection>.instance.m_PlayerEditorConnectionEvents.disconnectionEvent.Invoke(playerId);
-			if (!ScriptableSingleton<EditorConnection>.instance.ConnectedPlayers.Any<ConnectedPlayer>())
-			{
-				ScriptableSingleton<EditorConnection>.instance.Cleanup();
-			}
 		}
 	}
 }

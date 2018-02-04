@@ -46,7 +46,7 @@ namespace UnityEditor.UI
 				FontDataDrawer.Styles.alignmentButtonLeft = new GUIStyle(EditorStyles.miniButtonLeft);
 				FontDataDrawer.Styles.alignmentButtonMid = new GUIStyle(EditorStyles.miniButtonMid);
 				FontDataDrawer.Styles.alignmentButtonRight = new GUIStyle(EditorStyles.miniButtonRight);
-				FontDataDrawer.Styles.m_EncodingContent = new GUIContent("Rich Text", "Use emoticons and colors");
+				FontDataDrawer.Styles.m_EncodingContent = EditorGUIUtility.TrTextContent("Rich Text", "Use emoticons and colors", null);
 				FontDataDrawer.Styles.m_LeftAlignText = EditorGUIUtility.IconContent("GUISystem/align_horizontally_left", "Left Align");
 				FontDataDrawer.Styles.m_CenterAlignText = EditorGUIUtility.IconContent("GUISystem/align_horizontally_center", "Center Align");
 				FontDataDrawer.Styles.m_RightAlignText = EditorGUIUtility.IconContent("GUISystem/align_horizontally_right", "Right Align");
@@ -250,7 +250,7 @@ namespace UnityEditor.UI
 
 		private void DoTextAligmentControl(Rect position, SerializedProperty alignment)
 		{
-			GUIContent label = new GUIContent("Alignment");
+			GUIContent label = EditorGUIUtility.TrTextContent("Alignment", null, null);
 			int controlID = GUIUtility.GetControlID(FontDataDrawer.s_TextAlignmentHash, FocusType.Keyboard, position);
 			EditorGUIUtility.SetIconSize(new Vector2(15f, 15f));
 			EditorGUI.BeginProperty(position, label, alignment);

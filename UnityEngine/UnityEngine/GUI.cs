@@ -7,6 +7,12 @@ namespace UnityEngine
 {
 	public class GUI
 	{
+		public enum ToolbarButtonSize
+		{
+			Fixed,
+			FitToContents
+		}
+
 		public delegate void WindowFunction(int id);
 
 		public abstract class Scope : IDisposable
@@ -147,8 +153,6 @@ namespace UnityEngine
 		private static int s_ScrollControlId;
 
 		private static int s_HotTextField;
-
-		private static readonly int s_BoxHash;
 
 		private static readonly int s_RepeatButtonHash;
 
@@ -334,6 +338,13 @@ namespace UnityEngine
 			get;
 		}
 
+		internal static extern Material roundedRectMaterial
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+		}
+
 		internal static extern bool usePageScrollbars
 		{
 			[GeneratedByOldBindingsGenerator]
@@ -345,7 +356,6 @@ namespace UnityEngine
 		{
 			GUI.s_ScrollStepSize = 10f;
 			GUI.s_HotTextField = -1;
-			GUI.s_BoxHash = "Box".GetHashCode();
 			GUI.s_RepeatButtonHash = "repeatButton".GetHashCode();
 			GUI.s_ToggleHash = "Toggle".GetHashCode();
 			GUI.s_ButtonGridHash = "ButtonGrid".GetHashCode();
@@ -423,6 +433,23 @@ namespace UnityEngine
 
 		public static void DrawTexture(Rect position, Texture image, ScaleMode scaleMode, bool alphaBlend, float imageAspect)
 		{
+			GUI.DrawTexture(position, image, scaleMode, alphaBlend, imageAspect, GUI.color, 0f, 0f);
+		}
+
+		public static void DrawTexture(Rect position, Texture image, ScaleMode scaleMode, bool alphaBlend, float imageAspect, Color color, float borderWidth, float borderRadius)
+		{
+			Vector4 borderWidths = Vector4.one * borderWidth;
+			GUI.DrawTexture(position, image, scaleMode, alphaBlend, imageAspect, color, borderWidths, borderRadius);
+		}
+
+		public static void DrawTexture(Rect position, Texture image, ScaleMode scaleMode, bool alphaBlend, float imageAspect, Color color, Vector4 borderWidths, float borderRadius)
+		{
+			Vector4 borderRadiuses = Vector4.one * borderRadius;
+			GUI.DrawTexture(position, image, scaleMode, alphaBlend, imageAspect, color, borderWidths, borderRadiuses);
+		}
+
+		public static void DrawTexture(Rect position, Texture image, ScaleMode scaleMode, bool alphaBlend, float imageAspect, Color color, Vector4 borderWidths, Vector4 borderRadiuses)
+		{
 			GUIUtility.CheckOnGUI();
 			if (Event.current.type == EventType.Repaint)
 			{
@@ -436,13 +463,23 @@ namespace UnityEngine
 					{
 						imageAspect = (float)image.width / (float)image.height;
 					}
-					Material mat = (!alphaBlend) ? GUI.blitMaterial : GUI.blendMaterial;
+					Material mat;
+					if (borderWidths != Vector4.zero || borderRadiuses != Vector4.zero)
+					{
+						mat = GUI.roundedRectMaterial;
+					}
+					else
+					{
+						mat = ((!alphaBlend) ? GUI.blitMaterial : GUI.blendMaterial);
+					}
 					Internal_DrawTextureArguments internal_DrawTextureArguments = default(Internal_DrawTextureArguments);
 					internal_DrawTextureArguments.leftBorder = 0;
 					internal_DrawTextureArguments.rightBorder = 0;
 					internal_DrawTextureArguments.topBorder = 0;
 					internal_DrawTextureArguments.bottomBorder = 0;
-					internal_DrawTextureArguments.color = GUI.color;
+					internal_DrawTextureArguments.color = color;
+					internal_DrawTextureArguments.borderWidths = borderWidths;
+					internal_DrawTextureArguments.cornerRadiuses = borderRadiuses;
 					internal_DrawTextureArguments.texture = image;
 					internal_DrawTextureArguments.mat = mat;
 					GUI.CalculateScaledTextureRects(position, scaleMode, imageAspect, ref internal_DrawTextureArguments.screenRect, ref internal_DrawTextureArguments.sourceRect);
@@ -554,10 +591,9 @@ namespace UnityEngine
 		public static void Box(Rect position, GUIContent content, GUIStyle style)
 		{
 			GUIUtility.CheckOnGUI();
-			int controlID = GUIUtility.GetControlID(GUI.s_BoxHash, FocusType.Passive);
 			if (Event.current.type == EventType.Repaint)
 			{
-				style.Draw(position, content, controlID);
+				style.Draw(position, content, false, false, false, false);
 			}
 		}
 
@@ -819,7 +855,7 @@ namespace UnityEngine
 						{
 							content.text = content.text.Substring(0, maxLength);
 						}
-						if (editor.keyboardOnScreen.done)
+						if (editor.keyboardOnScreen.status != TouchScreenKeyboard.Status.Visible)
 						{
 							editor.keyboardOnScreen = null;
 							GUI.changed = true;
@@ -1019,9 +1055,9 @@ namespace UnityEngine
 			return GUI.Toolbar(position, selected, GUIContent.Temp(images), GUI.s_Skin.button);
 		}
 
-		public static int Toolbar(Rect position, int selected, GUIContent[] content)
+		public static int Toolbar(Rect position, int selected, GUIContent[] contents)
 		{
-			return GUI.Toolbar(position, selected, content, GUI.s_Skin.button);
+			return GUI.Toolbar(position, selected, contents, GUI.s_Skin.button);
 		}
 
 		public static int Toolbar(Rect position, int selected, string[] texts, GUIStyle style)
@@ -1036,12 +1072,22 @@ namespace UnityEngine
 
 		public static int Toolbar(Rect position, int selected, GUIContent[] contents, GUIStyle style)
 		{
+			return GUI.Toolbar(position, selected, contents, null, style, GUI.ToolbarButtonSize.Fixed);
+		}
+
+		public static int Toolbar(Rect position, int selected, GUIContent[] contents, GUIStyle style, GUI.ToolbarButtonSize buttonSize)
+		{
+			return GUI.Toolbar(position, selected, contents, null, style, buttonSize);
+		}
+
+		internal static int Toolbar(Rect position, int selected, GUIContent[] contents, string[] controlNames, GUIStyle style, GUI.ToolbarButtonSize buttonSize)
+		{
 			GUIUtility.CheckOnGUI();
 			GUIStyle firstStyle;
 			GUIStyle midStyle;
 			GUIStyle lastStyle;
 			GUI.FindStyles(ref style, out firstStyle, out midStyle, out lastStyle, "left", "mid", "right");
-			return GUI.DoButtonGrid(position, selected, contents, contents.Length, style, firstStyle, midStyle, lastStyle);
+			return GUI.DoButtonGrid(position, selected, contents, controlNames, contents.Length, style, firstStyle, midStyle, lastStyle, buttonSize);
 		}
 
 		public static int SelectionGrid(Rect position, int selected, string[] texts, int xCount)
@@ -1075,7 +1121,7 @@ namespace UnityEngine
 			{
 				style = GUI.s_Skin.button;
 			}
-			return GUI.DoButtonGrid(position, selected, contents, xCount, style, style, style, style);
+			return GUI.DoButtonGrid(position, selected, contents, null, xCount, style, style, style, style, GUI.ToolbarButtonSize.Fixed);
 		}
 
 		internal static void FindStyles(ref GUIStyle style, out GUIStyle firstStyle, out GUIStyle midStyle, out GUIStyle lastStyle, string first, string mid, string last)
@@ -1121,7 +1167,7 @@ namespace UnityEngine
 			return result;
 		}
 
-		private static int DoButtonGrid(Rect position, int selected, GUIContent[] contents, int xCount, GUIStyle style, GUIStyle firstStyle, GUIStyle midStyle, GUIStyle lastStyle)
+		private static int DoButtonGrid(Rect position, int selected, GUIContent[] contents, string[] controlNames, int xCount, GUIStyle style, GUIStyle firstStyle, GUIStyle midStyle, GUIStyle lastStyle, GUI.ToolbarButtonSize buttonSize)
 		{
 			GUIUtility.CheckOnGUI();
 			int num = contents.Length;
@@ -1137,7 +1183,6 @@ namespace UnityEngine
 			}
 			else
 			{
-				int controlID = GUIUtility.GetControlID(GUI.s_ButtonGridHash, FocusType.Passive, position);
 				int num2 = num / xCount;
 				if (num % xCount != 0)
 				{
@@ -1155,164 +1200,140 @@ namespace UnityEngine
 				{
 					elemHeight = style.fixedHeight;
 				}
-				switch (Event.current.GetTypeForControl(controlID))
+				Rect[] array = GUI.CalcMouseRects(position, contents, xCount, elemWidth, elemHeight, style, firstStyle, midStyle, lastStyle, false, buttonSize);
+				GUIStyle gUIStyle = null;
+				int num5 = 0;
+				for (int i = 0; i < num; i++)
 				{
-				case EventType.MouseDown:
-					if (position.Contains(Event.current.mousePosition))
+					Rect rect = array[i];
+					GUIContent gUIContent = contents[i];
+					if (controlNames != null)
 					{
-						Rect[] array = GUI.CalcMouseRects(position, num, xCount, elemWidth, elemHeight, style, firstStyle, midStyle, lastStyle, false);
-						if (GUI.GetButtonGridMouseSelection(array, Event.current.mousePosition, true) != -1)
+						GUI.SetNextControlName(controlNames[i]);
+					}
+					int controlID = GUIUtility.GetControlID(GUI.s_ButtonGridHash, FocusType.Passive, rect);
+					if (i == selected)
+					{
+						num5 = controlID;
+					}
+					switch (Event.current.GetTypeForControl(controlID))
+					{
+					case EventType.MouseDown:
+						if (rect.Contains(Event.current.mousePosition))
 						{
 							GUIUtility.hotControl = controlID;
 							Event.current.Use();
 						}
-					}
-					break;
-				case EventType.MouseUp:
-					if (GUIUtility.hotControl == controlID)
+						break;
+					case EventType.MouseUp:
+						if (GUIUtility.hotControl == controlID)
+						{
+							GUIUtility.hotControl = 0;
+							Event.current.Use();
+							GUI.changed = true;
+							result = i;
+							return result;
+						}
+						break;
+					case EventType.MouseDrag:
+						if (GUIUtility.hotControl == controlID)
+						{
+							Event.current.Use();
+						}
+						break;
+					case EventType.Repaint:
 					{
-						GUIUtility.hotControl = 0;
-						Event.current.Use();
-						Rect[] array = GUI.CalcMouseRects(position, num, xCount, elemWidth, elemHeight, style, firstStyle, midStyle, lastStyle, false);
-						int buttonGridMouseSelection = GUI.GetButtonGridMouseSelection(array, Event.current.mousePosition, true);
-						GUI.changed = true;
-						result = buttonGridMouseSelection;
-						return result;
-					}
-					break;
-				case EventType.MouseDrag:
-					if (GUIUtility.hotControl == controlID)
-					{
-						Event.current.Use();
-					}
-					break;
-				case EventType.Repaint:
-				{
-					GUIStyle gUIStyle = null;
-					GUIClip.Push(position, Vector2.zero, Vector2.zero, false);
-					position = new Rect(0f, 0f, position.width, position.height);
-					Rect[] array = GUI.CalcMouseRects(position, num, xCount, elemWidth, elemHeight, style, firstStyle, midStyle, lastStyle, false);
-					int buttonGridMouseSelection2 = GUI.GetButtonGridMouseSelection(array, Event.current.mousePosition, controlID == GUIUtility.hotControl);
-					bool flag = position.Contains(Event.current.mousePosition);
-					GUIUtility.mouseUsed |= flag;
-					for (int i = 0; i < num; i++)
-					{
-						GUIStyle gUIStyle2;
-						if (i != 0)
+						GUIStyle gUIStyle2 = (num != 1) ? ((i != 0) ? ((i != num - 1) ? midStyle : lastStyle) : firstStyle) : style;
+						bool flag = rect.Contains(Event.current.mousePosition);
+						bool flag2 = GUIUtility.hotControl == controlID;
+						if (selected != i)
 						{
-							gUIStyle2 = midStyle;
-						}
-						else
-						{
-							gUIStyle2 = firstStyle;
-						}
-						if (i == num - 1)
-						{
-							gUIStyle2 = lastStyle;
-						}
-						if (num == 1)
-						{
-							gUIStyle2 = style;
-						}
-						if (i != selected)
-						{
-							gUIStyle2.Draw(array[i], contents[i], i == buttonGridMouseSelection2 && (GUI.enabled || controlID == GUIUtility.hotControl) && (controlID == GUIUtility.hotControl || GUIUtility.hotControl == 0), controlID == GUIUtility.hotControl && GUI.enabled, false, false);
+							gUIStyle2.Draw(rect, gUIContent, flag && (GUI.enabled || flag2) && (flag2 || GUIUtility.hotControl == 0), GUI.enabled && flag2, false, false);
 						}
 						else
 						{
 							gUIStyle = gUIStyle2;
 						}
+						if (flag)
+						{
+							GUIUtility.mouseUsed = true;
+							if (!string.IsNullOrEmpty(gUIContent.tooltip))
+							{
+								GUIStyle.SetMouseTooltip(gUIContent.tooltip, rect);
+							}
+						}
+						break;
 					}
-					if (selected < num && selected > -1)
-					{
-						gUIStyle.Draw(array[selected], contents[selected], selected == buttonGridMouseSelection2 && (GUI.enabled || controlID == GUIUtility.hotControl) && (controlID == GUIUtility.hotControl || GUIUtility.hotControl == 0), controlID == GUIUtility.hotControl, true, false);
 					}
-					if (buttonGridMouseSelection2 >= 0)
-					{
-						GUI.tooltip = contents[buttonGridMouseSelection2].tooltip;
-					}
-					GUIClip.Pop();
-					break;
 				}
+				if (gUIStyle != null)
+				{
+					Rect position2 = array[selected];
+					GUIContent content = contents[selected];
+					bool flag3 = position2.Contains(Event.current.mousePosition);
+					bool flag4 = GUIUtility.hotControl == num5;
+					gUIStyle.Draw(position2, content, flag3 && (GUI.enabled || flag4) && (flag4 || GUIUtility.hotControl == 0), GUI.enabled && flag4, true, false);
 				}
 				result = selected;
 			}
 			return result;
 		}
 
-		private static Rect[] CalcMouseRects(Rect position, int count, int xCount, float elemWidth, float elemHeight, GUIStyle style, GUIStyle firstStyle, GUIStyle midStyle, GUIStyle lastStyle, bool addBorders)
+		private static Rect[] CalcMouseRects(Rect position, GUIContent[] contents, int xCount, float elemWidth, float elemHeight, GUIStyle style, GUIStyle firstStyle, GUIStyle midStyle, GUIStyle lastStyle, bool addBorders, GUI.ToolbarButtonSize buttonSize)
 		{
-			int num = 0;
+			int num = contents.Length;
 			int num2 = 0;
-			float num3 = position.xMin;
-			float num4 = position.yMin;
+			int num3 = 0;
+			float num4 = position.xMin;
+			float num5 = position.yMin;
 			GUIStyle gUIStyle = style;
-			Rect[] array = new Rect[count];
-			if (count > 1)
+			Rect[] array = new Rect[num];
+			if (num > 1)
 			{
 				gUIStyle = firstStyle;
 			}
-			for (int i = 0; i < count; i++)
+			for (int i = 0; i < num; i++)
 			{
-				if (!addBorders)
+				float num6 = 0f;
+				if (buttonSize != GUI.ToolbarButtonSize.Fixed)
 				{
-					array[i] = new Rect(num3, num4, elemWidth, elemHeight);
+					if (buttonSize == GUI.ToolbarButtonSize.FitToContents)
+					{
+						num6 = gUIStyle.CalcSize(contents[i]).x;
+					}
 				}
 				else
 				{
-					array[i] = gUIStyle.margin.Add(new Rect(num3, num4, elemWidth, elemHeight));
+					num6 = elemWidth;
+				}
+				if (!addBorders)
+				{
+					array[i] = new Rect(num4, num5, num6, elemHeight);
+				}
+				else
+				{
+					array[i] = gUIStyle.margin.Add(new Rect(num4, num5, num6, elemHeight));
 				}
 				array[i].width = Mathf.Round(array[i].xMax) - Mathf.Round(array[i].x);
 				array[i].x = Mathf.Round(array[i].x);
 				GUIStyle gUIStyle2 = midStyle;
-				if (i == count - 2)
+				if (i == num - 2 || i == xCount - 2)
 				{
 					gUIStyle2 = lastStyle;
 				}
-				num3 += elemWidth + (float)Mathf.Max(gUIStyle.margin.right, gUIStyle2.margin.left);
-				num2++;
-				if (num2 >= xCount)
+				num4 += num6 + (float)Mathf.Max(gUIStyle.margin.right, gUIStyle2.margin.left);
+				num3++;
+				if (num3 >= xCount)
 				{
-					num++;
-					num2 = 0;
-					num4 += elemHeight + (float)Mathf.Max(style.margin.top, style.margin.bottom);
-					num3 = position.xMin;
+					num2++;
+					num3 = 0;
+					num5 += elemHeight + (float)Mathf.Max(style.margin.top, style.margin.bottom);
+					num4 = position.xMin;
+					gUIStyle2 = firstStyle;
 				}
+				gUIStyle = gUIStyle2;
 			}
 			return array;
-		}
-
-		private static int GetButtonGridMouseSelection(Rect[] buttonRects, Vector2 mousePos, bool findNearest)
-		{
-			int result;
-			for (int i = 0; i < buttonRects.Length; i++)
-			{
-				if (buttonRects[i].Contains(mousePos))
-				{
-					result = i;
-					return result;
-				}
-			}
-			if (!findNearest)
-			{
-				result = -1;
-				return result;
-			}
-			float num = 1E+07f;
-			int num2 = -1;
-			for (int j = 0; j < buttonRects.Length; j++)
-			{
-				Rect rect = buttonRects[j];
-				Vector2 b = new Vector2(Mathf.Clamp(mousePos.x, rect.xMin, rect.xMax), Mathf.Clamp(mousePos.y, rect.yMin, rect.yMax));
-				float sqrMagnitude = (mousePos - b).sqrMagnitude;
-				if (sqrMagnitude < num)
-				{
-					num2 = j;
-					num = sqrMagnitude;
-				}
-			}
-			result = num2;
-			return result;
 		}
 
 		public static float HorizontalSlider(Rect position, float value, float leftValue, float rightValue)
@@ -1482,6 +1503,11 @@ namespace UnityEngine
 
 		public static void BeginGroup(Rect position, GUIContent content, GUIStyle style)
 		{
+			GUI.BeginGroup(position, content, style, Vector2.zero);
+		}
+
+		internal static void BeginGroup(Rect position, GUIContent content, GUIStyle style, Vector2 scrollOffset)
+		{
 			GUIUtility.CheckOnGUI();
 			int controlID = GUIUtility.GetControlID(GUI.s_BeginGroupHash, FocusType.Passive);
 			if (content != GUIContent.none || style != GUIStyle.none)
@@ -1499,7 +1525,7 @@ namespace UnityEngine
 					style.Draw(position, content, controlID);
 				}
 			}
-			GUIClip.Push(position, Vector2.zero, Vector2.zero, false);
+			GUIClip.Push(position, scrollOffset, Vector2.zero, false);
 		}
 
 		public static void EndGroup()
@@ -1670,6 +1696,14 @@ namespace UnityEngine
 			{
 				scrollViewState.scrollPosition.x = Mathf.Clamp(scrollViewState.scrollPosition.x + Event.current.delta.x * 20f, 0f, scrollViewState.viewRect.width - scrollViewState.visibleRect.width);
 				scrollViewState.scrollPosition.y = Mathf.Clamp(scrollViewState.scrollPosition.y + Event.current.delta.y * 20f, 0f, scrollViewState.viewRect.height - scrollViewState.visibleRect.height);
+				if (scrollViewState.scrollPosition.x < 0f)
+				{
+					scrollViewState.scrollPosition.x = 0f;
+				}
+				if (scrollViewState.scrollPosition.y < 0f)
+				{
+					scrollViewState.scrollPosition.y = 0f;
+				}
 				scrollViewState.apply = true;
 				Event.current.Use();
 			}

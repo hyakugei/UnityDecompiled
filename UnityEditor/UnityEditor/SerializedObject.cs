@@ -5,7 +5,7 @@ using UnityEngine.Scripting;
 
 namespace UnityEditor
 {
-	public sealed class SerializedObject
+	public sealed class SerializedObject : IDisposable
 	{
 		private IntPtr m_Property;
 
@@ -114,6 +114,56 @@ namespace UnityEditor
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern void Dispose();
 
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern SerializedProperty GetIterator_Internal();
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern void Cache(int instanceID);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern SerializedObject LoadFromCache(int instanceID);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern PropertyModification ExtractPropertyModification(string propertyPath);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public extern bool ApplyModifiedProperties();
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public extern bool ApplyModifiedPropertiesWithoutUndo();
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void CopyFromSerializedPropertyInternal(SerializedProperty prop);
+
+		public void CopyFromSerializedProperty(SerializedProperty prop)
+		{
+			if (prop == null)
+			{
+				throw new ArgumentNullException("prop");
+			}
+			this.CopyFromSerializedPropertyInternal(prop);
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern bool CopyFromSerializedPropertyIfDifferentInternal(SerializedProperty prop);
+
+		public bool CopyFromSerializedPropertyIfDifferent(SerializedProperty prop)
+		{
+			if (prop == null)
+			{
+				throw new ArgumentNullException("prop");
+			}
+			return this.CopyFromSerializedPropertyIfDifferentInternal(prop);
+		}
+
 		~SerializedObject()
 		{
 			this.Dispose();
@@ -141,33 +191,5 @@ namespace UnityEditor
 			}
 			return result;
 		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern SerializedProperty GetIterator_Internal();
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern void Cache(int instanceID);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern SerializedObject LoadFromCache(int instanceID);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern PropertyModification ExtractPropertyModification(string propertyPath);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern bool ApplyModifiedProperties();
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern bool ApplyModifiedPropertiesWithoutUndo();
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern void CopyFromSerializedProperty(SerializedProperty prop);
 	}
 }

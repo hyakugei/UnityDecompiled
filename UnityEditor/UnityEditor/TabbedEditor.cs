@@ -37,20 +37,23 @@ namespace UnityEditor
 
 		public override void OnInspectorGUI()
 		{
-			GUILayout.BeginHorizontal(new GUILayoutOption[0]);
-			GUILayout.FlexibleSpace();
-			EditorGUI.BeginChangeCheck();
-			this.m_ActiveEditorIndex = GUILayout.Toolbar(this.m_ActiveEditorIndex, this.m_SubEditorNames, new GUILayoutOption[0]);
-			if (EditorGUI.EndChangeCheck())
+			using (new GUILayout.HorizontalScope(new GUILayoutOption[0]))
 			{
-				EditorPrefs.SetInt(base.GetType().Name + "ActiveEditorIndex", this.m_ActiveEditorIndex);
-				Editor activeEditor = this.activeEditor;
-				this.m_ActiveEditor = null;
-				UnityEngine.Object.DestroyImmediate(activeEditor);
-				this.m_ActiveEditor = Editor.CreateEditor(base.targets, this.m_SubEditorTypes[this.m_ActiveEditorIndex]);
+				GUILayout.FlexibleSpace();
+				using (EditorGUI.ChangeCheckScope changeCheckScope = new EditorGUI.ChangeCheckScope())
+				{
+					this.m_ActiveEditorIndex = GUILayout.Toolbar(this.m_ActiveEditorIndex, this.m_SubEditorNames, "LargeButton", GUI.ToolbarButtonSize.FitToContents, new GUILayoutOption[0]);
+					if (changeCheckScope.changed)
+					{
+						EditorPrefs.SetInt(base.GetType().Name + "ActiveEditorIndex", this.m_ActiveEditorIndex);
+						Editor activeEditor = this.activeEditor;
+						this.m_ActiveEditor = null;
+						UnityEngine.Object.DestroyImmediate(activeEditor);
+						this.m_ActiveEditor = Editor.CreateEditor(base.targets, this.m_SubEditorTypes[this.m_ActiveEditorIndex]);
+					}
+				}
+				GUILayout.FlexibleSpace();
 			}
-			GUILayout.FlexibleSpace();
-			GUILayout.EndHorizontal();
 			this.activeEditor.OnInspectorGUI();
 		}
 

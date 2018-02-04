@@ -21,7 +21,11 @@ namespace UnityEditor
 
 		private GUIView m_DelegateView;
 
+		private Action<Gradient> m_Delegate;
+
 		private bool m_HDR;
+
+		public const string GradientPickerChangedCommand = "GradientPickerChanged";
 
 		public static string presetsEditorPrefID
 		{
@@ -91,6 +95,24 @@ namespace UnityEditor
 		public static void Show(Gradient newGradient, bool hdr)
 		{
 			GUIView current = GUIView.current;
+			GradientPicker.PrepareShow(hdr);
+			GradientPicker.s_GradientPicker.m_DelegateView = current;
+			GradientPicker.s_GradientPicker.m_Delegate = null;
+			GradientPicker.s_GradientPicker.Init(newGradient, hdr);
+			GradientPreviewCache.ClearCache();
+		}
+
+		public static void Show(Gradient newGradient, bool hdr, Action<Gradient> onGradientChanged)
+		{
+			GradientPicker.PrepareShow(hdr);
+			GradientPicker.s_GradientPicker.m_DelegateView = null;
+			GradientPicker.s_GradientPicker.m_Delegate = onGradientChanged;
+			GradientPicker.s_GradientPicker.Init(newGradient, hdr);
+			GradientPreviewCache.ClearCache();
+		}
+
+		private static void PrepareShow(bool hdr)
+		{
 			if (GradientPicker.s_GradientPicker == null)
 			{
 				string title = (!hdr) ? "Gradient Editor" : "HDR Gradient Editor";
@@ -106,9 +128,6 @@ namespace UnityEditor
 			{
 				GradientPicker.s_GradientPicker.Repaint();
 			}
-			GradientPicker.s_GradientPicker.m_DelegateView = current;
-			GradientPicker.s_GradientPicker.Init(newGradient, hdr);
-			GradientPreviewCache.ClearCache();
 		}
 
 		private void Init(Gradient newGradient, bool hdr)
@@ -183,6 +202,7 @@ namespace UnityEditor
 				Debug.LogError("Incorrect object passed " + presetObject);
 			}
 			GradientPicker.SetCurrentGradient(gradient);
+			GradientPreviewCache.ClearCache();
 			this.gradientChanged = true;
 		}
 
@@ -224,6 +244,10 @@ namespace UnityEditor
 				{
 					GUIUtility.ExitGUI();
 				}
+			}
+			if (this.m_Delegate != null)
+			{
+				this.m_Delegate(GradientPicker.gradient);
 			}
 		}
 

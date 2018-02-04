@@ -298,9 +298,8 @@ namespace UnityEditor.Scripting
 		internal static bool MayContainUpdatableReferences(string assemblyPath)
 		{
 			bool result;
-			using (FileStream fileStream = File.Open(assemblyPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+			using (AssemblyDefinition assemblyDefinition = AssemblyDefinition.ReadAssembly(assemblyPath))
 			{
-				AssemblyDefinition assemblyDefinition = AssemblyDefinition.ReadAssembly(fileStream);
 				if (assemblyDefinition.Name.IsWindowsRuntime)
 				{
 					result = false;
@@ -386,20 +385,27 @@ namespace UnityEditor.Scripting
 			}
 			else
 			{
-				using (FileStream fileStream = File.Open(valueFromNormalizedMessage2, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+				try
 				{
-					IParser parser = ParserFactory.CreateParser(ICSharpCode.NRefactory.SupportedLanguage.CSharp, new StreamReader(fileStream));
-					parser.Lexer.EvaluateConditionalCompilation = false;
-					parser.Parse();
-					string text = InvalidTypeOrNamespaceErrorTypeMapper.IsTypeMovedToNamespaceError(parser.CompilationUnit, num, num2);
-					if (text == null)
+					using (FileStream fileStream = File.Open(valueFromNormalizedMessage2, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
 					{
-						result = null;
+						IParser parser = ParserFactory.CreateParser(ICSharpCode.NRefactory.SupportedLanguage.CSharp, new StreamReader(fileStream));
+						parser.Lexer.EvaluateConditionalCompilation = false;
+						parser.Parse();
+						string text = InvalidTypeOrNamespaceErrorTypeMapper.IsTypeMovedToNamespaceError(parser.CompilationUnit, num, num2);
+						if (text == null)
+						{
+							result = null;
+						}
+						else
+						{
+							result = APIUpdaterHelper.FindExactTypeMatchingMovedType(text);
+						}
 					}
-					else
-					{
-						result = APIUpdaterHelper.FindExactTypeMatchingMovedType(text);
-					}
+				}
+				catch (FileNotFoundException)
+				{
+					result = null;
 				}
 			}
 			return result;

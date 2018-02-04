@@ -19,7 +19,7 @@ namespace UnityEditor
 		public override void OnInspectorGUI()
 		{
 			base.serializedObject.Update();
-			AudioSourceInspector.AnimProp(new GUIContent("Cutoff Frequency"), this.m_LowpassLevelCustomCurve, 0f, 22000f, true);
+			AudioSourceInspector.AnimProp(EditorGUIUtility.TrTextContent("Cutoff Frequency", null, null), this.m_LowpassLevelCustomCurve, 0f, 22000f, true);
 			EditorGUILayout.PropertyField(this.m_LowpassResonanceQ, new GUILayoutOption[0]);
 			base.serializedObject.ApplyModifiedProperties();
 		}

@@ -6,11 +6,13 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using UnityEditor;
+using UnityEditor.Audio;
 using UnityEditor.Scripting;
-using UnityEditor.Utils;
+using UnityEditor.Scripting.ScriptCompilation;
 using UnityEngine;
 using UnityEngine.Internal;
 using UnityEngine.Scripting;
+using UnityEngine.Tilemaps;
 
 namespace UnityEditorInternal
 {
@@ -23,16 +25,6 @@ namespace UnityEditorInternal
 			kHierarchyDropBetween,
 			kHierarchyDropAfterParent = 4,
 			kHierarchySearchActive = 8
-		}
-
-		public enum ScriptEditor
-		{
-			Internal,
-			MonoDevelop,
-			VisualStudio,
-			VisualStudioExpress,
-			VisualStudioCode,
-			Other = 32
 		}
 
 		public static extern bool isApplicationActive
@@ -150,6 +142,13 @@ namespace UnityEditorInternal
 			get;
 		}
 
+		internal static extern bool canRenameSelectedAssets
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+		}
+
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void BumpMapSettingsFixingWindowReportResult(int result);
@@ -207,6 +206,10 @@ namespace UnityEditorInternal
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern string GetEngineCoreModuleAssemblyPath();
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern string CalculateHashForObjectsAndDependencies(UnityEngine.Object[] objects);
 
 		[GeneratedByOldBindingsGenerator]
@@ -227,7 +230,7 @@ namespace UnityEditorInternal
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern void SetupCustomDll(string dllName, string dllLocation);
+		internal static extern void RegisterPrecompiledAssembly(string dllName, string dllLocation);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -323,6 +326,10 @@ namespace UnityEditorInternal
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern bool HasAdvancedLicenseOnBuildTarget(BuildTarget target);
 
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern bool IsMobilePlatform(BuildTarget target);
+
 		public static Rect GetBoundsOfDesktopAtPoint(Vector2 pos)
 		{
 			Rect result;
@@ -341,6 +348,10 @@ namespace UnityEditorInternal
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void AddTag(string tag);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern string[] GetLayersWithId();
 
 		public static LayerMask ConcatenatedLayersMaskToLayerMask(int concatenatedLayersMask)
 		{
@@ -419,7 +430,7 @@ namespace UnityEditorInternal
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern int GetClassIDWithoutLoadingObject(int instanceID);
+		public static extern Type GetTypeWithoutLoadingObject(int instanceID);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -457,13 +468,9 @@ namespace UnityEditorInternal
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern void CalculateAmbientProbeFromSkybox();
 
-		[GeneratedByOldBindingsGenerator]
+		[Obsolete("SetupShaderMenu is obsolete. You can get list of available shaders with ShaderUtil.GetAllShaderInfos", false), GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void SetupShaderMenu(Material material);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern string GetUnityVersionFull();
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -530,11 +537,19 @@ namespace UnityEditorInternal
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern void OpenPlayerConsole();
+		public static extern void SetGpuDeviceAndRecreateGraphics(int index, string name);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern Resolution GetDesktopResolution();
+		public static extern bool IsGpuDeviceSelectionSupported();
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern string[] GetGpuDevices();
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern void OpenPlayerConsole();
 
 		public static string TextifyEvent(Event evt)
 		{
@@ -737,14 +752,23 @@ namespace UnityEditorInternal
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern void INTERNAL_CALL_TransformBounds(ref Bounds b, Transform t, out Bounds value);
 
-		public static void SetCustomLighting(Light[] lights, Color ambient)
+		public static void SetCustomLightingInternal(Light[] lights, Color ambient)
 		{
-			InternalEditorUtility.INTERNAL_CALL_SetCustomLighting(lights, ref ambient);
+			InternalEditorUtility.INTERNAL_CALL_SetCustomLightingInternal(lights, ref ambient);
 		}
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_SetCustomLighting(Light[] lights, ref Color ambient);
+		private static extern void INTERNAL_CALL_SetCustomLightingInternal(Light[] lights, ref Color ambient);
+
+		public static void SetCustomLighting(Light[] lights, Color ambient)
+		{
+			if (lights == null)
+			{
+				throw new ArgumentNullException("lights");
+			}
+			InternalEditorUtility.SetCustomLightingInternal(lights, ambient);
+		}
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -849,8 +873,21 @@ namespace UnityEditorInternal
 				{
 					result = ((SpriteRenderer)component2).GetSpriteBounds();
 				}
+				else if (component2 is SpriteMask)
+				{
+					result = ((SpriteMask)component2).GetSpriteBounds();
+				}
 				else
 				{
+					if (component2 is TilemapRenderer)
+					{
+						Tilemap component4 = component2.GetComponent<Tilemap>();
+						if (component4 != null)
+						{
+							result = component4.localBounds;
+							return result;
+						}
+					}
 					result = new Bounds(Vector3.zero, Vector3.zero);
 				}
 			}
@@ -864,18 +901,6 @@ namespace UnityEditorInternal
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern bool OpenFileAtLineExternal(string filename, int line);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern MonoIsland[] GetMonoIslands();
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern MonoIsland[] GetMonoIslandsForPlayer();
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern bool WiiUSaveStartupScreenToFile(Texture2D image, string path, int outputWidth, int outputHeight);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -959,10 +984,6 @@ namespace UnityEditorInternal
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void ShowPackageManagerWindow();
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern void AuxWindowManager_OnAssemblyReload();
-
 		public static Vector2 PassAndReturnVector2(Vector2 v)
 		{
 			Vector2 result;
@@ -989,8 +1010,8 @@ namespace UnityEditorInternal
 		{
 			string[] array = new string[]
 			{
-				"g",
-				"m",
+				"G",
+				"M",
 				"k",
 				""
 			};
@@ -1038,117 +1059,60 @@ namespace UnityEditorInternal
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern bool LaunchApplication(string path, string[] arguments);
 
-		public static InternalEditorUtility.ScriptEditor GetScriptEditorFromPath(string path)
-		{
-			string text = path.ToLower();
-			InternalEditorUtility.ScriptEditor result;
-			if (text == "internal")
-			{
-				result = InternalEditorUtility.ScriptEditor.Internal;
-			}
-			else if (text.Contains("monodevelop") || text.Contains("xamarinstudio") || text.Contains("xamarin studio"))
-			{
-				result = InternalEditorUtility.ScriptEditor.MonoDevelop;
-			}
-			else if (text.EndsWith("devenv.exe"))
-			{
-				result = InternalEditorUtility.ScriptEditor.VisualStudio;
-			}
-			else if (text.EndsWith("vcsexpress.exe"))
-			{
-				result = InternalEditorUtility.ScriptEditor.VisualStudioExpress;
-			}
-			else
-			{
-				string a = Path.GetFileName(Paths.UnifyDirectorySeparator(text)).Replace(" ", "");
-				if (a == "code.exe" || a == "visualstudiocode.app" || a == "vscode.app" || a == "code.app" || a == "code")
-				{
-					result = InternalEditorUtility.ScriptEditor.VisualStudioCode;
-				}
-				else
-				{
-					result = InternalEditorUtility.ScriptEditor.Other;
-				}
-			}
-			return result;
-		}
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern string[] GetCompilationDefines(EditorScriptCompilationOptions options, BuildTargetGroup targetGroup, BuildTarget target, ApiCompatibilityLevel apiCompatibilityLevel);
 
-		public static bool IsScriptEditorSpecial(string path)
-		{
-			return InternalEditorUtility.GetScriptEditorFromPath(path) != InternalEditorUtility.ScriptEditor.Other;
-		}
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern PrecompiledAssembly[] GetUnityAssemblies(bool buildingForEditor, BuildTargetGroup buildTargetGroup, BuildTarget target);
 
-		public static string GetExternalScriptEditor()
-		{
-			return EditorPrefs.GetString("kScriptsDefaultApp");
-		}
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern PrecompiledAssembly[] GetPrecompiledAssemblies(bool buildingForEditor, BuildTargetGroup buildTargetGroup, BuildTarget target);
 
-		public static void SetExternalScriptEditor(string path)
-		{
-			EditorPrefs.SetString("kScriptsDefaultApp", path);
-		}
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern string GetEditorProfile();
 
-		private static string GetScriptEditorArgsKey(string path)
-		{
-			string result;
-			if (Application.platform == RuntimePlatform.OSXEditor)
-			{
-				result = "kScriptEditorArgs_" + path;
-			}
-			else
-			{
-				result = "kScriptEditorArgs" + path;
-			}
-			return result;
-		}
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern bool IsUnityExtensionsInitialized();
 
-		private static string GetDefaultStringEditorArgs()
-		{
-			string result;
-			if (Application.platform == RuntimePlatform.OSXEditor)
-			{
-				result = "";
-			}
-			else
-			{
-				result = "\"$(File)\"";
-			}
-			return result;
-		}
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern bool IsValidUnityExtensionPath(string path);
 
-		public static string GetExternalScriptEditorArgs()
-		{
-			string externalScriptEditor = InternalEditorUtility.GetExternalScriptEditor();
-			string result;
-			if (InternalEditorUtility.IsScriptEditorSpecial(externalScriptEditor))
-			{
-				result = "";
-			}
-			else
-			{
-				result = EditorPrefs.GetString(InternalEditorUtility.GetScriptEditorArgsKey(externalScriptEditor), InternalEditorUtility.GetDefaultStringEditorArgs());
-			}
-			return result;
-		}
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern bool IsUnityExtensionRegistered(string filename);
 
-		public static void SetExternalScriptEditorArgs(string args)
-		{
-			string externalScriptEditor = InternalEditorUtility.GetExternalScriptEditor();
-			EditorPrefs.SetString(InternalEditorUtility.GetScriptEditorArgsKey(externalScriptEditor), args);
-		}
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern bool IsUnityExtensionCompatibleWithEditor(BuildTargetGroup targetGroup, BuildTarget target, string path);
 
-		public static InternalEditorUtility.ScriptEditor GetScriptEditorFromPreferences()
-		{
-			return InternalEditorUtility.GetScriptEditorFromPath(InternalEditorUtility.GetExternalScriptEditor());
-		}
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern string[] GetEditorModuleDllNames();
 
-		public static Texture2D GetIconForFile(string fileName)
+		[GeneratedByOldBindingsGenerator, ThreadAndSerializationSafe]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern bool CurrentThreadIsMainThread();
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern bool CanRenameAsset(int instanceID);
+
+		public static Texture2D FindIconForFile(string fileName)
 		{
 			int num = fileName.LastIndexOf('.');
 			string text = (num != -1) ? fileName.Substring(num + 1).ToLower() : "";
 			Texture2D result;
 			switch (text)
 			{
+			case "asset":
+				result = ((AssetDatabase.GetCachedIcon(fileName) as Texture2D) ?? EditorGUIUtility.FindTexture("GameManager Icon"));
+				return result;
 			case "boo":
 				result = EditorGUIUtility.FindTexture("boo Script Icon");
 				return result;
@@ -1164,42 +1128,53 @@ namespace UnityEditorInternal
 			case "js":
 				result = EditorGUIUtility.FindTexture("Js Script Icon");
 				return result;
+			case "dll":
+				result = EditorGUIUtility.FindTexture("Assembly Icon");
+				return result;
+			case "asmdef":
+				result = EditorGUIUtility.FindTexture("AssemblyDefinitionAsset Icon");
+				return result;
 			case "mat":
-				result = EditorGUIUtility.FindTexture("Material Icon");
+				result = EditorGUIUtility.FindTexture(typeof(Material));
 				return result;
 			case "physicmaterial":
-				result = EditorGUIUtility.FindTexture("PhysicMaterial Icon");
+				result = EditorGUIUtility.FindTexture(typeof(PhysicMaterial));
 				return result;
 			case "prefab":
 				result = EditorGUIUtility.FindTexture("PrefabNormal Icon");
 				return result;
 			case "shader":
-				result = EditorGUIUtility.FindTexture("Shader Icon");
+				result = EditorGUIUtility.FindTexture(typeof(Shader));
 				return result;
 			case "txt":
-				result = EditorGUIUtility.FindTexture("TextAsset Icon");
+				result = EditorGUIUtility.FindTexture(typeof(TextAsset));
 				return result;
 			case "unity":
-				result = EditorGUIUtility.FindTexture("SceneAsset Icon");
+				result = EditorGUIUtility.FindTexture(typeof(SceneAsset));
 				return result;
-			case "asset":
 			case "prefs":
-				result = EditorGUIUtility.FindTexture("GameManager Icon");
+				result = EditorGUIUtility.FindTexture(typeof(EditorSettings));
 				return result;
 			case "anim":
-				result = EditorGUIUtility.FindTexture("Animation Icon");
+				result = EditorGUIUtility.FindTexture(typeof(Animation));
 				return result;
 			case "meta":
 				result = EditorGUIUtility.FindTexture("MetaFile Icon");
 				return result;
 			case "mixer":
-				result = EditorGUIUtility.FindTexture("AudioMixerController Icon");
+				result = EditorGUIUtility.FindTexture(typeof(AudioMixerController));
+				return result;
+			case "uxml":
+				result = EditorGUIUtility.FindTexture("UxmlScript Icon");
+				return result;
+			case "uss":
+				result = EditorGUIUtility.FindTexture("UssScript Icon");
 				return result;
 			case "ttf":
 			case "otf":
 			case "fon":
 			case "fnt":
-				result = EditorGUIUtility.FindTexture("Font Icon");
+				result = EditorGUIUtility.FindTexture(typeof(Font));
 				return result;
 			case "aac":
 			case "aif":
@@ -1215,7 +1190,7 @@ namespace UnityEditorInternal
 			case "wav":
 			case "wave":
 			case "ogg":
-				result = EditorGUIUtility.FindTexture("AudioClip Icon");
+				result = EditorGUIUtility.FindTexture(typeof(AudioClip));
 				return result;
 			case "ai":
 			case "apng":
@@ -1257,7 +1232,7 @@ namespace UnityEditorInternal
 			case "psd":
 			case "exr":
 			case "hdr":
-				result = EditorGUIUtility.FindTexture("Texture Icon");
+				result = EditorGUIUtility.FindTexture(typeof(Texture));
 				return result;
 			case "3df":
 			case "3dm":
@@ -1278,8 +1253,16 @@ namespace UnityEditorInternal
 			case "wrl":
 			case "wrz":
 			case "fbx":
-				result = EditorGUIUtility.FindTexture("Mesh Icon");
+				result = EditorGUIUtility.FindTexture(typeof(Mesh));
 				return result;
+			case "dv":
+			case "mp4":
+			case "mpg":
+			case "mpeg":
+			case "m4v":
+			case "ogv":
+			case "vp8":
+			case "webm":
 			case "asf":
 			case "asx":
 			case "avi":
@@ -1292,15 +1275,11 @@ namespace UnityEditorInternal
 			case "m2ts":
 			case "m2v":
 			case "m4e":
-			case "m4v":
 			case "mjp":
 			case "mov":
 			case "movie":
 			case "mp21":
-			case "mp4":
 			case "mpe":
-			case "mpeg":
-			case "mpg":
 			case "mpv2":
 			case "ogm":
 			case "qt":
@@ -1308,7 +1287,7 @@ namespace UnityEditorInternal
 			case "rmvb":
 			case "wmw":
 			case "xvid":
-				result = EditorGUIUtility.FindTexture("MovieTexture Icon");
+				result = ((AssetDatabase.GetCachedIcon(fileName) as Texture2D) ?? EditorGUIUtility.FindTexture(typeof(MovieTexture)));
 				return result;
 			case "colors":
 			case "gradients":
@@ -1318,11 +1297,16 @@ namespace UnityEditorInternal
 			case "particlecurvessigned":
 			case "particledoublecurves":
 			case "particledoublecurvessigned":
-				result = EditorGUIUtility.FindTexture("ScriptableObject Icon");
+				result = EditorGUIUtility.FindTexture(typeof(ScriptableObject));
 				return result;
 			}
-			result = EditorGUIUtility.FindTexture("DefaultAsset Icon");
+			result = null;
 			return result;
+		}
+
+		public static Texture2D GetIconForFile(string fileName)
+		{
+			return InternalEditorUtility.FindIconForFile(fileName) ?? EditorGUIUtility.FindTexture(typeof(DefaultAsset));
 		}
 
 		public static string[] GetEditorSettingsList(string prefix, int count)
@@ -1671,8 +1655,40 @@ namespace UnityEditorInternal
 		internal static IEnumerable<string> GetAllScriptGUIDs()
 		{
 			return from asset in AssetDatabase.GetAllAssetPaths()
-			where InternalEditorUtility.IsScriptOrAssembly(asset)
+			where InternalEditorUtility.IsScriptOrAssembly(asset) && !AssetDatabase.IsPackagedAssetPath(asset)
 			select AssetDatabase.AssetPathToGUID(asset);
+		}
+
+		internal static MonoIsland[] GetMonoIslandsForPlayer()
+		{
+			BuildTargetGroup activeBuildTargetGroup = EditorUserBuildSettings.activeBuildTargetGroup;
+			BuildTarget activeBuildTarget = EditorUserBuildSettings.activeBuildTarget;
+			PrecompiledAssembly[] unityAssemblies = InternalEditorUtility.GetUnityAssemblies(false, activeBuildTargetGroup, activeBuildTarget);
+			PrecompiledAssembly[] precompiledAssemblies = InternalEditorUtility.GetPrecompiledAssemblies(false, activeBuildTargetGroup, activeBuildTarget);
+			return EditorCompilationInterface.Instance.GetAllMonoIslands(unityAssemblies, precompiledAssemblies, EditorScriptCompilationOptions.BuildingIncludingTestAssemblies);
+		}
+
+		internal static MonoIsland[] GetMonoIslands()
+		{
+			return EditorCompilationInterface.GetAllMonoIslands();
+		}
+
+		internal static string[] GetCompilationDefinesForPlayer()
+		{
+			BuildTargetGroup activeBuildTargetGroup = EditorUserBuildSettings.activeBuildTargetGroup;
+			BuildTarget activeBuildTarget = EditorUserBuildSettings.activeBuildTarget;
+			return InternalEditorUtility.GetCompilationDefines(EditorScriptCompilationOptions.BuildingEmpty, activeBuildTargetGroup, activeBuildTarget);
+		}
+
+		internal static string GetMonolithicEngineAssemblyPath()
+		{
+			string directoryName = Path.GetDirectoryName(InternalEditorUtility.GetEditorAssemblyPath());
+			return Path.Combine(directoryName, "UnityEngine.dll");
+		}
+
+		internal static string[] GetCompilationDefines(EditorScriptCompilationOptions options, BuildTargetGroup targetGroup, BuildTarget target)
+		{
+			return InternalEditorUtility.GetCompilationDefines(options, targetGroup, target, PlayerSettings.GetApiCompatibilityLevel(targetGroup));
 		}
 	}
 }

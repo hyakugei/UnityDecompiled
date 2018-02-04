@@ -6,6 +6,7 @@ namespace UnityEditor
 	{
 		None,
 		ExplicitlyThrownExceptionsOnly,
-		Full
+		FullWithoutStacktrace,
+		FullWithStacktrace
 	}
 }

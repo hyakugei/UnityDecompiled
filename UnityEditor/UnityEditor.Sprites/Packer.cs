@@ -4,8 +4,6 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using UnityEngine;
-using UnityEngine.Internal;
-using UnityEngine.Scripting;
 
 namespace UnityEditor.Sprites
 {
@@ -27,7 +25,6 @@ namespace UnityEditor.Sprites
 
 		public static extern string[] atlasNames
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
@@ -63,36 +60,36 @@ namespace UnityEditor.Sprites
 			}
 		}
 
-		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern string Internal_GetAtlasNameForSprite(Sprite sprite);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern Texture2D Internal_GetAtlasTextureSprite(Sprite sprite);
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern Texture2D[] GetTexturesForAtlas(string atlasName);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern Texture2D[] GetAlphaTexturesForAtlas(string atlasName);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern void RebuildAtlasCacheIfNeeded(BuildTarget target, [DefaultValue("false")] bool displayProgressBar, [DefaultValue("Execution.Normal")] Packer.Execution execution);
+		public static extern void RebuildAtlasCacheIfNeeded(BuildTarget target, bool displayProgressBar, Packer.Execution execution);
 
-		[ExcludeFromDocs]
 		public static void RebuildAtlasCacheIfNeeded(BuildTarget target, bool displayProgressBar)
 		{
-			Packer.Execution execution = Packer.Execution.Normal;
-			Packer.RebuildAtlasCacheIfNeeded(target, displayProgressBar, execution);
+			Packer.RebuildAtlasCacheIfNeeded(target, displayProgressBar, Packer.Execution.Normal);
 		}
 
-		[ExcludeFromDocs]
 		public static void RebuildAtlasCacheIfNeeded(BuildTarget target)
 		{
-			Packer.Execution execution = Packer.Execution.Normal;
-			bool displayProgressBar = false;
-			Packer.RebuildAtlasCacheIfNeeded(target, displayProgressBar, execution);
+			Packer.RebuildAtlasCacheIfNeeded(target, false, Packer.Execution.Normal);
 		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern void GetAtlasDataForSprite(Sprite sprite, out string atlasName, out Texture2D atlasTexture);
+		public static void GetAtlasDataForSprite(Sprite sprite, out string atlasName, out Texture2D atlasTexture)
+		{
+			atlasName = Packer.Internal_GetAtlasNameForSprite(sprite);
+			atlasTexture = Packer.Internal_GetAtlasTextureSprite(sprite);
+		}
 
 		private static void SetSelectedPolicy(string value)
 		{
@@ -157,6 +154,14 @@ namespace UnityEditor.Sprites
 			Type type = Packer.m_policyTypeCache[Packer.m_selectedPolicy];
 			IPackerPolicy packerPolicy = Activator.CreateInstance(type) as IPackerPolicy;
 			return string.Format("{0}::{1}", type.AssemblyQualifiedName, packerPolicy.GetVersion());
+		}
+
+		internal static bool AllowSequentialPacking()
+		{
+			Packer.RegenerateList();
+			Type type = Packer.m_policyTypeCache[Packer.m_selectedPolicy];
+			IPackerPolicy packerPolicy = Activator.CreateInstance(type) as IPackerPolicy;
+			return packerPolicy.AllowSequentialPacking;
 		}
 
 		internal static void ExecuteSelectedPolicy(BuildTarget target, int[] textureImporterInstanceIDs)

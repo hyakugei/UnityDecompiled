@@ -1,6 +1,7 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using UnityEngine.Bindings;
 using UnityEngine.Scripting;
 
 namespace UnityEngine
@@ -10,6 +11,10 @@ namespace UnityEngine
 	[StructLayout(LayoutKind.Sequential)]
 	public sealed class RectOffset
 	{
+		[VisibleToOtherModules(new string[]
+		{
+			"UnityEngine.IMGUIModule"
+		})]
 		[NonSerialized]
 		internal IntPtr m_Ptr;
 
@@ -74,6 +79,10 @@ namespace UnityEngine
 			this.Init();
 		}
 
+		[VisibleToOtherModules(new string[]
+		{
+			"UnityEngine.IMGUIModule"
+		})]
 		internal RectOffset(object sourceStyle, IntPtr source)
 		{
 			this.m_SourceStyle = sourceStyle;

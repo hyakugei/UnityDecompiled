@@ -1,8 +1,13 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine.Bindings;
 
 namespace UnityEngine
 {
+	[VisibleToOtherModules(new string[]
+	{
+		"UnityEngine.UIElementsModule"
+	})]
 	internal class GUILayoutGroup : GUILayoutEntry
 	{
 		public List<GUILayoutEntry> entries = new List<GUILayoutEntry>();

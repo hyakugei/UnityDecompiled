@@ -1,7 +1,9 @@
 using System;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.Scripting;
 
 namespace UnityEditor
@@ -22,9 +24,37 @@ namespace UnityEditor
 			Legacy
 		}
 
+		public delegate void OnStartedFunction();
+
 		public delegate void OnCompletedFunction();
 
 		public static Lightmapping.OnCompletedFunction completed;
+
+		public static event Lightmapping.OnStartedFunction started
+		{
+			add
+			{
+				Lightmapping.OnStartedFunction onStartedFunction = Lightmapping.started;
+				Lightmapping.OnStartedFunction onStartedFunction2;
+				do
+				{
+					onStartedFunction2 = onStartedFunction;
+					onStartedFunction = Interlocked.CompareExchange<Lightmapping.OnStartedFunction>(ref Lightmapping.started, (Lightmapping.OnStartedFunction)Delegate.Combine(onStartedFunction2, value), onStartedFunction);
+				}
+				while (onStartedFunction != onStartedFunction2);
+			}
+			remove
+			{
+				Lightmapping.OnStartedFunction onStartedFunction = Lightmapping.started;
+				Lightmapping.OnStartedFunction onStartedFunction2;
+				do
+				{
+					onStartedFunction2 = onStartedFunction;
+					onStartedFunction = Interlocked.CompareExchange<Lightmapping.OnStartedFunction>(ref Lightmapping.started, (Lightmapping.OnStartedFunction)Delegate.Remove(onStartedFunction2, value), onStartedFunction);
+				}
+				while (onStartedFunction != onStartedFunction2);
+			}
+		}
 
 		public static extern Lightmapping.GIWorkflowMode giWorkflowMode
 		{
@@ -130,6 +160,13 @@ namespace UnityEditor
 			set;
 		}
 
+		internal static extern bool isProgressiveLightmapperDone
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+		}
+
 		internal static extern ulong occupiedTexelCount
 		{
 			[GeneratedByOldBindingsGenerator]
@@ -196,6 +233,50 @@ namespace UnityEditor
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern void INTERNAL_CALL_GetLightmapConvergence(int lightmapIndex, out LightmapConvergence value);
 
+		internal static LightmapMemory GetLightmapMemory(int lightmapIndex)
+		{
+			LightmapMemory result;
+			Lightmapping.INTERNAL_CALL_GetLightmapMemory(lightmapIndex, out result);
+			return result;
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void INTERNAL_CALL_GetLightmapMemory(int lightmapIndex, out LightmapMemory value);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern bool GetGBufferHash(int lightmapIndex, out Hash128 gbufferHash);
+
+		internal static float GetGBufferMemory(ref Hash128 gbufferHash)
+		{
+			return Lightmapping.INTERNAL_CALL_GetGBufferMemory(ref gbufferHash);
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern float INTERNAL_CALL_GetGBufferMemory(ref Hash128 gbufferHash);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void GetTransmissionTexturesMemLabels(out string[] labels, out float[] sizes);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void ResetExplicitlyShownMemLabels();
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void GetNotShownMemLabels(out string[] labels, out float[] sizes);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void GetGeometryMemory(out string[] labels, out float[] sizes, out ulong[] triCounts);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern float ComputeTotalMemoryUsageInMB();
+
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern float GetLightmapBakeTimeRaw();
@@ -232,6 +313,14 @@ namespace UnityEditor
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void ForceStop();
 
+		private static void Internal_CallStartedFunctions()
+		{
+			if (Lightmapping.started != null)
+			{
+				Lightmapping.started();
+			}
+		}
+
 		private static void Internal_CallCompletedFunctions()
 		{
 			if (Lightmapping.completed != null)
@@ -266,6 +355,10 @@ namespace UnityEditor
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void OnUpdateLightmapEncoding(BuildTargetGroup target);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void GetTerrainGIChunks(Terrain terrain, ref int numChunksX, ref int numChunksY);
 
 		public static void BakeMultipleScenes(string[] paths)
@@ -284,15 +377,30 @@ namespace UnityEditor
 				}
 				if (EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
 				{
-					SceneSetup[] sceneManagerSetup = EditorSceneManager.GetSceneManagerSetup();
+					SceneSetup[] sceneSetup = EditorSceneManager.GetSceneManagerSetup();
+					Lightmapping.OnCompletedFunction OnBakeFinish = null;
+					OnBakeFinish = delegate
+					{
+						EditorSceneManager.SaveOpenScenes();
+						EditorSceneManager.RestoreSceneManagerSetup(sceneSetup);
+						Lightmapping.completed = (Lightmapping.OnCompletedFunction)Delegate.Remove(Lightmapping.completed, OnBakeFinish);
+					};
+					EditorSceneManager.SceneOpenedCallback BakeOnAllOpen = null;
+					BakeOnAllOpen = delegate(Scene scene, OpenSceneMode loadSceneMode)
+					{
+						if (EditorSceneManager.loadedSceneCount == paths.Length)
+						{
+							Lightmapping.BakeAsync();
+							Lightmapping.completed = (Lightmapping.OnCompletedFunction)Delegate.Combine(Lightmapping.completed, OnBakeFinish);
+							EditorSceneManager.sceneOpened -= BakeOnAllOpen;
+						}
+					};
+					EditorSceneManager.sceneOpened += BakeOnAllOpen;
 					EditorSceneManager.OpenScene(paths[0]);
 					for (int k = 1; k < paths.Length; k++)
 					{
 						EditorSceneManager.OpenScene(paths[k], OpenSceneMode.Additive);
 					}
-					Lightmapping.Bake();
-					EditorSceneManager.SaveOpenScenes();
-					EditorSceneManager.RestoreSceneManagerSetup(sceneManagerSetup);
 				}
 			}
 		}

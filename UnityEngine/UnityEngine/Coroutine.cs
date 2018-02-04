@@ -15,13 +15,12 @@ namespace UnityEngine
 		{
 		}
 
-		[GeneratedByOldBindingsGenerator, ThreadAndSerializationSafe]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void ReleaseCoroutine();
-
 		~Coroutine()
 		{
-			this.ReleaseCoroutine();
+			Coroutine.ReleaseCoroutine(this.m_Ptr);
 		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void ReleaseCoroutine(IntPtr ptr);
 	}
 }

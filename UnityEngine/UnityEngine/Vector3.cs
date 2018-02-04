@@ -1,11 +1,12 @@
 using System;
 using System.Runtime.CompilerServices;
+using UnityEngine.Bindings;
 using UnityEngine.Internal;
 using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
-	[UsedByNativeCode]
+	[NativeType(Header = "Runtime/Math/Vector3.h"), UsedByNativeCode, ThreadAndSerializationSafe]
 	public struct Vector3
 	{
 		public const float kEpsilon = 1E-05f;
@@ -15,6 +16,26 @@ namespace UnityEngine
 		public float y;
 
 		public float z;
+
+		private static readonly Vector3 zeroVector = new Vector3(0f, 0f, 0f);
+
+		private static readonly Vector3 oneVector = new Vector3(1f, 1f, 1f);
+
+		private static readonly Vector3 upVector = new Vector3(0f, 1f, 0f);
+
+		private static readonly Vector3 downVector = new Vector3(0f, -1f, 0f);
+
+		private static readonly Vector3 leftVector = new Vector3(-1f, 0f, 0f);
+
+		private static readonly Vector3 rightVector = new Vector3(1f, 0f, 0f);
+
+		private static readonly Vector3 forwardVector = new Vector3(0f, 0f, 1f);
+
+		private static readonly Vector3 backVector = new Vector3(0f, 0f, -1f);
+
+		private static readonly Vector3 positiveInfinityVector = new Vector3(float.PositiveInfinity, float.PositiveInfinity, float.PositiveInfinity);
+
+		private static readonly Vector3 negativeInfinityVector = new Vector3(float.NegativeInfinity, float.NegativeInfinity, float.NegativeInfinity);
 
 		public float this[int index]
 		{
@@ -84,7 +105,7 @@ namespace UnityEngine
 		{
 			get
 			{
-				return new Vector3(0f, 0f, 0f);
+				return Vector3.zeroVector;
 			}
 		}
 
@@ -92,7 +113,7 @@ namespace UnityEngine
 		{
 			get
 			{
-				return new Vector3(1f, 1f, 1f);
+				return Vector3.oneVector;
 			}
 		}
 
@@ -100,7 +121,7 @@ namespace UnityEngine
 		{
 			get
 			{
-				return new Vector3(0f, 0f, 1f);
+				return Vector3.forwardVector;
 			}
 		}
 
@@ -108,7 +129,7 @@ namespace UnityEngine
 		{
 			get
 			{
-				return new Vector3(0f, 0f, -1f);
+				return Vector3.backVector;
 			}
 		}
 
@@ -116,7 +137,7 @@ namespace UnityEngine
 		{
 			get
 			{
-				return new Vector3(0f, 1f, 0f);
+				return Vector3.upVector;
 			}
 		}
 
@@ -124,7 +145,7 @@ namespace UnityEngine
 		{
 			get
 			{
-				return new Vector3(0f, -1f, 0f);
+				return Vector3.downVector;
 			}
 		}
 
@@ -132,7 +153,7 @@ namespace UnityEngine
 		{
 			get
 			{
-				return new Vector3(-1f, 0f, 0f);
+				return Vector3.leftVector;
 			}
 		}
 
@@ -140,7 +161,23 @@ namespace UnityEngine
 		{
 			get
 			{
-				return new Vector3(1f, 0f, 0f);
+				return Vector3.rightVector;
+			}
+		}
+
+		public static Vector3 positiveInfinity
+		{
+			get
+			{
+				return Vector3.positiveInfinityVector;
+			}
+		}
+
+		public static Vector3 negativeInfinity
+		{
+			get
+			{
+				return Vector3.negativeInfinityVector;
 			}
 		}
 
@@ -167,72 +204,41 @@ namespace UnityEngine
 			this.z = 0f;
 		}
 
-		[ThreadAndSerializationSafe]
 		public static Vector3 Slerp(Vector3 a, Vector3 b, float t)
 		{
 			Vector3 result;
-			Vector3.INTERNAL_CALL_Slerp(ref a, ref b, t, out result);
+			Vector3.Slerp_Injected(ref a, ref b, t, out result);
 			return result;
 		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_Slerp(ref Vector3 a, ref Vector3 b, float t, out Vector3 value);
 
 		public static Vector3 SlerpUnclamped(Vector3 a, Vector3 b, float t)
 		{
 			Vector3 result;
-			Vector3.INTERNAL_CALL_SlerpUnclamped(ref a, ref b, t, out result);
+			Vector3.SlerpUnclamped_Injected(ref a, ref b, t, out result);
 			return result;
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_SlerpUnclamped(ref Vector3 a, ref Vector3 b, float t, out Vector3 value);
-
-		private static void Internal_OrthoNormalize2(ref Vector3 a, ref Vector3 b)
-		{
-			Vector3.INTERNAL_CALL_Internal_OrthoNormalize2(ref a, ref b);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_Internal_OrthoNormalize2(ref Vector3 a, ref Vector3 b);
-
-		private static void Internal_OrthoNormalize3(ref Vector3 a, ref Vector3 b, ref Vector3 c)
-		{
-			Vector3.INTERNAL_CALL_Internal_OrthoNormalize3(ref a, ref b, ref c);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_Internal_OrthoNormalize3(ref Vector3 a, ref Vector3 b, ref Vector3 c);
+		private static extern void OrthoNormalize2(ref Vector3 a, ref Vector3 b);
 
 		public static void OrthoNormalize(ref Vector3 normal, ref Vector3 tangent)
 		{
-			Vector3.Internal_OrthoNormalize2(ref normal, ref tangent);
+			Vector3.OrthoNormalize2(ref normal, ref tangent);
 		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void OrthoNormalize3(ref Vector3 a, ref Vector3 b, ref Vector3 c);
 
 		public static void OrthoNormalize(ref Vector3 normal, ref Vector3 tangent, ref Vector3 binormal)
 		{
-			Vector3.Internal_OrthoNormalize3(ref normal, ref tangent, ref binormal);
+			Vector3.OrthoNormalize3(ref normal, ref tangent, ref binormal);
 		}
 
 		public static Vector3 RotateTowards(Vector3 current, Vector3 target, float maxRadiansDelta, float maxMagnitudeDelta)
 		{
 			Vector3 result;
-			Vector3.INTERNAL_CALL_RotateTowards(ref current, ref target, maxRadiansDelta, maxMagnitudeDelta, out result);
+			Vector3.RotateTowards_Injected(ref current, ref target, maxRadiansDelta, maxMagnitudeDelta, out result);
 			return result;
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_RotateTowards(ref Vector3 current, ref Vector3 target, float maxRadiansDelta, float maxMagnitudeDelta, out Vector3 value);
-
-		[Obsolete("Use Vector3.ProjectOnPlane instead.")]
-		public static Vector3 Exclude(Vector3 excludeThis, Vector3 fromThat)
-		{
-			return fromThat - Vector3.Project(fromThat, excludeThis);
 		}
 
 		public static Vector3 Lerp(Vector3 a, Vector3 b, float t)
@@ -251,7 +257,7 @@ namespace UnityEngine
 			Vector3 a = target - current;
 			float magnitude = a.magnitude;
 			Vector3 result;
-			if (magnitude <= maxDistanceDelta || magnitude == 0f)
+			if (magnitude <= maxDistanceDelta || magnitude < 1.401298E-45f)
 			{
 				result = target;
 			}
@@ -299,11 +305,11 @@ namespace UnityEngine
 			return vector4;
 		}
 
-		public void Set(float new_x, float new_y, float new_z)
+		public void Set(float newX, float newY, float newZ)
 		{
-			this.x = new_x;
-			this.y = new_y;
-			this.z = new_z;
+			this.x = newX;
+			this.y = newY;
+			this.z = newZ;
 		}
 
 		public static Vector3 Scale(Vector3 a, Vector3 b)
@@ -406,6 +412,15 @@ namespace UnityEngine
 			return Mathf.Acos(Mathf.Clamp(Vector3.Dot(from.normalized, to.normalized), -1f, 1f)) * 57.29578f;
 		}
 
+		public static float SignedAngle(Vector3 from, Vector3 to, Vector3 axis)
+		{
+			Vector3 normalized = from.normalized;
+			Vector3 normalized2 = to.normalized;
+			float num = Mathf.Acos(Mathf.Clamp(Vector3.Dot(normalized, normalized2), -1f, 1f)) * 57.29578f;
+			float num2 = Mathf.Sign(Vector3.Dot(axis, Vector3.Cross(normalized, normalized2)));
+			return num * num2;
+		}
+
 		public static float Distance(Vector3 a, Vector3 b)
 		{
 			Vector3 vector = new Vector3(a.x - b.x, a.y - b.y, a.z - b.z);
@@ -426,14 +441,14 @@ namespace UnityEngine
 			return result;
 		}
 
-		public static float Magnitude(Vector3 a)
+		public static float Magnitude(Vector3 vector)
 		{
-			return Mathf.Sqrt(a.x * a.x + a.y * a.y + a.z * a.z);
+			return Mathf.Sqrt(vector.x * vector.x + vector.y * vector.y + vector.z * vector.z);
 		}
 
-		public static float SqrMagnitude(Vector3 a)
+		public static float SqrMagnitude(Vector3 vector)
 		{
-			return a.x * a.x + a.y * a.y + a.z * a.z;
+			return vector.x * vector.x + vector.y * vector.y + vector.z * vector.z;
 		}
 
 		public static Vector3 Min(Vector3 lhs, Vector3 rhs)
@@ -511,5 +526,20 @@ namespace UnityEngine
 		{
 			return Mathf.Acos(Mathf.Clamp(Vector3.Dot(from.normalized, to.normalized), -1f, 1f));
 		}
+
+		[Obsolete("Use Vector3.ProjectOnPlane instead.")]
+		public static Vector3 Exclude(Vector3 excludeThis, Vector3 fromThat)
+		{
+			return Vector3.ProjectOnPlane(fromThat, excludeThis);
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void Slerp_Injected(ref Vector3 a, ref Vector3 b, float t, out Vector3 ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void SlerpUnclamped_Injected(ref Vector3 a, ref Vector3 b, float t, out Vector3 ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void RotateTowards_Injected(ref Vector3 current, ref Vector3 target, float maxRadiansDelta, float maxMagnitudeDelta, out Vector3 ret);
 	}
 }

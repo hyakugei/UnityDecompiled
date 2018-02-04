@@ -279,7 +279,7 @@ namespace UnityEditorInternal
 			}
 			else
 			{
-				Texture2D texture2D2 = new Texture2D(num2, num2, TextureFormat.RGBA32, true, true);
+				Texture2D texture2D2 = new Texture2D(num2, num2, TextureFormat.RGBA32, true, false);
 				if (GenerateIconsWithMipLevels.BlitMip(texture2D2, list2, 0))
 				{
 					texture2D2.Apply(true);

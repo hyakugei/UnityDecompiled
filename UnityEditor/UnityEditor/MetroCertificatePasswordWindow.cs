@@ -41,7 +41,7 @@ namespace UnityEditor
 			}
 			else
 			{
-				metroCertificatePasswordWindow.titleContent = EditorGUIUtility.TextContent("Enter Windows Store Certificate Password");
+				metroCertificatePasswordWindow.titleContent = EditorGUIUtility.TrTextContent("Enter Windows Store Certificate Password", null, null);
 				metroCertificatePasswordWindow.position = new Rect(100f, 100f, 350f, 90f);
 				metroCertificatePasswordWindow.minSize = new Vector2(metroCertificatePasswordWindow.position.width, metroCertificatePasswordWindow.position.height);
 				metroCertificatePasswordWindow.maxSize = metroCertificatePasswordWindow.minSize;
@@ -67,7 +67,7 @@ namespace UnityEditor
 					GUILayout.FlexibleSpace();
 					using (HorizontalLayout.DoLayout())
 					{
-						GUILayout.Label(EditorGUIUtility.TextContent("Password|Certificate password."), new GUILayoutOption[]
+						GUILayout.Label(EditorGUIUtility.TrTextContent("Password", "Certificate password.", null), new GUILayoutOption[]
 						{
 							MetroCertificatePasswordWindow.kLabelWidth
 						});
@@ -79,7 +79,7 @@ namespace UnityEditor
 					{
 						GUILayout.Label(this.message, this.messageStyle, new GUILayoutOption[0]);
 						GUILayout.FlexibleSpace();
-						if (GUILayout.Button(EditorGUIUtility.TextContent("Ok"), new GUILayoutOption[]
+						if (GUILayout.Button(EditorGUIUtility.TrTextContent("Ok", null, null), new GUILayoutOption[]
 						{
 							MetroCertificatePasswordWindow.kButtonWidth
 						}) || flag2)
@@ -93,7 +93,7 @@ namespace UnityEditor
 								}
 								else
 								{
-									this.message = EditorGUIUtility.TextContent("Invalid password.");
+									this.message = EditorGUIUtility.TrTextContent("Invalid password.", null, null);
 								}
 							}
 							catch (UnityException ex)

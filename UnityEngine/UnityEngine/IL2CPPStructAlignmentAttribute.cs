@@ -1,8 +1,9 @@
 using System;
+using UnityEngine.Bindings;
 
 namespace UnityEngine
 {
-	[AttributeUsage(AttributeTargets.Struct)]
+	[AttributeUsage(AttributeTargets.Struct), VisibleToOtherModules]
 	internal class IL2CPPStructAlignmentAttribute : Attribute
 	{
 		public int Align;

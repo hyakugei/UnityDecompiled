@@ -338,13 +338,9 @@ namespace UnityEditor.Connect
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern void ComputerDidWakeUp();
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern void ClearAccessToken();
-
 		public void GoToHub(string page)
 		{
-			UnityConnectServiceCollection.instance.ShowService("Hub", page, true);
+			UnityConnectServiceCollection.instance.ShowService("Hub", page, true, "goto_hub_method");
 		}
 
 		public void UnbindProject()
@@ -427,12 +423,6 @@ namespace UnityEditor.Connect
 		public static void TestComputerDidWakeUp()
 		{
 			UnityConnect.instance.ComputerDidWakeUp();
-		}
-
-		[MenuItem("Window/Unity Connect/Reset AccessToken", false, 1000, true)]
-		public static void TestClearAccessToken()
-		{
-			UnityConnect.instance.ClearAccessToken();
 		}
 
 		private static void OnStateChanged()

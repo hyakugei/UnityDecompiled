@@ -10,33 +10,39 @@ namespace UnityEditor
 	{
 		private static class Contents
 		{
-			public static readonly GUIContent flipLabel = EditorGUIUtility.TextContent("Flip|Sprite flipping");
+			public static readonly GUIContent flipLabel = EditorGUIUtility.TrTextContent("Flip", "Sprite flipping", null);
+
+			public static readonly GUIContent flipXLabel = EditorGUIUtility.TrTextContent("X", "Sprite horizontal flipping", null);
+
+			public static readonly GUIContent flipYLabel = EditorGUIUtility.TrTextContent("Y", "Sprite vertical flipping", null);
 
 			public static readonly int flipToggleHash = "FlipToggleHash".GetHashCode();
 
-			public static readonly GUIContent fullTileLabel = EditorGUIUtility.TextContent("Tile Mode|Specify the 9 slice tiling behaviour");
+			public static readonly GUIContent fullTileLabel = EditorGUIUtility.TrTextContent("Tile Mode", "Specify the 9 slice tiling behaviour", null);
 
-			public static readonly GUIContent fullTileThresholdLabel = EditorGUIUtility.TextContent("Stretch Value|This value defines how much the center portion will stretch before it tiles.");
+			public static readonly GUIContent fullTileThresholdLabel = EditorGUIUtility.TrTextContent("Stretch Value", "This value defines how much the center portion will stretch before it tiles.", null);
 
-			public static readonly GUIContent drawModeLabel = EditorGUIUtility.TextContent("Draw Mode|Specify the draw mode for the sprite");
+			public static readonly GUIContent drawModeLabel = EditorGUIUtility.TrTextContent("Draw Mode", "Specify the draw mode for the sprite", null);
 
-			public static readonly GUIContent widthLabel = EditorGUIUtility.TextContent("Width|The width dimension value for the sprite");
+			public static readonly GUIContent widthLabel = EditorGUIUtility.TrTextContent("Width", "The width dimension value for the sprite", null);
 
-			public static readonly GUIContent heightLabel = EditorGUIUtility.TextContent("Height|The height dimension value for the sprite");
+			public static readonly GUIContent heightLabel = EditorGUIUtility.TrTextContent("Height", "The height dimension value for the sprite", null);
 
-			public static readonly GUIContent sizeLabel = EditorGUIUtility.TextContent("Size|The rendering dimension for the sprite");
+			public static readonly GUIContent sizeLabel = EditorGUIUtility.TrTextContent("Size", "The rendering dimension for the sprite", null);
 
-			public static readonly GUIContent notFullRectWarningLabel = EditorGUIUtility.TextContent("Sprite Tiling might not appear correctly because the Sprite used is not generated with Full Rect. To fix this, change the Mesh Type in the Sprite's import setting to Full Rect");
+			public static readonly GUIContent notFullRectWarningLabel = EditorGUIUtility.TrTextContent("Sprite Tiling might not appear correctly because the Sprite used is not generated with Full Rect or Sprite Mode is set to Polygon mode. To fix this, change the Mesh Type in the Sprite's import setting to Full Rect and Sprite Mode is either Single or Multiple", null, null);
 
-			public static readonly GUIContent notFullRectMultiEditWarningLabel = EditorGUIUtility.TextContent("Sprite Tiling might not appear correctly because some of the Sprites used are not generated with Full Rect. To fix this, change the Mesh Type in the Sprite's import setting to Full Rect");
+			public static readonly GUIContent notFullRectMultiEditWarningLabel = EditorGUIUtility.TrTextContent("Sprite Tiling might not appear correctly because some of the Sprites used are not generated with Full Rect. To fix this, change the Mesh Type in the Sprite's import setting to Full Rect", null, null);
 
 			public static readonly int sizeFieldHash = "SpriteRendererSizeField".GetHashCode();
 
-			public static readonly GUIContent materialLabel = EditorGUIUtility.TextContent("Material|Material to be used by SpriteRenderer");
+			public static readonly GUIContent materialLabel = EditorGUIUtility.TrTextContent("Material", "Material to be used by SpriteRenderer", null);
 
-			public static readonly GUIContent spriteLabel = EditorGUIUtility.TextContent("Sprite|The Sprite to render");
+			public static readonly GUIContent spriteLabel = EditorGUIUtility.TrTextContent("Sprite", "The Sprite to render", null);
 
-			public static readonly GUIContent colorLabel = EditorGUIUtility.TextContent("Color|Rendering color for the Sprite graphic");
+			public static readonly GUIContent colorLabel = EditorGUIUtility.TrTextContent("Color", "Rendering color for the Sprite graphic", null);
+
+			public static readonly GUIContent maskInteractionLabel = EditorGUIUtility.TextContent("Mask Interaction|SpriteRenderer's interaction with a Sprite Mask");
 
 			public static readonly Texture2D warningIcon = EditorGUIUtility.LoadIcon("console.warnicon");
 		}
@@ -65,6 +71,8 @@ namespace UnityEditor
 
 		private AnimBool m_ShowAdaptiveThreshold;
 
+		private SerializedProperty m_MaskInteraction;
+
 		public override void OnEnable()
 		{
 			base.OnEnable();
@@ -83,6 +91,7 @@ namespace UnityEditor
 			this.m_ShowDrawMode.valueChanged.AddListener(new UnityAction(base.Repaint));
 			this.m_ShowTileMode.valueChanged.AddListener(new UnityAction(base.Repaint));
 			this.m_ShowAdaptiveThreshold.valueChanged.AddListener(new UnityAction(base.Repaint));
+			this.m_MaskInteraction = base.serializedObject.FindProperty("m_MaskInteraction");
 		}
 
 		public override void OnInspectorGUI()
@@ -91,10 +100,6 @@ namespace UnityEditor
 			EditorGUILayout.PropertyField(this.m_Sprite, SpriteRendererEditor.Contents.spriteLabel, new GUILayoutOption[0]);
 			EditorGUILayout.PropertyField(this.m_Color, SpriteRendererEditor.Contents.colorLabel, true, new GUILayoutOption[0]);
 			this.FlipToggles();
-			if (this.m_Material.arraySize == 0)
-			{
-				this.m_Material.InsertArrayElementAtIndex(0);
-			}
 			Rect rect = GUILayoutUtility.GetRect(EditorGUILayout.kLabelFloatMinW, EditorGUILayout.kLabelFloatMaxW, 16f, 16f);
 			EditorGUI.showMixedValue = this.m_Material.hasMultipleDifferentValues;
 			UnityEngine.Object objectReferenceValue = this.m_Material.GetArrayElementAtIndex(0).objectReferenceValue;
@@ -139,6 +144,8 @@ namespace UnityEditor
 			}
 			EditorGUILayout.EndFadeGroup();
 			base.RenderSortingLayerFields();
+			EditorGUILayout.PropertyField(this.m_MaskInteraction, SpriteRendererEditor.Contents.maskInteractionLabel, new GUILayoutOption[0]);
+			base.RenderRenderingLayer();
 			this.CheckForErrors();
 			base.serializedObject.ApplyModifiedProperties();
 		}
@@ -200,16 +207,16 @@ namespace UnityEditor
 			int controlID = GUIUtility.GetControlID(SpriteRendererEditor.Contents.flipToggleHash, FocusType.Keyboard, rect);
 			rect = EditorGUI.PrefixLabel(rect, controlID, SpriteRendererEditor.Contents.flipLabel);
 			rect.width = 30f;
-			this.FlipToggle(rect, "X", this.m_FlipX);
+			this.FlipToggle(rect, SpriteRendererEditor.Contents.flipXLabel, this.m_FlipX);
 			rect.x += 30f;
-			this.FlipToggle(rect, "Y", this.m_FlipY);
+			this.FlipToggle(rect, SpriteRendererEditor.Contents.flipYLabel, this.m_FlipY);
 			GUILayout.EndHorizontal();
 		}
 
-		private void FlipToggle(Rect r, string label, SerializedProperty property)
+		private void FlipToggle(Rect r, GUIContent label, SerializedProperty property)
 		{
+			EditorGUI.BeginProperty(r, label, property);
 			bool flag = property.boolValue;
-			EditorGUI.showMixedValue = property.hasMultipleDifferentValues;
 			EditorGUI.BeginChangeCheck();
 			int indentLevel = EditorGUI.indentLevel;
 			EditorGUI.indentLevel = 0;
@@ -220,7 +227,7 @@ namespace UnityEditor
 				Undo.RecordObjects(base.targets, "Edit Constraints");
 				property.boolValue = flag;
 			}
-			EditorGUI.showMixedValue = false;
+			EditorGUI.EndProperty();
 		}
 
 		private void CheckForErrors()

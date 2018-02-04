@@ -17,9 +17,9 @@ namespace UnityEditor
 
 		internal class Styles
 		{
-			public static GUIContent showCompiled = EditorGUIUtility.TextContent("Show compiled code");
+			public static GUIContent showCompiled = EditorGUIUtility.TrTextContent("Show compiled code", null, null);
 
-			public static GUIContent kernelsHeading = EditorGUIUtility.TextContent("Kernels:");
+			public static GUIContent kernelsHeading = EditorGUIUtility.TrTextContent("Kernels:", null, null);
 		}
 
 		private const float kSpace = 5f;

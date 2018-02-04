@@ -108,16 +108,23 @@ namespace UnityEditor
 					{
 						background.Draw(r, false, false, false, false);
 					}
-					float num = 1f;
-					float num2 = 1f;
-					float num3 = Mathf.Min(new float[]
+					float num = (float)texture.width;
+					float num2 = (float)texture.height;
+					if (this.m_PlayingClip.pixelAspectRatioDenominator > 0u)
 					{
-						num * r.width / (float)texture.width,
-						num2 * r.height / (float)texture.height,
-						num,
-						num2
-					});
-					Rect rect = (!flag) ? r : new Rect(r.x, r.y, (float)texture.width * num3, (float)texture.height * num3);
+						num *= this.m_PlayingClip.pixelAspectRatioNumerator / this.m_PlayingClip.pixelAspectRatioDenominator;
+					}
+					float num3;
+					if (r.width / num * num2 > r.height)
+					{
+						num3 = r.height / num2;
+					}
+					else
+					{
+						num3 = r.width / num;
+					}
+					num3 = Mathf.Clamp01(num3);
+					Rect rect = (!flag) ? r : new Rect(r.x, r.y, num * num3, (float)texture.height * num3);
 					PreviewGUI.BeginScrollView(r, this.m_Position, rect, "PreHorizontalScrollbar", "PreHorizontalScrollbarThumb");
 					if (flag)
 					{

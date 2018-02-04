@@ -8,24 +8,20 @@ namespace UnityEditor
 	[CanEditMultipleObjects, CustomEditor(typeof(OcclusionPortal))]
 	internal class OcclusionPortalEditor : Editor
 	{
-		private static readonly int s_HandleControlIDHint = typeof(OcclusionPortalEditor).Name.GetHashCode();
+		private const string k_CenterPath = "m_Center";
 
-		private readonly BoxBoundsHandle m_BoundsHandle = new BoxBoundsHandle(OcclusionPortalEditor.s_HandleControlIDHint);
+		private const string k_SizePath = "m_Size";
 
-		private SerializedProperty m_Center;
-
-		private SerializedProperty m_Size;
+		private readonly BoxBoundsHandle m_BoundsHandle = new BoxBoundsHandle();
 
 		protected virtual void OnEnable()
 		{
-			this.m_Center = base.serializedObject.FindProperty("m_Center");
-			this.m_Size = base.serializedObject.FindProperty("m_Size");
 			this.m_BoundsHandle.SetColor(Handles.s_ColliderHandleColor);
 		}
 
 		public override void OnInspectorGUI()
 		{
-			EditMode.DoEditModeInspectorModeButton(EditMode.SceneViewEditMode.Collider, "Edit Bounds", PrimitiveBoundsHandle.editModeButton, this.GetWorldBounds(this.m_Center.vector3Value, this.m_Size.vector3Value), this);
+			EditMode.DoEditModeInspectorModeButton(EditMode.SceneViewEditMode.Collider, "Edit Bounds", PrimitiveBoundsHandle.editModeButton, this);
 			base.OnInspectorGUI();
 		}
 
@@ -38,8 +34,8 @@ namespace UnityEditor
 				serializedObject.Update();
 				using (new Handles.DrawingScope(occlusionPortal.transform.localToWorldMatrix))
 				{
-					SerializedProperty serializedProperty = serializedObject.FindProperty(this.m_Center.propertyPath);
-					SerializedProperty serializedProperty2 = serializedObject.FindProperty(this.m_Size.propertyPath);
+					SerializedProperty serializedProperty = serializedObject.FindProperty("m_Center");
+					SerializedProperty serializedProperty2 = serializedObject.FindProperty("m_Size");
 					this.m_BoundsHandle.center = serializedProperty.vector3Value;
 					this.m_BoundsHandle.size = serializedProperty2.vector3Value;
 					EditorGUI.BeginChangeCheck();
@@ -54,12 +50,15 @@ namespace UnityEditor
 			}
 		}
 
-		private Bounds GetWorldBounds(Vector3 center, Vector3 size)
+		internal override Bounds GetWorldBoundsOfTarget(UnityEngine.Object targetObject)
 		{
-			Bounds bounds = new Bounds(center, size);
+			SerializedObject serializedObject = new SerializedObject(targetObject);
+			Vector3 vector3Value = serializedObject.FindProperty("m_Center").vector3Value;
+			Vector3 vector3Value2 = serializedObject.FindProperty("m_Size").vector3Value;
+			Bounds bounds = new Bounds(vector3Value, vector3Value2);
 			Vector3 max = bounds.max;
 			Vector3 min = bounds.min;
-			Matrix4x4 localToWorldMatrix = ((OcclusionPortal)base.target).transform.localToWorldMatrix;
+			Matrix4x4 localToWorldMatrix = ((OcclusionPortal)targetObject).transform.localToWorldMatrix;
 			Bounds result = new Bounds(localToWorldMatrix.MultiplyPoint3x4(new Vector3(max.x, max.y, max.z)), Vector3.zero);
 			result.Encapsulate(localToWorldMatrix.MultiplyPoint3x4(new Vector3(max.x, max.y, max.z)));
 			result.Encapsulate(localToWorldMatrix.MultiplyPoint3x4(new Vector3(max.x, max.y, min.z)));

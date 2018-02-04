@@ -28,7 +28,7 @@ namespace UnityEngine
 		{
 			get
 			{
-				return (int)this.width;
+				return (int)Math.Round((double)this.width, MidpointRounding.AwayFromZero);
 			}
 			set
 			{

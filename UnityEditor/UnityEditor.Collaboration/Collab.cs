@@ -60,6 +60,9 @@ namespace UnityEditor.Collaboration
 
 		private static bool s_IsFirstStateChange;
 
+		[SerializeField]
+		public CollabFilters collabFilters = new CollabFilters();
+
 		public string[] currentProjectBrowserSelection;
 
 		public static string[] clientType;
@@ -67,7 +70,28 @@ namespace UnityEditor.Collaboration
 		internal static string editorPrefCollabClientType;
 
 		[CompilerGenerated]
-		private static UnityEditor.Connect.StateChangedDelegate <>f__mg$cache0;
+		private static ObjectListArea.OnAssetIconDrawDelegate <>f__mg$cache0;
+
+		[CompilerGenerated]
+		private static AssetsTreeViewGUI.OnAssetIconDrawDelegate <>f__mg$cache1;
+
+		[CompilerGenerated]
+		private static CollabSettingsManager.SettingStatusChanged <>f__mg$cache2;
+
+		[CompilerGenerated]
+		private static UnityEditor.Connect.StateChangedDelegate <>f__mg$cache3;
+
+		[CompilerGenerated]
+		private static CollabSettingsManager.SettingStatusChanged <>f__mg$cache4;
+
+		[CompilerGenerated]
+		private static CollabSettingsManager.SettingStatusChanged <>f__mg$cache5;
+
+		[CompilerGenerated]
+		private static CollabSettingsManager.SettingStatusChanged <>f__mg$cache6;
+
+		[CompilerGenerated]
+		private static CollabSettingsManager.SettingStatusChanged <>f__mg$cache7;
 
 		public event StateChangedDelegate StateChanged
 		{
@@ -90,6 +114,58 @@ namespace UnityEditor.Collaboration
 				{
 					stateChangedDelegate2 = stateChangedDelegate;
 					stateChangedDelegate = Interlocked.CompareExchange<StateChangedDelegate>(ref this.StateChanged, (StateChangedDelegate)Delegate.Remove(stateChangedDelegate2, value), stateChangedDelegate);
+				}
+				while (stateChangedDelegate != stateChangedDelegate2);
+			}
+		}
+
+		public event StateChangedDelegate RevisionUpdated
+		{
+			add
+			{
+				StateChangedDelegate stateChangedDelegate = this.RevisionUpdated;
+				StateChangedDelegate stateChangedDelegate2;
+				do
+				{
+					stateChangedDelegate2 = stateChangedDelegate;
+					stateChangedDelegate = Interlocked.CompareExchange<StateChangedDelegate>(ref this.RevisionUpdated, (StateChangedDelegate)Delegate.Combine(stateChangedDelegate2, value), stateChangedDelegate);
+				}
+				while (stateChangedDelegate != stateChangedDelegate2);
+			}
+			remove
+			{
+				StateChangedDelegate stateChangedDelegate = this.RevisionUpdated;
+				StateChangedDelegate stateChangedDelegate2;
+				do
+				{
+					stateChangedDelegate2 = stateChangedDelegate;
+					stateChangedDelegate = Interlocked.CompareExchange<StateChangedDelegate>(ref this.RevisionUpdated, (StateChangedDelegate)Delegate.Remove(stateChangedDelegate2, value), stateChangedDelegate);
+				}
+				while (stateChangedDelegate != stateChangedDelegate2);
+			}
+		}
+
+		public event StateChangedDelegate JobsCompleted
+		{
+			add
+			{
+				StateChangedDelegate stateChangedDelegate = this.JobsCompleted;
+				StateChangedDelegate stateChangedDelegate2;
+				do
+				{
+					stateChangedDelegate2 = stateChangedDelegate;
+					stateChangedDelegate = Interlocked.CompareExchange<StateChangedDelegate>(ref this.JobsCompleted, (StateChangedDelegate)Delegate.Combine(stateChangedDelegate2, value), stateChangedDelegate);
+				}
+				while (stateChangedDelegate != stateChangedDelegate2);
+			}
+			remove
+			{
+				StateChangedDelegate stateChangedDelegate = this.JobsCompleted;
+				StateChangedDelegate stateChangedDelegate2;
+				do
+				{
+					stateChangedDelegate2 = stateChangedDelegate;
+					stateChangedDelegate = Interlocked.CompareExchange<StateChangedDelegate>(ref this.JobsCompleted, (StateChangedDelegate)Delegate.Remove(stateChangedDelegate2, value), stateChangedDelegate);
 				}
 				while (stateChangedDelegate != stateChangedDelegate2);
 			}
@@ -135,11 +211,36 @@ namespace UnityEditor.Collaboration
 			Collab.s_Instance.projectBrowserSingleSelectionPath = string.Empty;
 			Collab.s_Instance.projectBrowserSingleMetaSelectionPath = string.Empty;
 			JSProxyMgr.GetInstance().AddGlobalObject("unity/collab", Collab.s_Instance);
+			if (Collab.<>f__mg$cache0 == null)
+			{
+				Collab.<>f__mg$cache0 = new ObjectListArea.OnAssetIconDrawDelegate(CollabProjectHook.OnProjectWindowIconOverlay);
+			}
+			ObjectListArea.postAssetIconDrawCallback += Collab.<>f__mg$cache0;
+			if (Collab.<>f__mg$cache1 == null)
+			{
+				Collab.<>f__mg$cache1 = new AssetsTreeViewGUI.OnAssetIconDrawDelegate(CollabProjectHook.OnProjectBrowserNavPanelIconOverlay);
+			}
+			AssetsTreeViewGUI.postAssetIconDrawCallback += Collab.<>f__mg$cache1;
+			Collab.InitializeSoftlocksViewController();
+			Dictionary<CollabSettingType, CollabSettingsManager.SettingStatusChanged> statusNotifier;
+			Dictionary<CollabSettingType, CollabSettingsManager.SettingStatusChanged> expr_B7 = statusNotifier = CollabSettingsManager.statusNotifier;
+			CollabSettingType arg_E8_1 = CollabSettingType.InProgressEnabled;
+			Delegate arg_DE_0 = statusNotifier[CollabSettingType.InProgressEnabled];
+			if (Collab.<>f__mg$cache2 == null)
+			{
+				Collab.<>f__mg$cache2 = new CollabSettingsManager.SettingStatusChanged(Collab.OnSettingStatusChanged);
+			}
+			expr_B7[arg_E8_1] = (CollabSettingsManager.SettingStatusChanged)Delegate.Combine(arg_DE_0, Collab.<>f__mg$cache2);
+			(statusNotifier = CollabSettingsManager.statusNotifier)[CollabSettingType.InProgressEnabled] = (CollabSettingsManager.SettingStatusChanged)Delegate.Combine(statusNotifier[CollabSettingType.InProgressEnabled], new CollabSettingsManager.SettingStatusChanged(SoftlockViewController.Instance.softLockFilters.OnSettingStatusChanged));
 		}
 
 		[GeneratedByOldBindingsGenerator, ThreadAndSerializationSafe]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern string GetProjectPath();
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public extern string GetProjectGUID();
 
 		[GeneratedByOldBindingsGenerator, ThreadAndSerializationSafe]
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -166,14 +267,28 @@ namespace UnityEditor.Collaboration
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern ProgressInfo GetJobProgressByType(int jobType);
 
+		[ExcludeFromDocs]
 		public void CancelJob(int jobId)
 		{
-			this.CancelJobByType(jobId);
+			bool forceCancel = false;
+			this.CancelJob(jobId, forceCancel);
+		}
+
+		public void CancelJob(int jobId, [DefaultValue("false")] bool forceCancel)
+		{
+			this.CancelJobByType(jobId, forceCancel);
 		}
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern void CancelJobByType(int jobType);
+		public extern void CancelJobByType(int jobType, [DefaultValue("false")] bool forceCancel);
+
+		[ExcludeFromDocs]
+		public void CancelJobByType(int jobType)
+		{
+			bool forceCancel = false;
+			this.CancelJobByType(jobType, forceCancel);
+		}
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -185,13 +300,33 @@ namespace UnityEditor.Collaboration
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern void Publish(string comment, [DefaultValue("false")] bool useSelectedAssets);
+		public extern void DoInitialCommit();
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public extern void SetSeat(bool value);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public extern bool ShouldDoInitialCommit();
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public extern void Publish(string comment, [DefaultValue("false")] bool useSelectedAssets, [DefaultValue("false")] bool confirmMatchesPrevious);
+
+		[ExcludeFromDocs]
+		public void Publish(string comment, bool useSelectedAssets)
+		{
+			bool confirmMatchesPrevious = false;
+			this.Publish(comment, useSelectedAssets, confirmMatchesPrevious);
+		}
 
 		[ExcludeFromDocs]
 		public void Publish(string comment)
 		{
+			bool confirmMatchesPrevious = false;
 			bool useSelectedAssets = false;
-			this.Publish(comment, useSelectedAssets);
+			this.Publish(comment, useSelectedAssets, confirmMatchesPrevious);
 		}
 
 		[GeneratedByOldBindingsGenerator]
@@ -256,7 +391,7 @@ namespace UnityEditor.Collaboration
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern Change[] GetChangesToPublish();
+		internal extern Change[] GetChangesToPublishInternal();
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -308,10 +443,6 @@ namespace UnityEditor.Collaboration
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern Revision[] GetRevisions();
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern bool AreTestsRunning();
 
 		[GeneratedByOldBindingsGenerator]
@@ -321,6 +452,10 @@ namespace UnityEditor.Collaboration
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern void ClearAllFailures();
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public extern void DeleteTempFile(string path, CollabTempFolder folderMask);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -346,6 +481,42 @@ namespace UnityEditor.Collaboration
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern void ClearNextOperationFailureForFile(string path);
 
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public extern string GetGUIDForTests();
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public extern void NewGUIDForTests();
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public extern void TestPostSoftLockAsCollaborator(string projectGuid, string projectPath, string machineGuid, string assetGuid);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public extern void TestClearSoftLockAsCollaborator(string projectGuid, string projectPath, string machineGuid, string softLockHash);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern Revision[] InternalGetRevisions(bool withChanges = false, int startIndex = 0, int numRevisions = -1);
+
+		public Revision[] GetRevisions(bool withChanges = false, int startIndex = 0, int numRevisions = -1)
+		{
+			return Collab.InternalGetRevisions(withChanges, startIndex, numRevisions);
+		}
+
+		private static RevisionsData InternalGetRevisionsData(bool withChanges, int startIndex, int numRevisions)
+		{
+			RevisionsData result;
+			Collab.InternalGetRevisionsData_Injected(withChanges, startIndex, numRevisions, out result);
+			return result;
+		}
+
+		public RevisionsData GetRevisionsData(bool withChanges, int startIndex, int numRevisions)
+		{
+			return Collab.InternalGetRevisionsData(withChanges, startIndex, numRevisions);
+		}
+
 		public static string GetProjectClientType()
 		{
 			string configValue = EditorUserSettings.GetConfigValue(Collab.editorPrefCollabClientType);
@@ -355,7 +526,7 @@ namespace UnityEditor.Collaboration
 		[MenuItem("Window/Collab/Get Revisions", false, 1000, true)]
 		public static void TestGetRevisions()
 		{
-			Revision[] revisions = Collab.instance.GetRevisions();
+			Revision[] revisions = Collab.instance.GetRevisions(false, 0, -1);
 			if (revisions.Length == 0)
 			{
 				Debug.Log("No revisions");
@@ -377,6 +548,33 @@ namespace UnityEditor.Collaboration
 					num--;
 				}
 			}
+		}
+
+		public static void OnSettingStatusChanged(CollabSettingType type, CollabSettingStatus status)
+		{
+			Collab.InitializeSoftlocksViewController();
+		}
+
+		public static bool InitializeSoftlocksViewController()
+		{
+			bool result;
+			if (!CollabSettingsManager.IsAvailable(CollabSettingType.InProgressEnabled))
+			{
+				result = false;
+			}
+			else
+			{
+				if (CollabSettingsManager.inProgressEnabled)
+				{
+					SoftlockViewController.Instance.TurnOn();
+				}
+				else
+				{
+					SoftlockViewController.Instance.TurnOff();
+				}
+				result = true;
+			}
+			return result;
 		}
 
 		public void CancelJobWithoutException(int jobType)
@@ -444,23 +642,57 @@ namespace UnityEditor.Collaboration
 			}
 		}
 
+		public void ShowInProjectBrowser(string filterString)
+		{
+			this.collabFilters.ShowInProjectBrowser(filterString);
+		}
+
+		public PublishInfo GetChangesToPublish()
+		{
+			Change[] changesToPublishInternal = this.GetChangesToPublishInternal();
+			return new PublishInfo
+			{
+				changes = changesToPublishInternal,
+				filter = false
+			};
+		}
+
 		private static void OnStateChanged()
 		{
 			if (Collab.s_IsFirstStateChange)
 			{
 				Collab.s_IsFirstStateChange = false;
 				UnityConnect arg_34_0 = UnityConnect.instance;
-				if (Collab.<>f__mg$cache0 == null)
+				if (Collab.<>f__mg$cache3 == null)
 				{
-					Collab.<>f__mg$cache0 = new UnityEditor.Connect.StateChangedDelegate(Collab.OnUnityConnectStateChanged);
+					Collab.<>f__mg$cache3 = new UnityEditor.Connect.StateChangedDelegate(Collab.OnUnityConnectStateChanged);
 				}
-				arg_34_0.StateChanged += Collab.<>f__mg$cache0;
+				arg_34_0.StateChanged += Collab.<>f__mg$cache3;
 			}
 			StateChangedDelegate stateChanged = Collab.instance.StateChanged;
 			if (stateChanged != null)
 			{
 				stateChanged(Collab.instance.collabInfo);
 			}
+		}
+
+		private static void OnRevisionUpdated()
+		{
+			StateChangedDelegate revisionUpdated = Collab.instance.RevisionUpdated;
+			if (revisionUpdated != null)
+			{
+				revisionUpdated(Collab.instance.collabInfo);
+			}
+		}
+
+		private static void OnJobsCompleted()
+		{
+			StateChangedDelegate jobsCompleted = Collab.instance.JobsCompleted;
+			if (jobsCompleted != null)
+			{
+				jobsCompleted(Collab.instance.collabInfo);
+			}
+			CollabTesting.OnJobsCompleted();
 		}
 
 		private static void PublishDialog(string changelist)
@@ -484,5 +716,93 @@ namespace UnityEditor.Collaboration
 		{
 			Collab.instance.SendNotification();
 		}
+
+		public static void OnProgressEnabledSettingStatusChanged(CollabSettingType type, CollabSettingStatus status)
+		{
+			if (type == CollabSettingType.InProgressEnabled && status == CollabSettingStatus.Available)
+			{
+				if (CollabSettingsManager.inProgressEnabled)
+				{
+					SoftlockViewController.Instance.softLockFilters.ShowInFavoriteSearchFilters();
+				}
+				Dictionary<CollabSettingType, CollabSettingsManager.SettingStatusChanged> statusNotifier;
+				Dictionary<CollabSettingType, CollabSettingsManager.SettingStatusChanged> expr_2F = statusNotifier = CollabSettingsManager.statusNotifier;
+				CollabSettingType arg_60_1 = CollabSettingType.InProgressEnabled;
+				Delegate arg_56_0 = statusNotifier[CollabSettingType.InProgressEnabled];
+				if (Collab.<>f__mg$cache4 == null)
+				{
+					Collab.<>f__mg$cache4 = new CollabSettingsManager.SettingStatusChanged(Collab.OnProgressEnabledSettingStatusChanged);
+				}
+				expr_2F[arg_60_1] = (CollabSettingsManager.SettingStatusChanged)Delegate.Remove(arg_56_0, Collab.<>f__mg$cache4);
+			}
+		}
+
+		[RequiredByNativeCode]
+		private static void OnCollabEnabledForCurrentProject(bool enabled)
+		{
+			if (enabled)
+			{
+				Collab.instance.StateChanged += new StateChangedDelegate(Collab.instance.collabFilters.OnCollabStateChanged);
+				Collab.instance.collabFilters.ShowInFavoriteSearchFilters();
+				if (CollabSettingsManager.IsAvailable(CollabSettingType.InProgressEnabled))
+				{
+					if (CollabSettingsManager.inProgressEnabled)
+					{
+						SoftlockViewController.Instance.softLockFilters.ShowInFavoriteSearchFilters();
+					}
+				}
+				else
+				{
+					Dictionary<CollabSettingType, CollabSettingsManager.SettingStatusChanged> statusNotifier;
+					Dictionary<CollabSettingType, CollabSettingsManager.SettingStatusChanged> expr_69 = statusNotifier = CollabSettingsManager.statusNotifier;
+					CollabSettingType arg_9A_1 = CollabSettingType.InProgressEnabled;
+					Delegate arg_90_0 = statusNotifier[CollabSettingType.InProgressEnabled];
+					if (Collab.<>f__mg$cache5 == null)
+					{
+						Collab.<>f__mg$cache5 = new CollabSettingsManager.SettingStatusChanged(Collab.OnProgressEnabledSettingStatusChanged);
+					}
+					expr_69[arg_9A_1] = (CollabSettingsManager.SettingStatusChanged)Delegate.Remove(arg_90_0, Collab.<>f__mg$cache5);
+					Dictionary<CollabSettingType, CollabSettingsManager.SettingStatusChanged> expr_A4 = statusNotifier = CollabSettingsManager.statusNotifier;
+					CollabSettingType arg_D5_1 = CollabSettingType.InProgressEnabled;
+					Delegate arg_CB_0 = statusNotifier[CollabSettingType.InProgressEnabled];
+					if (Collab.<>f__mg$cache6 == null)
+					{
+						Collab.<>f__mg$cache6 = new CollabSettingsManager.SettingStatusChanged(Collab.OnProgressEnabledSettingStatusChanged);
+					}
+					expr_A4[arg_D5_1] = (CollabSettingsManager.SettingStatusChanged)Delegate.Combine(arg_CB_0, Collab.<>f__mg$cache6);
+				}
+			}
+			else
+			{
+				Collab.instance.StateChanged -= new StateChangedDelegate(Collab.instance.collabFilters.OnCollabStateChanged);
+				Collab.instance.collabFilters.HideFromFavoriteSearchFilters();
+				SoftlockViewController.Instance.softLockFilters.HideFromFavoriteSearchFilters();
+				Dictionary<CollabSettingType, CollabSettingsManager.SettingStatusChanged> statusNotifier;
+				Dictionary<CollabSettingType, CollabSettingsManager.SettingStatusChanged> expr_124 = statusNotifier = CollabSettingsManager.statusNotifier;
+				CollabSettingType arg_155_1 = CollabSettingType.InProgressEnabled;
+				Delegate arg_14B_0 = statusNotifier[CollabSettingType.InProgressEnabled];
+				if (Collab.<>f__mg$cache7 == null)
+				{
+					Collab.<>f__mg$cache7 = new CollabSettingsManager.SettingStatusChanged(Collab.OnProgressEnabledSettingStatusChanged);
+				}
+				expr_124[arg_155_1] = (CollabSettingsManager.SettingStatusChanged)Delegate.Remove(arg_14B_0, Collab.<>f__mg$cache7);
+				if (ProjectBrowser.s_LastInteractedProjectBrowser != null)
+				{
+					if (ProjectBrowser.s_LastInteractedProjectBrowser.Initialized() && ProjectBrowser.s_LastInteractedProjectBrowser.IsTwoColumns())
+					{
+						int mainAssetInstanceID = AssetDatabase.GetMainAssetInstanceID("assets");
+						ProjectBrowser.s_LastInteractedProjectBrowser.SetFolderSelection(new int[]
+						{
+							mainAssetInstanceID
+						}, true);
+					}
+					ProjectBrowser.s_LastInteractedProjectBrowser.SetSearch("");
+					ProjectBrowser.s_LastInteractedProjectBrowser.Repaint();
+				}
+			}
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void InternalGetRevisionsData_Injected(bool withChanges, int startIndex, int numRevisions, out RevisionsData ret);
 	}
 }

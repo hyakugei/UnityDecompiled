@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace UnityEditorInternal
 {
-	[Obsolete("StateMachine is obsolete. Use UnityEditor.Animations.AnimatorStateMachine instead (UnityUpgradable) -> UnityEditor.Animations.AnimatorStateMachine", true)]
+	[Obsolete("StateMachine is obsolete. Use UnityEditor.Animations.AnimatorStateMachine instead (UnityUpgradable) -> UnityEditor.Animations.AnimatorStateMachine", true), NativeClass(null)]
 	public class StateMachine : UnityEngine.Object
 	{
 		public State defaultState

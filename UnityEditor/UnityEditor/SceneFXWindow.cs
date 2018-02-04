@@ -10,8 +10,6 @@ namespace UnityEditor
 			public readonly GUIStyle menuItem = "MenuItem";
 		}
 
-		private static SceneFXWindow s_SceneFXWindow;
-
 		private static SceneFXWindow.Styles s_Styles;
 
 		private readonly SceneView m_SceneView;
@@ -25,14 +23,14 @@ namespace UnityEditor
 
 		public override Vector2 GetWindowSize()
 		{
-			float y = 82f;
+			float y = 98f;
 			Vector2 result = new Vector2(160f, y);
 			return result;
 		}
 
 		public override void OnGUI(Rect rect)
 		{
-			if (!(this.m_SceneView == null) && this.m_SceneView.m_SceneViewState != null)
+			if (!(this.m_SceneView == null) && this.m_SceneView.sceneViewState != null)
 			{
 				if (Event.current.type != EventType.Layout)
 				{
@@ -56,10 +54,10 @@ namespace UnityEditor
 
 		private void Draw(Rect rect)
 		{
-			if (!(this.m_SceneView == null) && this.m_SceneView.m_SceneViewState != null)
+			if (!(this.m_SceneView == null) && this.m_SceneView.sceneViewState != null)
 			{
 				Rect rect2 = new Rect(1f, 1f, rect.width - 2f, 16f);
-				SceneView.SceneViewState state = this.m_SceneView.m_SceneViewState;
+				SceneView.SceneViewState state = this.m_SceneView.sceneViewState;
 				this.DrawListElement(rect2, "Skybox", state.showSkybox, delegate(bool value)
 				{
 					state.showSkybox = value;
@@ -83,6 +81,11 @@ namespace UnityEditor
 				this.DrawListElement(rect2, "Image Effects", state.showImageEffects, delegate(bool value)
 				{
 					state.showImageEffects = value;
+				});
+				rect2.y += 16f;
+				this.DrawListElement(rect2, "Particle Systems", state.showParticleSystems, delegate(bool value)
+				{
+					state.showParticleSystems = value;
 				});
 				rect2.y += 16f;
 			}

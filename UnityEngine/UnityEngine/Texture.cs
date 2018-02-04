@@ -8,22 +8,39 @@ namespace UnityEngine
 	[UsedByNativeCode]
 	public class Texture : Object
 	{
-		public static extern int masterTextureLimit
+		public Hash128 imageContentsHash
+		{
+			get
+			{
+				Hash128 result;
+				this.INTERNAL_get_imageContentsHash(out result);
+				return result;
+			}
+			set
+			{
+				this.INTERNAL_set_imageContentsHash(ref value);
+			}
+		}
+
+		public extern uint updateCount
 		{
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
+		}
+
+		public static extern int masterTextureLimit
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public static extern AnisotropicFiltering anisotropicFiltering
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
@@ -32,11 +49,11 @@ namespace UnityEngine
 		{
 			get
 			{
-				return Texture.Internal_GetWidth(this);
+				return this.GetDataWidth();
 			}
 			set
 			{
-				throw new Exception("not implemented");
+				throw new NotImplementedException();
 			}
 		}
 
@@ -44,11 +61,11 @@ namespace UnityEngine
 		{
 			get
 			{
-				return Texture.Internal_GetHeight(this);
+				return this.GetDataHeight();
 			}
 			set
 			{
-				throw new Exception("not implemented");
+				throw new NotImplementedException();
 			}
 		}
 
@@ -56,50 +73,66 @@ namespace UnityEngine
 		{
 			get
 			{
-				return Texture.Internal_GetDimension(this);
+				return this.GetDimension();
 			}
 			set
 			{
-				throw new Exception("not implemented");
+				throw new NotImplementedException();
 			}
+		}
+
+		public extern TextureWrapMode wrapMode
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public extern TextureWrapMode wrapModeU
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public extern TextureWrapMode wrapModeV
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public extern TextureWrapMode wrapModeW
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
 		}
 
 		public extern FilterMode filterMode
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern int anisoLevel
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		public extern TextureWrapMode wrapMode
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern float mipMapBias
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
@@ -109,44 +142,54 @@ namespace UnityEngine
 			get
 			{
 				Vector2 result;
-				this.INTERNAL_get_texelSize(out result);
+				this.get_texelSize_Injected(out result);
 				return result;
 			}
 		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern void SetGlobalAnisotropicFilteringLimits(int forcedMin, int globalMax);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern int Internal_GetWidth(Texture t);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern int Internal_GetHeight(Texture t);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern TextureDimension Internal_GetDimension(Texture t);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void INTERNAL_get_texelSize(out Vector2 value);
-
-		public IntPtr GetNativeTexturePtr()
+		protected Texture()
 		{
-			IntPtr result;
-			Texture.INTERNAL_CALL_GetNativeTexturePtr(this, out result);
-			return result;
 		}
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_GetNativeTexturePtr(Texture self, out IntPtr value);
+		private extern void INTERNAL_get_imageContentsHash(out Hash128 value);
 
-		[Obsolete("Use GetNativeTexturePtr instead."), GeneratedByOldBindingsGenerator]
+		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern int GetNativeTextureID();
+		private extern void INTERNAL_set_imageContentsHash(ref Hash128 value);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public extern void IncrementUpdateCount();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern void SetGlobalAnisotropicFilteringLimits(int forcedMin, int globalMax);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern int GetDataWidth();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern int GetDataHeight();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern TextureDimension GetDimension();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public extern IntPtr GetNativeTexturePtr();
+
+		[Obsolete("Use GetNativeTexturePtr instead.", false)]
+		public int GetNativeTextureID()
+		{
+			return (int)this.GetNativeTexturePtr();
+		}
+
+		internal UnityException CreateNonReadableException(Texture t)
+		{
+			return new UnityException(string.Format("Texture '{0}' is not readable, the texture memory can not be accessed from scripts. You can make the texture readable in the Texture Import Settings.", t.name));
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void get_texelSize_Injected(out Vector2 ret);
 	}
 }

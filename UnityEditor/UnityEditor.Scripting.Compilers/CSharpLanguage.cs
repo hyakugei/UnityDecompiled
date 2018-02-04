@@ -4,6 +4,7 @@ using ICSharpCode.NRefactory.Visitors;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.RegularExpressions;
 using UnityEditor.Modules;
 
 namespace UnityEditor.Scripting.Compilers
@@ -58,6 +59,10 @@ namespace UnityEditor.Scripting.Compilers
 			}
 		}
 
+		private static Regex _crOnlyRegex = new Regex("\r(?!\n)", RegexOptions.Compiled);
+
+		private static Regex _lfOnlyRegex = new Regex("(?<!\r)\n", RegexOptions.Compiled);
+
 		public override string GetExtensionICanCompile()
 		{
 			return "cs";
@@ -68,7 +73,7 @@ namespace UnityEditor.Scripting.Compilers
 			return "CSharp";
 		}
 
-		internal static CSharpCompiler GetCSharpCompiler(BuildTarget targetPlatform, bool buildingForEditor, string assemblyName)
+		public static CSharpCompiler GetCSharpCompiler(BuildTarget targetPlatform, bool buildingForEditor, string assemblyName)
 		{
 			string targetStringFromBuildTarget = ModuleManager.GetTargetStringFromBuildTarget(targetPlatform);
 			ICompilationExtension compilationExtension = ModuleManager.GetCompilationExtension(targetStringFromBuildTarget);
@@ -93,10 +98,15 @@ namespace UnityEditor.Scripting.Compilers
 			return result;
 		}
 
+		public override bool CompilerRequiresAdditionalReferences()
+		{
+			return true;
+		}
+
 		public override string GetNamespace(string fileName, string definedSymbols)
 		{
 			string result;
-			using (IParser parser = ParserFactory.CreateParser(fileName))
+			using (IParser parser = ParserFactory.CreateParser(ICSharpCode.NRefactory.SupportedLanguage.CSharp, CSharpLanguage.ReadAndConverteNewLines(fileName)))
 			{
 				HashSet<string> hashSet = new HashSet<string>(definedSymbols.Split(new char[]
 				{
@@ -125,6 +135,14 @@ namespace UnityEditor.Scripting.Compilers
 			}
 			result = string.Empty;
 			return result;
+		}
+
+		private static StringReader ReadAndConverteNewLines(string filePath)
+		{
+			string text = File.ReadAllText(filePath);
+			text = CSharpLanguage._crOnlyRegex.Replace(text, "\r\n");
+			text = CSharpLanguage._lfOnlyRegex.Replace(text, "\r\n");
+			return new StringReader(text);
 		}
 	}
 }

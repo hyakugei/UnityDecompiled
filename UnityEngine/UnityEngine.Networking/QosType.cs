@@ -12,6 +12,8 @@ namespace UnityEngine.Networking
 		ReliableSequenced,
 		StateUpdate,
 		ReliableStateUpdate,
-		AllCostDelivery
+		AllCostDelivery,
+		UnreliableFragmentedSequenced,
+		ReliableFragmentedSequenced
 	}
 }

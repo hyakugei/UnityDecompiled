@@ -9,30 +9,34 @@ namespace UnityEditor
 	{
 		private class Styles
 		{
-			public readonly GUIContent size = EditorGUIUtility.TextContent("Size|Size of the render texture in pixels.");
+			public readonly GUIContent size = EditorGUIUtility.TrTextContent("Size", "Size of the render texture in pixels.", null);
 
 			public readonly GUIContent cross = EditorGUIUtility.TextContent("x");
 
-			public readonly GUIContent antiAliasing = EditorGUIUtility.TextContent("Anti-Aliasing|Number of anti-aliasing samples.");
+			public readonly GUIContent antiAliasing = EditorGUIUtility.TrTextContent("Anti-Aliasing", "Number of anti-aliasing samples.", null);
 
-			public readonly GUIContent colorFormat = EditorGUIUtility.TextContent("Color Format|Format of the color buffer.");
+			public readonly GUIContent colorFormat = EditorGUIUtility.TrTextContent("Color Format", "Format of the color buffer.", null);
 
-			public readonly GUIContent depthBuffer = EditorGUIUtility.TextContent("Depth Buffer|Format of the depth buffer.");
+			public readonly GUIContent depthBuffer = EditorGUIUtility.TrTextContent("Depth Buffer", "Format of the depth buffer.", null);
 
-			public readonly GUIContent dimension = EditorGUIUtility.TextContent("Dimension|Is the texture 2D, Cube or 3D?");
+			public readonly GUIContent dimension = EditorGUIUtility.TrTextContent("Dimension", "Is the texture 2D, Cube or 3D?", null);
 
-			public readonly GUIContent enableMipmaps = EditorGUIUtility.TextContent("Enable Mip Maps|This render texture will have Mip Maps.");
+			public readonly GUIContent enableMipmaps = EditorGUIUtility.TrTextContent("Enable Mip Maps", "This render texture will have Mip Maps.", null);
 
-			public readonly GUIContent autoGeneratesMipmaps = EditorGUIUtility.TextContent("Auto generate Mip Maps|This render texture automatically generate its Mip Maps.");
+			public readonly GUIContent bindMS = EditorGUIUtility.TrTextContent("Bind multisampled", "If enabled, the texture will not go through an AA resolve if bound to a shader.", null);
 
-			public readonly GUIContent sRGBTexture = EditorGUIUtility.TextContent("sRGB (Color RenderTexture)|RenderTexture content is stored in gamma space. Non-HDR color textures should enable this flag.");
+			public readonly GUIContent autoGeneratesMipmaps = EditorGUIUtility.TrTextContent("Auto generate Mip Maps", "This render texture automatically generate its Mip Maps.", null);
+
+			public readonly GUIContent sRGBTexture = EditorGUIUtility.TrTextContent("sRGB (Color RenderTexture)", "RenderTexture content is stored in gamma space. Non-HDR color textures should enable this flag.", null);
+
+			public readonly GUIContent useDynamicScale = EditorGUIUtility.TrTextContent("Dynamic Scaling", "Allow the texture to be automatically resized by ScalableBufferManager, to support dynamic resolution.", null);
 
 			public readonly GUIContent[] renderTextureAntiAliasing = new GUIContent[]
 			{
-				new GUIContent("None"),
-				new GUIContent("2 samples"),
-				new GUIContent("4 samples"),
-				new GUIContent("8 samples")
+				EditorGUIUtility.TrTextContent("None", null, null),
+				EditorGUIUtility.TrTextContent("2 samples", null, null),
+				EditorGUIUtility.TrTextContent("4 samples", null, null),
+				EditorGUIUtility.TrTextContent("8 samples", null, null)
 			};
 
 			public readonly int[] renderTextureAntiAliasingValues = new int[]
@@ -47,7 +51,7 @@ namespace UnityEditor
 			{
 				EditorGUIUtility.TextContent("2D"),
 				EditorGUIUtility.TextContent("Cube"),
-				EditorGUIUtility.TextContent("3D")
+				EditorGUIUtility.TrTextContent("3D", null, null)
 			};
 
 			public readonly int[] dimensionValues = new int[]
@@ -90,6 +94,8 @@ namespace UnityEditor
 
 		private SerializedProperty m_sRGB;
 
+		private SerializedProperty m_UseDynamicScale;
+
 		private static RenderTextureEditor.Styles styles
 		{
 			get
@@ -115,6 +121,7 @@ namespace UnityEditor
 			this.m_AutoGeneratesMipmaps = base.serializedObject.FindProperty("m_GenerateMips");
 			this.m_Dimension = base.serializedObject.FindProperty("m_Dimension");
 			this.m_sRGB = base.serializedObject.FindProperty("m_SRGB");
+			this.m_UseDynamicScale = base.serializedObject.FindProperty("m_UseDynamicScale");
 		}
 
 		public static bool IsHDRFormat(RenderTextureFormat format)
@@ -174,6 +181,7 @@ namespace UnityEditor
 			{
 				EditorGUILayout.HelpBox("3D RenderTextures do not support Mip Maps.", MessageType.Info);
 			}
+			EditorGUILayout.PropertyField(this.m_UseDynamicScale, RenderTextureEditor.styles.useDynamicScale, new GUILayoutOption[0]);
 			RenderTexture renderTexture = base.target as RenderTexture;
 			if (GUI.changed && renderTexture != null)
 			{

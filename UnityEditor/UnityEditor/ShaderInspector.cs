@@ -14,19 +14,19 @@ namespace UnityEditor
 
 			public static Texture2D warningIcon = EditorGUIUtility.LoadIcon("console.warnicon.sml");
 
-			public static GUIContent showSurface = EditorGUIUtility.TextContent("Show generated code|Show generated code of a surface shader");
+			public static GUIContent showSurface = EditorGUIUtility.TrTextContent("Show generated code", "Show generated code of a surface shader", null);
 
-			public static GUIContent showFF = EditorGUIUtility.TextContent("Show generated code|Show generated code of a fixed function shader");
+			public static GUIContent showFF = EditorGUIUtility.TrTextContent("Show generated code", "Show generated code of a fixed function shader", null);
 
-			public static GUIContent showCurrent = new GUIContent("Compile and show code | ▾");
+			public static GUIContent showCurrent = EditorGUIUtility.TrTextContent("Compile and show code | ▾", null, null);
 
 			public static GUIStyle messageStyle = "CN StatusInfo";
 
 			public static GUIStyle evenBackground = "CN EntryBackEven";
 
-			public static GUIContent no = EditorGUIUtility.TextContent("no");
+			public static GUIContent no = EditorGUIUtility.TrTextContent("no", null, null);
 
-			public static GUIContent builtinShader = EditorGUIUtility.TextContent("Built-in shader");
+			public static GUIContent builtinShader = EditorGUIUtility.TrTextContent("Built-in shader", null, null);
 		}
 
 		private static readonly string[] kPropertyTypes = new string[]
@@ -179,7 +179,7 @@ namespace UnityEditor
 					current.Use();
 					GenericMenu genericMenu = new GenericMenu();
 					int errorIndex = i;
-					genericMenu.AddItem(new GUIContent("Copy error text"), false, delegate
+					genericMenu.AddItem(EditorGUIUtility.TrTextContent("Copy error text", null, null), false, delegate
 					{
 						string text = errors[errorIndex].message;
 						if (!string.IsNullOrEmpty(errors[errorIndex].messageDetails))

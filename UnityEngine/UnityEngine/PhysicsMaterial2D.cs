@@ -1,6 +1,5 @@
 using System;
 using System.Runtime.CompilerServices;
-using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
@@ -8,36 +7,31 @@ namespace UnityEngine
 	{
 		public extern float bounciness
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern float friction
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public PhysicsMaterial2D()
 		{
-			PhysicsMaterial2D.Internal_Create(this, null);
+			PhysicsMaterial2D.Create_Internal(this, null);
 		}
 
 		public PhysicsMaterial2D(string name)
 		{
-			PhysicsMaterial2D.Internal_Create(this, name);
+			PhysicsMaterial2D.Create_Internal(this, name);
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void Internal_Create([Writable] PhysicsMaterial2D mat, string name);
+		private static extern void Create_Internal([Writable] PhysicsMaterial2D scriptMaterial, string name);
 	}
 }

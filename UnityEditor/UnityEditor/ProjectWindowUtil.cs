@@ -1,8 +1,11 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using UnityEditor.ProjectWindowCallback;
 using UnityEditorInternal;
 using UnityEngine;
@@ -17,6 +20,9 @@ namespace UnityEditor
 
 		internal static string k_IsFolderGenericData = "IsFolder";
 
+		[CompilerGenerated]
+		private static Func<string, UnityEngine.Object> <>f__mg$cache0;
+
 		[MenuItem("Assets/Create/GUI Skin", false, 601)]
 		public static void CreateNewGUISkin()
 		{
@@ -28,7 +34,7 @@ namespace UnityEditor
 			}
 			else
 			{
-				Debug.LogError("Internal error: unable to load builtin GUIskin");
+				UnityEngine.Debug.LogError("Internal error: unable to load builtin GUIskin");
 			}
 			ProjectWindowUtil.CreateAsset(gUISkin, "New GUISkin.guiskin");
 		}
@@ -68,14 +74,28 @@ namespace UnityEditor
 			ProjectWindowUtil.StartNameEditingIfProjectWindowExists(0, ScriptableObject.CreateInstance<DoCreateFolder>(), "New Folder", EditorGUIUtility.IconContent(EditorResourcesUtility.emptyFolderIconName).image as Texture2D, null);
 		}
 
+		internal static void CreateFolderWithTemplates(string defaultName, params string[] templates)
+		{
+			DoCreateFolderWithTemplates doCreateFolderWithTemplates = ScriptableObject.CreateInstance<DoCreateFolderWithTemplates>();
+			doCreateFolderWithTemplates.templates = templates;
+			ProjectWindowUtil.StartNameEditingIfProjectWindowExists(0, doCreateFolderWithTemplates, defaultName, EditorGUIUtility.IconContent(EditorResourcesUtility.emptyFolderIconName).image as Texture2D, null);
+		}
+
 		public static void CreateScene()
 		{
-			ProjectWindowUtil.StartNameEditingIfProjectWindowExists(0, ScriptableObject.CreateInstance<DoCreateScene>(), "New Scene.unity", EditorGUIUtility.FindTexture("SceneAsset Icon"), null);
+			ProjectWindowUtil.StartNameEditingIfProjectWindowExists(0, ScriptableObject.CreateInstance<DoCreateScene>(), "New Scene.unity", EditorGUIUtility.FindTexture(typeof(SceneAsset)), null);
 		}
 
 		public static void CreatePrefab()
 		{
 			ProjectWindowUtil.StartNameEditingIfProjectWindowExists(0, ScriptableObject.CreateInstance<DoCreatePrefab>(), "New Prefab.prefab", EditorGUIUtility.IconContent("Prefab Icon").image as Texture2D, null);
+		}
+
+		public static void CreateAssetWithContent(string filename, string content, Texture2D icon = null, string resourceFile = null)
+		{
+			DoCreateAssetWithContent doCreateAssetWithContent = ScriptableObject.CreateInstance<DoCreateAssetWithContent>();
+			doCreateAssetWithContent.filecontent = content;
+			ProjectWindowUtil.StartNameEditingIfProjectWindowExists(0, doCreateAssetWithContent, filename, icon, resourceFile);
 		}
 
 		private static void CreateScriptAsset(string templatePath, string destName)
@@ -104,26 +124,31 @@ namespace UnityEditor
 				if (extension == ".js")
 				{
 					icon = (EditorGUIUtility.IconContent("js Script Icon").image as Texture2D);
-					goto IL_184;
+					goto IL_1AF;
 				}
 				if (extension == ".cs")
 				{
 					icon = (EditorGUIUtility.IconContent("cs Script Icon").image as Texture2D);
-					goto IL_184;
+					goto IL_1AF;
 				}
 				if (extension == ".boo")
 				{
 					icon = (EditorGUIUtility.IconContent("boo Script Icon").image as Texture2D);
-					goto IL_184;
+					goto IL_1AF;
 				}
 				if (extension == ".shader")
 				{
 					icon = (EditorGUIUtility.IconContent("Shader Icon").image as Texture2D);
-					goto IL_184;
+					goto IL_1AF;
+				}
+				if (extension == ".asmdef")
+				{
+					icon = (EditorGUIUtility.IconContent("AssemblyDefinitionAsset Icon").image as Texture2D);
+					goto IL_1AF;
 				}
 			}
 			icon = (EditorGUIUtility.IconContent("TextAsset Icon").image as Texture2D);
-			IL_184:
+			IL_1AF:
 			ProjectWindowUtil.StartNameEditingIfProjectWindowExists(0, ScriptableObject.CreateInstance<DoCreateScriptAsset>(), destName, icon, templatePath);
 		}
 
@@ -190,9 +215,47 @@ namespace UnityEditor
 			ProjectWindowUtil.StartNameEditingIfProjectWindowExists(0, doCreateSpritePolygon, str + ".png", icon, null);
 		}
 
+		internal static string SetLineEndings(string content, LineEndingsMode lineEndingsMode)
+		{
+			string replacement;
+			switch (lineEndingsMode)
+			{
+			case LineEndingsMode.OSNative:
+				if (Application.platform == RuntimePlatform.WindowsEditor)
+				{
+					replacement = "\r\n";
+				}
+				else
+				{
+					replacement = "\n";
+				}
+				break;
+			case LineEndingsMode.Unix:
+				replacement = "\n";
+				break;
+			case LineEndingsMode.Windows:
+				replacement = "\r\n";
+				break;
+			default:
+				replacement = "\n";
+				break;
+			}
+			content = Regex.Replace(content, "\\r\\n?|\\n", replacement);
+			return content;
+		}
+
+		internal static UnityEngine.Object CreateScriptAssetWithContent(string pathName, string templateContent)
+		{
+			templateContent = ProjectWindowUtil.SetLineEndings(templateContent, EditorSettings.lineEndingsForNewScripts);
+			string fullPath = Path.GetFullPath(pathName);
+			UTF8Encoding encoding = new UTF8Encoding(true);
+			File.WriteAllText(fullPath, templateContent, encoding);
+			AssetDatabase.ImportAsset(pathName);
+			return AssetDatabase.LoadAssetAtPath(pathName, typeof(UnityEngine.Object));
+		}
+
 		internal static UnityEngine.Object CreateScriptAssetFromTemplate(string pathName, string resourceFile)
 		{
-			string fullPath = Path.GetFullPath(pathName);
 			string text = File.ReadAllText(resourceFile);
 			text = text.Replace("#NOTRIM#", "");
 			string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(pathName);
@@ -209,10 +272,7 @@ namespace UnityEditor
 				text2 = "my" + char.ToUpper(text2[0]) + text2.Substring(1);
 				text = text.Replace("#SCRIPTNAME_LOWER#", text2);
 			}
-			UTF8Encoding encoding = new UTF8Encoding(true);
-			File.WriteAllText(fullPath, text, encoding);
-			AssetDatabase.ImportAsset(pathName);
-			return AssetDatabase.LoadAssetAtPath(pathName, typeof(UnityEngine.Object));
+			return ProjectWindowUtil.CreateScriptAssetWithContent(pathName, text);
 		}
 
 		public static void StartNameEditingIfProjectWindowExists(int instanceID, EndNameEditAction endAction, string pathName, Texture2D icon, string resourceFile)
@@ -261,7 +321,6 @@ namespace UnityEditor
 			if (ProjectWindowUtil.IsFavoritesItem(draggedInstanceID))
 			{
 				DragAndDrop.SetGenericData(ProjectWindowUtil.k_DraggingFavoriteGenericData, draggedInstanceID);
-				DragAndDrop.objectReferences = new UnityEngine.Object[0];
 			}
 			else
 			{
@@ -288,6 +347,10 @@ namespace UnityEditor
 		internal static UnityEngine.Object[] GetDragAndDropObjects(int draggedInstanceID, List<int> selectedInstanceIDs)
 		{
 			List<UnityEngine.Object> list = new List<UnityEngine.Object>(selectedInstanceIDs.Count);
+			if ((Event.current.control || Event.current.command) && !selectedInstanceIDs.Contains(draggedInstanceID))
+			{
+				selectedInstanceIDs.Add(draggedInstanceID);
+			}
 			if (selectedInstanceIDs.Contains(draggedInstanceID))
 			{
 				for (int i = 0; i < selectedInstanceIDs.Count; i++)
@@ -329,6 +392,11 @@ namespace UnityEditor
 				{
 					result = list.ToArray();
 				}
+				else if (Event.current.control || Event.current.command)
+				{
+					list.Add(assetPath2);
+					result = list.ToArray();
+				}
 				else
 				{
 					result = new string[]
@@ -347,18 +415,18 @@ namespace UnityEditor
 		public static int[] GetAncestors(int instanceID)
 		{
 			List<int> list = new List<int>();
-			int mainAssetInstanceID = AssetDatabase.GetMainAssetInstanceID(AssetDatabase.GetAssetPath(instanceID));
-			bool flag = mainAssetInstanceID != instanceID;
+			int mainAssetOrInProgressProxyInstanceID = AssetDatabase.GetMainAssetOrInProgressProxyInstanceID(AssetDatabase.GetAssetPath(instanceID));
+			bool flag = mainAssetOrInProgressProxyInstanceID != instanceID;
 			if (flag)
 			{
-				list.Add(mainAssetInstanceID);
+				list.Add(mainAssetOrInProgressProxyInstanceID);
 			}
-			string containingFolder = ProjectWindowUtil.GetContainingFolder(AssetDatabase.GetAssetPath(mainAssetInstanceID));
+			string containingFolder = ProjectWindowUtil.GetContainingFolder(AssetDatabase.GetAssetPath(mainAssetOrInProgressProxyInstanceID));
 			while (!string.IsNullOrEmpty(containingFolder))
 			{
-				int mainAssetInstanceID2 = AssetDatabase.GetMainAssetInstanceID(containingFolder);
-				list.Add(mainAssetInstanceID2);
-				containingFolder = ProjectWindowUtil.GetContainingFolder(AssetDatabase.GetAssetPath(mainAssetInstanceID2));
+				int mainAssetOrInProgressProxyInstanceID2 = AssetDatabase.GetMainAssetOrInProgressProxyInstanceID(containingFolder);
+				list.Add(mainAssetOrInProgressProxyInstanceID2);
+				containingFolder = ProjectWindowUtil.GetContainingFolder(AssetDatabase.GetAssetPath(mainAssetOrInProgressProxyInstanceID2));
 			}
 			return list.ToArray();
 		}
@@ -444,70 +512,124 @@ namespace UnityEditor
 
 		internal static void DuplicateSelectedAssets()
 		{
-			AssetDatabase.Refresh();
-			UnityEngine.Object[] objects = Selection.objects;
-			bool flag = true;
-			UnityEngine.Object[] array = objects;
-			for (int i = 0; i < array.Length; i++)
+			Selection.objects = ProjectWindowUtil.DuplicateAssets(Selection.objects).ToArray<UnityEngine.Object>();
+		}
+
+		internal static bool DeleteAssets(List<int> instanceIDs, bool askIfSure)
+		{
+			bool result;
+			if (instanceIDs.Count == 0)
 			{
-				UnityEngine.Object @object = array[i];
-				AnimationClip animationClip = @object as AnimationClip;
-				if (animationClip == null || (animationClip.hideFlags & HideFlags.NotEditable) == HideFlags.None || !AssetDatabase.Contains(animationClip))
-				{
-					flag = false;
-				}
-			}
-			ArrayList arrayList = new ArrayList();
-			bool flag2 = false;
-			if (flag)
-			{
-				UnityEngine.Object[] array2 = objects;
-				for (int j = 0; j < array2.Length; j++)
-				{
-					UnityEngine.Object object2 = array2[j];
-					AnimationClip animationClip2 = object2 as AnimationClip;
-					if (animationClip2 != null && (animationClip2.hideFlags & HideFlags.NotEditable) != HideFlags.None)
-					{
-						string path = AssetDatabase.GetAssetPath(object2);
-						path = Path.Combine(Path.GetDirectoryName(path), animationClip2.name) + ".anim";
-						string text = AssetDatabase.GenerateUniqueAssetPath(path);
-						AnimationClip animationClip3 = new AnimationClip();
-						EditorUtility.CopySerialized(animationClip2, animationClip3);
-						AssetDatabase.CreateAsset(animationClip3, text);
-						arrayList.Add(text);
-					}
-				}
+				result = true;
 			}
 			else
 			{
-				UnityEngine.Object[] filtered = Selection.GetFiltered(typeof(UnityEngine.Object), SelectionMode.Assets);
-				UnityEngine.Object[] array3 = filtered;
-				for (int k = 0; k < array3.Length; k++)
+				bool flag = instanceIDs.IndexOf(ProjectBrowserColumnOneTreeViewDataSource.GetAssetsFolderInstanceID()) >= 0;
+				if (flag)
 				{
-					UnityEngine.Object assetObject = array3[k];
-					string assetPath = AssetDatabase.GetAssetPath(assetObject);
-					string text2 = AssetDatabase.GenerateUniqueAssetPath(assetPath);
-					if (text2.Length != 0)
+					string title = "Cannot Delete";
+					EditorUtility.DisplayDialog(title, "Deleting the 'Assets' folder is not allowed", "Ok");
+					result = false;
+				}
+				else
+				{
+					List<string> list = ProjectWindowUtil.GetMainPathsOfAssets(instanceIDs).ToList<string>();
+					if (list.Count == 0)
 					{
-						flag2 |= !AssetDatabase.CopyAsset(assetPath, text2);
+						result = false;
 					}
 					else
 					{
-						flag2 |= true;
+						if (askIfSure)
+						{
+							string text = "Delete selected asset";
+							if (list.Count > 1)
+							{
+								text += "s";
+							}
+							text += "?";
+							int num = 3;
+							string text2 = "";
+							int num2 = 0;
+							while (num2 < list.Count && num2 < num)
+							{
+								text2 = text2 + "   " + list[num2] + "\n";
+								num2++;
+							}
+							if (list.Count > num)
+							{
+								text2 += "   ...\n";
+							}
+							text2 += "\nYou cannot undo this action.";
+							if (!EditorUtility.DisplayDialog(text, text2, "Delete", "Cancel"))
+							{
+								result = false;
+								return result;
+							}
+						}
+						bool flag2 = true;
+						AssetDatabase.StartAssetEditing();
+						foreach (string current in list)
+						{
+							if (!AssetDatabase.MoveAssetToTrash(current))
+							{
+								flag2 = false;
+							}
+						}
+						AssetDatabase.StopAssetEditing();
+						result = flag2;
 					}
-					if (!flag2)
+				}
+			}
+			return result;
+		}
+
+		internal static IEnumerable<UnityEngine.Object> DuplicateAssets(IEnumerable<UnityEngine.Object> assets)
+		{
+			AssetDatabase.Refresh();
+			List<string> list = new List<string>();
+			foreach (UnityEngine.Object current in assets)
+			{
+				string assetPath = AssetDatabase.GetAssetPath(current);
+				if (AssetDatabase.IsSubAsset(current))
+				{
+					string extensionForAsset = NativeFormatImporterUtility.GetExtensionForAsset(current);
+					string text = AssetDatabase.GenerateUniqueAssetPath(Path.Combine(Path.GetDirectoryName(assetPath), string.Format("{0}.{1}", current.name, extensionForAsset)));
+					AssetDatabase.CreateAsset(UnityEngine.Object.Instantiate(current), text);
+					list.Add(text);
+				}
+				else if (EditorUtility.IsPersistent(current))
+				{
+					string text2 = AssetDatabase.GenerateUniqueAssetPath(assetPath);
+					if (text2.Length > 0 && AssetDatabase.CopyAsset(assetPath, text2))
 					{
-						arrayList.Add(text2);
+						list.Add(text2);
 					}
 				}
 			}
 			AssetDatabase.Refresh();
-			UnityEngine.Object[] array4 = new UnityEngine.Object[arrayList.Count];
-			for (int l = 0; l < arrayList.Count; l++)
+			IEnumerable<string> arg_F3_0 = list;
+			if (ProjectWindowUtil.<>f__mg$cache0 == null)
 			{
-				array4[l] = AssetDatabase.LoadMainAssetAtPath(arrayList[l] as string);
+				ProjectWindowUtil.<>f__mg$cache0 = new Func<string, UnityEngine.Object>(AssetDatabase.LoadMainAssetAtPath);
 			}
-			Selection.objects = array4;
+			return arg_F3_0.Select(ProjectWindowUtil.<>f__mg$cache0);
+		}
+
+		internal static IEnumerable<UnityEngine.Object> DuplicateAssets(IEnumerable<int> instanceIDs)
+		{
+			return ProjectWindowUtil.DuplicateAssets(from id in instanceIDs
+			select EditorUtility.InstanceIDToObject(id));
+		}
+
+		[DebuggerHidden]
+		internal static IEnumerable<string> GetMainPathsOfAssets(IEnumerable<int> instanceIDs)
+		{
+			ProjectWindowUtil.<GetMainPathsOfAssets>c__Iterator0 <GetMainPathsOfAssets>c__Iterator = new ProjectWindowUtil.<GetMainPathsOfAssets>c__Iterator0();
+			<GetMainPathsOfAssets>c__Iterator.instanceIDs = instanceIDs;
+			ProjectWindowUtil.<GetMainPathsOfAssets>c__Iterator0 expr_0E = <GetMainPathsOfAssets>c__Iterator;
+			expr_0E.$PC = -2;
+			return expr_0E;
 		}
 	}
 }

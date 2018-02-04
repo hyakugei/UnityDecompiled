@@ -6,6 +6,7 @@ namespace UnityEngine.Rendering
 	{
 		Off,
 		BlendProbes,
-		UseProxyVolume
+		UseProxyVolume,
+		CustomProvided = 4
 	}
 }

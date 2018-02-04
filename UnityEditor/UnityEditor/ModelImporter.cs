@@ -1,120 +1,143 @@
 using System;
 using System.Runtime.CompilerServices;
 using UnityEngine;
-using UnityEngine.Scripting;
+using UnityEngine.Bindings;
 
 namespace UnityEditor
 {
+	[NativeType(Header = "Editor/Src/AssetPipeline/ModelImporting/ModelImporter.h")]
 	public class ModelImporter : AssetImporter
 	{
 		[Obsolete("Use importMaterials, materialName and materialSearch instead")]
 		public extern ModelImporterGenerateMaterials generateMaterials
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern bool importMaterials
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern ModelImporterMaterialName materialName
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern ModelImporterMaterialSearch materialSearch
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
-		public extern float globalScale
+		public extern ModelImporterMaterialLocation materialLocation
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		internal extern AssetImporter.SourceAssetIdentifier[] sourceMaterials
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+		}
+
+		public extern float globalScale
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern bool isUseFileUnitsSupported
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
 
-		public extern bool useFileUnits
+		public extern bool importVisibility
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
-		public extern float fileScale
+		public extern bool useFileUnits
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
 		}
 
-		public extern bool isFileScaleUsed
+		public extern bool useFileScale
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		[Obsolete("Use useFileScale instead")]
+		public bool isFileScaleUsed
+		{
+			get
+			{
+				return this.useFileScale;
+			}
 		}
 
 		public extern bool importBlendShapes
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public extern bool importCameras
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public extern bool importLights
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern bool addCollider
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern float normalSmoothingAngle
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
@@ -141,190 +164,188 @@ namespace UnityEditor
 
 		public extern bool swapUVChannels
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern bool weldVertices
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern bool keepQuads
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public extern ModelImporterIndexFormat indexFormat
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public extern bool preserveHierarchy
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern bool generateSecondaryUV
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern float secondaryUVAngleDistortion
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern float secondaryUVAreaDistortion
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern float secondaryUVHardAngle
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern float secondaryUVPackMargin
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern ModelImporterGenerateAnimations generateAnimations
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern TakeInfo[] importedTakeInfos
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
 
 		public extern string[] transformPaths
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
 
-		public extern string[] referencedClips
+		public string[] referencedClips
 		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
+			get
+			{
+				return ModelImporter.INTERNAL_GetReferencedClips(this);
+			}
 		}
 
 		public extern bool isReadable
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern bool optimizeMesh
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		[Obsolete("normalImportMode is deprecated. Use importNormals instead")]
-		public extern ModelImporterTangentSpaceMode normalImportMode
+		public ModelImporterTangentSpaceMode normalImportMode
 		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
+			get
+			{
+				return (ModelImporterTangentSpaceMode)this.importNormals;
+			}
+			set
+			{
+				this.importNormals = (ModelImporterNormals)value;
+			}
 		}
 
 		[Obsolete("tangentImportMode is deprecated. Use importTangents instead")]
-		public extern ModelImporterTangentSpaceMode tangentImportMode
+		public ModelImporterTangentSpaceMode tangentImportMode
 		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
+			get
+			{
+				return (ModelImporterTangentSpaceMode)this.importTangents;
+			}
+			set
+			{
+				this.importTangents = (ModelImporterTangents)value;
+			}
 		}
 
 		public extern ModelImporterNormals importNormals
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public extern ModelImporterNormalCalculationMode normalCalculationMode
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern ModelImporterTangents importTangents
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern bool bakeIK
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern bool isBakeIKSupported
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
@@ -332,27 +353,22 @@ namespace UnityEditor
 		[Obsolete("use resampleCurves instead.")]
 		public extern bool resampleRotations
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern bool resampleCurves
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern bool isTangentImportSupported
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
@@ -369,122 +385,142 @@ namespace UnityEditor
 			}
 		}
 
-		public extern ModelImporterMeshCompression meshCompression
+		public ModelImporterMeshCompression meshCompression
 		{
-			[GeneratedByOldBindingsGenerator]
+			get
+			{
+				return (ModelImporterMeshCompression)this.internal_meshCompression;
+			}
+			set
+			{
+				this.internal_meshCompression = (int)value;
+			}
+		}
+
+		private extern int internal_meshCompression
+		{
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern bool importAnimation
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern bool optimizeGameObjects
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
-		public extern string[] extraExposedTransformPaths
+		public string[] extraExposedTransformPaths
 		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
+			get
+			{
+				return this.GetExtraExposedTransformPaths();
+			}
+			set
+			{
+				ModelImporter.INTERNAL_set_extraExposedTransformPaths(this, value);
+			}
+		}
+
+		public string[] extraUserProperties
+		{
+			get
+			{
+				return this.GetExtraUserProperties();
+			}
+			set
+			{
+				ModelImporter.INTERNAL_set_extraUserProperties(this, value);
+			}
 		}
 
 		public extern ModelImporterAnimationCompression animationCompression
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public extern bool importAnimatedCustomProperties
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public extern bool importConstraints
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern float animationRotationError
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern float animationPositionError
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern float animationScaleError
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern WrapMode animationWrapMode
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern ModelImporterAnimationType animationType
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern ModelImporterHumanoidOversampling humanoidOversampling
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern string motionNodeName
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
@@ -493,11 +529,11 @@ namespace UnityEditor
 		{
 			get
 			{
-				return this.sourceAvatarInternal;
+				return this.GetSourceAvatar();
 			}
 			set
 			{
-				Avatar sourceAvatarInternal = value;
+				Avatar value2 = value;
 				if (value != null)
 				{
 					ModelImporter modelImporter = AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(value)) as ModelImporter;
@@ -508,21 +544,11 @@ namespace UnityEditor
 					else
 					{
 						Debug.LogError("Avatar must be from a ModelImporter, otherwise use ModelImporter.humanDescription");
-						sourceAvatarInternal = null;
+						value2 = null;
 					}
 				}
-				this.sourceAvatarInternal = sourceAvatarInternal;
+				ModelImporter.SetSourceAvatarInternal(this, value2);
 			}
-		}
-
-		internal extern Avatar sourceAvatarInternal
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
 		}
 
 		public HumanDescription humanDescription
@@ -530,12 +556,12 @@ namespace UnityEditor
 			get
 			{
 				HumanDescription result;
-				this.INTERNAL_get_humanDescription(out result);
+				this.get_humanDescription_Injected(out result);
 				return result;
 			}
 			set
 			{
-				this.INTERNAL_set_humanDescription(ref value);
+				this.set_humanDescription_Injected(ref value);
 			}
 		}
 
@@ -551,51 +577,71 @@ namespace UnityEditor
 			}
 		}
 
-		public extern ModelImporterClipAnimation[] clipAnimations
+		public ModelImporterClipAnimation[] clipAnimations
 		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
+			get
+			{
+				return ModelImporter.GetClipAnimations(this);
+			}
+			set
+			{
+				ModelImporter.SetClipAnimations(this, value);
+			}
 		}
 
-		public extern ModelImporterClipAnimation[] defaultClipAnimations
+		public ModelImporterClipAnimation[] defaultClipAnimations
 		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
+			get
+			{
+				return ModelImporter.GetDefaultClipAnimations(this);
+			}
 		}
 
 		internal extern bool isAssetOlderOr42
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void INTERNAL_get_humanDescription(out HumanDescription value);
+		private static extern string[] INTERNAL_GetReferencedClips(ModelImporter self);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void INTERNAL_set_humanDescription(ref HumanDescription value);
+		private extern string[] GetExtraExposedTransformPaths();
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern void UpdateSkeletonPose(SkeletonBone[] skeletonBones, SerializedProperty serializedProperty);
+		private static extern void INTERNAL_set_extraExposedTransformPaths([Writable] ModelImporter self, string[] value);
 
-		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern string[] GetExtraUserProperties();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void INTERNAL_set_extraUserProperties([Writable] ModelImporter self, string[] value);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern Avatar GetSourceAvatar();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void SetSourceAvatarInternal(ModelImporter self, Avatar value);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern ModelImporterClipAnimation[] GetClipAnimations(ModelImporter self);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void SetClipAnimations([Writable] ModelImporter self, ModelImporterClipAnimation[] value);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern ModelImporterClipAnimation[] GetDefaultClipAnimations(ModelImporter self);
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern void UpdateTransformMask(AvatarMask mask, SerializedProperty serializedProperty);
 
-		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void UpdateSkeletonPose(SkeletonBone[] skeletonBones, [NotNull] SerializedProperty serializedProperty);
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern AnimationClip GetPreviewAnimationClipForTake(string takeName);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern string CalculateBestFittingPreviewGameObject();
 
@@ -613,5 +659,26 @@ namespace UnityEditor
 				Debug.LogError("Cannot create default mask because the current importer doesn't have any animation information");
 			}
 		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern bool ExtractTexturesInternal(string folderPath);
+
+		public bool ExtractTextures(string folderPath)
+		{
+			if (string.IsNullOrEmpty(folderPath))
+			{
+				throw new ArgumentException("The path cannot be empty", folderPath);
+			}
+			return this.ExtractTexturesInternal(folderPath);
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public extern bool SearchAndRemapMaterials(ModelImporterMaterialName nameOption, ModelImporterMaterialSearch searchOption);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void get_humanDescription_Injected(out HumanDescription ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void set_humanDescription_Injected(ref HumanDescription value);
 	}
 }

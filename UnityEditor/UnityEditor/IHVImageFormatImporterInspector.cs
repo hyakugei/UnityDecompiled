@@ -1,18 +1,21 @@
 using System;
+using UnityEditor.Experimental.AssetImporters;
 using UnityEngine;
 
 namespace UnityEditor
 {
 	[CanEditMultipleObjects, CustomEditor(typeof(IHVImageFormatImporter))]
-	internal class IHVImageFormatImporterInspector : AssetImporterInspector
+	internal class IHVImageFormatImporterInspector : AssetImporterEditor
 	{
 		internal class Styles
 		{
-			public static readonly GUIContent readWrite = EditorGUIUtility.TextContent("Read/Write Enabled|Enable to be able to access the raw pixel data from code.");
+			public static readonly GUIContent readWrite = EditorGUIUtility.TrTextContent("Read/Write Enabled", "Enable to be able to access the raw pixel data from code.", null);
 
-			public static readonly GUIContent wrapMode = EditorGUIUtility.TextContent("Wrap Mode");
+			public static readonly GUIContent sRGBTexture = EditorGUIUtility.TrTextContent("sRGB (Color Texture)", "Texture content is stored in gamma space. Non-HDR color textures should enable this flag (except if used for IMGUI).", null);
 
-			public static readonly GUIContent filterMode = EditorGUIUtility.TextContent("Filter Mode");
+			public static readonly GUIContent wrapMode = EditorGUIUtility.TrTextContent("Wrap Mode", null, null);
+
+			public static readonly GUIContent filterMode = EditorGUIUtility.TrTextContent("Filter Mode", null, null);
 
 			public static readonly int[] filterModeValues = new int[]
 			{
@@ -25,17 +28,25 @@ namespace UnityEditor
 			{
 				EditorGUIUtility.TextContent("Point (no filter)"),
 				EditorGUIUtility.TextContent("Bilinear"),
-				EditorGUIUtility.TextContent("Trilinear")
+				EditorGUIUtility.TrTextContent("Trilinear", null, null)
 			};
 		}
 
 		private SerializedProperty m_IsReadable;
 
+		private SerializedProperty m_sRGBTexture;
+
 		private SerializedProperty m_FilterMode;
 
-		private SerializedProperty m_WrapMode;
+		private SerializedProperty m_WrapU;
 
-		internal override bool showImportedObject
+		private SerializedProperty m_WrapV;
+
+		private SerializedProperty m_WrapW;
+
+		private bool m_ShowPerAxisWrapModes = false;
+
+		public override bool showImportedObject
 		{
 			get
 			{
@@ -43,39 +54,21 @@ namespace UnityEditor
 			}
 		}
 
-		public virtual void OnEnable()
+		public override void OnEnable()
 		{
 			this.m_IsReadable = base.serializedObject.FindProperty("m_IsReadable");
+			this.m_sRGBTexture = base.serializedObject.FindProperty("m_sRGBTexture");
 			this.m_FilterMode = base.serializedObject.FindProperty("m_TextureSettings.m_FilterMode");
-			this.m_WrapMode = base.serializedObject.FindProperty("m_TextureSettings.m_WrapMode");
-		}
-
-		public void IsReadableGUI()
-		{
-			Rect controlRect = EditorGUILayout.GetControlRect(new GUILayoutOption[0]);
-			EditorGUI.BeginProperty(controlRect, IHVImageFormatImporterInspector.Styles.readWrite, this.m_IsReadable);
-			EditorGUI.BeginChangeCheck();
-			bool boolValue = EditorGUI.Toggle(controlRect, IHVImageFormatImporterInspector.Styles.readWrite, this.m_IsReadable.boolValue);
-			if (EditorGUI.EndChangeCheck())
-			{
-				this.m_IsReadable.boolValue = boolValue;
-			}
-			EditorGUI.EndProperty();
+			this.m_WrapU = base.serializedObject.FindProperty("m_TextureSettings.m_WrapU");
+			this.m_WrapV = base.serializedObject.FindProperty("m_TextureSettings.m_WrapV");
+			this.m_WrapW = base.serializedObject.FindProperty("m_TextureSettings.m_WrapW");
 		}
 
 		public void TextureSettingsGUI()
 		{
+			bool isVolumeTexture = false;
+			TextureInspector.WrapModePopup(this.m_WrapU, this.m_WrapV, this.m_WrapW, isVolumeTexture, ref this.m_ShowPerAxisWrapModes);
 			Rect controlRect = EditorGUILayout.GetControlRect(new GUILayoutOption[0]);
-			EditorGUI.BeginProperty(controlRect, IHVImageFormatImporterInspector.Styles.wrapMode, this.m_WrapMode);
-			EditorGUI.BeginChangeCheck();
-			TextureWrapMode textureWrapMode = (TextureWrapMode)((this.m_WrapMode.intValue != -1) ? this.m_WrapMode.intValue : 0);
-			textureWrapMode = (TextureWrapMode)EditorGUI.EnumPopup(controlRect, IHVImageFormatImporterInspector.Styles.wrapMode, textureWrapMode);
-			if (EditorGUI.EndChangeCheck())
-			{
-				this.m_WrapMode.intValue = (int)textureWrapMode;
-			}
-			EditorGUI.EndProperty();
-			controlRect = EditorGUILayout.GetControlRect(new GUILayoutOption[0]);
 			EditorGUI.BeginProperty(controlRect, IHVImageFormatImporterInspector.Styles.filterMode, this.m_FilterMode);
 			EditorGUI.BeginChangeCheck();
 			FilterMode filterMode = (FilterMode)((this.m_FilterMode.intValue != -1) ? this.m_FilterMode.intValue : 1);
@@ -89,7 +82,8 @@ namespace UnityEditor
 
 		public override void OnInspectorGUI()
 		{
-			this.IsReadableGUI();
+			EditorGUILayout.PropertyField(this.m_IsReadable, IHVImageFormatImporterInspector.Styles.readWrite, new GUILayoutOption[0]);
+			EditorGUILayout.PropertyField(this.m_sRGBTexture, IHVImageFormatImporterInspector.Styles.sRGBTexture, new GUILayoutOption[0]);
 			EditorGUI.BeginChangeCheck();
 			this.TextureSettingsGUI();
 			if (EditorGUI.EndChangeCheck())
@@ -103,9 +97,9 @@ namespace UnityEditor
 					{
 						TextureUtil.SetFilterModeNoDirty(tex, (FilterMode)this.m_FilterMode.intValue);
 					}
-					if (this.m_WrapMode.intValue != -1)
+					if ((this.m_WrapU.intValue != -1 || this.m_WrapV.intValue != -1 || this.m_WrapW.intValue != -1) && !this.m_WrapU.hasMultipleDifferentValues && !this.m_WrapV.hasMultipleDifferentValues && !this.m_WrapW.hasMultipleDifferentValues)
 					{
-						TextureUtil.SetWrapModeNoDirty(tex, (TextureWrapMode)this.m_WrapMode.intValue);
+						TextureUtil.SetWrapModeNoDirty(tex, (TextureWrapMode)this.m_WrapU.intValue, (TextureWrapMode)this.m_WrapV.intValue, (TextureWrapMode)this.m_WrapW.intValue);
 					}
 				}
 				SceneView.RepaintAll();

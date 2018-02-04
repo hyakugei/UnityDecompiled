@@ -19,17 +19,19 @@ namespace UnityEditor
 
 		private static TooltipView s_guiView;
 
-		private void OnEnable()
+		protected override void OnEnable()
 		{
+			base.OnEnable();
 			TooltipView.s_guiView = this;
 		}
 
-		private void OnDisable()
+		protected override void OnDisable()
 		{
+			base.OnDisable();
 			TooltipView.s_guiView = null;
 		}
 
-		private void OnGUI()
+		protected override void OldOnGUI()
 		{
 			if (this.m_tooltipContainer != null)
 			{

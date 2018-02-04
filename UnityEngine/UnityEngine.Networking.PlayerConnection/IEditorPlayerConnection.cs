@@ -3,11 +3,13 @@ using UnityEngine.Events;
 
 namespace UnityEngine.Networking.PlayerConnection
 {
-	internal interface IEditorPlayerConnection
+	public interface IEditorPlayerConnection
 	{
 		void Register(Guid messageId, UnityAction<MessageEventArgs> callback);
 
 		void Unregister(Guid messageId, UnityAction<MessageEventArgs> callback);
+
+		void DisconnectAll();
 
 		void RegisterConnection(UnityAction<int> callback);
 

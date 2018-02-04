@@ -1,6 +1,7 @@
 using System;
 using UnityEditor;
-using UnityEditor.BuildReporting;
+using UnityEditor.Build.Reporting;
+using UnityEditor.Scripting.Compilers;
 
 namespace UnityEditorInternal
 {
@@ -56,6 +57,11 @@ namespace UnityEditorInternal
 			get;
 		}
 
+		bool enableDebugger
+		{
+			get;
+		}
+
 		BuildReport buildReport
 		{
 			get;
@@ -74,5 +80,7 @@ namespace UnityEditorInternal
 		INativeCompiler CreateNativeCompiler();
 
 		Il2CppNativeCodeBuilder CreateIl2CppNativeCodeBuilder();
+
+		CompilerOutputParserBase CreateIl2CppOutputParser();
 	}
 }

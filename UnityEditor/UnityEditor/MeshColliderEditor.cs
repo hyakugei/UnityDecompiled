@@ -8,20 +8,20 @@ namespace UnityEditor
 	{
 		private static class Texts
 		{
-			public static GUIContent isTriggerText = new GUIContent("Is Trigger", "Is this collider a trigger? Triggers are only supported on convex colliders.");
+			public static GUIContent isTriggerText = EditorGUIUtility.TrTextContent("Is Trigger", "Is this collider a trigger? Triggers are only supported on convex colliders.", null);
 
-			public static GUIContent convextText = new GUIContent("Convex", "Is this collider convex?");
+			public static GUIContent convextText = EditorGUIUtility.TrTextContent("Convex", "Is this collider convex?", null);
 
-			public static GUIContent inflateMeshText = new GUIContent("Inflate Mesh", "Should collision generation inflate the mesh.");
+			public static GUIContent skinWidthText = EditorGUIUtility.TrTextContent("Skin Width", "How far out to inflate the mesh when building collision mesh.", null);
 
-			public static GUIContent skinWidthText = new GUIContent("Skin Width", "How far out to inflate the mesh when building collision mesh.");
+			public static GUIContent cookingOptionsText = EditorGUIUtility.TrTextContent("Cooking Options", "Options affecting the result of the mesh processing by the physics engine.", null);
 		}
 
 		private SerializedProperty m_Mesh;
 
 		private SerializedProperty m_Convex;
 
-		private SerializedProperty m_InflateMesh;
+		private SerializedProperty m_CookingOptions;
 
 		private SerializedProperty m_SkinWidth;
 
@@ -30,8 +30,18 @@ namespace UnityEditor
 			base.OnEnable();
 			this.m_Mesh = base.serializedObject.FindProperty("m_Mesh");
 			this.m_Convex = base.serializedObject.FindProperty("m_Convex");
-			this.m_InflateMesh = base.serializedObject.FindProperty("m_InflateMesh");
+			this.m_CookingOptions = base.serializedObject.FindProperty("m_CookingOptions");
 			this.m_SkinWidth = base.serializedObject.FindProperty("m_SkinWidth");
+		}
+
+		private MeshColliderCookingOptions GetCookingOptions()
+		{
+			return (MeshColliderCookingOptions)this.m_CookingOptions.intValue;
+		}
+
+		private void SetCookingOptions(MeshColliderCookingOptions cookingOptions)
+		{
+			this.m_CookingOptions.intValue = (int)cookingOptions;
 		}
 
 		public override void OnInspectorGUI()
@@ -42,25 +52,21 @@ namespace UnityEditor
 			if (EditorGUI.EndChangeCheck() && !this.m_Convex.boolValue)
 			{
 				this.m_IsTrigger.boolValue = false;
+				this.SetCookingOptions(this.GetCookingOptions() & ~MeshColliderCookingOptions.InflateConvexMesh);
 			}
-			EditorGUI.indentLevel++;
-			using (new EditorGUI.DisabledScope(!this.m_Convex.boolValue))
-			{
-				EditorGUILayout.PropertyField(this.m_InflateMesh, MeshColliderEditor.Texts.inflateMeshText, new GUILayoutOption[0]);
-			}
-			EditorGUI.indentLevel++;
-			using (new EditorGUI.DisabledScope(!this.m_InflateMesh.boolValue))
-			{
-				EditorGUILayout.PropertyField(this.m_SkinWidth, MeshColliderEditor.Texts.skinWidthText, new GUILayoutOption[0]);
-			}
-			EditorGUI.indentLevel--;
-			EditorGUI.indentLevel--;
 			EditorGUI.indentLevel++;
 			using (new EditorGUI.DisabledScope(!this.m_Convex.boolValue))
 			{
 				EditorGUILayout.PropertyField(this.m_IsTrigger, MeshColliderEditor.Texts.isTriggerText, new GUILayoutOption[0]);
 			}
 			EditorGUI.indentLevel--;
+			if (this.m_Convex.boolValue && (this.GetCookingOptions() & MeshColliderCookingOptions.InflateConvexMesh) != MeshColliderCookingOptions.None)
+			{
+				EditorGUI.indentLevel++;
+				EditorGUILayout.PropertyField(this.m_SkinWidth, MeshColliderEditor.Texts.skinWidthText, new GUILayoutOption[0]);
+				EditorGUI.indentLevel--;
+			}
+			this.SetCookingOptions((MeshColliderCookingOptions)EditorGUILayout.EnumFlagsField(MeshColliderEditor.Texts.cookingOptionsText, this.GetCookingOptions(), new GUILayoutOption[0]));
 			EditorGUILayout.PropertyField(this.m_Material, new GUILayoutOption[0]);
 			EditorGUILayout.PropertyField(this.m_Mesh, new GUILayoutOption[0]);
 			base.serializedObject.ApplyModifiedProperties();

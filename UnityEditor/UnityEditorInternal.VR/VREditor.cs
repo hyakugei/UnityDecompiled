@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEditor;
@@ -7,6 +8,8 @@ namespace UnityEditorInternal.VR
 {
 	public sealed class VREditor
 	{
+		private static Dictionary<BuildTargetGroup, bool> dirtyDeviceLists = new Dictionary<BuildTargetGroup, bool>();
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern VRDeviceInfoEditor[] GetAllVRDeviceInfo(BuildTargetGroup targetGroup);
 
@@ -28,28 +31,29 @@ namespace UnityEditorInternal.VR
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void SetVREnabledDevicesOnTargetGroup(BuildTargetGroup targetGroup, string[] devices);
 
-		[Obsolete("Use GetVREnabledOnTargetGroup instead.")]
-		public static bool GetVREnabled(BuildTargetGroup targetGroup)
+		public static bool IsDeviceListDirty(BuildTargetGroup targetGroup)
 		{
-			return VREditor.GetVREnabledOnTargetGroup(targetGroup);
+			return VREditor.dirtyDeviceLists.ContainsKey(targetGroup) && VREditor.dirtyDeviceLists[targetGroup];
 		}
 
-		[Obsolete("UseSetVREnabledOnTargetGroup instead.")]
-		public static void SetVREnabled(BuildTargetGroup targetGroup, bool value)
+		private static void SetDeviceListDirty(BuildTargetGroup targetGroup)
 		{
-			VREditor.SetVREnabledOnTargetGroup(targetGroup, value);
+			if (VREditor.dirtyDeviceLists.ContainsKey(targetGroup))
+			{
+				VREditor.dirtyDeviceLists[targetGroup] = true;
+			}
+			else
+			{
+				VREditor.dirtyDeviceLists.Add(targetGroup, true);
+			}
 		}
 
-		[Obsolete("Use GetVREnabledDevicesOnTargetGroup instead.")]
-		public static string[] GetVREnabledDevices(BuildTargetGroup targetGroup)
+		public static void ClearDeviceListDirty(BuildTargetGroup targetGroup)
 		{
-			return VREditor.GetVREnabledDevicesOnTargetGroup(targetGroup);
-		}
-
-		[Obsolete("Use SetVREnabledDevicesOnTargetGroup instead.")]
-		public static void SetVREnabledDevices(BuildTargetGroup targetGroup, string[] devices)
-		{
-			VREditor.SetVREnabledDevicesOnTargetGroup(targetGroup, devices);
+			if (VREditor.dirtyDeviceLists.ContainsKey(targetGroup))
+			{
+				VREditor.dirtyDeviceLists[targetGroup] = false;
+			}
 		}
 
 		public static VRDeviceInfoEditor[] GetEnabledVRDeviceInfo(BuildTargetGroup targetGroup)
@@ -66,6 +70,46 @@ namespace UnityEditorInternal.VR
 			return (from d in VREditor.GetAllVRDeviceInfoByTarget(target)
 			where enabledVRDevices.Contains(d.deviceNameKey)
 			select d).ToArray<VRDeviceInfoEditor>();
+		}
+
+		public static bool IsVRDeviceEnabledForBuildTarget(BuildTarget target, string deviceName)
+		{
+			string[] vREnabledDevicesOnTarget = VREditor.GetVREnabledDevicesOnTarget(target);
+			string[] array = vREnabledDevicesOnTarget;
+			bool result;
+			for (int i = 0; i < array.Length; i++)
+			{
+				string a = array[i];
+				if (a == deviceName)
+				{
+					result = true;
+					return result;
+				}
+			}
+			result = false;
+			return result;
+		}
+
+		public static string[] GetAvailableVirtualRealitySDKs(BuildTargetGroup targetGroup)
+		{
+			VRDeviceInfoEditor[] allVRDeviceInfo = VREditor.GetAllVRDeviceInfo(targetGroup);
+			string[] array = new string[allVRDeviceInfo.Length];
+			for (int i = 0; i < allVRDeviceInfo.Length; i++)
+			{
+				array[i] = allVRDeviceInfo[i].deviceNameKey;
+			}
+			return array;
+		}
+
+		public static string[] GetVirtualRealitySDKs(BuildTargetGroup targetGroup)
+		{
+			return VREditor.GetVREnabledDevicesOnTargetGroup(targetGroup);
+		}
+
+		public static void SetVirtualRealitySDKs(BuildTargetGroup targetGroup, string[] sdks)
+		{
+			VREditor.SetVREnabledDevicesOnTargetGroup(targetGroup, sdks);
+			VREditor.SetDeviceListDirty(targetGroup);
 		}
 	}
 }

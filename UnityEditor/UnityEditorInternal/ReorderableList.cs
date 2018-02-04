@@ -16,6 +16,10 @@ namespace UnityEditorInternal
 
 		public delegate float ElementHeightCallbackDelegate(int index);
 
+		public delegate void DrawNoneElementCallback(Rect rect);
+
+		public delegate void ReorderCallbackDelegateWithDetails(ReorderableList list, int oldIndex, int newIndex);
+
 		public delegate void ReorderCallbackDelegate(ReorderableList list);
 
 		public delegate void SelectCallbackDelegate(ReorderableList list);
@@ -30,13 +34,15 @@ namespace UnityEditorInternal
 
 		public delegate bool CanRemoveCallbackDelegate(ReorderableList list);
 
+		public delegate bool CanAddCallbackDelegate(ReorderableList list);
+
 		public class Defaults
 		{
-			public GUIContent iconToolbarPlus = EditorGUIUtility.IconContent("Toolbar Plus", "|Add to list");
+			public GUIContent iconToolbarPlus = EditorGUIUtility.TrIconContent("Toolbar Plus", "Add to list");
 
-			public GUIContent iconToolbarPlusMore = EditorGUIUtility.IconContent("Toolbar Plus More", "|Choose to add to list");
+			public GUIContent iconToolbarPlusMore = EditorGUIUtility.TrIconContent("Toolbar Plus More", "Choose to add to list");
 
-			public GUIContent iconToolbarMinus = EditorGUIUtility.IconContent("Toolbar Minus", "|Remove selection from list");
+			public GUIContent iconToolbarMinus = EditorGUIUtility.TrIconContent("Toolbar Minus", "Remove selection from list");
 
 			public readonly GUIStyle draggingHandle = "RL DragHandle";
 
@@ -49,8 +55,6 @@ namespace UnityEditorInternal
 			public readonly GUIStyle preButton = "RL FooterButton";
 
 			public GUIStyle elementBackground = new GUIStyle("RL Element");
-
-			private const int buttonWidth = 25;
 
 			public const int padding = 6;
 
@@ -77,23 +81,26 @@ namespace UnityEditorInternal
 				}
 				if (list.displayAdd)
 				{
-					if (GUI.Button(rect2, (list.onAddDropdownCallback == null) ? this.iconToolbarPlus : this.iconToolbarPlusMore, this.preButton))
+					using (new EditorGUI.DisabledScope(list.onCanAddCallback != null && !list.onCanAddCallback(list)))
 					{
-						if (list.onAddDropdownCallback != null)
+						if (GUI.Button(rect2, (list.onAddDropdownCallback == null) ? this.iconToolbarPlus : this.iconToolbarPlusMore, this.preButton))
 						{
-							list.onAddDropdownCallback(rect2, list);
-						}
-						else if (list.onAddCallback != null)
-						{
-							list.onAddCallback(list);
-						}
-						else
-						{
-							this.DoAddButton(list);
-						}
-						if (list.onChangedCallback != null)
-						{
-							list.onChangedCallback(list);
+							if (list.onAddDropdownCallback != null)
+							{
+								list.onAddDropdownCallback(rect2, list);
+							}
+							else if (list.onAddCallback != null)
+							{
+								list.onAddCallback(list);
+							}
+							else
+							{
+								this.DoAddButton(list);
+							}
+							if (list.onChangedCallback != null)
+							{
+								list.onChangedCallback(list);
+							}
 						}
 					}
 				}
@@ -224,7 +231,11 @@ namespace UnityEditorInternal
 
 		public ReorderableList.ElementCallbackDelegate drawElementBackgroundCallback;
 
+		public ReorderableList.DrawNoneElementCallback drawNoneElementCallback = null;
+
 		public ReorderableList.ElementHeightCallbackDelegate elementHeightCallback;
+
+		public ReorderableList.ReorderCallbackDelegateWithDetails onReorderCallbackWithDetails;
 
 		public ReorderableList.ReorderCallbackDelegate onReorderCallback;
 
@@ -239,6 +250,8 @@ namespace UnityEditorInternal
 		public ReorderableList.SelectCallbackDelegate onMouseUpCallback;
 
 		public ReorderableList.CanRemoveCallbackDelegate onCanRemoveCallback;
+
+		public ReorderableList.CanAddCallbackDelegate onCanAddCallback;
 
 		public ReorderableList.ChangedCallbackDelegate onChangedCallback;
 
@@ -691,7 +704,14 @@ namespace UnityEditorInternal
 				rect2 = rect;
 				rect2.xMin += 6f;
 				rect2.xMax -= 6f;
-				ReorderableList.s_Defaults.DrawNoneElement(rect2, this.m_Draggable);
+				if (this.drawNoneElementCallback == null)
+				{
+					ReorderableList.s_Defaults.DrawNoneElement(rect2, this.m_Draggable);
+				}
+				else
+				{
+					this.drawNoneElementCallback(rect2);
+				}
 			}
 		}
 
@@ -794,8 +814,14 @@ namespace UnityEditorInternal
 								}
 								this.m_ElementList[num] = value;
 							}
+							int activeElement2 = this.m_ActiveElement;
+							int newIndex = num;
 							this.m_ActiveElement = num;
-							if (this.onReorderCallback != null)
+							if (this.onReorderCallbackWithDetails != null)
+							{
+								this.onReorderCallbackWithDetails(this, activeElement2, newIndex);
+							}
+							else if (this.onReorderCallback != null)
 							{
 								this.onReorderCallback(this);
 							}

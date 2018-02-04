@@ -5,6 +5,7 @@ namespace UnityEditor
 	public enum HierarchyType
 	{
 		Assets = 1,
-		GameObjects
+		GameObjects,
+		Packages
 	}
 }

@@ -39,6 +39,16 @@ namespace UnityEditorInternal
 			set;
 		}
 
+		public static extern bool enabled
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
 		public static extern bool profileGPU
 		{
 			[GeneratedByOldBindingsGenerator]
@@ -141,14 +151,6 @@ namespace UnityEditorInternal
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern void BeginFrame();
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern void EndFrame();
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void ResetHistory();
 
 		[GeneratedByOldBindingsGenerator]
@@ -162,6 +164,14 @@ namespace UnityEditorInternal
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern string GetFormattedStatisticsValue(int frame, int identifier);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern int GetUISystemEventMarkersCount(int firstFrame, int frameCount);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern void GetUISystemEventMarkersBatch(int firstFrame, int frameCount, EventMarker[] buffer, string[] names);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]

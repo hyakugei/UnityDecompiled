@@ -11,11 +11,11 @@ namespace UnityEditor
 	{
 		private class Styles
 		{
-			public GUIContent applyRootMotion = new GUIContent(EditorGUIUtility.TextContent("Apply Root Motion"));
+			public GUIContent applyRootMotion = new GUIContent(EditorGUIUtility.TrTextContent("Apply Root Motion", null, null));
 
-			public GUIContent updateMode = new GUIContent(EditorGUIUtility.TextContent("Update Mode"));
+			public GUIContent updateMode = new GUIContent(EditorGUIUtility.TrTextContent("Update Mode", null, null));
 
-			public GUIContent cullingMode = new GUIContent(EditorGUIUtility.TextContent("Culling Mode"));
+			public GUIContent cullingMode = new GUIContent(EditorGUIUtility.TrTextContent("Culling Mode", null, null));
 
 			public Styles()
 			{

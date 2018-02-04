@@ -8,9 +8,17 @@ namespace UnityEditor.Web
 	[InitializeOnLoad]
 	internal class AdsAccess : CloudServiceAccess
 	{
+		[Serializable]
+		public struct AdsServiceState
+		{
+			public bool ads;
+		}
+
 		private const string kServiceName = "Unity Ads";
 
 		private const string kServiceDisplayName = "Ads";
+
+		private const string kServicePackageName = "com.unity.ads";
 
 		private const string kServiceUrl = "https://public-cdn.cloud.unity3d.com/editor/production/cloud/ads";
 
@@ -30,6 +38,11 @@ namespace UnityEditor.Web
 			return "Ads";
 		}
 
+		public override string GetPackageName()
+		{
+			return "com.unity.ads";
+		}
+
 		public override bool IsServiceEnabled()
 		{
 			return AdvertisementSettings.enabled;
@@ -37,15 +50,19 @@ namespace UnityEditor.Web
 
 		public override void EnableService(bool enabled)
 		{
-			AdvertisementSettings.enabled = enabled;
+			if (AdvertisementSettings.enabled != enabled)
+			{
+				AdvertisementSettings.SetEnabledServiceWindow(enabled);
+				EditorAnalytics.SendEventServiceInfo(new AdsAccess.AdsServiceState
+				{
+					ads = enabled
+				});
+			}
 		}
 
 		public override void OnProjectUnbound()
 		{
-			AdvertisementSettings.enabled = false;
-			AdvertisementSettings.initializeOnStartup = false;
-			AdvertisementSettings.SetPlatformEnabled(RuntimePlatform.IPhonePlayer, false);
-			AdvertisementSettings.SetPlatformEnabled(RuntimePlatform.Android, false);
+			AdvertisementSettings.SetEnabledServiceWindow(false);
 			AdvertisementSettings.SetGameId(RuntimePlatform.IPhonePlayer, "");
 			AdvertisementSettings.SetGameId(RuntimePlatform.Android, "");
 			AdvertisementSettings.testMode = false;
@@ -59,26 +76,6 @@ namespace UnityEditor.Web
 		public void SetInitializedOnStartup(bool enabled)
 		{
 			AdvertisementSettings.initializeOnStartup = enabled;
-		}
-
-		public bool IsIOSEnabled()
-		{
-			return AdvertisementSettings.IsPlatformEnabled(RuntimePlatform.IPhonePlayer);
-		}
-
-		public void SetIOSEnabled(bool enabled)
-		{
-			AdvertisementSettings.SetPlatformEnabled(RuntimePlatform.IPhonePlayer, enabled);
-		}
-
-		public bool IsAndroidEnabled()
-		{
-			return AdvertisementSettings.IsPlatformEnabled(RuntimePlatform.Android);
-		}
-
-		public void SetAndroidEnabled(bool enabled)
-		{
-			AdvertisementSettings.SetPlatformEnabled(RuntimePlatform.Android, enabled);
 		}
 
 		public string GetIOSGameId()
@@ -99,6 +96,16 @@ namespace UnityEditor.Web
 		public void SetAndroidGameId(string value)
 		{
 			AdvertisementSettings.SetGameId(RuntimePlatform.Android, value);
+		}
+
+		public string GetGameId(string platformName)
+		{
+			return AdvertisementSettings.GetPlatformGameId(platformName);
+		}
+
+		public void SetGameId(string platformName, string value)
+		{
+			AdvertisementSettings.SetPlatformGameId(platformName, value);
 		}
 
 		public bool IsTestModeEnabled()

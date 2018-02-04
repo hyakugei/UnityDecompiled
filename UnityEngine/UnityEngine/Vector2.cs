@@ -1,14 +1,31 @@
 using System;
+using UnityEngine.Internal;
 using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
-	[UsedByNativeCode]
+	[GenerateManagedProxy("Vector2f"), UsedByNativeCode]
 	public struct Vector2
 	{
 		public float x;
 
 		public float y;
+
+		private static readonly Vector2 zeroVector = new Vector2(0f, 0f);
+
+		private static readonly Vector2 oneVector = new Vector2(1f, 1f);
+
+		private static readonly Vector2 upVector = new Vector2(0f, 1f);
+
+		private static readonly Vector2 downVector = new Vector2(0f, -1f);
+
+		private static readonly Vector2 leftVector = new Vector2(-1f, 0f);
+
+		private static readonly Vector2 rightVector = new Vector2(1f, 0f);
+
+		private static readonly Vector2 positiveInfinityVector = new Vector2(float.PositiveInfinity, float.PositiveInfinity);
+
+		private static readonly Vector2 negativeInfinityVector = new Vector2(float.NegativeInfinity, float.NegativeInfinity);
 
 		public const float kEpsilon = 1E-05f;
 
@@ -78,7 +95,7 @@ namespace UnityEngine
 		{
 			get
 			{
-				return new Vector2(0f, 0f);
+				return Vector2.zeroVector;
 			}
 		}
 
@@ -86,7 +103,7 @@ namespace UnityEngine
 		{
 			get
 			{
-				return new Vector2(1f, 1f);
+				return Vector2.oneVector;
 			}
 		}
 
@@ -94,7 +111,7 @@ namespace UnityEngine
 		{
 			get
 			{
-				return new Vector2(0f, 1f);
+				return Vector2.upVector;
 			}
 		}
 
@@ -102,7 +119,7 @@ namespace UnityEngine
 		{
 			get
 			{
-				return new Vector2(0f, -1f);
+				return Vector2.downVector;
 			}
 		}
 
@@ -110,7 +127,7 @@ namespace UnityEngine
 		{
 			get
 			{
-				return new Vector2(-1f, 0f);
+				return Vector2.leftVector;
 			}
 		}
 
@@ -118,7 +135,23 @@ namespace UnityEngine
 		{
 			get
 			{
-				return new Vector2(1f, 0f);
+				return Vector2.rightVector;
+			}
+		}
+
+		public static Vector2 positiveInfinity
+		{
+			get
+			{
+				return Vector2.positiveInfinityVector;
+			}
+		}
+
+		public static Vector2 negativeInfinity
+		{
+			get
+			{
+				return Vector2.negativeInfinityVector;
 			}
 		}
 
@@ -228,6 +261,11 @@ namespace UnityEngine
 			return -2f * Vector2.Dot(inNormal, inDirection) * inNormal + inDirection;
 		}
 
+		public static Vector2 Perpendicular(Vector2 inDirection)
+		{
+			return new Vector2(-inDirection.y, inDirection.x);
+		}
+
 		public static float Dot(Vector2 lhs, Vector2 rhs)
 		{
 			return lhs.x * rhs.x + lhs.y * rhs.y;
@@ -236,6 +274,15 @@ namespace UnityEngine
 		public static float Angle(Vector2 from, Vector2 to)
 		{
 			return Mathf.Acos(Mathf.Clamp(Vector2.Dot(from.normalized, to.normalized), -1f, 1f)) * 57.29578f;
+		}
+
+		public static float SignedAngle(Vector2 from, Vector2 to)
+		{
+			Vector2 normalized = from.normalized;
+			Vector2 normalized2 = to.normalized;
+			float num = Mathf.Acos(Mathf.Clamp(Vector2.Dot(normalized, normalized2), -1f, 1f)) * 57.29578f;
+			float num2 = Mathf.Sign(normalized.x * normalized2.y - normalized.y * normalized2.x);
+			return num * num2;
 		}
 
 		public static float Distance(Vector2 a, Vector2 b)
@@ -277,7 +324,22 @@ namespace UnityEngine
 			return new Vector2(Mathf.Max(lhs.x, rhs.x), Mathf.Max(lhs.y, rhs.y));
 		}
 
-		public static Vector2 SmoothDamp(Vector2 current, Vector2 target, ref Vector2 currentVelocity, float smoothTime, float maxSpeed, float deltaTime)
+		[ExcludeFromDocs]
+		public static Vector2 SmoothDamp(Vector2 current, Vector2 target, ref Vector2 currentVelocity, float smoothTime, float maxSpeed)
+		{
+			float deltaTime = Time.deltaTime;
+			return Vector2.SmoothDamp(current, target, ref currentVelocity, smoothTime, maxSpeed, deltaTime);
+		}
+
+		[ExcludeFromDocs]
+		public static Vector2 SmoothDamp(Vector2 current, Vector2 target, ref Vector2 currentVelocity, float smoothTime)
+		{
+			float deltaTime = Time.deltaTime;
+			float maxSpeed = float.PositiveInfinity;
+			return Vector2.SmoothDamp(current, target, ref currentVelocity, smoothTime, maxSpeed, deltaTime);
+		}
+
+		public static Vector2 SmoothDamp(Vector2 current, Vector2 target, ref Vector2 currentVelocity, float smoothTime, [DefaultValue("Mathf.Infinity")] float maxSpeed, [DefaultValue("Time.deltaTime")] float deltaTime)
 		{
 			smoothTime = Mathf.Max(0.0001f, smoothTime);
 			float num = 2f / smoothTime;
@@ -307,6 +369,16 @@ namespace UnityEngine
 		public static Vector2 operator -(Vector2 a, Vector2 b)
 		{
 			return new Vector2(a.x - b.x, a.y - b.y);
+		}
+
+		public static Vector2 operator *(Vector2 a, Vector2 b)
+		{
+			return new Vector2(a.x * b.x, a.y * b.y);
+		}
+
+		public static Vector2 operator /(Vector2 a, Vector2 b)
+		{
+			return new Vector2(a.x / b.x, a.y / b.y);
 		}
 
 		public static Vector2 operator -(Vector2 a)

@@ -25,7 +25,7 @@ namespace UnityEditor
 			}
 		}
 
-		private static readonly GUIContent kAssetBundleName = new GUIContent("AssetBundle");
+		private static readonly GUIContent kAssetBundleName = EditorGUIUtility.TrTextContent("AssetBundle", null, null);
 
 		private static readonly int kAssetBundleNameFieldIdHash = "AssetBundleNameFieldHash".GetHashCode();
 

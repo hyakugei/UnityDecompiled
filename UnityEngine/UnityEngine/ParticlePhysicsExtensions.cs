@@ -5,6 +5,20 @@ namespace UnityEngine
 {
 	public static class ParticlePhysicsExtensions
 	{
+		[Obsolete("GetCollisionEvents function using ParticleCollisionEvent[] is deprecated. Use List<ParticleCollisionEvent> instead.", false)]
+		public static int GetCollisionEvents(this ParticleSystem ps, GameObject go, ParticleCollisionEvent[] collisionEvents)
+		{
+			if (go == null)
+			{
+				throw new ArgumentNullException("go");
+			}
+			if (collisionEvents == null)
+			{
+				throw new ArgumentNullException("collisionEvents");
+			}
+			return ParticleSystemExtensionsImpl.GetCollisionEventsDeprecated(ps, go, collisionEvents);
+		}
+
 		public static int GetSafeCollisionEventSize(this ParticleSystem ps)
 		{
 			return ParticleSystemExtensionsImpl.GetSafeCollisionEventSize(ps);
@@ -21,20 +35,6 @@ namespace UnityEngine
 				throw new ArgumentNullException("collisionEvents");
 			}
 			return ParticleSystemExtensionsImpl.GetCollisionEvents(ps, go, collisionEvents);
-		}
-
-		[Obsolete("GetCollisionEvents function using ParticleCollisionEvent[] is deprecated. Use List<ParticleCollisionEvent> instead.", false)]
-		public static int GetCollisionEvents(this ParticleSystem ps, GameObject go, ParticleCollisionEvent[] collisionEvents)
-		{
-			if (go == null)
-			{
-				throw new ArgumentNullException("go");
-			}
-			if (collisionEvents == null)
-			{
-				throw new ArgumentNullException("collisionEvents");
-			}
-			return ParticleSystemExtensionsImpl.GetCollisionEventsDeprecated(ps, go, collisionEvents);
 		}
 
 		public static int GetSafeTriggerParticlesSize(this ParticleSystem ps, ParticleSystemTriggerEventType type)

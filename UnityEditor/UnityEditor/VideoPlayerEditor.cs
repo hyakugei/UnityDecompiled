@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEditor.AnimatedValues;
+using UnityEditor.Build;
+using UnityEditorInternal.VR;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Video;
@@ -14,39 +16,41 @@ namespace UnityEditor
 	{
 		private class Styles
 		{
-			public GUIContent dataSourceContent = EditorGUIUtility.TextContent("Source|Type of source the movie will be read from.");
+			public GUIContent dataSourceContent = EditorGUIUtility.TrTextContent("Source", "Type of source the movie will be read from.", null);
 
-			public GUIContent videoClipContent = EditorGUIUtility.TextContent("Video Clip|VideoClips can be imported using the asset pipeline.");
+			public GUIContent videoClipContent = EditorGUIUtility.TrTextContent("Video Clip", "VideoClips can be imported using the asset pipeline.", null);
 
-			public GUIContent urlContent = EditorGUIUtility.TextContent("URL|URLs can be http:// or file://. File URLs can be relative [file://] or absolute [file:///].  For file URLs, the prefix is optional.");
+			public GUIContent urlContent = EditorGUIUtility.TrTextContent("URL", "URLs can be http:// or file://. File URLs can be relative [file://] or absolute [file:///].  For file URLs, the prefix is optional.", null);
 
-			public GUIContent browseContent = EditorGUIUtility.TextContent("Browse...|Click to set a file:// URL.  http:// URLs have to be written or copy-pasted manually.");
+			public GUIContent browseContent = EditorGUIUtility.TrTextContent("Browse...", "Click to set a file:// URL.  http:// URLs have to be written or copy-pasted manually.", null);
 
-			public GUIContent playOnAwakeContent = EditorGUIUtility.TextContent("Play On Awake|Start playback as soon as the game is started.");
+			public GUIContent playOnAwakeContent = EditorGUIUtility.TrTextContent("Play On Awake", "Start playback as soon as the game is started.", null);
 
-			public GUIContent waitForFirstFrameContent = EditorGUIUtility.TextContent("Wait For First Frame|Wait for first frame to be ready before starting playback. When on, player time will only start increasing when the first image is ready.  When off, the first few frames may be skipped while clip preparation is ongoing.");
+			public GUIContent waitForFirstFrameContent = EditorGUIUtility.TrTextContent("Wait For First Frame", "Wait for first frame to be ready before starting playback. When on, player time will only start increasing when the first image is ready.  When off, the first few frames may be skipped while clip preparation is ongoing.", null);
 
-			public GUIContent loopContent = EditorGUIUtility.TextContent("Loop|Start playback at the beginning when end is reached.");
+			public GUIContent loopContent = EditorGUIUtility.TrTextContent("Loop", "Start playback at the beginning when end is reached.", null);
 
-			public GUIContent playbackSpeedContent = EditorGUIUtility.TextContent("Playback Speed|Increase or decrease the playback speed. 1.0 is the normal speed.");
+			public GUIContent playbackSpeedContent = EditorGUIUtility.TrTextContent("Playback Speed", "Increase or decrease the playback speed. 1.0 is the normal speed.", null);
 
-			public GUIContent renderModeContent = EditorGUIUtility.TextContent("Render Mode|Type of object on which the played images will be drawn.");
+			public GUIContent renderModeContent = EditorGUIUtility.TrTextContent("Render Mode", "Type of object on which the played images will be drawn.", null);
 
-			public GUIContent cameraContent = EditorGUIUtility.TextContent("Camera|Camera where the images will be drawn, behind (Back Plane) or in front of (Front Plane) of the scene.");
+			public GUIContent cameraContent = EditorGUIUtility.TrTextContent("Camera", "Camera where the images will be drawn, behind (Back Plane) or in front of (Front Plane) of the scene.", null);
 
-			public GUIContent textureContent = EditorGUIUtility.TextContent("Target Texture|RenderTexture where the images will be drawn.  RenderTextures can be created under the Assets folder and the used on other objects.");
+			public GUIContent textureContent = EditorGUIUtility.TrTextContent("Target Texture", "RenderTexture where the images will be drawn.  RenderTextures can be created under the Assets folder and the used on other objects.", null);
 
-			public GUIContent alphaContent = EditorGUIUtility.TextContent("Alpha|A value less than 1.0 will reveal the content behind the video.");
+			public GUIContent alphaContent = EditorGUIUtility.TrTextContent("Alpha", "A value less than 1.0 will reveal the content behind the video.", null);
 
-			public GUIContent audioOutputModeContent = EditorGUIUtility.TextContent("Audio Output Mode|Where the audio in the movie will be output.");
+			public GUIContent camera3DLayout = EditorGUIUtility.TrTextContent("3D Layout", "Layout of 3D content in the source video.", null);
 
-			public GUIContent audioSourceContent = EditorGUIUtility.TextContent("Audio Source|AudioSource component tha will receive this track's audio samples.");
+			public GUIContent audioOutputModeContent = EditorGUIUtility.TrTextContent("Audio Output Mode", "Where the audio in the movie will be output.", null);
 
-			public GUIContent aspectRatioLabel = EditorGUIUtility.TextContent("Aspect Ratio");
+			public GUIContent audioSourceContent = EditorGUIUtility.TrTextContent("Audio Source", "AudioSource component that will receive this track's audio samples.", null);
 
-			public GUIContent muteLabel = EditorGUIUtility.TextContent("Mute");
+			public GUIContent aspectRatioLabel = EditorGUIUtility.TrTextContent("Aspect Ratio", null, null);
 
-			public GUIContent volumeLabel = EditorGUIUtility.TextContent("Volume");
+			public GUIContent muteLabel = EditorGUIUtility.TrTextContent("Mute", null, null);
+
+			public GUIContent volumeLabel = EditorGUIUtility.TrTextContent("Volume", null, null);
 
 			public GUIContent controlledAudioTrackCountContent = EditorGUIUtility.TextContent("Controlled Tracks|How many audio tracks will the player control.  The actual number of tracks is only known during playback when the source is a URL.");
 
@@ -130,6 +134,8 @@ namespace UnityEditor
 
 		private SerializedProperty m_TargetCameraAlpha;
 
+		private SerializedProperty m_TargetCamera3DLayout;
+
 		private SerializedProperty m_AudioOutputMode;
 
 		private SerializedProperty m_ControlledAudioTrackCount;
@@ -201,6 +207,7 @@ namespace UnityEditor
 			this.m_TargetMaterialProperty = base.serializedObject.FindProperty("m_TargetMaterialProperty");
 			this.m_AspectRatio = base.serializedObject.FindProperty("m_AspectRatio");
 			this.m_TargetCameraAlpha = base.serializedObject.FindProperty("m_TargetCameraAlpha");
+			this.m_TargetCamera3DLayout = base.serializedObject.FindProperty("m_TargetCamera3DLayout");
 			this.m_AudioOutputMode = base.serializedObject.FindProperty("m_AudioOutputMode");
 			this.m_ControlledAudioTrackCount = base.serializedObject.FindProperty("m_ControlledAudioTrackCount");
 			this.m_EnabledAudioTracks = base.serializedObject.FindProperty("m_EnabledAudioTracks");
@@ -210,12 +217,12 @@ namespace UnityEditor
 			this.m_ShowRenderTexture.value = (this.m_RenderMode.intValue == 2);
 			this.m_ShowTargetCamera.value = (this.m_RenderMode.intValue == 0 || this.m_RenderMode.intValue == 1);
 			this.m_ShowRenderer.value = (this.m_RenderMode.intValue == 3);
-			UnityEngine.Object[] arg_30B_0 = base.targets;
+			UnityEngine.Object[] arg_321_0 = base.targets;
 			if (VideoPlayerEditor.<>f__mg$cache0 == null)
 			{
 				VideoPlayerEditor.<>f__mg$cache0 = new VideoPlayerEditor.EntryGenerator(VideoPlayerEditor.GetMaterialPropertyNames);
 			}
-			this.m_MaterialPropertyPopupContent = VideoPlayerEditor.BuildPopupEntries(arg_30B_0, VideoPlayerEditor.<>f__mg$cache0, out this.m_MaterialPropertyPopupSelection, out this.m_MaterialPropertyPopupInvalidSelections);
+			this.m_MaterialPropertyPopupContent = VideoPlayerEditor.BuildPopupEntries(arg_321_0, VideoPlayerEditor.<>f__mg$cache0, out this.m_MaterialPropertyPopupSelection, out this.m_MaterialPropertyPopupInvalidSelections);
 			this.m_MaterialPropertyPopupContentHash = VideoPlayerEditor.GetMaterialPropertyPopupHash(base.targets);
 			this.m_ShowMaterialProperty.value = (base.targets.Count<UnityEngine.Object>() > 1 || (this.m_MaterialPropertyPopupSelection >= 0 && this.m_MaterialPropertyPopupContent.Length > 0));
 			this.m_DataSourceIsClip.value = (this.m_DataSource.intValue == 0);
@@ -451,6 +458,16 @@ namespace UnityEditor
 			{
 				EditorGUILayout.PropertyField(this.m_TargetCamera, VideoPlayerEditor.s_Styles.cameraContent, new GUILayoutOption[0]);
 				EditorGUILayout.Slider(this.m_TargetCameraAlpha, 0f, 1f, VideoPlayerEditor.s_Styles.alphaContent, new GUILayoutOption[0]);
+				BuildPlatform[] buildPlatforms = BuildPlatforms.instance.buildPlatforms;
+				for (int i = 0; i < buildPlatforms.Length; i++)
+				{
+					BuildPlatform buildPlatform = buildPlatforms[i];
+					if (VREditor.GetVREnabledOnTargetGroup(buildPlatform.targetGroup))
+					{
+						EditorGUILayout.PropertyField(this.m_TargetCamera3DLayout, VideoPlayerEditor.s_Styles.camera3DLayout, new GUILayoutOption[0]);
+						break;
+					}
+				}
 			}
 			EditorGUILayout.EndFadeGroup();
 			this.m_ShowRenderer.target = (currentRenderMode == VideoRenderMode.MaterialOverride);
@@ -476,12 +493,12 @@ namespace UnityEditor
 				int materialPropertyPopupHash = VideoPlayerEditor.GetMaterialPropertyPopupHash(base.targets);
 				if (this.m_MaterialPropertyPopupContentHash != materialPropertyPopupHash)
 				{
-					UnityEngine.Object[] arg_1CE_0 = base.targets;
+					UnityEngine.Object[] arg_22D_0 = base.targets;
 					if (VideoPlayerEditor.<>f__mg$cache1 == null)
 					{
 						VideoPlayerEditor.<>f__mg$cache1 = new VideoPlayerEditor.EntryGenerator(VideoPlayerEditor.GetMaterialPropertyNames);
 					}
-					this.m_MaterialPropertyPopupContent = VideoPlayerEditor.BuildPopupEntries(arg_1CE_0, VideoPlayerEditor.<>f__mg$cache1, out this.m_MaterialPropertyPopupSelection, out this.m_MaterialPropertyPopupInvalidSelections);
+					this.m_MaterialPropertyPopupContent = VideoPlayerEditor.BuildPopupEntries(arg_22D_0, VideoPlayerEditor.<>f__mg$cache1, out this.m_MaterialPropertyPopupSelection, out this.m_MaterialPropertyPopupInvalidSelections);
 				}
 				VideoPlayerEditor.HandlePopup(VideoPlayerEditor.s_Styles.materialPropertyContent, this.m_TargetMaterialProperty, this.m_MaterialPropertyPopupContent, this.m_MaterialPropertyPopupSelection);
 				if (this.m_MaterialPropertyPopupInvalidSelections > 0 || this.m_MaterialPropertyPopupContent.Length == 0)

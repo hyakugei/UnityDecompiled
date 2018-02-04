@@ -4,6 +4,10 @@ using UnityEngine;
 
 namespace UnityEditor
 {
+	[AssetFileNameExtension("gradients", new string[]
+	{
+
+	})]
 	internal class GradientPresetLibrary : PresetLibrary
 	{
 		[Serializable]

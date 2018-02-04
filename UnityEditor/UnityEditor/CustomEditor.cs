@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace UnityEditor
 {
-	public sealed class CustomEditor : Attribute
+	public class CustomEditor : Attribute
 	{
 		internal Type m_InspectedType;
 

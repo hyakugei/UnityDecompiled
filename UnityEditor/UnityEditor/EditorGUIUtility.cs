@@ -2,11 +2,14 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using UnityEditorInternal;
 using UnityEngine;
+using UnityEngine.Bindings;
+using UnityEngine.Events;
 using UnityEngine.Internal;
-using UnityEngine.Rendering;
 using UnityEngine.Scripting;
 using UnityEngineInternal;
 
@@ -82,6 +85,126 @@ namespace UnityEditor
 			}
 		}
 
+		private delegate bool HeaderItemDelegate(Rect rectangle, UnityEngine.Object[] targets);
+
+		[Serializable]
+		internal class EditorLockTrackerWithActiveEditorTracker : EditorGUIUtility.EditorLockTracker
+		{
+			[HideInInspector, SerializeField]
+			private ActiveEditorTracker m_Tracker;
+
+			internal override bool isLocked
+			{
+				get
+				{
+					bool isLocked;
+					if (this.m_Tracker != null)
+					{
+						base.isLocked = this.m_Tracker.isLocked;
+						isLocked = this.m_Tracker.isLocked;
+					}
+					else
+					{
+						isLocked = base.isLocked;
+					}
+					return isLocked;
+				}
+				set
+				{
+					if (this.m_Tracker != null)
+					{
+						this.m_Tracker.isLocked = value;
+					}
+					base.isLocked = value;
+				}
+			}
+
+			internal ActiveEditorTracker tracker
+			{
+				get
+				{
+					return this.m_Tracker;
+				}
+				set
+				{
+					this.m_Tracker = value;
+					if (this.m_Tracker != null)
+					{
+						this.isLocked = this.m_Tracker.isLocked;
+					}
+				}
+			}
+		}
+
+		[Serializable]
+		internal class EditorLockTracker
+		{
+			[Serializable]
+			public class LockStateEvent : UnityEvent<bool>
+			{
+			}
+
+			[HideInInspector]
+			internal EditorGUIUtility.EditorLockTracker.LockStateEvent lockStateChanged = new EditorGUIUtility.EditorLockTracker.LockStateEvent();
+
+			private const string k_LockMenuText = "Lock";
+
+			private static readonly GUIContent k_LockMenuGUIContent = EditorGUIUtility.TextContent("Lock");
+
+			[HideInInspector, SerializeField]
+			private bool m_IsLocked;
+
+			internal virtual bool isLocked
+			{
+				get
+				{
+					return this.m_IsLocked;
+				}
+				set
+				{
+					bool isLocked = this.m_IsLocked;
+					this.m_IsLocked = value;
+					if (isLocked != this.m_IsLocked)
+					{
+						this.lockStateChanged.Invoke(this.m_IsLocked);
+					}
+				}
+			}
+
+			internal virtual void AddItemsToMenu(GenericMenu menu, bool disabled = false)
+			{
+				if (disabled)
+				{
+					menu.AddDisabledItem(EditorGUIUtility.EditorLockTracker.k_LockMenuGUIContent);
+				}
+				else
+				{
+					menu.AddItem(EditorGUIUtility.EditorLockTracker.k_LockMenuGUIContent, this.isLocked, new GenericMenu.MenuFunction(this.FlipLocked));
+				}
+			}
+
+			internal void ShowButton(Rect position, GUIStyle lockButtonStyle, bool disabled = false)
+			{
+				using (new EditorGUI.DisabledScope(disabled))
+				{
+					EditorGUI.BeginChangeCheck();
+					bool flag = GUI.Toggle(position, this.isLocked, GUIContent.none, lockButtonStyle);
+					if (EditorGUI.EndChangeCheck())
+					{
+						if (flag != this.isLocked)
+						{
+							this.FlipLocked();
+						}
+					}
+				}
+			}
+
+			private void FlipLocked()
+			{
+				this.isLocked = !this.isLocked;
+			}
+		}
+
 		internal static int s_FontIsBold;
 
 		private static Texture2D s_InfoIcon;
@@ -110,6 +233,8 @@ namespace UnityEditor
 
 		private static Hashtable s_TextGUIContents;
 
+		private static Hashtable s_GUIContents;
+
 		private static Hashtable s_IconGUIContents;
 
 		internal static int s_LastControlID;
@@ -127,7 +252,9 @@ namespace UnityEditor
 		[Obsolete("This field is no longer used by any builtin controls. If passing this field to GetControlID, explicitly use the FocusType enum instead.", false)]
 		public static FocusType native;
 
-		internal static Material s_GUITextureBlitColorspaceMaterial;
+		internal static Material s_GUITextureBlit2SRGBMaterial;
+
+		private static List<EditorGUIUtility.HeaderItemDelegate> s_EditorHeaderItemsMethods;
 
 		[CompilerGenerated]
 		private static GUISkin.SkinChangedDelegate <>f__mg$cache0;
@@ -371,17 +498,18 @@ namespace UnityEditor
 			}
 		}
 
-		internal static Material GUITextureBlitColorspaceMaterial
+		internal static Material GUITextureBlit2SRGBMaterial
 		{
 			get
 			{
-				if (!EditorGUIUtility.s_GUITextureBlitColorspaceMaterial)
+				if (!EditorGUIUtility.s_GUITextureBlit2SRGBMaterial)
 				{
-					Shader shader = EditorGUIUtility.LoadRequired("SceneView/GUITextureBlitColorspace.shader") as Shader;
-					EditorGUIUtility.s_GUITextureBlitColorspaceMaterial = new Material(shader);
-					EditorGUIUtility.SetGUITextureBlitColorspaceSettings(EditorGUIUtility.s_GUITextureBlitColorspaceMaterial);
+					Shader shader = EditorGUIUtility.LoadRequired("SceneView/GUITextureBlit2SRGB.shader") as Shader;
+					EditorGUIUtility.s_GUITextureBlit2SRGBMaterial = new Material(shader);
+					EditorGUIUtility.s_GUITextureBlit2SRGBMaterial.hideFlags = HideFlags.HideAndDontSave;
 				}
-				return EditorGUIUtility.s_GUITextureBlitColorspaceMaterial;
+				EditorGUIUtility.s_GUITextureBlit2SRGBMaterial.SetFloat("_ManualTex2SRGB", (QualitySettings.activeColorSpace != ColorSpace.Linear) ? 0f : 1f);
+				return EditorGUIUtility.s_GUITextureBlit2SRGBMaterial;
 			}
 		}
 
@@ -404,6 +532,7 @@ namespace UnityEditor
 			EditorGUIUtility.s_TextImage = new GUIContent();
 			EditorGUIUtility.s_BlankContent = new GUIContent(" ");
 			EditorGUIUtility.s_TextGUIContents = new Hashtable();
+			EditorGUIUtility.s_GUIContents = new Hashtable();
 			EditorGUIUtility.s_IconGUIContents = new Hashtable();
 			EditorGUIUtility.s_LastControlID = 0;
 			EditorGUIUtility.s_HierarchyMode = false;
@@ -412,12 +541,13 @@ namespace UnityEditor
 			EditorGUIUtility.s_LabelWidth = 0f;
 			EditorGUIUtility.s_FieldWidth = 0f;
 			EditorGUIUtility.native = FocusType.Keyboard;
-			Delegate arg_D6_0 = GUISkin.m_SkinChanged;
+			EditorGUIUtility.s_EditorHeaderItemsMethods = null;
+			Delegate arg_E6_0 = GUISkin.m_SkinChanged;
 			if (EditorGUIUtility.<>f__mg$cache0 == null)
 			{
 				EditorGUIUtility.<>f__mg$cache0 = new GUISkin.SkinChangedDelegate(EditorGUIUtility.SkinChanged);
 			}
-			GUISkin.m_SkinChanged = (GUISkin.SkinChangedDelegate)Delegate.Combine(arg_D6_0, EditorGUIUtility.<>f__mg$cache0);
+			GUISkin.m_SkinChanged = (GUISkin.SkinChangedDelegate)Delegate.Combine(arg_E6_0, EditorGUIUtility.<>f__mg$cache0);
 		}
 
 		[GeneratedByOldBindingsGenerator]
@@ -477,7 +607,6 @@ namespace UnityEditor
 
 		internal static string[] GetNameAndTooltipString(string nameAndTooltip)
 		{
-			nameAndTooltip = LocalizationDatabase.GetLocalizedString(nameAndTooltip);
 			string[] array = new string[3];
 			string[] array2 = nameAndTooltip.Split(new char[]
 			{
@@ -745,14 +874,12 @@ namespace UnityEditor
 		internal static void NotifyLanguageChanged(SystemLanguage newLanguage)
 		{
 			EditorGUIUtility.s_TextGUIContents = new Hashtable();
+			EditorGUIUtility.s_GUIContents = new Hashtable();
+			EditorGUIUtility.s_IconGUIContents = new Hashtable();
 			EditorUtility.Internal_UpdateMenuTitleForLanguage(newLanguage);
-			LocalizationDatabase.SetCurrentEditorLanguage(newLanguage);
+			LocalizationDatabase.currentEditorLanguage = newLanguage;
 			EditorApplication.RequestRepaintAllViews();
 		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern Texture2D FindTexture(string name);
 
 		public static GUISkin GetBuiltinSkin(EditorSkin skin)
 		{
@@ -830,13 +957,12 @@ namespace UnityEditor
 		{
 			foreach (SceneHierarchyWindow current in SceneHierarchyWindow.GetAllSceneHierarchyWindows())
 			{
-				bool ping = true;
-				current.FrameObject(targetInstanceID, ping);
+				current.ReloadData();
+				current.FrameObject(targetInstanceID, true);
 			}
 			foreach (ProjectBrowser current2 in ProjectBrowser.GetAllProjectBrowsers())
 			{
-				bool ping2 = true;
-				current2.FrameObject(targetInstanceID, ping2);
+				current2.FrameObject(targetInstanceID, true);
 			}
 		}
 
@@ -1085,8 +1211,10 @@ namespace UnityEditor
 			if (Event.current.type == EventType.Repaint)
 			{
 				Color color2 = GUI.color;
+				Color backgroundColor = GUI.backgroundColor;
 				float a = (float)((!GUI.enabled) ? 2 : 1);
 				GUI.color = ((!EditorGUI.showMixedValue) ? new Color(color.r, color.g, color.b, a) : (new Color(0.82f, 0.82f, 0.82f, a) * color2));
+				GUI.backgroundColor = Color.white;
 				GUIStyle whiteTextureStyle = EditorGUIUtility.whiteTextureStyle;
 				whiteTextureStyle.Draw(position, false, false, false, false);
 				float maxColorComponent = GUI.color.maxColorComponent;
@@ -1127,6 +1255,7 @@ namespace UnityEditor
 					EditorGUI.EndHandleMixedValueContentColor();
 				}
 				GUI.color = color2;
+				GUI.backgroundColor = backgroundColor;
 				if (hdr && maxColorComponent > 1f)
 				{
 					GUI.Label(new Rect(position.x, position.y, position.width - 3f, position.height), "HDR", EditorStyles.centeredGreyMiniLabel);
@@ -1301,6 +1430,19 @@ namespace UnityEditor
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern void INTERNAL_CALL_Internal_AddCursorRect(ref Rect r, MouseCursor m, int controlID);
 
+		internal static void SetCurrentViewCursor(Texture2D texture, Vector2 hotspot, MouseCursor type)
+		{
+			EditorGUIUtility.INTERNAL_CALL_SetCurrentViewCursor(texture, ref hotspot, type);
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void INTERNAL_CALL_SetCurrentViewCursor(Texture2D texture, ref Vector2 hotspot, MouseCursor type);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void ClearCurrentViewCursor();
+
 		internal static Rect HandleHorizontalSplitter(Rect dragRect, float width, float minLeftSide, float minRightSide)
 		{
 			if (Event.current.type == EventType.Repaint)
@@ -1376,6 +1518,163 @@ namespace UnityEditor
 			return ObjectSelector.get.objectSelectorID;
 		}
 
+		public static Texture2D FindTexture(string name)
+		{
+			return EditorGUIUtility.FindTextureByName(name);
+		}
+
+		internal static Texture2D FindTexture(Type type)
+		{
+			return EditorGUIUtility.FindTextureByType(type);
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern Texture2D FindTextureByName(string name);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern Texture2D FindTextureByType([NotNull] Type type);
+
+		internal static GUIContent TrTextContent(string text, string tooltip = null, Texture icon = null)
+		{
+			string arg = (text == null) ? "" : text;
+			string arg2 = (tooltip == null) ? "" : tooltip;
+			string key = string.Format("{0}|{1}|{2}", arg, arg2, (!(icon != null)) ? "" : icon.name);
+			GUIContent gUIContent = (GUIContent)EditorGUIUtility.s_GUIContents[key];
+			if (gUIContent == null)
+			{
+				gUIContent = new GUIContent(L10n.Tr(text));
+				if (tooltip != null)
+				{
+					gUIContent.tooltip = L10n.Tr(tooltip);
+				}
+				if (icon != null)
+				{
+					gUIContent.image = icon;
+				}
+				EditorGUIUtility.s_GUIContents[key] = gUIContent;
+			}
+			return gUIContent;
+		}
+
+		internal static GUIContent TrTextContent(string text, string tooltip, string iconName)
+		{
+			string arg = (text == null) ? "" : text;
+			string arg2 = (tooltip == null) ? "" : tooltip;
+			string arg3 = (iconName == null) ? "" : iconName;
+			string key = string.Format("{0}|{1}|{2}", arg, arg2, arg3);
+			GUIContent gUIContent = (GUIContent)EditorGUIUtility.s_GUIContents[key];
+			if (gUIContent == null)
+			{
+				gUIContent = new GUIContent(L10n.Tr(text));
+				if (tooltip != null)
+				{
+					gUIContent.tooltip = L10n.Tr(tooltip);
+				}
+				if (iconName != null)
+				{
+					Texture image = EditorGUIUtility.LoadIconRequired(iconName);
+					gUIContent.image = image;
+				}
+				EditorGUIUtility.s_GUIContents[key] = gUIContent;
+			}
+			return gUIContent;
+		}
+
+		internal static GUIContent TrTextContent(string text, Texture icon)
+		{
+			return EditorGUIUtility.TrTextContent(text, null, icon);
+		}
+
+		internal static GUIContent TrTextContentWithIcon(string text, Texture icon)
+		{
+			return EditorGUIUtility.TrTextContent(text, null, icon);
+		}
+
+		internal static GUIContent TrTextContentWithIcon(string text, string iconName)
+		{
+			return EditorGUIUtility.TrTextContent(text, null, iconName);
+		}
+
+		internal static GUIContent TrTextContentWithIcon(string text, string tooltip, string iconName)
+		{
+			return EditorGUIUtility.TrTextContent(text, tooltip, iconName);
+		}
+
+		internal static GUIContent TrTextContentWithIcon(string text, string tooltip, Texture icon)
+		{
+			return EditorGUIUtility.TrTextContent(text, tooltip, icon);
+		}
+
+		internal static GUIContent TrTextContentWithIcon(string text, string tooltip, MessageType messageType)
+		{
+			return EditorGUIUtility.TrTextContent(text, tooltip, EditorGUIUtility.GetHelpIcon(messageType));
+		}
+
+		internal static GUIContent TrTextContentWithIcon(string text, MessageType messageType)
+		{
+			return EditorGUIUtility.TrTextContentWithIcon(text, null, messageType);
+		}
+
+		internal static GUIContent TrIconContent(string iconName, string tooltip = null)
+		{
+			string key = (tooltip != null) ? (iconName + tooltip) : iconName;
+			GUIContent gUIContent = (GUIContent)EditorGUIUtility.s_IconGUIContents[key];
+			GUIContent result;
+			if (gUIContent != null)
+			{
+				result = gUIContent;
+			}
+			else
+			{
+				gUIContent = new GUIContent();
+				if (tooltip != null)
+				{
+					gUIContent.tooltip = L10n.Tr(tooltip);
+				}
+				gUIContent.image = EditorGUIUtility.LoadIconRequired(iconName);
+				EditorGUIUtility.s_IconGUIContents[key] = gUIContent;
+				result = gUIContent;
+			}
+			return result;
+		}
+
+		internal static GUIContent TrIconContent(Texture icon, string tooltip = null)
+		{
+			GUIContent gUIContent = (tooltip == null) ? null : ((GUIContent)EditorGUIUtility.s_IconGUIContents[tooltip]);
+			GUIContent result;
+			if (gUIContent != null)
+			{
+				result = gUIContent;
+			}
+			else
+			{
+				gUIContent = new GUIContent();
+				gUIContent.image = icon;
+				if (tooltip != null)
+				{
+					gUIContent.tooltip = L10n.Tr(tooltip);
+					EditorGUIUtility.s_IconGUIContents[tooltip] = gUIContent;
+				}
+				result = gUIContent;
+			}
+			return result;
+		}
+
+		internal static GUIContent TrTempContent(string t)
+		{
+			return EditorGUIUtility.TempContent(L10n.Tr(t));
+		}
+
+		internal static GUIContent[] TrTempContent(string[] texts)
+		{
+			GUIContent[] array = new GUIContent[texts.Length];
+			for (int i = 0; i < texts.Length; i++)
+			{
+				array[i] = new GUIContent(L10n.Tr(texts[i]));
+			}
+			return array;
+		}
+
 		internal static void RepaintCurrentWindow()
 		{
 			GUIUtility.CheckOnGUI();
@@ -1386,19 +1685,6 @@ namespace UnityEditor
 		{
 			GUIUtility.CheckOnGUI();
 			return GUIView.current.hasFocus;
-		}
-
-		internal static void SetGUITextureBlitColorspaceSettings(Material mat)
-		{
-			bool flag = SystemInfo.graphicsDeviceType == GraphicsDeviceType.Metal;
-			if (flag && QualitySettings.activeColorSpace == ColorSpace.Linear)
-			{
-				mat.SetFloat("_ConvertToGamma", 1f);
-			}
-			else
-			{
-				mat.SetFloat("_ConvertToGamma", 0f);
-			}
 		}
 
 		public static Rect PointsToPixels(Rect rect)
@@ -1456,6 +1742,54 @@ namespace UnityEditor
 				position.x += size.x + horizontalSpacing;
 			}
 			return list;
+		}
+
+		internal static void ShowObjectPicker<T>(UnityEngine.Object obj, bool allowSceneObjects, string searchFilter, ObjectSelectorReceiver objectSelectorReceiver) where T : UnityEngine.Object
+		{
+			Type typeFromHandle = typeof(T);
+			ObjectSelector.get.Show(obj, typeFromHandle, null, allowSceneObjects);
+			ObjectSelector.get.objectSelectorReceiver = objectSelectorReceiver;
+			ObjectSelector.get.searchFilter = searchFilter;
+		}
+
+		internal static Rect DrawEditorHeaderItems(Rect rectangle, UnityEngine.Object[] targetObjs)
+		{
+			Rect result;
+			if (targetObjs.Length == 0 || (targetObjs.Length == 1 && targetObjs[0].GetType() == typeof(object)))
+			{
+				result = rectangle;
+			}
+			else
+			{
+				if (EditorGUIUtility.s_EditorHeaderItemsMethods == null)
+				{
+					List<Type> targetObjTypes = new List<Type>();
+					Type type = targetObjs[0].GetType();
+					while (type.BaseType != null)
+					{
+						targetObjTypes.Add(type);
+						type = type.BaseType;
+					}
+					AttributeHelper.MethodInfoSorter methodsWithAttribute = AttributeHelper.GetMethodsWithAttribute<EditorHeaderItemAttribute>(BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+					Func<EditorHeaderItemAttribute, bool> filter = (EditorHeaderItemAttribute a) => targetObjTypes.Any((Type c) => a.TargetType == c);
+					IEnumerable<MethodInfo> enumerable = methodsWithAttribute.FilterAndSortOnAttribute<EditorHeaderItemAttribute>(filter, (EditorHeaderItemAttribute a) => a.callbackOrder);
+					EditorGUIUtility.s_EditorHeaderItemsMethods = new List<EditorGUIUtility.HeaderItemDelegate>();
+					foreach (MethodInfo current in enumerable)
+					{
+						EditorGUIUtility.s_EditorHeaderItemsMethods.Add((EditorGUIUtility.HeaderItemDelegate)Delegate.CreateDelegate(typeof(EditorGUIUtility.HeaderItemDelegate), current));
+					}
+				}
+				for (int i = 0; i < EditorGUIUtility.s_EditorHeaderItemsMethods.Count; i++)
+				{
+					EditorGUIUtility.HeaderItemDelegate headerItemDelegate = EditorGUIUtility.s_EditorHeaderItemsMethods[i];
+					if (headerItemDelegate(rectangle, targetObjs))
+					{
+						rectangle.x -= rectangle.width;
+					}
+				}
+				result = rectangle;
+			}
+			return result;
 		}
 	}
 }

@@ -1,9 +1,10 @@
 using System;
+using UnityEngine.Bindings;
 using UnityEngine.Scripting;
 
 namespace UnityEditorInternal.VR
 {
-	[RequiredByNativeCode]
+	[NativeType(CodegenOptions = CodegenOptions.Custom), RequiredByNativeCode]
 	public struct VRDeviceInfoEditor
 	{
 		public string deviceNameKey;

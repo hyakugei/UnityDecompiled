@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace UnityEditor
@@ -19,13 +20,68 @@ namespace UnityEditor
 			}
 			else
 			{
-				string[] humanTransforms = new string[0];
+				List<string> list = new List<string>();
 				for (int i = 0; i < serializedProperty.arraySize; i++)
 				{
 					SerializedProperty serializedProperty2 = serializedProperty.GetArrayElementAtIndex(i).FindPropertyRelative(AvatarMaskUtility.sBoneName);
-					ArrayUtility.Add<string>(ref humanTransforms, serializedProperty2.stringValue);
+					list.Add(serializedProperty2.stringValue);
 				}
-				result = AvatarMaskUtility.TokeniseHumanTransformsPath(refTransformsPath, humanTransforms);
+				result = AvatarMaskUtility.TokeniseHumanTransformsPath(refTransformsPath, list.ToArray());
+			}
+			return result;
+		}
+
+		public static string[] GetAvatarHumanAndActiveExtraTransforms(SerializedObject so, SerializedProperty transformMaskProperty, string[] refTransformsPath)
+		{
+			SerializedProperty serializedProperty = so.FindProperty(AvatarMaskUtility.sHuman);
+			string[] result;
+			if (serializedProperty == null || !serializedProperty.isArray)
+			{
+				result = null;
+			}
+			else
+			{
+				List<string> list = new List<string>();
+				for (int i = 0; i < serializedProperty.arraySize; i++)
+				{
+					SerializedProperty serializedProperty2 = serializedProperty.GetArrayElementAtIndex(i).FindPropertyRelative(AvatarMaskUtility.sBoneName);
+					list.Add(serializedProperty2.stringValue);
+				}
+				List<string> list2 = new List<string>(AvatarMaskUtility.TokeniseHumanTransformsPath(refTransformsPath, list.ToArray()));
+				for (int j = 0; j < transformMaskProperty.arraySize; j++)
+				{
+					float floatValue = transformMaskProperty.GetArrayElementAtIndex(j).FindPropertyRelative("m_Weight").floatValue;
+					string stringValue = transformMaskProperty.GetArrayElementAtIndex(j).FindPropertyRelative("m_Path").stringValue;
+					if (floatValue > 0f && !list2.Contains(stringValue))
+					{
+						list2.Add(stringValue);
+					}
+				}
+				result = list2.ToArray();
+			}
+			return result;
+		}
+
+		public static string[] GetAvatarInactiveTransformMaskPaths(SerializedProperty transformMaskProperty)
+		{
+			string[] result;
+			if (transformMaskProperty == null || !transformMaskProperty.isArray)
+			{
+				result = null;
+			}
+			else
+			{
+				List<string> list = new List<string>();
+				for (int i = 0; i < transformMaskProperty.arraySize; i++)
+				{
+					SerializedProperty serializedProperty = transformMaskProperty.GetArrayElementAtIndex(i).FindPropertyRelative("m_Weight");
+					if (serializedProperty.floatValue < 0.5f)
+					{
+						SerializedProperty serializedProperty2 = transformMaskProperty.GetArrayElementAtIndex(i).FindPropertyRelative("m_Path");
+						list.Add(serializedProperty2.stringValue);
+					}
+				}
+				result = list.ToArray();
 			}
 			return result;
 		}
@@ -44,7 +100,7 @@ namespace UnityEditor
 			}
 		}
 
-		public static void UpdateTransformMask(SerializedProperty transformMask, string[] refTransformsPath, string[] humanTransforms)
+		public static void UpdateTransformMask(SerializedProperty transformMask, string[] refTransformsPath, string[] currentPaths, bool areActivePaths = true)
 		{
 			AvatarMaskUtility.<UpdateTransformMask>c__AnonStorey2 <UpdateTransformMask>c__AnonStorey = new AvatarMaskUtility.<UpdateTransformMask>c__AnonStorey2();
 			<UpdateTransformMask>c__AnonStorey.refTransformsPath = refTransformsPath;
@@ -53,7 +109,19 @@ namespace UnityEditor
 			int i;
 			for (i = 0; i < <UpdateTransformMask>c__AnonStorey.refTransformsPath.Length; i++)
 			{
-				bool value = humanTransforms == null || ArrayUtility.FindIndex<string>(humanTransforms, (string s) => <UpdateTransformMask>c__AnonStorey.refTransformsPath[i] == s) != -1;
+				bool value;
+				if (currentPaths == null)
+				{
+					value = true;
+				}
+				else if (areActivePaths)
+				{
+					value = (ArrayUtility.FindIndex<string>(currentPaths, (string s) => <UpdateTransformMask>c__AnonStorey.refTransformsPath[i] == s) != -1);
+				}
+				else
+				{
+					value = (ArrayUtility.FindIndex<string>(currentPaths, (string s) => <UpdateTransformMask>c__AnonStorey.refTransformsPath[i] == s) == -1);
+				}
 				avatarMask.SetTransformPath(i, <UpdateTransformMask>c__AnonStorey.refTransformsPath[i]);
 				avatarMask.SetTransformActive(i, value);
 			}

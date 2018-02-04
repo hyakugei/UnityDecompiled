@@ -1,9 +1,14 @@
 using System;
+using UnityEditorInternal;
 using UnityEngine;
 
 namespace UnityEditor
 {
-	internal sealed class PhysicsManager : UnityEngine.Object
+	[NativeClass(null)]
+	internal sealed class PhysicsManager : ProjectSettingsBase
 	{
+		private PhysicsManager()
+		{
+		}
 	}
 }

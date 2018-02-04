@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.Internal;
 using UnityEngine.Scripting;
@@ -120,13 +121,6 @@ namespace UnityEditor
 			}
 		}
 
-		internal static extern bool isLocked
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-		}
-
 		internal static extern string assetFolderGUID
 		{
 			[GeneratedByOldBindingsGenerator]
@@ -154,6 +148,10 @@ namespace UnityEditor
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern string GetCurrentCacheServerIp();
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern bool IsMainAsset(int instanceID);
 
 		public static bool IsSubAsset(UnityEngine.Object obj)
@@ -167,6 +165,10 @@ namespace UnityEditor
 
 		public static bool IsForeignAsset(UnityEngine.Object obj)
 		{
+			if (obj == null)
+			{
+				throw new ArgumentNullException("obj is null");
+			}
 			return AssetDatabase.IsForeignAsset(obj.GetInstanceID());
 		}
 
@@ -176,12 +178,29 @@ namespace UnityEditor
 
 		public static bool IsNativeAsset(UnityEngine.Object obj)
 		{
+			if (obj == null)
+			{
+				throw new ArgumentNullException("obj is null");
+			}
 			return AssetDatabase.IsNativeAsset(obj.GetInstanceID());
 		}
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern bool IsNativeAsset(int instanceID);
+
+		public static bool IsPackagedAsset(UnityEngine.Object obj)
+		{
+			if (obj == null)
+			{
+				throw new ArgumentNullException("obj is null");
+			}
+			return AssetDatabase.IsPackagedAsset(obj.GetInstanceID());
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern bool IsPackagedAsset(int instanceID);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -202,6 +221,10 @@ namespace UnityEditor
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern string MoveAsset(string oldPath, string newPath);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern string ExtractAsset(UnityEngine.Object asset, string newPath);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -241,6 +264,10 @@ namespace UnityEditor
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern bool IsValidFolder(string path);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern bool IsPackagedAssetPath(string path);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -290,6 +317,10 @@ namespace UnityEditor
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern int GetMainAssetOrInProgressProxyInstanceID(string assetPath);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern string GetAssetOrScenePath(UnityEngine.Object assetObject);
 
 		[GeneratedByOldBindingsGenerator]
@@ -312,6 +343,10 @@ namespace UnityEditor
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern UnityEngine.Object LoadMainAssetAtPath(string assetPath);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern UnityEngine.Object LoadMainAssetAtGUID(GUID assetGUID);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -412,10 +447,6 @@ namespace UnityEditor
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern int GetInstanceIDFromGUID(string guid);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void SaveAssets();
 
 		[GeneratedByOldBindingsGenerator]
@@ -450,10 +481,6 @@ namespace UnityEditor
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void ClearLabels(UnityEngine.Object obj);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern string[] MatchLabelsPartial(UnityEngine.Object obj, string partial);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -682,6 +709,102 @@ namespace UnityEditor
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern string[] CollectAllChildren(string guid, string[] collection);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern bool RegisterPackageFolder(string name, string path);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern bool UnregisterPackageFolder(string name, string path);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern string GetPackagesMountPoint();
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern bool IsV1Enabled();
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern bool IsV2Enabled();
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern bool IsV1Postponed();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void ReSerializeAssetsForced(GUID[] guids, ForceReserializeAssetsOptions options);
+
+		public static void ForceReserializeAssets(IEnumerable<string> assetPaths, ForceReserializeAssetsOptions options = ForceReserializeAssetsOptions.ReserializeAssetsAndMetadata)
+		{
+			if (EditorApplication.isPlaying)
+			{
+				throw new Exception("AssetDatabase.ForceReserializeAssets cannot be used when in play mode");
+			}
+			HashSet<GUID> hashSet = new HashSet<GUID>();
+			foreach (string current in assetPaths)
+			{
+				if (!(current == ""))
+				{
+					if (!current.Equals("Assets") && !current.Equals("Packages"))
+					{
+						if (!AssetDatabase.IsPackagedAssetPath(current))
+						{
+							if (!InternalEditorUtility.IsUnityExtensionRegistered(current))
+							{
+								GUID item = new GUID(AssetDatabase.AssetPathToGUID(current));
+								if (!item.Empty())
+								{
+									hashSet.Add(item);
+								}
+								else if (File.Exists(current))
+								{
+									Debug.LogWarningFormat("Cannot reserialize file \"{0}\": the file is not in the AssetDatabase. Skipping.", new object[]
+									{
+										current
+									});
+								}
+								else
+								{
+									Debug.LogWarningFormat("Cannot reserialize file \"{0}\": the file does not exist. Skipping.", new object[]
+									{
+										current
+									});
+								}
+							}
+						}
+					}
+				}
+			}
+			GUID[] array = new GUID[hashSet.Count];
+			hashSet.CopyTo(array);
+			AssetDatabase.ReSerializeAssetsForced(array, options);
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern bool GetGUIDAndLocalIdentifierInFile(int instanceID, out GUID outGuid, out long outLocalId);
+
+		public static bool TryGetGUIDAndLocalFileIdentifier(UnityEngine.Object obj, out string guid, out int localId)
+		{
+			return AssetDatabase.TryGetGUIDAndLocalFileIdentifier(obj.GetInstanceID(), out guid, out localId);
+		}
+
+		public static bool TryGetGUIDAndLocalFileIdentifier(int instanceID, out string guid, out int localId)
+		{
+			GUID gUID;
+			long num;
+			bool gUIDAndLocalIdentifierInFile = AssetDatabase.GetGUIDAndLocalIdentifierInFile(instanceID, out gUID, out num);
+			guid = gUID.ToString();
+			localId = (int)num;
+			return gUIDAndLocalIdentifierInFile;
+		}
+
+		public static void ForceReserializeAssets()
+		{
+			AssetDatabase.ForceReserializeAssets(AssetDatabase.GetAllAssetPaths(), ForceReserializeAssetsOptions.ReserializeAssetsAndMetadata);
+		}
 
 		[RequiredByNativeCode]
 		private static void Internal_CallImportPackageStarted(string packageName)

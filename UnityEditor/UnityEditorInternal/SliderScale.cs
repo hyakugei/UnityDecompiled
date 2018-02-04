@@ -18,13 +18,21 @@ namespace UnityEditorInternal
 
 		public static float DoAxis(int id, float scale, Vector3 position, Vector3 direction, Quaternion rotation, float size, float snap)
 		{
+			return SliderScale.DoAxis(id, scale, position, direction, rotation, size, snap, 0f, 1f);
+		}
+
+		internal static float DoAxis(int id, float scale, Vector3 position, Vector3 direction, Quaternion rotation, float size, float snap, float handleOffset, float lineScale)
+		{
+			Vector3 b = direction * size * handleOffset;
+			float num = (GUIUtility.hotControl != id) ? size : (size * scale / SliderScale.s_StartScale);
+			Vector3 p = position + b;
+			Vector3 vector = position + direction * (num * SliderScale.s_ScaleDrawLength * lineScale) + b;
 			Event current = Event.current;
 			switch (current.GetTypeForControl(id))
 			{
 			case EventType.MouseDown:
-				if ((HandleUtility.nearestControl == id && current.button == 0) || (GUIUtility.keyboardControl == id && current.button == 2))
+				if (HandleUtility.nearestControl == id && current.button == 0)
 				{
-					GUIUtility.keyboardControl = id;
 					GUIUtility.hotControl = id;
 					SliderScale.s_CurrentMousePosition = (SliderScale.s_StartMousePosition = current.mousePosition);
 					SliderScale.s_StartScale = scale;
@@ -40,13 +48,19 @@ namespace UnityEditorInternal
 					EditorGUIUtility.SetWantsMouseJumping(0);
 				}
 				break;
+			case EventType.MouseMove:
+				if (id == HandleUtility.nearestControl)
+				{
+					HandleUtility.Repaint();
+				}
+				break;
 			case EventType.MouseDrag:
 				if (GUIUtility.hotControl == id)
 				{
 					SliderScale.s_CurrentMousePosition += current.delta;
-					float num = 1f + HandleUtility.CalcLineTranslation(SliderScale.s_StartMousePosition, SliderScale.s_CurrentMousePosition, position, direction) / size;
-					num = Handles.SnapValue(num, snap);
-					scale = SliderScale.s_StartScale * num;
+					float num2 = 1f + HandleUtility.CalcLineTranslation(SliderScale.s_StartMousePosition, SliderScale.s_CurrentMousePosition, position, direction) / size;
+					num2 = Handles.SnapValue(num2, snap);
+					scale = SliderScale.s_StartScale * num2;
 					GUI.changed = true;
 					current.Use();
 				}
@@ -54,27 +68,27 @@ namespace UnityEditorInternal
 			case EventType.Repaint:
 			{
 				Color color = Color.white;
-				if (id == GUIUtility.keyboardControl)
+				if (id == GUIUtility.hotControl)
 				{
 					color = Handles.color;
 					Handles.color = Handles.selectedColor;
 				}
-				float num2 = size;
-				if (GUIUtility.hotControl == id)
+				else if (id == HandleUtility.nearestControl && GUIUtility.hotControl == 0)
 				{
-					num2 = size * scale / SliderScale.s_StartScale;
+					color = Handles.color;
+					Handles.color = Handles.preselectionColor;
 				}
-				Handles.CubeHandleCap(id, position + direction * num2 * SliderScale.s_ScaleDrawLength, rotation, size * 0.1f, EventType.Repaint);
-				Handles.DrawLine(position, position + direction * (num2 * SliderScale.s_ScaleDrawLength - size * 0.05f));
-				if (id == GUIUtility.keyboardControl)
+				Handles.DrawLine(p, vector);
+				Handles.CubeHandleCap(id, vector, rotation, size * 0.1f, EventType.Repaint);
+				if (id == GUIUtility.hotControl || (id == HandleUtility.nearestControl && GUIUtility.hotControl == 0))
 				{
 					Handles.color = color;
 				}
 				break;
 			}
 			case EventType.Layout:
-				HandleUtility.AddControl(id, HandleUtility.DistanceToLine(position, position + direction * size));
-				HandleUtility.AddControl(id, HandleUtility.DistanceToCircle(position + direction * size, size * 0.2f));
+				HandleUtility.AddControl(id, HandleUtility.DistanceToLine(p, vector));
+				HandleUtility.AddControl(id, HandleUtility.DistanceToCircle(vector, size * 0.3f));
 				break;
 			}
 			return scale;
@@ -87,9 +101,8 @@ namespace UnityEditorInternal
 			switch (current.GetTypeForControl(id))
 			{
 			case EventType.MouseDown:
-				if ((HandleUtility.nearestControl == id && current.button == 0) || (GUIUtility.keyboardControl == id && current.button == 2))
+				if (HandleUtility.nearestControl == id && current.button == 0)
 				{
-					GUIUtility.keyboardControl = id;
 					GUIUtility.hotControl = id;
 					SliderScale.s_StartScale = value;
 					SliderScale.s_ValueDrag = 0f;
@@ -104,6 +117,12 @@ namespace UnityEditorInternal
 					SliderScale.s_ScaleDrawLength = 1f;
 					current.Use();
 					EditorGUIUtility.SetWantsMouseJumping(0);
+				}
+				break;
+			case EventType.MouseMove:
+				if (id == HandleUtility.nearestControl)
+				{
+					HandleUtility.Repaint();
 				}
 				break;
 			case EventType.MouseDrag:
@@ -132,13 +151,18 @@ namespace UnityEditorInternal
 			case EventType.Repaint:
 			{
 				Color color = Color.white;
-				if (id == GUIUtility.keyboardControl)
+				if (id == GUIUtility.hotControl)
 				{
 					color = Handles.color;
 					Handles.color = Handles.selectedColor;
 				}
+				else if (id == HandleUtility.nearestControl && GUIUtility.hotControl == 0)
+				{
+					color = Handles.color;
+					Handles.color = Handles.preselectionColor;
+				}
 				capFunc(id, position, rotation, size * 0.15f);
-				if (id == GUIUtility.keyboardControl)
+				if (id == GUIUtility.hotControl || (id == HandleUtility.nearestControl && GUIUtility.hotControl == 0))
 				{
 					Handles.color = color;
 				}
@@ -157,9 +181,8 @@ namespace UnityEditorInternal
 			switch (current.GetTypeForControl(id))
 			{
 			case EventType.MouseDown:
-				if ((HandleUtility.nearestControl == id && current.button == 0) || (GUIUtility.keyboardControl == id && current.button == 2))
+				if (HandleUtility.nearestControl == id && current.button == 0)
 				{
-					GUIUtility.keyboardControl = id;
 					GUIUtility.hotControl = id;
 					SliderScale.s_StartScale = value;
 					SliderScale.s_ValueDrag = 0f;
@@ -174,6 +197,12 @@ namespace UnityEditorInternal
 					SliderScale.s_ScaleDrawLength = 1f;
 					current.Use();
 					EditorGUIUtility.SetWantsMouseJumping(0);
+				}
+				break;
+			case EventType.MouseMove:
+				if (id == HandleUtility.nearestControl)
+				{
+					HandleUtility.Repaint();
 				}
 				break;
 			case EventType.MouseDrag:
@@ -202,13 +231,18 @@ namespace UnityEditorInternal
 			case EventType.Repaint:
 			{
 				Color color = Color.white;
-				if (id == GUIUtility.keyboardControl)
+				if (id == GUIUtility.hotControl)
 				{
 					color = Handles.color;
 					Handles.color = Handles.selectedColor;
 				}
+				else if (id == HandleUtility.nearestControl && GUIUtility.hotControl == 0)
+				{
+					color = Handles.color;
+					Handles.color = Handles.preselectionColor;
+				}
 				capFunction(id, position, rotation, size * 0.15f, EventType.Repaint);
-				if (id == GUIUtility.keyboardControl)
+				if (id == GUIUtility.hotControl || (id == HandleUtility.nearestControl && GUIUtility.hotControl == 0))
 				{
 					Handles.color = color;
 				}

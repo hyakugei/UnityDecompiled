@@ -1,45 +1,41 @@
 using System;
-using System.Runtime.CompilerServices;
-using UnityEngine.Scripting;
+using System.Collections.Generic;
 
 namespace UnityEngine.VR
 {
+	[Obsolete("InputTracking has been moved.  Use UnityEngine.XR.InputTracking instead (UnityUpgradable) -> UnityEngine.XR.InputTracking", true)]
 	public static class InputTracking
 	{
-		public static extern bool disablePositionalTracking
+		public static bool disablePositionalTracking
 		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
+			get
+			{
+				throw new NotSupportedException("InputTracking has been moved.  Use UnityEngine.XR.InputTracking instead.");
+			}
+			set
+			{
+				throw new NotSupportedException("InputTracking has been moved.  Use UnityEngine.XR.InputTracking instead.");
+			}
 		}
 
 		public static Vector3 GetLocalPosition(VRNode node)
 		{
-			Vector3 result;
-			InputTracking.INTERNAL_CALL_GetLocalPosition(node, out result);
-			return result;
+			throw new NotSupportedException("InputTracking has been moved.  Use UnityEngine.XR.InputTracking instead.");
 		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_GetLocalPosition(VRNode node, out Vector3 value);
-
-		public static Quaternion GetLocalRotation(VRNode node)
+		public static void Recenter()
 		{
-			Quaternion result;
-			InputTracking.INTERNAL_CALL_GetLocalRotation(node, out result);
-			return result;
+			throw new NotSupportedException("InputTracking has been moved.  Use UnityEngine.XR.InputTracking instead.");
 		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_GetLocalRotation(VRNode node, out Quaternion value);
+		public static string GetNodeName(ulong uniqueID)
+		{
+			throw new NotSupportedException("InputTracking has been moved.  Use UnityEngine.XR.InputTracking instead.");
+		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern void Recenter();
+		public static void GetNodeStates(List<VRNodeState> nodeStates)
+		{
+			throw new NotSupportedException("InputTracking has been moved.  Use UnityEngine.XR.InputTracking instead.");
+		}
 	}
 }

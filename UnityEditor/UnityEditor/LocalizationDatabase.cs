@@ -1,35 +1,38 @@
 using System;
 using System.Runtime.CompilerServices;
 using UnityEngine;
-using UnityEngine.Scripting;
 
 namespace UnityEditor
 {
-	public sealed class LocalizationDatabase
+	internal class LocalizationDatabase
 	{
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern SystemLanguage GetDefaultEditorLanguage();
+		public static extern SystemLanguage currentEditorLanguage
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern void SetCurrentEditorLanguage(SystemLanguage lang);
+		public static extern bool enableEditorLocalization
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern SystemLanguage GetCurrentEditorLanguage();
+		public static extern SystemLanguage GetDefaultEditorLanguage();
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern void ReadEditorLocalizationResources();
+		public static extern SystemLanguage[] GetAvailableEditorLanguages();
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern SystemLanguage[] GetAvailableEditorLanguages();
-
-		[GeneratedByOldBindingsGenerator, ThreadAndSerializationSafe]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern string GetLocalizedString(string original);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern string GetLocalizationResourceFolder();
 
 		public static string MarkForTranslation(string value)
 		{

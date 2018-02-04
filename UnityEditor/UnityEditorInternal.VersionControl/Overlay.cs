@@ -37,7 +37,7 @@ namespace UnityEditorInternal.VersionControl
 				if (Event.current.type == EventType.Repaint)
 				{
 					string externalVersionControl = EditorSettings.externalVersionControl;
-					if (!(externalVersionControl == ExternalVersionControl.Disabled) && !(externalVersionControl == ExternalVersionControl.AutoDetect) && !(externalVersionControl == ExternalVersionControl.Generic) && !(externalVersionControl == ExternalVersionControl.AssetServer))
+					if (!(externalVersionControl == ExternalVersionControl.Disabled) && !(externalVersionControl == ExternalVersionControl.AutoDetect) && !(externalVersionControl == ExternalVersionControl.Generic))
 					{
 						Overlay.DrawOverlays(asset, null, itemRect);
 					}
@@ -52,7 +52,7 @@ namespace UnityEditorInternal.VersionControl
 				if (Event.current.type == EventType.Repaint)
 				{
 					string externalVersionControl = EditorSettings.externalVersionControl;
-					if (!(externalVersionControl == ExternalVersionControl.Disabled) && !(externalVersionControl == ExternalVersionControl.AutoDetect) && !(externalVersionControl == ExternalVersionControl.Generic) && !(externalVersionControl == ExternalVersionControl.AssetServer))
+					if (!(externalVersionControl == ExternalVersionControl.Disabled) && !(externalVersionControl == ExternalVersionControl.AutoDetect) && !(externalVersionControl == ExternalVersionControl.Generic))
 					{
 						Overlay.DrawOverlays(asset, metaAsset, itemRect);
 					}
@@ -102,7 +102,8 @@ namespace UnityEditorInternal.VersionControl
 			Rect iconRect = new Rect(itemRect.x - num2, itemRect.y - num3, num, num);
 			Rect iconRect2 = new Rect(itemRect.xMax - num + num2, itemRect.y - num3, num, num);
 			Rect iconRect3 = new Rect(itemRect.x - num2, itemRect.yMax - num + num3, num, num);
-			Rect iconRect4 = new Rect(itemRect.xMax - num + num4, itemRect.yMax - num + num3, num, num);
+			Rect iconRect4 = new Rect(itemRect.xMax - num + num2, itemRect.yMax - num + num3, num, num);
+			Rect iconRect5 = new Rect(itemRect.xMax - num + num4, itemRect.yMax - num + num3, num, num);
 			Asset.States states = Asset.States.Local | Asset.States.Synced | Asset.States.ReadOnly | Asset.States.MetaFile;
 			bool flag = metaAsset == null || (metaAsset.state & states) == states;
 			Asset.States states2 = (metaAsset != null) ? (metaAsset.state & (Asset.States.CheckedOutLocal | Asset.States.DeletedLocal | Asset.States.AddedLocal | Asset.States.LockedLocal)) : Asset.States.None;
@@ -192,6 +193,10 @@ namespace UnityEditorInternal.VersionControl
 			{
 				Overlay.DrawOverlay(Asset.States.Conflicted, iconRect3);
 			}
+			if ((!asset.isFolder && asset.IsState(Asset.States.Updating)) || (metaAsset != null && metaAsset.IsState(Asset.States.Updating)))
+			{
+				Overlay.DrawOverlay(Asset.States.Updating, iconRect4);
+			}
 			if (asset.IsState(Asset.States.AddedRemote))
 			{
 				Overlay.DrawOverlay(Asset.States.AddedRemote, iconRect2);
@@ -258,7 +263,7 @@ namespace UnityEditorInternal.VersionControl
 			}
 			if (asset.IsState(Asset.States.OutOfSync) || (metaAsset != null && metaAsset.IsState(Asset.States.OutOfSync)))
 			{
-				Overlay.DrawOverlay(Asset.States.OutOfSync, iconRect4);
+				Overlay.DrawOverlay(Asset.States.OutOfSync, iconRect5);
 			}
 		}
 

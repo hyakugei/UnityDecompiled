@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using UnityEditor.Build;
+using UnityEditor.Experimental.AssetImporters;
 using UnityEditor.Modules;
 using UnityEditorInternal;
 using UnityEngine;
@@ -9,7 +11,7 @@ using UnityEngine;
 namespace UnityEditor
 {
 	[CanEditMultipleObjects, CustomEditor(typeof(PluginImporter))]
-	internal class PluginImporterInspector : AssetImporterInspector
+	internal class PluginImporterInspector : AssetImporterEditor
 	{
 		private delegate PluginImporterInspector.Compatibility ValueSwitcher(PluginImporterInspector.Compatibility value);
 
@@ -24,6 +26,8 @@ namespace UnityEditor
 
 		private bool m_HasModified;
 
+		private string m_ReferencesUnityEngineModule;
+
 		private PluginImporterInspector.Compatibility m_CompatibleWithAnyPlatform;
 
 		private PluginImporterInspector.Compatibility m_CompatibleWithEditor;
@@ -32,9 +36,7 @@ namespace UnityEditor
 
 		private static readonly BuildTarget[] m_StandaloneTargets = new BuildTarget[]
 		{
-			BuildTarget.StandaloneOSXIntel,
-			BuildTarget.StandaloneOSXIntel64,
-			BuildTarget.StandaloneOSXUniversal,
+			BuildTarget.StandaloneOSX,
 			BuildTarget.StandaloneWindows,
 			BuildTarget.StandaloneWindows64,
 			BuildTarget.StandaloneLinux,
@@ -50,7 +52,7 @@ namespace UnityEditor
 
 		private DesktopPluginImporterExtension m_DesktopExtension = null;
 
-		internal override bool showImportedObject
+		public override bool showImportedObject
 		{
 			get
 			{
@@ -173,9 +175,24 @@ namespace UnityEditor
 			return PluginImporterInspector.m_StandaloneTargets.Contains(buildTarget);
 		}
 
+		internal static bool IsValidBuildTarget(BuildTarget buildTarget)
+		{
+			return buildTarget > (BuildTarget)0;
+		}
+
 		internal PluginImporterInspector.Compatibility GetPlatformCompatibility(string platformName)
 		{
-			return this.m_CompatibleWithPlatform[(int)BuildPipeline.GetBuildTargetByName(platformName)];
+			BuildTarget buildTargetByName = BuildPipeline.GetBuildTargetByName(platformName);
+			PluginImporterInspector.Compatibility result;
+			if (!PluginImporterInspector.IsValidBuildTarget(buildTargetByName))
+			{
+				result = PluginImporterInspector.Compatibility.NotCompatible;
+			}
+			else
+			{
+				result = this.m_CompatibleWithPlatform[(int)buildTargetByName];
+			}
+			return result;
 		}
 
 		internal void SetPlatformCompatibility(string platformName, bool compatible)
@@ -189,10 +206,10 @@ namespace UnityEditor
 			{
 				throw new ArgumentException("compatibility value cannot be Mixed");
 			}
-			int buildTargetByName = (int)BuildPipeline.GetBuildTargetByName(platformName);
-			if (this.m_CompatibleWithPlatform[buildTargetByName] != compatibility)
+			BuildTarget buildTargetByName = BuildPipeline.GetBuildTargetByName(platformName);
+			if (PluginImporterInspector.IsValidBuildTarget(buildTargetByName) && this.m_CompatibleWithPlatform[(int)buildTargetByName] != compatibility)
 			{
-				this.m_CompatibleWithPlatform[buildTargetByName] = compatibility;
+				this.m_CompatibleWithPlatform[(int)buildTargetByName] = compatibility;
 				this.m_HasModified = true;
 			}
 		}
@@ -205,7 +222,7 @@ namespace UnityEditor
 				while (enumerator.MoveNext())
 				{
 					BuildTarget buildTarget = (BuildTarget)enumerator.Current;
-					if (buildTarget > (BuildTarget)0)
+					if (PluginImporterInspector.IsValidBuildTarget(buildTarget))
 					{
 						if (!PluginImporterInspector.IgnorePlatform(buildTarget))
 						{
@@ -220,20 +237,20 @@ namespace UnityEditor
 			return list;
 		}
 
-		private BuildPlayerWindow.BuildPlatform[] GetBuildPlayerValidPlatforms()
+		private BuildPlatform[] GetBuildPlayerValidPlatforms()
 		{
-			List<BuildPlayerWindow.BuildPlatform> validPlatforms = BuildPlayerWindow.GetValidPlatforms();
-			List<BuildPlayerWindow.BuildPlatform> list = new List<BuildPlayerWindow.BuildPlatform>();
+			List<BuildPlatform> validPlatforms = BuildPlatforms.instance.GetValidPlatforms();
+			List<BuildPlatform> list = new List<BuildPlatform>();
 			if (this.m_CompatibleWithEditor > PluginImporterInspector.Compatibility.NotCompatible)
 			{
-				list.Add(new BuildPlayerWindow.BuildPlatform("Editor settings", "Editor Settings", "BuildSettings.Editor", BuildTargetGroup.Unknown, true)
+				list.Add(new BuildPlatform("Editor settings", "Editor Settings", "BuildSettings.Editor", BuildTargetGroup.Unknown, true)
 				{
 					name = BuildPipeline.GetEditorTargetName()
 				});
 			}
-			foreach (BuildPlayerWindow.BuildPlatform current in validPlatforms)
+			foreach (BuildPlatform current in validPlatforms)
 			{
-				if (!PluginImporterInspector.IgnorePlatform(current.DefaultTarget))
+				if (!PluginImporterInspector.IgnorePlatform(current.defaultTarget))
 				{
 					if (current.targetGroup == BuildTargetGroup.Standalone)
 					{
@@ -244,7 +261,7 @@ namespace UnityEditor
 					}
 					else
 					{
-						if (this.m_CompatibleWithPlatform[(int)current.DefaultTarget] < PluginImporterInspector.Compatibility.Compatible)
+						if (this.m_CompatibleWithPlatform[(int)current.defaultTarget] < PluginImporterInspector.Compatibility.Compatible)
 						{
 							continue;
 						}
@@ -274,7 +291,7 @@ namespace UnityEditor
 			}
 		}
 
-		internal override void ResetValues()
+		protected override void ResetValues()
 		{
 			base.ResetValues();
 			this.m_HasModified = false;
@@ -323,7 +340,7 @@ namespace UnityEditor
 			}
 		}
 
-		internal override bool HasModified()
+		public override bool HasModified()
 		{
 			bool flag = this.m_HasModified || base.HasModified();
 			bool result;
@@ -352,7 +369,7 @@ namespace UnityEditor
 			return result;
 		}
 
-		internal override void Apply()
+		protected override void Apply()
 		{
 			base.Apply();
 			PluginImporter[] importers = this.importers;
@@ -405,14 +422,14 @@ namespace UnityEditor
 			}
 		}
 
-		internal override void Awake()
+		protected override void Awake()
 		{
 			this.m_EditorExtension = new EditorPluginImporterExtension();
 			this.m_DesktopExtension = new DesktopPluginImporterExtension();
 			base.Awake();
 		}
 
-		private void OnEnable()
+		public override void OnEnable()
 		{
 			if (this.IsEditingPlatformSettingsSupported())
 			{
@@ -459,6 +476,7 @@ namespace UnityEditor
 					}
 					this.m_PluginInformation["Assembly Info"] = value;
 				}
+				this.m_ReferencesUnityEngineModule = this.importer.HasDiscouragedReferences();
 			}
 		}
 
@@ -576,7 +594,7 @@ namespace UnityEditor
 
 		private void ShowPlatformSettings()
 		{
-			BuildPlayerWindow.BuildPlatform[] buildPlayerValidPlatforms = this.GetBuildPlayerValidPlatforms();
+			BuildPlatform[] buildPlayerValidPlatforms = this.GetBuildPlayerValidPlatforms();
 			if (buildPlayerValidPlatforms.Length > 0)
 			{
 				GUILayout.Label("Platform settings", EditorStyles.boldLabel, new GUILayoutOption[0]);
@@ -631,7 +649,10 @@ namespace UnityEditor
 					{
 						GUILayout.Width(85f)
 					});
-					GUILayout.TextField(current.Value, new GUILayoutOption[0]);
+					EditorGUILayout.SelectableLabel(current.Value, new GUILayoutOption[]
+					{
+						GUILayout.Height(16f)
+					});
 					GUILayout.EndHorizontal();
 				}
 				EditorGUILayout.EndScrollView();
@@ -640,9 +661,13 @@ namespace UnityEditor
 				{
 					EditorGUILayout.HelpBox("Once a native plugin is loaded from script, it's never unloaded. If you deselect a native plugin and it's already loaded, please restart Unity.", MessageType.Warning);
 				}
-				if (this.importer.dllType == DllType.ManagedNET40 && this.m_CompatibleWithEditor == PluginImporterInspector.Compatibility.Compatible)
+				if (EditorApplication.scriptingRuntimeVersion == ScriptingRuntimeVersion.Legacy && this.importer.dllType == DllType.ManagedNET40 && this.m_CompatibleWithEditor == PluginImporterInspector.Compatibility.Compatible)
 				{
 					EditorGUILayout.HelpBox("Plugin targets .NET 4.x and is marked as compatible with Editor, Editor can only use assemblies targeting .NET 3.5 or lower, please unselect Editor as compatible platform.", MessageType.Error);
+				}
+				if (this.m_ReferencesUnityEngineModule != null)
+				{
+					EditorGUILayout.HelpBox(string.Format("This plugin references at least one UnityEngine module assemblies directly ({0}.dll). To assure forward compatibility, only reference UnityEngine.dll, which contains type forwarders for all the module dlls.", this.m_ReferencesUnityEngineModule), MessageType.Warning);
 				}
 			}
 		}

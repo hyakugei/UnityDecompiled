@@ -10,13 +10,13 @@ namespace UnityEditor
 	{
 		private ParticleEffectUI m_ParticleEffectUI;
 
-		private GUIContent m_PreviewTitle = new GUIContent("Particle System Curves");
+		private GUIContent m_PreviewTitle = EditorGUIUtility.TrTextContent("Particle System Curves", null, null);
 
-		private GUIContent showWindowText = new GUIContent("Open Editor...");
+		private GUIContent showWindowText = EditorGUIUtility.TrTextContent("Open Editor...", null, null);
 
-		private GUIContent closeWindowText = new GUIContent("Close Editor");
+		private GUIContent closeWindowText = EditorGUIUtility.TrTextContent("Close Editor", null, null);
 
-		private GUIContent hideWindowText = new GUIContent("Hide Editor");
+		private GUIContent hideWindowText = EditorGUIUtility.TrTextContent("Hide Editor", null, null);
 
 		private static GUIContent m_PlayBackTitle;
 
@@ -26,7 +26,7 @@ namespace UnityEditor
 			{
 				if (ParticleSystemInspector.m_PlayBackTitle == null)
 				{
-					ParticleSystemInspector.m_PlayBackTitle = new GUIContent("Particle Effect");
+					ParticleSystemInspector.m_PlayBackTitle = EditorGUIUtility.TrTextContent("Particle Effect", null, null);
 				}
 				return ParticleSystemInspector.m_PlayBackTitle;
 			}
@@ -60,8 +60,8 @@ namespace UnityEditor
 
 		public void OnEnable()
 		{
-			EditorApplication.hierarchyWindowChanged = (EditorApplication.CallbackFunction)Delegate.Combine(EditorApplication.hierarchyWindowChanged, new EditorApplication.CallbackFunction(this.HierarchyOrProjectWindowWasChanged));
-			EditorApplication.projectWindowChanged = (EditorApplication.CallbackFunction)Delegate.Combine(EditorApplication.projectWindowChanged, new EditorApplication.CallbackFunction(this.HierarchyOrProjectWindowWasChanged));
+			EditorApplication.hierarchyChanged += new Action(this.HierarchyOrProjectWindowWasChanged);
+			EditorApplication.projectChanged += new Action(this.HierarchyOrProjectWindowWasChanged);
 			SceneView.onSceneGUIDelegate = (SceneView.OnSceneFunc)Delegate.Combine(SceneView.onSceneGUIDelegate, new SceneView.OnSceneFunc(this.OnSceneViewGUI));
 			Undo.undoRedoPerformed = (Undo.UndoRedoCallback)Delegate.Combine(Undo.undoRedoPerformed, new Undo.UndoRedoCallback(this.UndoRedoPerformed));
 		}
@@ -69,8 +69,8 @@ namespace UnityEditor
 		public void OnDisable()
 		{
 			SceneView.onSceneGUIDelegate = (SceneView.OnSceneFunc)Delegate.Remove(SceneView.onSceneGUIDelegate, new SceneView.OnSceneFunc(this.OnSceneViewGUI));
-			EditorApplication.projectWindowChanged = (EditorApplication.CallbackFunction)Delegate.Remove(EditorApplication.projectWindowChanged, new EditorApplication.CallbackFunction(this.HierarchyOrProjectWindowWasChanged));
-			EditorApplication.hierarchyWindowChanged = (EditorApplication.CallbackFunction)Delegate.Remove(EditorApplication.hierarchyWindowChanged, new EditorApplication.CallbackFunction(this.HierarchyOrProjectWindowWasChanged));
+			EditorApplication.projectChanged -= new Action(this.HierarchyOrProjectWindowWasChanged);
+			EditorApplication.hierarchyChanged -= new Action(this.HierarchyOrProjectWindowWasChanged);
 			Undo.undoRedoPerformed = (Undo.UndoRedoCallback)Delegate.Remove(Undo.undoRedoPerformed, new Undo.UndoRedoCallback(this.UndoRedoPerformed));
 			if (this.m_ParticleEffectUI != null)
 			{
@@ -124,6 +124,10 @@ namespace UnityEditor
 				bool selectedInParticleSystemWindow = this.selectedInParticleSystemWindow;
 				GameObject gameObject = (base.target as ParticleSystem).gameObject;
 				ParticleSystemWindow instance = ParticleSystemWindow.GetInstance();
+				if (instance)
+				{
+					instance.customEditor = this;
+				}
 				GUIContent content;
 				if (instance && instance.IsVisible() && selectedInParticleSystemWindow)
 				{

@@ -22,9 +22,8 @@ namespace UnityEditorInternal
 			switch (current.GetTypeForControl(id))
 			{
 			case EventType.MouseDown:
-				if ((HandleUtility.nearestControl == id && current.button == 0) || (GUIUtility.keyboardControl == id && current.button == 2))
+				if (HandleUtility.nearestControl == id && current.button == 0)
 				{
-					GUIUtility.keyboardControl = id;
 					GUIUtility.hotControl = id;
 					FreeMove.s_CurrentMousePosition = (FreeMove.s_StartMousePosition = current.mousePosition);
 					FreeMove.s_StartPosition = position;
@@ -40,6 +39,12 @@ namespace UnityEditorInternal
 					HandleUtility.ignoreRaySnapObjects = null;
 					current.Use();
 					EditorGUIUtility.SetWantsMouseJumping(0);
+				}
+				break;
+			case EventType.MouseMove:
+				if (id == HandleUtility.nearestControl)
+				{
+					HandleUtility.Repaint();
 				}
 				break;
 			case EventType.MouseDrag:
@@ -74,7 +79,7 @@ namespace UnityEditorInternal
 					}
 					if (!flag)
 					{
-						FreeMove.s_CurrentMousePosition += new Vector2(current.delta.x, -current.delta.y);
+						FreeMove.s_CurrentMousePosition += new Vector2(current.delta.x, -current.delta.y) * EditorGUIUtility.pixelsPerPoint;
 						Vector3 vector = Camera.current.WorldToScreenPoint(Handles.matrix.MultiplyPoint(FreeMove.s_StartPosition));
 						vector += FreeMove.s_CurrentMousePosition - FreeMove.s_StartMousePosition;
 						position = Handles.inverseMatrix.MultiplyPoint(Camera.current.ScreenToWorldPoint(vector));
@@ -96,10 +101,10 @@ namespace UnityEditorInternal
 							{
 								Handles.SetupIgnoreRaySnapObjects();
 							}
-							Vector3 v;
-							if (HandleUtility.FindNearestVertex(current.mousePosition, null, out v))
+							Vector3 point;
+							if (HandleUtility.FindNearestVertex(current.mousePosition, null, out point))
 							{
-								position = Handles.inverseMatrix.MultiplyPoint(v);
+								position = Handles.inverseMatrix.MultiplyPoint(point);
 							}
 						}
 						if (EditorGUI.actionKey && !current.shift)
@@ -118,15 +123,20 @@ namespace UnityEditorInternal
 			case EventType.Repaint:
 			{
 				Color color = Color.white;
-				if (id == GUIUtility.keyboardControl)
+				if (id == GUIUtility.hotControl)
 				{
 					color = Handles.color;
 					Handles.color = Handles.selectedColor;
 				}
+				else if (id == HandleUtility.nearestControl && GUIUtility.hotControl == 0)
+				{
+					color = Handles.color;
+					Handles.color = Handles.preselectionColor;
+				}
 				Handles.matrix = Matrix4x4.identity;
 				capFunc(id, position2, Camera.current.transform.rotation, size);
 				Handles.matrix = matrix;
-				if (id == GUIUtility.keyboardControl)
+				if (id == GUIUtility.hotControl || (id == HandleUtility.nearestControl && GUIUtility.hotControl == 0))
 				{
 					Handles.color = color;
 				}
@@ -150,9 +160,8 @@ namespace UnityEditorInternal
 			switch (current.GetTypeForControl(id))
 			{
 			case EventType.MouseDown:
-				if ((HandleUtility.nearestControl == id && current.button == 0) || (GUIUtility.keyboardControl == id && current.button == 2))
+				if (HandleUtility.nearestControl == id && current.button == 0)
 				{
-					GUIUtility.keyboardControl = id;
 					GUIUtility.hotControl = id;
 					FreeMove.s_CurrentMousePosition = (FreeMove.s_StartMousePosition = current.mousePosition);
 					FreeMove.s_StartPosition = position;
@@ -168,6 +177,12 @@ namespace UnityEditorInternal
 					HandleUtility.ignoreRaySnapObjects = null;
 					current.Use();
 					EditorGUIUtility.SetWantsMouseJumping(0);
+				}
+				break;
+			case EventType.MouseMove:
+				if (id == HandleUtility.nearestControl)
+				{
+					HandleUtility.Repaint();
 				}
 				break;
 			case EventType.MouseDrag:
@@ -202,7 +217,7 @@ namespace UnityEditorInternal
 					}
 					if (!flag)
 					{
-						FreeMove.s_CurrentMousePosition += new Vector2(current.delta.x, -current.delta.y);
+						FreeMove.s_CurrentMousePosition += new Vector2(current.delta.x, -current.delta.y) * EditorGUIUtility.pixelsPerPoint;
 						Vector3 vector = Camera.current.WorldToScreenPoint(Handles.matrix.MultiplyPoint(FreeMove.s_StartPosition));
 						vector += FreeMove.s_CurrentMousePosition - FreeMove.s_StartMousePosition;
 						position = Handles.inverseMatrix.MultiplyPoint(Camera.current.ScreenToWorldPoint(vector));
@@ -224,10 +239,10 @@ namespace UnityEditorInternal
 							{
 								Handles.SetupIgnoreRaySnapObjects();
 							}
-							Vector3 v;
-							if (HandleUtility.FindNearestVertex(current.mousePosition, null, out v))
+							Vector3 point;
+							if (HandleUtility.FindNearestVertex(current.mousePosition, null, out point))
 							{
-								position = Handles.inverseMatrix.MultiplyPoint(v);
+								position = Handles.inverseMatrix.MultiplyPoint(point);
 							}
 						}
 						if (EditorGUI.actionKey && !current.shift)
@@ -246,15 +261,20 @@ namespace UnityEditorInternal
 			case EventType.Repaint:
 			{
 				Color color = Color.white;
-				if (id == GUIUtility.keyboardControl)
+				if (id == GUIUtility.hotControl)
 				{
 					color = Handles.color;
 					Handles.color = Handles.selectedColor;
 				}
+				else if (id == HandleUtility.nearestControl && GUIUtility.hotControl == 0)
+				{
+					color = Handles.color;
+					Handles.color = Handles.preselectionColor;
+				}
 				Handles.matrix = Matrix4x4.identity;
 				handleFunction(id, position2, Camera.current.transform.rotation, size, EventType.Repaint);
 				Handles.matrix = matrix;
-				if (id == GUIUtility.keyboardControl)
+				if (id == GUIUtility.hotControl || (id == HandleUtility.nearestControl && GUIUtility.hotControl == 0))
 				{
 					Handles.color = color;
 				}

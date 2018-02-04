@@ -10,7 +10,7 @@ namespace UnityEditorInternal
 
 		private const float k_WindowPadding = 3f;
 
-		internal static IAnimationRecordingState s_State;
+		internal static AnimationWindowState s_State;
 
 		private static AddCurvesPopup s_AddCurvesPopup;
 
@@ -22,12 +22,6 @@ namespace UnityEditorInternal
 
 		private static AddCurvesPopup.OnNewCurveAdded NewCurveAddedCallback;
 
-		internal static AnimationWindowSelection selection
-		{
-			get;
-			set;
-		}
-
 		private void Init(Rect buttonRect)
 		{
 			buttonRect = GUIUtility.GUIToScreenRect(buttonRect);
@@ -37,8 +31,14 @@ namespace UnityEditorInternal
 			});
 		}
 
+		private void OnEnable()
+		{
+			AssemblyReloadEvents.beforeAssemblyReload += new AssemblyReloadEvents.AssemblyReloadCallback(base.Close);
+		}
+
 		private void OnDisable()
 		{
+			AssemblyReloadEvents.beforeAssemblyReload -= new AssemblyReloadEvents.AssemblyReloadCallback(base.Close);
 			AddCurvesPopup.s_LastClosedTime = DateTime.Now.Ticks / 10000L;
 			AddCurvesPopup.s_AddCurvesPopup = null;
 			AddCurvesPopup.s_Hierarchy = null;
@@ -46,14 +46,14 @@ namespace UnityEditorInternal
 
 		internal static void AddNewCurve(AddCurvesPopupPropertyNode node)
 		{
-			AnimationWindowUtility.CreateDefaultCurves(AddCurvesPopup.s_State, node.selectionItem, node.curveBindings);
+			AnimationWindowUtility.CreateDefaultCurves(AddCurvesPopup.s_State, node.curveBindings);
 			if (AddCurvesPopup.NewCurveAddedCallback != null)
 			{
 				AddCurvesPopup.NewCurveAddedCallback(node);
 			}
 		}
 
-		internal static bool ShowAtPosition(Rect buttonRect, IAnimationRecordingState state, AddCurvesPopup.OnNewCurveAdded newCurveCallback)
+		internal static bool ShowAtPosition(Rect buttonRect, AnimationWindowState state, AddCurvesPopup.OnNewCurveAdded newCurveCallback)
 		{
 			long num = DateTime.Now.Ticks / 10000L;
 			bool result;

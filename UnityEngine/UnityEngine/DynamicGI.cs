@@ -36,6 +36,13 @@ namespace UnityEngine
 			set;
 		}
 
+		public static extern bool isConverged
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+		}
+
 		public static void SetEmissive(Renderer renderer, Color color)
 		{
 			DynamicGI.INTERNAL_CALL_SetEmissive(renderer, ref color);
@@ -44,6 +51,10 @@ namespace UnityEngine
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern void INTERNAL_CALL_SetEmissive(Renderer renderer, ref Color color);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern void SetEnvironmentData(float[] input);
 
 		[Obsolete("DynamicGI.UpdateMaterials(Renderer) is deprecated; instead, use extension method from RendererExtensions: 'renderer.UpdateGIMaterials()' (UnityUpgradable).", true)]
 		public static void UpdateMaterials(Renderer renderer)

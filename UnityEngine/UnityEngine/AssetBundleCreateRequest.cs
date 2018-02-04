@@ -1,10 +1,12 @@
 using System;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
 	[RequiredByNativeCode]
+	[StructLayout(LayoutKind.Sequential)]
 	public sealed class AssetBundleCreateRequest : AsyncOperation
 	{
 		public extern AssetBundle assetBundle

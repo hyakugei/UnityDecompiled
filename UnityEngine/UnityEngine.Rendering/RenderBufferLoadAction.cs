@@ -5,6 +5,7 @@ namespace UnityEngine.Rendering
 	public enum RenderBufferLoadAction
 	{
 		Load,
-		DontCare = 2
+		Clear,
+		DontCare
 	}
 }

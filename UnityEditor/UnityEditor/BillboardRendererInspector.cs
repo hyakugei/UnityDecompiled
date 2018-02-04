@@ -28,6 +28,7 @@ namespace UnityEditor
 			base.serializedObject.Update();
 			Editor.DrawPropertiesExcluding(base.serializedObject, this.m_ExcludedProperties);
 			this.m_Probes.OnGUI(base.targets, (Renderer)base.target, false);
+			base.RenderRenderingLayer();
 			base.serializedObject.ApplyModifiedProperties();
 		}
 	}

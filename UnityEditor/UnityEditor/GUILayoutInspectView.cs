@@ -10,7 +10,7 @@ namespace UnityEditor
 
 		private readonly List<IMGUILayoutInstruction> m_LayoutInstructions = new List<IMGUILayoutInstruction>();
 
-		private GUIStyle m_FakeMargingStyleForOverlay = new GUIStyle();
+		private GUIStyle m_FakeMarginStyleForOverlay = new GUIStyle();
 
 		public GUILayoutInspectView(GUIViewDebuggerWindow guiViewDebuggerWindow) : base(guiViewDebuggerWindow)
 		{
@@ -20,6 +20,27 @@ namespace UnityEditor
 		{
 			this.m_LayoutInstructions.Clear();
 			GUIViewDebuggerHelper.GetLayoutInstructions(this.m_LayoutInstructions);
+		}
+
+		public override void ShowOverlay()
+		{
+			if (!this.isInstructionSelected)
+			{
+				base.debuggerWindow.ClearInstructionHighlighter();
+			}
+			else
+			{
+				IMGUILayoutInstruction iMGUILayoutInstruction = this.m_LayoutInstructions[base.listViewState.row];
+				RectOffset rectOffset = new RectOffset();
+				rectOffset.left = iMGUILayoutInstruction.marginLeft;
+				rectOffset.right = iMGUILayoutInstruction.marginRight;
+				rectOffset.top = iMGUILayoutInstruction.marginTop;
+				rectOffset.bottom = iMGUILayoutInstruction.marginBottom;
+				this.m_FakeMarginStyleForOverlay.padding = rectOffset;
+				Rect rect = iMGUILayoutInstruction.unclippedRect;
+				rect = rectOffset.Add(rect);
+				base.debuggerWindow.HighlightInstruction(base.debuggerWindow.inspected, rect, this.m_FakeMarginStyleForOverlay);
+			}
 		}
 
 		protected override int GetInstructionCount()
@@ -33,8 +54,40 @@ namespace UnityEditor
 			GUIContent content = GUIContent.Temp(this.GetInstructionListName(el.row));
 			Rect position = el.position;
 			position.xMin += (float)(iMGUILayoutInstruction.level * 10);
-			GUIViewDebuggerWindow.s_Styles.listItemBackground.Draw(position, false, false, this.m_ListViewState.row == el.row, false);
-			GUIViewDebuggerWindow.s_Styles.listItem.Draw(position, content, id, this.m_ListViewState.row == el.row);
+			GUIViewDebuggerWindow.Styles.listItemBackground.Draw(position, false, false, base.listViewState.row == el.row, false);
+			GUIViewDebuggerWindow.Styles.listItem.Draw(position, content, id, base.listViewState.row == el.row);
+		}
+
+		protected override void DrawInspectedStacktrace()
+		{
+			IMGUILayoutInstruction iMGUILayoutInstruction = this.m_LayoutInstructions[base.listViewState.row];
+			this.m_StacktraceScrollPos = EditorGUILayout.BeginScrollView(this.m_StacktraceScrollPos, GUIViewDebuggerWindow.Styles.stacktraceBackground, new GUILayoutOption[]
+			{
+				GUILayout.ExpandHeight(false)
+			});
+			base.DrawStackFrameList(iMGUILayoutInstruction.stack);
+			EditorGUILayout.EndScrollView();
+		}
+
+		internal override void DoDrawSelectedInstructionDetails(int selectedInstructionIndex)
+		{
+			IMGUILayoutInstruction iMGUILayoutInstruction = this.m_LayoutInstructions[selectedInstructionIndex];
+			using (new EditorGUI.DisabledScope(true))
+			{
+				base.DrawInspectedRect(iMGUILayoutInstruction.unclippedRect);
+			}
+			base.DoSelectableInstructionDataField("margin.left", iMGUILayoutInstruction.marginLeft.ToString());
+			base.DoSelectableInstructionDataField("margin.top", iMGUILayoutInstruction.marginTop.ToString());
+			base.DoSelectableInstructionDataField("margin.right", iMGUILayoutInstruction.marginRight.ToString());
+			base.DoSelectableInstructionDataField("margin.bottom", iMGUILayoutInstruction.marginBottom.ToString());
+			if (iMGUILayoutInstruction.style != null)
+			{
+				base.DoSelectableInstructionDataField("Style Name", iMGUILayoutInstruction.style.name);
+			}
+			if (iMGUILayoutInstruction.isGroup != 1)
+			{
+				base.DoSelectableInstructionDataField("IsVertical", (iMGUILayoutInstruction.isVertical == 1).ToString());
+			}
 		}
 
 		internal override string GetInstructionListName(int index)
@@ -47,6 +100,17 @@ namespace UnityEditor
 			}
 			StackFrame stackFrame = stack[num];
 			return stackFrame.methodName;
+		}
+
+		internal override void OnDoubleClickInstruction(int index)
+		{
+			throw new NotImplementedException();
+		}
+
+		internal override void OnSelectedInstructionChanged(int index)
+		{
+			base.listViewState.row = index;
+			this.ShowOverlay();
 		}
 
 		private int GetInterestingFrameIndex(StackFrame[] stacktrace)
@@ -83,66 +147,6 @@ namespace UnityEditor
 			}
 			result = stacktrace.Length - 1;
 			return result;
-		}
-
-		internal override void OnDoubleClickInstruction(int index)
-		{
-			throw new NotImplementedException();
-		}
-
-		protected override void DrawInspectedStacktrace()
-		{
-			IMGUILayoutInstruction iMGUILayoutInstruction = this.m_LayoutInstructions[this.m_ListViewState.row];
-			this.m_StacktraceScrollPos = EditorGUILayout.BeginScrollView(this.m_StacktraceScrollPos, GUIViewDebuggerWindow.s_Styles.stacktraceBackground, new GUILayoutOption[]
-			{
-				GUILayout.ExpandHeight(false)
-			});
-			base.DrawStackFrameList(iMGUILayoutInstruction.stack);
-			EditorGUILayout.EndScrollView();
-		}
-
-		internal override void DoDrawSelectedInstructionDetails(int index)
-		{
-			IMGUILayoutInstruction iMGUILayoutInstruction = this.m_LayoutInstructions[index];
-			using (new EditorGUI.DisabledScope(true))
-			{
-				base.DrawInspectedRect(iMGUILayoutInstruction.unclippedRect);
-				EditorGUILayout.IntField("margin.left", iMGUILayoutInstruction.marginLeft, new GUILayoutOption[0]);
-				EditorGUILayout.IntField("margin.top", iMGUILayoutInstruction.marginTop, new GUILayoutOption[0]);
-				EditorGUILayout.IntField("margin.right", iMGUILayoutInstruction.marginRight, new GUILayoutOption[0]);
-				EditorGUILayout.IntField("margin.bottom", iMGUILayoutInstruction.marginBottom, new GUILayoutOption[0]);
-				if (iMGUILayoutInstruction.style != null)
-				{
-					EditorGUILayout.LabelField("Style Name", iMGUILayoutInstruction.style.name, new GUILayoutOption[0]);
-				}
-				if (iMGUILayoutInstruction.isGroup != 1)
-				{
-					EditorGUILayout.Toggle("IsVertical", iMGUILayoutInstruction.isVertical == 1, new GUILayoutOption[0]);
-				}
-			}
-		}
-
-		internal override void OnSelectedInstructionChanged(int index)
-		{
-			this.m_ListViewState.row = index;
-			this.ShowOverlay();
-		}
-
-		public override void ShowOverlay()
-		{
-			if (this.HasSelectedinstruction())
-			{
-				IMGUILayoutInstruction iMGUILayoutInstruction = this.m_LayoutInstructions[this.m_ListViewState.row];
-				RectOffset rectOffset = new RectOffset();
-				rectOffset.left = iMGUILayoutInstruction.marginLeft;
-				rectOffset.right = iMGUILayoutInstruction.marginRight;
-				rectOffset.top = iMGUILayoutInstruction.marginTop;
-				rectOffset.bottom = iMGUILayoutInstruction.marginBottom;
-				this.m_FakeMargingStyleForOverlay.padding = rectOffset;
-				Rect rect = iMGUILayoutInstruction.unclippedRect;
-				rect = rectOffset.Add(rect);
-				this.m_GuiViewDebuggerWindow.HighlightInstruction(this.m_GuiViewDebuggerWindow.m_Inspected, rect, this.m_FakeMargingStyleForOverlay);
-			}
 		}
 	}
 }

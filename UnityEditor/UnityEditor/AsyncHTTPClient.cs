@@ -4,12 +4,10 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using UnityEngine;
-using UnityEngine.Internal;
-using UnityEngine.Scripting;
 
 namespace UnityEditor
 {
-	internal sealed class AsyncHTTPClient
+	internal class AsyncHTTPClient
 	{
 		private delegate void RequestProgressCallback(AsyncHTTPClient.State status, int downloaded, int totalSize);
 
@@ -157,43 +155,21 @@ namespace UnityEditor
 			this.statusCallback = null;
 		}
 
-		private static IntPtr SubmitClientRequest(string tag, string url, string[] headers, string method, string data, AsyncHTTPClient.RequestDoneCallback doneDelegate, [DefaultValue("null")] AsyncHTTPClient.RequestProgressCallback progressDelegate)
-		{
-			IntPtr result;
-			AsyncHTTPClient.INTERNAL_CALL_SubmitClientRequest(tag, url, headers, method, data, doneDelegate, progressDelegate, out result);
-			return result;
-		}
-
-		[ExcludeFromDocs]
-		private static IntPtr SubmitClientRequest(string tag, string url, string[] headers, string method, string data, AsyncHTTPClient.RequestDoneCallback doneDelegate)
-		{
-			AsyncHTTPClient.RequestProgressCallback progressDelegate = null;
-			IntPtr result;
-			AsyncHTTPClient.INTERNAL_CALL_SubmitClientRequest(tag, url, headers, method, data, doneDelegate, progressDelegate, out result);
-			return result;
-		}
-
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_SubmitClientRequest(string tag, string url, string[] headers, string method, string data, AsyncHTTPClient.RequestDoneCallback doneDelegate, AsyncHTTPClient.RequestProgressCallback progressDelegate, out IntPtr value);
+		private static extern IntPtr SubmitClientRequest(string tag, string url, string[] headers, string method, string data, AsyncHTTPClient.RequestDoneCallback doneDelegate, AsyncHTTPClient.RequestProgressCallback progressDelegate = null);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern byte[] GetBytesByHandle(IntPtr handle);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern Texture2D GetTextureByHandle(IntPtr handle);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void AbortByTag(string tag);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern void AbortByHandle(IntPtr handle);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void CurlRequestCheck();
 

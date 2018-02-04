@@ -38,9 +38,5 @@ namespace UnityEditor
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern bool PrototypeIsRenderable(TerrainData terrainData, int prototypeIndex);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern void RefreshPhysicsInEditMode();
 	}
 }

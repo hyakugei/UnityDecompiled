@@ -1,4 +1,5 @@
 using System;
+using UnityEngine;
 
 namespace UnityEditor.Modules
 {
@@ -13,32 +14,46 @@ namespace UnityEditor.Modules
 		{
 		}
 
+		public virtual void PostProcess(BuildPostProcessArgs args, out BuildProperties outProperties)
+		{
+			this.PostProcess(args);
+			outProperties = ScriptableObject.CreateInstance<DefaultBuildProperties>();
+		}
+
 		public virtual bool SupportsInstallInBuildFolder()
 		{
 			return false;
 		}
 
-		public virtual void PostProcessScriptsOnly(BuildPostProcessArgs args)
-		{
-			if (!this.SupportsScriptsOnlyBuild())
-			{
-				throw new NotSupportedException();
-			}
-		}
-
-		public virtual bool SupportsScriptsOnlyBuild()
+		public virtual bool SupportsLz4Compression()
 		{
 			return false;
 		}
 
-		public virtual string GetScriptLayoutFileFromBuild(BuildOptions options, string installPath, string fileName)
+		public virtual bool SupportsScriptsOnlyBuild()
 		{
-			return string.Empty;
+			return true;
 		}
 
 		public virtual string PrepareForBuild(BuildOptions options, BuildTarget target)
 		{
 			return null;
+		}
+
+		public virtual void UpdateBootConfig(BuildTarget target, BootConfigData config, BuildOptions options)
+		{
+			config.Set("wait-for-native-debugger", "0");
+			if (config.Get("player-connection-debug") == "1")
+			{
+				if (EditorUserBuildSettings.GetPlatformSettings(BuildPipeline.GetBuildTargetName(target), "WaitForManagedDebugger") == "true")
+				{
+					config.Set("wait-for-managed-debugger", "1");
+				}
+				else
+				{
+					config.Set("wait-for-managed-debugger", "0");
+				}
+			}
 		}
 
 		public virtual string GetExtension(BuildTarget target, BuildOptions options)

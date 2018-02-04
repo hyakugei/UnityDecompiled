@@ -1,9 +1,10 @@
+using Mono.Cecil;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
-using UnityEditor.BuildReporting;
+using UnityEditor.Build.Reporting;
 using UnityEngine;
-using UnityEngine.Internal;
 using UnityEngine.Scripting;
 
 namespace UnityEditor
@@ -64,7 +65,7 @@ namespace UnityEditor
 			EditorApplication.Exit(1);
 		}
 
-		public static string BuildPlayer(EditorBuildSettingsScene[] levels, string locationPathName, BuildTarget target, BuildOptions options)
+		public static BuildReport BuildPlayer(EditorBuildSettingsScene[] levels, string locationPathName, BuildTarget target, BuildOptions options)
 		{
 			return BuildPipeline.BuildPlayer(new BuildPlayerOptions
 			{
@@ -75,7 +76,7 @@ namespace UnityEditor
 			});
 		}
 
-		public static string BuildPlayer(string[] levels, string locationPathName, BuildTarget target, BuildOptions options)
+		public static BuildReport BuildPlayer(string[] levels, string locationPathName, BuildTarget target, BuildOptions options)
 		{
 			BuildTargetGroup buildTargetGroup = BuildPipeline.GetBuildTargetGroup(target);
 			return BuildPipeline.BuildPlayer(new BuildPlayerOptions
@@ -88,71 +89,87 @@ namespace UnityEditor
 			});
 		}
 
-		public static string BuildPlayer(BuildPlayerOptions buildPlayerOptions)
+		public static BuildReport BuildPlayer(BuildPlayerOptions buildPlayerOptions)
 		{
 			return BuildPipeline.BuildPlayer(buildPlayerOptions.scenes, buildPlayerOptions.locationPathName, buildPlayerOptions.assetBundleManifestPath, buildPlayerOptions.targetGroup, buildPlayerOptions.target, buildPlayerOptions.options);
 		}
 
-		private static string BuildPlayer(string[] scenes, string locationPathName, string assetBundleManifestPath, BuildTargetGroup buildTargetGroup, BuildTarget target, BuildOptions options)
+		private static BuildReport BuildPlayer(string[] scenes, string locationPathName, string assetBundleManifestPath, BuildTargetGroup buildTargetGroup, BuildTarget target, BuildOptions options)
 		{
-			string result;
 			if (BuildPipeline.isBuildingPlayer)
 			{
-				result = "Cannot start a new build because there is already a build in progress.";
+				throw new InvalidOperationException("Cannot start a new build because there is already a build in progress.");
 			}
-			else
+			if (buildTargetGroup == BuildTargetGroup.Unknown)
 			{
-				if (buildTargetGroup == BuildTargetGroup.Unknown)
-				{
-					buildTargetGroup = BuildPipeline.GetBuildTargetGroup(target);
-				}
-				if (string.IsNullOrEmpty(locationPathName))
-				{
-					if ((options & BuildOptions.InstallInBuildFolder) == BuildOptions.None || !PostprocessBuildPlayer.SupportsInstallInBuildFolder(buildTargetGroup, target))
-					{
-						result = "The 'locationPathName' parameter for BuildPipeline.BuildPlayer should not be null or empty.";
-						return result;
-					}
-				}
-				else if (string.IsNullOrEmpty(Path.GetFileName(locationPathName)))
-				{
-					string extensionForBuildTarget = PostprocessBuildPlayer.GetExtensionForBuildTarget(buildTargetGroup, target, options);
-					if (!string.IsNullOrEmpty(extensionForBuildTarget))
-					{
-						result = string.Format("For the '{0}' target the 'locationPathName' parameter for BuildPipeline.BuildPlayer should not end with a directory separator.\nProvided path: '{1}', expected a path with the extension '.{2}'.", target, locationPathName, extensionForBuildTarget);
-						return result;
-					}
-				}
-				try
-				{
-					result = BuildPipeline.BuildPlayerInternal(scenes, locationPathName, assetBundleManifestPath, buildTargetGroup, target, options).SummarizeErrors();
-				}
-				catch (Exception exception)
-				{
-					BuildPipeline.LogBuildExceptionAndExit("BuildPipeline.BuildPlayer", exception);
-					result = "";
-				}
+				buildTargetGroup = BuildPipeline.GetBuildTargetGroup(target);
+			}
+			string message;
+			if (!BuildPipeline.ValidateLocationPathNameForBuildTargetGroup(locationPathName, buildTargetGroup, target, options, out message))
+			{
+				throw new ArgumentException(message);
+			}
+			BuildReport result;
+			try
+			{
+				result = BuildPipeline.BuildPlayerInternal(scenes, locationPathName, assetBundleManifestPath, buildTargetGroup, target, options);
+			}
+			catch (Exception exception)
+			{
+				BuildPipeline.LogBuildExceptionAndExit("BuildPipeline.BuildPlayer", exception);
+				result = null;
 			}
 			return result;
 		}
 
+		internal static bool ValidateLocationPathNameForBuildTargetGroup(string locationPathName, BuildTargetGroup buildTargetGroup, BuildTarget target, BuildOptions options, out string errorMessage)
+		{
+			bool result;
+			if (string.IsNullOrEmpty(locationPathName))
+			{
+				if ((options & BuildOptions.InstallInBuildFolder) == BuildOptions.None || !PostprocessBuildPlayer.SupportsInstallInBuildFolder(buildTargetGroup, target))
+				{
+					errorMessage = "The 'locationPathName' parameter for BuildPipeline.BuildPlayer should not be null or empty.";
+					result = false;
+					return result;
+				}
+			}
+			else if (string.IsNullOrEmpty(Path.GetFileName(locationPathName)))
+			{
+				string extensionForBuildTarget = PostprocessBuildPlayer.GetExtensionForBuildTarget(buildTargetGroup, target, options);
+				if (!string.IsNullOrEmpty(extensionForBuildTarget))
+				{
+					errorMessage = string.Format("For the '{0}' target the 'locationPathName' parameter for BuildPipeline.BuildPlayer should not end with a directory separator.\nProvided path: '{1}', expected a path with the extension '.{2}'.", target, locationPathName, extensionForBuildTarget);
+					result = false;
+					return result;
+				}
+			}
+			errorMessage = "";
+			result = true;
+			return result;
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern bool IsFeatureSupported(string define, BuildTarget platform);
+
 		[Obsolete("BuildStreamedSceneAssetBundle has been made obsolete. Please use the new AssetBundle build system introduced in 5.0 and check BuildAssetBundles documentation for details.")]
 		public static string BuildStreamedSceneAssetBundle(string[] levels, string locationPath, BuildTarget target, BuildOptions options)
 		{
-			return BuildPipeline.BuildPlayer(levels, locationPath, target, options | BuildOptions.BuildAdditionalStreamedScenes);
+			return BuildPipeline.BuildPlayer(levels, locationPath, target, options | BuildOptions.BuildAdditionalStreamedScenes).SummarizeErrors();
 		}
 
 		[Obsolete("BuildStreamedSceneAssetBundle has been made obsolete. Please use the new AssetBundle build system introduced in 5.0 and check BuildAssetBundles documentation for details.")]
 		public static string BuildStreamedSceneAssetBundle(string[] levels, string locationPath, BuildTarget target)
 		{
-			return BuildPipeline.BuildPlayer(levels, locationPath, target, BuildOptions.BuildAdditionalStreamedScenes);
+			return BuildPipeline.BuildPlayer(levels, locationPath, target, BuildOptions.BuildAdditionalStreamedScenes).SummarizeErrors();
 		}
 
 		[Obsolete("BuildStreamedSceneAssetBundle has been made obsolete. Please use the new AssetBundle build system introduced in 5.0 and check BuildAssetBundles documentation for details.")]
 		public static string BuildStreamedSceneAssetBundle(string[] levels, string locationPath, BuildTarget target, out uint crc, BuildOptions options)
 		{
-			BuildTargetGroup activeBuildTargetGroup = EditorUserBuildSettings.activeBuildTargetGroup;
-			return BuildPipeline.BuildStreamedSceneAssetBundle(levels, locationPath, activeBuildTargetGroup, target, out crc, options);
+			BuildTargetGroup buildTargetGroup = BuildPipeline.GetBuildTargetGroup(target);
+			return BuildPipeline.BuildStreamedSceneAssetBundle(levels, locationPath, buildTargetGroup, target, out crc, options);
 		}
 
 		[Obsolete("BuildStreamedSceneAssetBundle has been made obsolete. Please use the new AssetBundle build system introduced in 5.0 and check BuildAssetBundles documentation for details.")]
@@ -163,7 +180,7 @@ namespace UnityEditor
 			try
 			{
 				BuildReport buildReport = BuildPipeline.BuildPlayerInternal(levels, locationPath, null, buildTargetGroup, target, options | BuildOptions.BuildAdditionalStreamedScenes | BuildOptions.ComputeCRC);
-				crc = buildReport.crc;
+				crc = buildReport.summary.crc;
 				string text = buildReport.SummarizeErrors();
 				UnityEngine.Object.DestroyImmediate(buildReport, true);
 				result = text;
@@ -195,12 +212,6 @@ namespace UnityEditor
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern BuildReport BuildPlayerInternalNoCheck(string[] levels, string locationPathName, string assetBundleManifestPath, BuildTargetGroup buildTargetGroup, BuildTarget target, BuildOptions options, bool delayToAfterScriptReload);
 
-		[Obsolete("WebPlayer has been removed in 5.4", true)]
-		private static bool WebPlayerAssetBundlesAreNoLongerSupported()
-		{
-			throw new InvalidOperationException("WebPlayer asset bundles can no longer be built in 5.4+");
-		}
-
 		[Obsolete("BuildAssetBundle has been made obsolete. Please use the new AssetBundle build system introduced in 5.0 and check BuildAssetBundles documentation for details.")]
 		public static bool BuildAssetBundle(UnityEngine.Object mainAsset, UnityEngine.Object[] assets, string pathName, BuildAssetBundleOptions assetBundleOptions, BuildTarget targetPlatform)
 		{
@@ -208,23 +219,11 @@ namespace UnityEditor
 			return BuildPipeline.BuildAssetBundle(mainAsset, assets, pathName, out num, assetBundleOptions, targetPlatform);
 		}
 
-		[Obsolete("BuildAssetBundle has been made obsolete. Please use the new AssetBundle build system introduced in 5.0 and check BuildAssetBundles documentation for details.", true)]
-		public static bool BuildAssetBundle(UnityEngine.Object mainAsset, UnityEngine.Object[] assets, string pathName, BuildAssetBundleOptions assetBundleOptions)
-		{
-			return BuildPipeline.WebPlayerAssetBundlesAreNoLongerSupported();
-		}
-
-		[Obsolete("BuildAssetBundle has been made obsolete. Please use the new AssetBundle build system introduced in 5.0 and check BuildAssetBundles documentation for details.", true)]
-		public static bool BuildAssetBundle(UnityEngine.Object mainAsset, UnityEngine.Object[] assets, string pathName)
-		{
-			return BuildPipeline.WebPlayerAssetBundlesAreNoLongerSupported();
-		}
-
 		[Obsolete("BuildAssetBundle has been made obsolete. Please use the new AssetBundle build system introduced in 5.0 and check BuildAssetBundles documentation for details.")]
 		public static bool BuildAssetBundle(UnityEngine.Object mainAsset, UnityEngine.Object[] assets, string pathName, out uint crc, BuildAssetBundleOptions assetBundleOptions, BuildTarget targetPlatform)
 		{
-			BuildTargetGroup activeBuildTargetGroup = EditorUserBuildSettings.activeBuildTargetGroup;
-			return BuildPipeline.BuildAssetBundle(mainAsset, assets, pathName, out crc, assetBundleOptions, activeBuildTargetGroup, targetPlatform);
+			BuildTargetGroup buildTargetGroup = BuildPipeline.GetBuildTargetGroup(targetPlatform);
+			return BuildPipeline.BuildAssetBundle(mainAsset, assets, pathName, out crc, assetBundleOptions, buildTargetGroup, targetPlatform);
 		}
 
 		internal static bool BuildAssetBundle(UnityEngine.Object mainAsset, UnityEngine.Object[] assets, string pathName, out uint crc, BuildAssetBundleOptions assetBundleOptions, BuildTargetGroup targetPlatformGroup, BuildTarget targetPlatform)
@@ -243,20 +242,6 @@ namespace UnityEditor
 			return result;
 		}
 
-		[Obsolete("BuildAssetBundle has been made obsolete. Please use the new AssetBundle build system introduced in 5.0 and check BuildAssetBundles documentation for details.", true)]
-		public static bool BuildAssetBundle(UnityEngine.Object mainAsset, UnityEngine.Object[] assets, string pathName, out uint crc, BuildAssetBundleOptions assetBundleOptions)
-		{
-			crc = 0u;
-			return BuildPipeline.WebPlayerAssetBundlesAreNoLongerSupported();
-		}
-
-		[Obsolete("BuildAssetBundle has been made obsolete. Please use the new AssetBundle build system introduced in 5.0 and check BuildAssetBundles documentation for details.", true)]
-		public static bool BuildAssetBundle(UnityEngine.Object mainAsset, UnityEngine.Object[] assets, string pathName, out uint crc)
-		{
-			crc = 0u;
-			return BuildPipeline.WebPlayerAssetBundlesAreNoLongerSupported();
-		}
-
 		[Obsolete("BuildAssetBundleExplicitAssetNames has been made obsolete. Please use the new AssetBundle build system introduced in 5.0 and check BuildAssetBundles documentation for details.")]
 		public static bool BuildAssetBundleExplicitAssetNames(UnityEngine.Object[] assets, string[] assetNames, string pathName, BuildAssetBundleOptions assetBundleOptions, BuildTarget targetPlatform)
 		{
@@ -264,23 +249,11 @@ namespace UnityEditor
 			return BuildPipeline.BuildAssetBundleExplicitAssetNames(assets, assetNames, pathName, out num, assetBundleOptions, targetPlatform);
 		}
 
-		[Obsolete("BuildAssetBundleExplicitAssetNames has been made obsolete. Please use the new AssetBundle build system introduced in 5.0 and check BuildAssetBundles documentation for details.", true)]
-		public static bool BuildAssetBundleExplicitAssetNames(UnityEngine.Object[] assets, string[] assetNames, string pathName, BuildAssetBundleOptions assetBundleOptions)
-		{
-			return BuildPipeline.WebPlayerAssetBundlesAreNoLongerSupported();
-		}
-
-		[Obsolete("BuildAssetBundleExplicitAssetNames has been made obsolete. Please use the new AssetBundle build system introduced in 5.0 and check BuildAssetBundles documentation for details.", true)]
-		public static bool BuildAssetBundleExplicitAssetNames(UnityEngine.Object[] assets, string[] assetNames, string pathName)
-		{
-			return BuildPipeline.WebPlayerAssetBundlesAreNoLongerSupported();
-		}
-
 		[Obsolete("BuildAssetBundleExplicitAssetNames has been made obsolete. Please use the new AssetBundle build system introduced in 5.0 and check BuildAssetBundles documentation for details.")]
 		public static bool BuildAssetBundleExplicitAssetNames(UnityEngine.Object[] assets, string[] assetNames, string pathName, out uint crc, BuildAssetBundleOptions assetBundleOptions, BuildTarget targetPlatform)
 		{
-			BuildTargetGroup activeBuildTargetGroup = EditorUserBuildSettings.activeBuildTargetGroup;
-			return BuildPipeline.BuildAssetBundleExplicitAssetNames(assets, assetNames, pathName, out crc, assetBundleOptions, activeBuildTargetGroup, targetPlatform);
+			BuildTargetGroup buildTargetGroup = BuildPipeline.GetBuildTargetGroup(targetPlatform);
+			return BuildPipeline.BuildAssetBundleExplicitAssetNames(assets, assetNames, pathName, out crc, assetBundleOptions, buildTargetGroup, targetPlatform);
 		}
 
 		internal static bool BuildAssetBundleExplicitAssetNames(UnityEngine.Object[] assets, string[] assetNames, string pathName, out uint crc, BuildAssetBundleOptions assetBundleOptions, BuildTargetGroup targetPlatformGroup, BuildTarget targetPlatform)
@@ -299,42 +272,14 @@ namespace UnityEditor
 			return result;
 		}
 
-		[Obsolete("BuildAssetBundleExplicitAssetNames has been made obsolete. Please use the new AssetBundle build system introduced in 5.0 and check BuildAssetBundles documentation for details.", true)]
-		public static bool BuildAssetBundleExplicitAssetNames(UnityEngine.Object[] assets, string[] assetNames, string pathName, out uint crc, BuildAssetBundleOptions assetBundleOptions)
-		{
-			crc = 0u;
-			return BuildPipeline.WebPlayerAssetBundlesAreNoLongerSupported();
-		}
-
-		[Obsolete("BuildAssetBundleExplicitAssetNames has been made obsolete. Please use the new AssetBundle build system introduced in 5.0 and check BuildAssetBundles documentation for details.", true)]
-		public static bool BuildAssetBundleExplicitAssetNames(UnityEngine.Object[] assets, string[] assetNames, string pathName, out uint crc)
-		{
-			crc = 0u;
-			return BuildPipeline.WebPlayerAssetBundlesAreNoLongerSupported();
-		}
-
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern bool BuildAssetBundleInternal(UnityEngine.Object mainAsset, UnityEngine.Object[] assets, string[] assetNames, string pathName, BuildAssetBundleOptions assetBundleOptions, BuildTargetGroup targetPlatformGroup, BuildTarget targetPlatform, out uint crc);
 
-		[Obsolete("BuildAssetBundles signature has changed. Please specify the targetPlatform parameter", true), ExcludeFromDocs]
-		public static AssetBundleManifest BuildAssetBundles(string outputPath)
-		{
-			BuildAssetBundleOptions assetBundleOptions = BuildAssetBundleOptions.None;
-			return BuildPipeline.BuildAssetBundles(outputPath, assetBundleOptions);
-		}
-
-		[Obsolete("BuildAssetBundles signature has changed. Please specify the targetPlatform parameter", true)]
-		public static AssetBundleManifest BuildAssetBundles(string outputPath, [DefaultValue("BuildAssetBundleOptions.None")] BuildAssetBundleOptions assetBundleOptions)
-		{
-			BuildPipeline.WebPlayerAssetBundlesAreNoLongerSupported();
-			return null;
-		}
-
 		public static AssetBundleManifest BuildAssetBundles(string outputPath, BuildAssetBundleOptions assetBundleOptions, BuildTarget targetPlatform)
 		{
-			BuildTargetGroup activeBuildTargetGroup = EditorUserBuildSettings.activeBuildTargetGroup;
-			return BuildPipeline.BuildAssetBundles(outputPath, assetBundleOptions, activeBuildTargetGroup, targetPlatform);
+			BuildTargetGroup buildTargetGroup = BuildPipeline.GetBuildTargetGroup(targetPlatform);
+			return BuildPipeline.BuildAssetBundles(outputPath, assetBundleOptions, buildTargetGroup, targetPlatform);
 		}
 
 		internal static AssetBundleManifest BuildAssetBundles(string outputPath, BuildAssetBundleOptions assetBundleOptions, BuildTargetGroup targetPlatformGroup, BuildTarget targetPlatform)
@@ -350,24 +295,10 @@ namespace UnityEditor
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern AssetBundleManifest BuildAssetBundlesInternal(string outputPath, BuildAssetBundleOptions assetBundleOptions, BuildTargetGroup targetPlatformGroup, BuildTarget targetPlatform);
 
-		[Obsolete("BuildAssetBundles signature has changed. Please specify the targetPlatform parameter", true), ExcludeFromDocs]
-		public static AssetBundleManifest BuildAssetBundles(string outputPath, AssetBundleBuild[] builds)
-		{
-			BuildAssetBundleOptions assetBundleOptions = BuildAssetBundleOptions.None;
-			return BuildPipeline.BuildAssetBundles(outputPath, builds, assetBundleOptions);
-		}
-
-		[Obsolete("BuildAssetBundles signature has changed. Please specify the targetPlatform parameter", true)]
-		public static AssetBundleManifest BuildAssetBundles(string outputPath, AssetBundleBuild[] builds, [DefaultValue("BuildAssetBundleOptions.None")] BuildAssetBundleOptions assetBundleOptions)
-		{
-			BuildPipeline.WebPlayerAssetBundlesAreNoLongerSupported();
-			return null;
-		}
-
 		public static AssetBundleManifest BuildAssetBundles(string outputPath, AssetBundleBuild[] builds, BuildAssetBundleOptions assetBundleOptions, BuildTarget targetPlatform)
 		{
-			BuildTargetGroup activeBuildTargetGroup = EditorUserBuildSettings.activeBuildTargetGroup;
-			return BuildPipeline.BuildAssetBundles(outputPath, builds, assetBundleOptions, activeBuildTargetGroup, targetPlatform);
+			BuildTargetGroup buildTargetGroup = BuildPipeline.GetBuildTargetGroup(targetPlatform);
+			return BuildPipeline.BuildAssetBundles(outputPath, builds, assetBundleOptions, buildTargetGroup, targetPlatform);
 		}
 
 		internal static AssetBundleManifest BuildAssetBundles(string outputPath, AssetBundleBuild[] builds, BuildAssetBundleOptions assetBundleOptions, BuildTargetGroup targetPlatformGroup, BuildTarget targetPlatform)
@@ -401,7 +332,7 @@ namespace UnityEditor
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern bool IsBuildTargetSupported(BuildTargetGroup buildTargetGroup, BuildTarget target);
+		public static extern bool IsBuildTargetSupported(BuildTargetGroup buildTargetGroup, BuildTarget target);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -429,7 +360,7 @@ namespace UnityEditor
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern void SetPlaybackEngineDirectory(BuildTarget target, BuildOptions options, string playbackEngineDirectory);
 
-		[GeneratedByOldBindingsGenerator]
+		[GeneratedByOldBindingsGenerator, ThreadAndSerializationSafe]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern string GetBuildToolsDirectory(BuildTarget target);
 
@@ -457,5 +388,40 @@ namespace UnityEditor
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern bool IsUnityScriptEvalSupported(BuildTarget target);
+
+		internal static string[] GetReferencingPlayerAssembliesForDLL(string dllPath)
+		{
+			DefaultAssemblyResolver defaultAssemblyResolver = new DefaultAssemblyResolver();
+			defaultAssemblyResolver.AddSearchDirectory(Path.GetDirectoryName(dllPath));
+			AssemblyDefinition assemblyDefinition = AssemblyDefinition.ReadAssembly(dllPath, new ReaderParameters
+			{
+				AssemblyResolver = defaultAssemblyResolver
+			});
+			string[] managedPlayerDllPaths = BuildPipeline.GetManagedPlayerDllPaths();
+			List<string> list = new List<string>();
+			string[] array = managedPlayerDllPaths;
+			for (int i = 0; i < array.Length; i++)
+			{
+				string text = array[i];
+				DefaultAssemblyResolver defaultAssemblyResolver2 = new DefaultAssemblyResolver();
+				defaultAssemblyResolver2.AddSearchDirectory(Path.GetDirectoryName(text));
+				AssemblyDefinition assemblyDefinition2 = AssemblyDefinition.ReadAssembly(text, new ReaderParameters
+				{
+					AssemblyResolver = defaultAssemblyResolver2
+				});
+				foreach (AssemblyNameReference current in assemblyDefinition2.MainModule.AssemblyReferences)
+				{
+					if (current.FullName == assemblyDefinition.Name.FullName)
+					{
+						list.Add(text);
+					}
+				}
+			}
+			return list.ToArray();
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern string[] GetManagedPlayerDllPaths();
 	}
 }

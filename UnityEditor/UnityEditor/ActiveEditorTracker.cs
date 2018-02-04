@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.Scripting;
@@ -88,6 +89,32 @@ namespace UnityEditor
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern void Destroy();
+
+		internal void GetObjectsLockedByThisTracker(List<UnityEngine.Object> lockedObjects)
+		{
+			if (lockedObjects == null)
+			{
+				throw new ArgumentNullException("The results list 'lockedObjects' cannot be null");
+			}
+			this.GetObjectsLockedByThisTrackerInternal(lockedObjects);
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern void GetObjectsLockedByThisTrackerInternal(object lockedObjects);
+
+		internal void SetObjectsLockedByThisTracker(List<UnityEngine.Object> toBeLocked)
+		{
+			if (toBeLocked == null)
+			{
+				throw new ArgumentNullException("The list 'toBeLocked' cannot be null");
+			}
+			this.SetObjectsLockedByThisTrackerInternal(toBeLocked);
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern void SetObjectsLockedByThisTrackerInternal(object toBeLocked);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]

@@ -4,6 +4,7 @@ using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
+	[NativeClass("Unity::HingeJoint")]
 	public sealed class HingeJoint : Joint
 	{
 		public JointMotor motor

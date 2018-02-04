@@ -7,24 +7,24 @@ namespace UnityEditor
 	{
 		private class Styles
 		{
-			public GUIContent headerAdd = new GUIContent("Add");
+			public GUIContent headerAdd = EditorGUIUtility.TrTextContent("Add", null, null);
 
-			public GUIContent headerEdit = new GUIContent("Edit");
+			public GUIContent headerEdit = EditorGUIUtility.TrTextContent("Edit", null, null);
 
-			public GUIContent typeName = new GUIContent("Type");
+			public GUIContent typeName = EditorGUIUtility.TrTextContent("Type", null, null);
 
-			public GUIContent widthHeightText = new GUIContent("Width & Height");
+			public GUIContent widthHeightText = EditorGUIUtility.TrTextContent("Width & Height", null, null);
 
-			public GUIContent optionalText = new GUIContent("Label");
+			public GUIContent optionalText = EditorGUIUtility.TrTextContent("Label", null, null);
 
-			public GUIContent ok = new GUIContent("OK");
+			public GUIContent ok = EditorGUIUtility.TrTextContent("OK", null, null);
 
-			public GUIContent cancel = new GUIContent("Cancel");
+			public GUIContent cancel = EditorGUIUtility.TrTextContent("Cancel", null, null);
 
 			public GUIContent[] typeNames = new GUIContent[]
 			{
-				new GUIContent("Aspect Ratio"),
-				new GUIContent("Fixed Resolution")
+				EditorGUIUtility.TrTextContent("Aspect Ratio", null, null),
+				EditorGUIUtility.TrTextContent("Fixed Resolution", null, null)
 			};
 		}
 

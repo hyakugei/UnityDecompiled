@@ -1,12 +1,13 @@
 using System;
 using System.IO;
 using System.Linq;
+using UnityEditor.Experimental.AssetImporters;
 using UnityEngine;
 
 namespace UnityEditor
 {
 	[CanEditMultipleObjects, CustomEditor(typeof(TrueTypeFontImporter))]
-	internal class TrueTypeFontImporterInspector : AssetImporterInspector
+	internal class TrueTypeFontImporterInspector : AssetImporterEditor
 	{
 		private SerializedProperty m_FontSize;
 
@@ -22,6 +23,12 @@ namespace UnityEditor
 
 		private SerializedProperty m_AscentCalculationMode;
 
+		private SerializedProperty m_UseLegacyBoundsCalculation;
+
+		private SerializedProperty m_ShouldRoundAdvanceValue;
+
+		private SerializedProperty m_FallbackFontReferencesArraySize;
+
 		private string m_FontNamesString = "";
 
 		private string m_DefaultFontNamesString = "";
@@ -36,12 +43,12 @@ namespace UnityEditor
 
 		private static GUIContent[] kCharacterStrings = new GUIContent[]
 		{
-			new GUIContent("Dynamic"),
-			new GUIContent("Unicode"),
-			new GUIContent("ASCII default set"),
-			new GUIContent("ASCII upper case"),
-			new GUIContent("ASCII lower case"),
-			new GUIContent("Custom set")
+			EditorGUIUtility.TrTextContent("Dynamic", null, null),
+			EditorGUIUtility.TrTextContent("Unicode", null, null),
+			EditorGUIUtility.TrTextContent("ASCII default set", null, null),
+			EditorGUIUtility.TrTextContent("ASCII upper case", null, null),
+			EditorGUIUtility.TrTextContent("ASCII lower case", null, null),
+			EditorGUIUtility.TrTextContent("Custom set", null, null)
 		};
 
 		private static int[] kCharacterValues = new int[]
@@ -56,10 +63,10 @@ namespace UnityEditor
 
 		private static GUIContent[] kRenderingModeStrings = new GUIContent[]
 		{
-			new GUIContent("Smooth"),
-			new GUIContent("Hinted Smooth"),
-			new GUIContent("Hinted Raster"),
-			new GUIContent("OS Default")
+			EditorGUIUtility.TrTextContent("Smooth", null, null),
+			EditorGUIUtility.TrTextContent("Hinted Smooth", null, null),
+			EditorGUIUtility.TrTextContent("Hinted Raster", null, null),
+			EditorGUIUtility.TrTextContent("OS Default", null, null)
 		};
 
 		private static int[] kRenderingModeValues = new int[]
@@ -72,9 +79,9 @@ namespace UnityEditor
 
 		private static GUIContent[] kAscentCalculationModeStrings = new GUIContent[]
 		{
-			new GUIContent("Legacy version 2 mode (glyph bounding boxes)"),
-			new GUIContent("Face ascender metric"),
-			new GUIContent("Face bounding box metric")
+			EditorGUIUtility.TrTextContent("Legacy version 2 mode (glyph bounding boxes)", null, null),
+			EditorGUIUtility.TrTextContent("Face ascender metric", null, null),
+			EditorGUIUtility.TrTextContent("Face bounding box metric", null, null)
 		};
 
 		private static int[] kAscentCalculationModeValues = new int[]
@@ -84,7 +91,7 @@ namespace UnityEditor
 			2
 		};
 
-		private void OnEnable()
+		public override void OnEnable()
 		{
 			this.m_FontSize = base.serializedObject.FindProperty("m_FontSize");
 			this.m_TextureCase = base.serializedObject.FindProperty("m_ForceTextureCase");
@@ -93,11 +100,28 @@ namespace UnityEditor
 			this.m_CustomCharacters = base.serializedObject.FindProperty("m_CustomCharacters");
 			this.m_FontRenderingMode = base.serializedObject.FindProperty("m_FontRenderingMode");
 			this.m_AscentCalculationMode = base.serializedObject.FindProperty("m_AscentCalculationMode");
+			this.m_UseLegacyBoundsCalculation = base.serializedObject.FindProperty("m_UseLegacyBoundsCalculation");
+			this.m_ShouldRoundAdvanceValue = base.serializedObject.FindProperty("m_ShouldRoundAdvanceValue");
+			this.m_FallbackFontReferencesArraySize = base.serializedObject.FindProperty("m_FallbackFontReferences.Array.size");
 			if (base.targets.Length == 1)
 			{
 				this.m_DefaultFontNamesString = this.GetDefaultFontNames();
 				this.m_FontNamesString = this.GetFontNames();
+				TrueTypeFontImporter trueTypeFontImporter = (TrueTypeFontImporter)base.target;
+				this.m_FallbackFontReferences = trueTypeFontImporter.fontReferences;
 			}
+		}
+
+		protected override void Apply()
+		{
+			this.m_FallbackFontReferencesArraySize.intValue = this.m_FallbackFontReferences.Length;
+			SerializedProperty serializedProperty = this.m_FallbackFontReferencesArraySize.Copy();
+			for (int i = 0; i < this.m_FallbackFontReferences.Length; i++)
+			{
+				serializedProperty.Next(false);
+				serializedProperty.objectReferenceValue = this.m_FallbackFontReferences[i];
+			}
+			base.Apply();
 		}
 
 		private string GetDefaultFontNames()
@@ -217,9 +241,11 @@ namespace UnityEditor
 				{
 					this.m_FontSize.intValue = 500;
 				}
-				EditorGUILayout.IntPopup(this.m_FontRenderingMode, TrueTypeFontImporterInspector.kRenderingModeStrings, TrueTypeFontImporterInspector.kRenderingModeValues, new GUIContent("Rendering Mode"), new GUILayoutOption[0]);
-				EditorGUILayout.IntPopup(this.m_TextureCase, TrueTypeFontImporterInspector.kCharacterStrings, TrueTypeFontImporterInspector.kCharacterValues, new GUIContent("Character"), new GUILayoutOption[0]);
-				EditorGUILayout.IntPopup(this.m_AscentCalculationMode, TrueTypeFontImporterInspector.kAscentCalculationModeStrings, TrueTypeFontImporterInspector.kAscentCalculationModeValues, new GUIContent("Ascent Calculation Mode"), new GUILayoutOption[0]);
+				EditorGUILayout.IntPopup(this.m_FontRenderingMode, TrueTypeFontImporterInspector.kRenderingModeStrings, TrueTypeFontImporterInspector.kRenderingModeValues, EditorGUIUtility.TrTextContent("Rendering Mode", null, null), new GUILayoutOption[0]);
+				EditorGUILayout.IntPopup(this.m_TextureCase, TrueTypeFontImporterInspector.kCharacterStrings, TrueTypeFontImporterInspector.kCharacterValues, EditorGUIUtility.TrTextContent("Character", null, null), new GUILayoutOption[0]);
+				EditorGUILayout.IntPopup(this.m_AscentCalculationMode, TrueTypeFontImporterInspector.kAscentCalculationModeStrings, TrueTypeFontImporterInspector.kAscentCalculationModeValues, EditorGUIUtility.TrTextContent("Ascent Calculation Mode", null, null), new GUILayoutOption[0]);
+				EditorGUILayout.PropertyField(this.m_UseLegacyBoundsCalculation, EditorGUIUtility.TrTextContent("Use Legacy Bounds", null, null), new GUILayoutOption[0]);
+				EditorGUILayout.PropertyField(this.m_ShouldRoundAdvanceValue, new GUIContent("Should Round Advance Value"), new GUILayoutOption[0]);
 				if (!this.m_TextureCase.hasMultipleDifferentValues)
 				{
 					if (this.m_TextureCase.intValue != -2)
@@ -246,7 +272,7 @@ namespace UnityEditor
 					}
 					else
 					{
-						EditorGUILayout.PropertyField(this.m_IncludeFontData, new GUIContent("Incl. Font Data"), new GUILayoutOption[0]);
+						EditorGUILayout.PropertyField(this.m_IncludeFontData, EditorGUIUtility.TrTextContent("Incl. Font Data", null, null), new GUILayoutOption[0]);
 						if (base.targets.Length == 1)
 						{
 							EditorGUI.BeginChangeCheck();

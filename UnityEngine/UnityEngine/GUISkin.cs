@@ -5,7 +5,10 @@ using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
-	[ExecuteInEditMode, RequiredByNativeCode]
+	[AssetFileNameExtension("guiskin", new string[]
+	{
+
+	}), ExecuteInEditMode, RequiredByNativeCode]
 	[Serializable]
 	public sealed class GUISkin : ScriptableObject
 	{

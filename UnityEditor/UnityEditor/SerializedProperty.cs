@@ -10,19 +10,13 @@ using UnityEngine.Scripting;
 namespace UnityEditor
 {
 	[StructLayout(LayoutKind.Sequential)]
-	public sealed class SerializedProperty
+	public sealed class SerializedProperty : IDisposable
 	{
 		private IntPtr m_Property;
 
 		internal SerializedObject m_SerializedObject;
 
-		public SerializedObject serializedObject
-		{
-			get
-			{
-				return this.m_SerializedObject;
-			}
-		}
+		internal string m_CachedLocalizedDisplayName = "";
 
 		public extern bool hasMultipleDifferentValues
 		{
@@ -102,6 +96,20 @@ namespace UnityEditor
 		}
 
 		public extern bool isAnimated
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+		}
+
+		internal extern bool isCandidate
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+		}
+
+		internal extern bool isKey
 		{
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
@@ -284,71 +292,7 @@ namespace UnityEditor
 			get;
 		}
 
-		public UnityEngine.Object exposedReferenceValue
-		{
-			get
-			{
-				UnityEngine.Object result;
-				if (this.propertyType != SerializedPropertyType.ExposedReference)
-				{
-					result = null;
-				}
-				else
-				{
-					SerializedProperty serializedProperty = this.FindPropertyRelative("defaultValue");
-					if (serializedProperty == null)
-					{
-						result = null;
-					}
-					else
-					{
-						UnityEngine.Object @object = serializedProperty.objectReferenceValue;
-						IExposedPropertyTable exposedPropertyTable = this.serializedObject.context as IExposedPropertyTable;
-						if (exposedPropertyTable != null)
-						{
-							SerializedProperty serializedProperty2 = this.FindPropertyRelative("exposedName");
-							PropertyName id = new PropertyName(serializedProperty2.stringValue);
-							bool flag = false;
-							UnityEngine.Object referenceValue = exposedPropertyTable.GetReferenceValue(id, out flag);
-							if (flag)
-							{
-								@object = referenceValue;
-							}
-						}
-						result = @object;
-					}
-				}
-				return result;
-			}
-			set
-			{
-				if (this.propertyType != SerializedPropertyType.ExposedReference)
-				{
-					throw new InvalidOperationException("Attempting to set the reference value on a SerializedProperty that is not an ExposedReference");
-				}
-				SerializedProperty serializedProperty = this.FindPropertyRelative("defaultValue");
-				IExposedPropertyTable exposedPropertyTable = this.serializedObject.context as IExposedPropertyTable;
-				if (exposedPropertyTable == null)
-				{
-					serializedProperty.objectReferenceValue = value;
-					serializedProperty.serializedObject.ApplyModifiedProperties();
-				}
-				else
-				{
-					SerializedProperty serializedProperty2 = this.FindPropertyRelative("exposedName");
-					string text = serializedProperty2.stringValue;
-					if (string.IsNullOrEmpty(text))
-					{
-						text = GUID.Generate().ToString();
-						serializedProperty2.stringValue = text;
-					}
-					PropertyName id = new PropertyName(text);
-					exposedPropertyTable.SetReferenceValue(id, value);
-				}
-			}
-		}
-
-		internal extern string layerMaskStringValue
+		internal extern uint layerMaskBits
 		{
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
@@ -421,6 +365,34 @@ namespace UnityEditor
 			}
 		}
 
+		public Vector2Int vector2IntValue
+		{
+			get
+			{
+				Vector2Int result;
+				this.INTERNAL_get_vector2IntValue(out result);
+				return result;
+			}
+			set
+			{
+				this.INTERNAL_set_vector2IntValue(ref value);
+			}
+		}
+
+		public Vector3Int vector3IntValue
+		{
+			get
+			{
+				Vector3Int result;
+				this.INTERNAL_get_vector3IntValue(out result);
+				return result;
+			}
+			set
+			{
+				this.INTERNAL_set_vector3IntValue(ref value);
+			}
+		}
+
 		public Quaternion quaternionValue
 		{
 			get
@@ -449,6 +421,20 @@ namespace UnityEditor
 			}
 		}
 
+		public RectInt rectIntValue
+		{
+			get
+			{
+				RectInt result;
+				this.INTERNAL_get_rectIntValue(out result);
+				return result;
+			}
+			set
+			{
+				this.INTERNAL_set_rectIntValue(ref value);
+			}
+		}
+
 		public Bounds boundsValue
 		{
 			get
@@ -460,6 +446,20 @@ namespace UnityEditor
 			set
 			{
 				this.INTERNAL_set_boundsValue(ref value);
+			}
+		}
+
+		public BoundsInt boundsIntValue
+		{
+			get
+			{
+				BoundsInt result;
+				this.INTERNAL_get_boundsIntValue(out result);
+				return result;
+			}
+			set
+			{
+				this.INTERNAL_set_boundsIntValue(ref value);
 			}
 		}
 
@@ -480,13 +480,156 @@ namespace UnityEditor
 			set;
 		}
 
-		internal SerializedProperty()
+		public extern bool isFixedBuffer
 		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
 		}
 
-		~SerializedProperty()
+		public extern int fixedBufferSize
 		{
-			this.Dispose();
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+		}
+
+		internal extern bool isValidDisplayNameCache
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public SerializedObject serializedObject
+		{
+			get
+			{
+				return this.m_SerializedObject;
+			}
+		}
+
+		public UnityEngine.Object exposedReferenceValue
+		{
+			get
+			{
+				UnityEngine.Object result;
+				if (this.propertyType != SerializedPropertyType.ExposedReference)
+				{
+					result = null;
+				}
+				else
+				{
+					SerializedProperty serializedProperty = this.FindPropertyRelative("defaultValue");
+					if (serializedProperty == null)
+					{
+						result = null;
+					}
+					else
+					{
+						UnityEngine.Object @object = serializedProperty.objectReferenceValue;
+						IExposedPropertyTable exposedPropertyTable = this.serializedObject.context as IExposedPropertyTable;
+						if (exposedPropertyTable != null)
+						{
+							SerializedProperty serializedProperty2 = this.FindPropertyRelative("exposedName");
+							PropertyName id = new PropertyName(serializedProperty2.stringValue);
+							bool flag = false;
+							UnityEngine.Object referenceValue = exposedPropertyTable.GetReferenceValue(id, out flag);
+							if (flag)
+							{
+								@object = referenceValue;
+							}
+						}
+						result = @object;
+					}
+				}
+				return result;
+			}
+			set
+			{
+				if (this.propertyType != SerializedPropertyType.ExposedReference)
+				{
+					throw new InvalidOperationException("Attempting to set the reference value on a SerializedProperty that is not an ExposedReference");
+				}
+				SerializedProperty serializedProperty = this.FindPropertyRelative("defaultValue");
+				IExposedPropertyTable exposedPropertyTable = this.serializedObject.context as IExposedPropertyTable;
+				if (exposedPropertyTable == null)
+				{
+					serializedProperty.objectReferenceValue = value;
+					serializedProperty.serializedObject.ApplyModifiedProperties();
+				}
+				else
+				{
+					SerializedProperty serializedProperty2 = this.FindPropertyRelative("exposedName");
+					string text = serializedProperty2.stringValue;
+					if (string.IsNullOrEmpty(text))
+					{
+						text = GUID.Generate().ToString();
+						serializedProperty2.stringValue = text;
+					}
+					PropertyName id = new PropertyName(text);
+					exposedPropertyTable.SetReferenceValue(id, value);
+				}
+			}
+		}
+
+		internal bool isScript
+		{
+			get
+			{
+				return this.type == "PPtr<MonoScript>";
+			}
+		}
+
+		private bool isUnityAssembly
+		{
+			get
+			{
+				return EditorUtility.IsUnityAssembly(this.m_SerializedObject.targetObject);
+			}
+		}
+
+		internal string localizedDisplayName
+		{
+			get
+			{
+				if (!this.isValidDisplayNameCache)
+				{
+					this.isValidDisplayNameCache = true;
+					this.m_CachedLocalizedDisplayName = ((!this.isUnityAssembly) ? this.displayName : L10n.Tr(this.displayName));
+				}
+				return this.m_CachedLocalizedDisplayName;
+			}
+		}
+
+		internal string[] enumLocalizedDisplayNames
+		{
+			get
+			{
+				string[] enumDisplayNames = this.enumDisplayNames;
+				string[] result;
+				if (!this.isUnityAssembly)
+				{
+					result = enumDisplayNames;
+				}
+				else
+				{
+					string[] array = new string[enumDisplayNames.Length];
+					for (int i = 0; i < array.Length; i++)
+					{
+						array[i] = L10n.Tr(enumDisplayNames[i]);
+					}
+					result = array;
+				}
+				return result;
+			}
+		}
+
+		internal SerializedProperty()
+		{
 		}
 
 		[GeneratedByOldBindingsGenerator, ThreadAndSerializationSafe]
@@ -515,7 +658,15 @@ namespace UnityEditor
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern bool ValidateObjectReferenceValueExact(UnityEngine.Object obj);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern void AppendFoldoutPPtrValue(UnityEngine.Object obj);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern string GetLayerMaskStringValue(uint layers);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -543,6 +694,22 @@ namespace UnityEditor
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void INTERNAL_get_vector2IntValue(out Vector2Int value);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void INTERNAL_set_vector2IntValue(ref Vector2Int value);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void INTERNAL_get_vector3IntValue(out Vector3Int value);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void INTERNAL_set_vector3IntValue(ref Vector3Int value);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern void INTERNAL_get_quaternionValue(out Quaternion value);
 
 		[GeneratedByOldBindingsGenerator]
@@ -559,11 +726,27 @@ namespace UnityEditor
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void INTERNAL_get_rectIntValue(out RectInt value);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void INTERNAL_set_rectIntValue(ref RectInt value);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern void INTERNAL_get_boundsValue(out Bounds value);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern void INTERNAL_set_boundsValue(ref Bounds value);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void INTERNAL_get_boundsIntValue(out BoundsInt value);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void INTERNAL_set_boundsIntValue(ref BoundsInt value);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -585,13 +768,6 @@ namespace UnityEditor
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern int CountInProperty();
 
-		public SerializedProperty Copy()
-		{
-			SerializedProperty serializedProperty = this.CopyInternal();
-			serializedProperty.m_SerializedObject = this.m_SerializedObject;
-			return serializedProperty;
-		}
-
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern SerializedProperty CopyInternal();
@@ -603,21 +779,6 @@ namespace UnityEditor
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern bool DeleteCommand();
-
-		public SerializedProperty FindPropertyRelative(string relativePropertyPath)
-		{
-			SerializedProperty serializedProperty = this.Copy();
-			SerializedProperty result;
-			if (serializedProperty.FindPropertyRelativeInternal(relativePropertyPath))
-			{
-				result = serializedProperty;
-			}
-			else
-			{
-				result = null;
-			}
-			return result;
-		}
 
 		[ExcludeFromDocs]
 		public SerializedProperty GetEndProperty()
@@ -640,14 +801,6 @@ namespace UnityEditor
 			return serializedProperty;
 		}
 
-		[DebuggerHidden]
-		public IEnumerator GetEnumerator()
-		{
-			SerializedProperty.<GetEnumerator>c__Iterator0 <GetEnumerator>c__Iterator = new SerializedProperty.<GetEnumerator>c__Iterator0();
-			<GetEnumerator>c__Iterator.$this = this;
-			return <GetEnumerator>c__Iterator;
-		}
-
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern bool FindPropertyInternal(string propertyPath);
@@ -658,30 +811,19 @@ namespace UnityEditor
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern int[] GetLayerMaskSelectedIndex();
+		internal static extern int[] GetLayerMaskSelectedIndex(uint layers);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern string[] GetLayerMaskNames();
+		internal static extern string[] GetLayerMaskNames(uint layers);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern uint ToggleLayerMask(uint layers, int index);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern void ToggleLayerMaskAtIndex(int index);
-
-		public SerializedProperty GetArrayElementAtIndex(int index)
-		{
-			SerializedProperty serializedProperty = this.Copy();
-			SerializedProperty result;
-			if (serializedProperty.GetArrayElementAtIndexInternal(index))
-			{
-				result = serializedProperty;
-			}
-			else
-			{
-				result = null;
-			}
-			return result;
-		}
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -702,6 +844,75 @@ namespace UnityEditor
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern bool MoveArrayElement(int srcIndex, int dstIndex);
+
+		public SerializedProperty GetFixedBufferElementAtIndex(int index)
+		{
+			SerializedProperty serializedProperty = this.Copy();
+			SerializedProperty result;
+			if (serializedProperty.GetFixedBufferAtIndexInternal(index))
+			{
+				result = serializedProperty;
+			}
+			else
+			{
+				result = null;
+			}
+			return result;
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern bool GetFixedBufferAtIndexInternal(int index);
+
+		~SerializedProperty()
+		{
+			this.Dispose();
+		}
+
+		public SerializedProperty Copy()
+		{
+			SerializedProperty serializedProperty = this.CopyInternal();
+			serializedProperty.m_SerializedObject = this.m_SerializedObject;
+			return serializedProperty;
+		}
+
+		public SerializedProperty FindPropertyRelative(string relativePropertyPath)
+		{
+			SerializedProperty serializedProperty = this.Copy();
+			SerializedProperty result;
+			if (serializedProperty.FindPropertyRelativeInternal(relativePropertyPath))
+			{
+				result = serializedProperty;
+			}
+			else
+			{
+				result = null;
+			}
+			return result;
+		}
+
+		[DebuggerHidden]
+		public IEnumerator GetEnumerator()
+		{
+			SerializedProperty.<GetEnumerator>c__Iterator0 <GetEnumerator>c__Iterator = new SerializedProperty.<GetEnumerator>c__Iterator0();
+			<GetEnumerator>c__Iterator.$this = this;
+			return <GetEnumerator>c__Iterator;
+		}
+
+		public SerializedProperty GetArrayElementAtIndex(int index)
+		{
+			SerializedProperty serializedProperty = this.Copy();
+			SerializedProperty result;
+			if (serializedProperty.GetArrayElementAtIndexInternal(index))
+			{
+				result = serializedProperty;
+			}
+			else
+			{
+				result = null;
+			}
+			return result;
+		}
 
 		internal void SetToValueOfTarget(UnityEngine.Object target)
 		{
@@ -767,6 +978,18 @@ namespace UnityEditor
 					break;
 				case SerializedPropertyType.ExposedReference:
 					this.exposedReferenceValue = serializedProperty.exposedReferenceValue;
+					break;
+				case SerializedPropertyType.Vector2Int:
+					this.vector2IntValue = serializedProperty.vector2IntValue;
+					break;
+				case SerializedPropertyType.Vector3Int:
+					this.vector3IntValue = serializedProperty.vector3IntValue;
+					break;
+				case SerializedPropertyType.RectInt:
+					this.rectIntValue = serializedProperty.rectIntValue;
+					break;
+				case SerializedPropertyType.BoundsInt:
+					this.boundsIntValue = serializedProperty.boundsIntValue;
 					break;
 				}
 			}

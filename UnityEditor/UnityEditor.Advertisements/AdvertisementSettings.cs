@@ -1,65 +1,68 @@
 using System;
+using System.Runtime.CompilerServices;
 using UnityEngine;
-using UnityEngine.Connect;
 
 namespace UnityEditor.Advertisements
 {
 	public static class AdvertisementSettings
 	{
-		public static bool enabled
+		public static extern bool enabled
 		{
-			get
-			{
-				return UnityAdsSettings.enabled;
-			}
-			set
-			{
-				UnityAdsSettings.enabled = value;
-			}
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
 		}
 
-		public static bool initializeOnStartup
+		public static extern bool testMode
 		{
-			get
-			{
-				return UnityAdsSettings.initializeOnStartup;
-			}
-			set
-			{
-				UnityAdsSettings.initializeOnStartup = value;
-			}
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
 		}
 
-		public static bool testMode
+		public static extern bool initializeOnStartup
 		{
-			get
-			{
-				return UnityAdsSettings.testMode;
-			}
-			set
-			{
-				UnityAdsSettings.testMode = value;
-			}
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
 		}
 
+		internal static extern bool enabledForPlatform
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern string GetGameId(RuntimePlatform platform);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern void SetGameId(RuntimePlatform platform, string gameId);
+
+		[Obsolete("No longer supported and will always return true")]
 		public static bool IsPlatformEnabled(RuntimePlatform platform)
 		{
-			return UnityAdsSettings.IsPlatformEnabled(platform);
+			return true;
 		}
 
+		[Obsolete("No longer supported and will do nothing")]
 		public static void SetPlatformEnabled(RuntimePlatform platform, bool value)
 		{
-			UnityAdsSettings.SetPlatformEnabled(platform, value);
 		}
 
-		public static string GetGameId(RuntimePlatform platform)
-		{
-			return UnityAdsSettings.GetGameId(platform);
-		}
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern string GetPlatformGameId(string platformName);
 
-		public static void SetGameId(RuntimePlatform platform, string gameId)
-		{
-			UnityAdsSettings.SetGameId(platform, gameId);
-		}
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern void SetPlatformGameId(string platformName, string gameId);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void SetEnabledServiceWindow(bool enabled);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void ApplyEnableSettings(BuildTarget target);
 	}
 }

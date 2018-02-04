@@ -1,12 +1,10 @@
 using System;
 using System.Collections.Generic;
-using UnityEditor.U2D.Interface;
 using UnityEngine;
 
 namespace UnityEditor
 {
-	[Serializable]
-	internal class SpriteRectCache : ScriptableObject, ISpriteRectCache, IUndoableObject
+	internal class SpriteRectCache : ScriptableObject
 	{
 		[SerializeField]
 		public List<SpriteRect> m_Rects;
@@ -36,7 +34,7 @@ namespace UnityEditor
 		{
 			if (this.m_Rects != null)
 			{
-				this.m_Rects.Remove(r);
+				this.m_Rects.RemoveAll((SpriteRect x) => x.spriteID == r.spriteID);
 			}
 		}
 
@@ -51,20 +49,20 @@ namespace UnityEditor
 		public int GetIndex(SpriteRect spriteRect)
 		{
 			int result;
-			if (this.m_Rects != null)
+			if (this.m_Rects != null && spriteRect != null)
 			{
-				result = this.m_Rects.FindIndex((SpriteRect p) => p.Equals(spriteRect));
+				result = this.m_Rects.FindIndex((SpriteRect p) => p.spriteID == spriteRect.spriteID);
 			}
 			else
 			{
-				result = 0;
+				result = -1;
 			}
 			return result;
 		}
 
 		public bool Contains(SpriteRect spriteRect)
 		{
-			return this.m_Rects != null && this.m_Rects.Contains(spriteRect);
+			return this.m_Rects != null && spriteRect != null && this.m_Rects.Find((SpriteRect x) => x.spriteID == spriteRect.spriteID) != null;
 		}
 
 		private void OnEnable()

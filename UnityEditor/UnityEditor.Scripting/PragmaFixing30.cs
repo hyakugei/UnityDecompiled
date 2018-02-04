@@ -7,11 +7,13 @@ using System.Text;
 using System.Text.RegularExpressions;
 using UnityEditorInternal;
 using UnityEngine;
+using UnityEngine.Scripting;
 
 namespace UnityEditor.Scripting
 {
 	internal class PragmaFixing30
 	{
+		[RequiredByNativeCode]
 		private static void FixJavaScriptPragmas()
 		{
 			string[] array = PragmaFixing30.CollectBadFiles();

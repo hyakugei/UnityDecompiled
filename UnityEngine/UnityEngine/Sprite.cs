@@ -1,10 +1,13 @@
 using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using UnityEngine.Bindings;
 using UnityEngine.Internal;
 using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
+	[NativeType("Runtime/Graphics/SpriteFrame.h")]
 	public sealed class Sprite : Object
 	{
 		public Bounds bounds
@@ -25,13 +28,6 @@ namespace UnityEngine
 				this.INTERNAL_get_rect(out result);
 				return result;
 			}
-		}
-
-		public extern float pixelsPerUnit
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
 		}
 
 		public extern Texture2D texture
@@ -130,6 +126,16 @@ namespace UnityEngine
 			get;
 		}
 
+		public extern float pixelsPerUnit
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+		}
+
+		private Sprite()
+		{
+		}
+
 		public static Sprite Create(Texture2D texture, Rect rect, Vector2 pivot, [DefaultValue("100.0f")] float pixelsPerUnit, [DefaultValue("0")] uint extrude, [DefaultValue("SpriteMeshType.Tight")] SpriteMeshType meshType, [DefaultValue("Vector4.zero")] Vector4 border)
 		{
 			return Sprite.INTERNAL_CALL_Create(texture, ref rect, ref pivot, pixelsPerUnit, extrude, meshType, ref border);
@@ -200,5 +206,70 @@ namespace UnityEngine
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern void OverrideGeometry(Vector2[] vertices, ushort[] triangles);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public extern int GetPhysicsShapeCount();
+
+		public int GetPhysicsShapePointCount(int shapeIdx)
+		{
+			int physicsShapeCount = this.GetPhysicsShapeCount();
+			if (shapeIdx < 0 || shapeIdx >= physicsShapeCount)
+			{
+				throw new IndexOutOfRangeException(string.Format("Index({0}) is out of bounds(0 - {1})", shapeIdx, physicsShapeCount - 1));
+			}
+			return this.Internal_GetPhysicsShapePointCount(shapeIdx);
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern int Internal_GetPhysicsShapePointCount(int shapeIdx);
+
+		public int GetPhysicsShape(int shapeIdx, List<Vector2> physicsShape)
+		{
+			int physicsShapeCount = this.GetPhysicsShapeCount();
+			if (shapeIdx < 0 || shapeIdx >= physicsShapeCount)
+			{
+				throw new IndexOutOfRangeException(string.Format("Index({0}) is out of bounds(0 - {1})", shapeIdx, physicsShapeCount - 1));
+			}
+			Sprite.GetPhysicsShapeImpl(this, shapeIdx, physicsShape);
+			return physicsShape.Count;
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void GetPhysicsShapeImpl(Sprite sprite, int shapeIdx, List<Vector2> physicsShape);
+
+		public void OverridePhysicsShape(IList<Vector2[]> physicsShapes)
+		{
+			for (int i = 0; i < physicsShapes.Count; i++)
+			{
+				Vector2[] array = physicsShapes[i];
+				if (array == null)
+				{
+					throw new ArgumentNullException(string.Format("Physics Shape at {0} is null.", i));
+				}
+				if (array.Length < 3)
+				{
+					throw new ArgumentException(string.Format("Physics Shape at {0} has less than 3 vertices ({1}).", i, array.Length));
+				}
+			}
+			Sprite.OverridePhysicsShapeCount(this, physicsShapes.Count);
+			for (int j = 0; j < physicsShapes.Count; j++)
+			{
+				Sprite.OverridePhysicsShape(this, physicsShapes[j], j);
+			}
+		}
+
+		internal static Sprite Create(Rect rect, Vector2 pivot, float pixelsToUnits, Texture2D texture = null)
+		{
+			return Sprite.Create_Injected(ref rect, ref pivot, pixelsToUnits, texture);
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void OverridePhysicsShapeCount(Sprite sprite, int physicsShapeCount);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void OverridePhysicsShape(Sprite sprite, Vector2[] physicsShape, int idx);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern Sprite Create_Injected(ref Rect rect, ref Vector2 pivot, float pixelsToUnits, Texture2D texture = null);
 	}
 }

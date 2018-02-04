@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Security;
+using UnityEngine.Bindings;
 using UnityEngine.Scripting;
 using UnityEngineInternal;
 
@@ -9,14 +10,26 @@ namespace UnityEngine
 {
 	public class GUILayoutUtility
 	{
+		[VisibleToOtherModules(new string[]
+		{
+			"UnityEngine.UIElementsModule"
+		})]
 		internal sealed class LayoutCache
 		{
+			[VisibleToOtherModules(new string[]
+			{
+				"UnityEngine.UIElementsModule"
+			})]
 			internal GUILayoutGroup topLevel = new GUILayoutGroup();
 
 			internal GenericStack layoutGroups = new GenericStack();
 
 			internal GUILayoutGroup windows = new GUILayoutGroup();
 
+			[VisibleToOtherModules(new string[]
+			{
+				"UnityEngine.UIElementsModule"
+			})]
 			internal LayoutCache()
 			{
 				this.layoutGroups.Push(this.topLevel);
@@ -64,11 +77,15 @@ namespace UnityEngine
 		internal static void CleanupRoots()
 		{
 			GUILayoutUtility.s_SpaceStyle = null;
-			GUILayoutUtility.s_StoredLayouts = null;
-			GUILayoutUtility.s_StoredWindows = null;
-			GUILayoutUtility.current = null;
+			GUILayoutUtility.s_StoredLayouts.Clear();
+			GUILayoutUtility.s_StoredWindows.Clear();
+			GUILayoutUtility.current = new GUILayoutUtility.LayoutCache();
 		}
 
+		[VisibleToOtherModules(new string[]
+		{
+			"UnityEngine.UIElementsModule"
+		})]
 		internal static GUILayoutUtility.LayoutCache SelectIDList(int instanceID, bool isWindow)
 		{
 			Dictionary<int, GUILayoutUtility.LayoutCache> dictionary = (!isWindow) ? GUILayoutUtility.s_StoredLayouts : GUILayoutUtility.s_StoredWindows;
@@ -102,6 +119,10 @@ namespace UnityEngine
 			}
 		}
 
+		[VisibleToOtherModules(new string[]
+		{
+			"UnityEngine.UIElementsModule"
+		})]
 		internal static void BeginContainer(GUILayoutUtility.LayoutCache cache)
 		{
 			if (Event.current.type == EventType.Layout)
@@ -172,20 +193,38 @@ namespace UnityEngine
 
 		internal static void LayoutFromEditorWindow()
 		{
-			GUILayoutUtility.current.topLevel.CalcWidth();
-			GUILayoutUtility.current.topLevel.SetHorizontal(0f, (float)Screen.width / GUIUtility.pixelsPerPoint);
-			GUILayoutUtility.current.topLevel.CalcHeight();
-			GUILayoutUtility.current.topLevel.SetVertical(0f, (float)Screen.height / GUIUtility.pixelsPerPoint);
-			GUILayoutUtility.LayoutFreeGroup(GUILayoutUtility.current.windows);
+			if (GUILayoutUtility.current.topLevel != null)
+			{
+				GUILayoutUtility.current.topLevel.CalcWidth();
+				GUILayoutUtility.current.topLevel.SetHorizontal(0f, (float)Screen.width / GUIUtility.pixelsPerPoint);
+				GUILayoutUtility.current.topLevel.CalcHeight();
+				GUILayoutUtility.current.topLevel.SetVertical(0f, (float)Screen.height / GUIUtility.pixelsPerPoint);
+				GUILayoutUtility.LayoutFreeGroup(GUILayoutUtility.current.windows);
+			}
+			else
+			{
+				Debug.LogError("GUILayout state invalid. Verify that all layout begin/end calls match.");
+			}
 		}
 
+		[VisibleToOtherModules(new string[]
+		{
+			"UnityEngine.UIElementsModule"
+		})]
 		internal static void LayoutFromContainer(float w, float h)
 		{
-			GUILayoutUtility.current.topLevel.CalcWidth();
-			GUILayoutUtility.current.topLevel.SetHorizontal(0f, w);
-			GUILayoutUtility.current.topLevel.CalcHeight();
-			GUILayoutUtility.current.topLevel.SetVertical(0f, h);
-			GUILayoutUtility.LayoutFreeGroup(GUILayoutUtility.current.windows);
+			if (GUILayoutUtility.current.topLevel != null)
+			{
+				GUILayoutUtility.current.topLevel.CalcWidth();
+				GUILayoutUtility.current.topLevel.SetHorizontal(0f, w);
+				GUILayoutUtility.current.topLevel.CalcHeight();
+				GUILayoutUtility.current.topLevel.SetVertical(0f, h);
+				GUILayoutUtility.LayoutFreeGroup(GUILayoutUtility.current.windows);
+			}
+			else
+			{
+				Debug.LogError("GUILayout state invalid. Verify that all layout begin/end calls match.");
+			}
 		}
 
 		internal static float LayoutFromInspector(float width)
@@ -290,13 +329,20 @@ namespace UnityEngine
 
 		internal static void EndLayoutGroup()
 		{
-			if (Event.current.type != EventType.Layout && Event.current.type != EventType.Used)
+			if (GUILayoutUtility.current.layoutGroups.Count == 0 || Event.current == null)
 			{
-				GUIDebugger.LogLayoutEndGroup();
+				Debug.LogError("EndLayoutGroup: BeginLayoutGroup must be called first.");
 			}
-			EventType arg_31_0 = Event.current.type;
-			GUILayoutUtility.current.layoutGroups.Pop();
-			GUILayoutUtility.current.topLevel = ((0 >= GUILayoutUtility.current.layoutGroups.Count) ? null : ((GUILayoutGroup)GUILayoutUtility.current.layoutGroups.Peek()));
+			else
+			{
+				if (Event.current.type != EventType.Layout && Event.current.type != EventType.Used)
+				{
+					GUIDebugger.LogLayoutEndGroup();
+				}
+				EventType arg_5F_0 = Event.current.type;
+				GUILayoutUtility.current.layoutGroups.Pop();
+				GUILayoutUtility.current.topLevel = ((0 >= GUILayoutUtility.current.layoutGroups.Count) ? null : ((GUILayoutGroup)GUILayoutUtility.current.layoutGroups.Peek()));
+			}
 		}
 
 		internal static GUILayoutGroup BeginLayoutArea(GUIStyle style, Type layoutType)
@@ -460,16 +506,9 @@ namespace UnityEngine
 		{
 			EventType type = Event.current.type;
 			Rect last;
-			if (type != EventType.Layout)
+			if (type != EventType.Layout && type != EventType.Used)
 			{
-				if (type != EventType.Used)
-				{
-					last = GUILayoutUtility.current.topLevel.GetLast();
-				}
-				else
-				{
-					last = GUILayoutUtility.kDummyRect;
-				}
+				last = GUILayoutUtility.current.topLevel.GetLast();
 			}
 			else
 			{

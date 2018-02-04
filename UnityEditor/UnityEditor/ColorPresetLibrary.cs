@@ -4,6 +4,10 @@ using UnityEngine;
 
 namespace UnityEditor
 {
+	[AssetFileNameExtension("colors", new string[]
+	{
+
+	})]
 	internal class ColorPresetLibrary : PresetLibrary
 	{
 		[Serializable]

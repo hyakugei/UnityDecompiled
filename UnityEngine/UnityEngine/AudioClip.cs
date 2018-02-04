@@ -113,6 +113,13 @@ namespace UnityEngine
 			get;
 		}
 
+		public extern bool ambisonic
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+		}
+
 		public extern AudioDataLoadState loadState
 		{
 			[GeneratedByOldBindingsGenerator]
@@ -127,7 +134,7 @@ namespace UnityEngine
 			get;
 		}
 
-		public AudioClip()
+		private AudioClip()
 		{
 			this.m_PCMReaderCallback = null;
 			this.m_PCMSetPositionCallback = null;

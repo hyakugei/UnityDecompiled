@@ -5,8 +5,10 @@ using UnityEngine.Scripting;
 namespace UnityEngine
 {
 	[RequireComponent(typeof(Transform))]
-	public sealed class AudioListener : Behaviour
+	public sealed class AudioListener : AudioBehaviour
 	{
+		internal AudioListenerExtension spatializerExtension = null;
+
 		public static extern float volume
 		{
 			[GeneratedByOldBindingsGenerator]
@@ -69,6 +71,81 @@ namespace UnityEngine
 		public static void GetSpectrumData(float[] samples, int channel, FFTWindow window)
 		{
 			AudioListener.GetSpectrumDataHelper(samples, channel, window);
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern int GetNumExtensionProperties();
+
+		internal int GetNumExtensionPropertiesForThisExtension(PropertyName extensionName)
+		{
+			return AudioListener.INTERNAL_CALL_GetNumExtensionPropertiesForThisExtension(this, ref extensionName);
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern int INTERNAL_CALL_GetNumExtensionPropertiesForThisExtension(AudioListener self, ref PropertyName extensionName);
+
+		internal PropertyName ReadExtensionName(int listenerIndex)
+		{
+			PropertyName result;
+			AudioListener.INTERNAL_CALL_ReadExtensionName(this, listenerIndex, out result);
+			return result;
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void INTERNAL_CALL_ReadExtensionName(AudioListener self, int listenerIndex, out PropertyName value);
+
+		internal PropertyName ReadExtensionPropertyName(int listenerIndex)
+		{
+			PropertyName result;
+			AudioListener.INTERNAL_CALL_ReadExtensionPropertyName(this, listenerIndex, out result);
+			return result;
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void INTERNAL_CALL_ReadExtensionPropertyName(AudioListener self, int listenerIndex, out PropertyName value);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern float ReadExtensionPropertyValue(int listenerIndex);
+
+		internal bool ReadExtensionProperty(PropertyName extensionName, PropertyName propertyName, ref float propertyValue)
+		{
+			return AudioListener.INTERNAL_CALL_ReadExtensionProperty(this, ref extensionName, ref propertyName, ref propertyValue);
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern bool INTERNAL_CALL_ReadExtensionProperty(AudioListener self, ref PropertyName extensionName, ref PropertyName propertyName, ref float propertyValue);
+
+		internal void WriteExtensionProperty(PropertyName pluginName, PropertyName extensionName, PropertyName propertyName, float propertyValue)
+		{
+			AudioListener.INTERNAL_CALL_WriteExtensionProperty(this, ref pluginName, ref extensionName, ref propertyName, propertyValue);
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void INTERNAL_CALL_WriteExtensionProperty(AudioListener self, ref PropertyName pluginName, ref PropertyName extensionName, ref PropertyName propertyName, float propertyValue);
+
+		internal void ClearExtensionProperties(PropertyName extensionName)
+		{
+			AudioListener.INTERNAL_CALL_ClearExtensionProperties(this, ref extensionName);
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void INTERNAL_CALL_ClearExtensionProperties(AudioListener self, ref PropertyName extensionName);
+
+		internal AudioListenerExtension AddExtension(Type extensionType)
+		{
+			if (this.spatializerExtension == null)
+			{
+				this.spatializerExtension = (ScriptableObject.CreateInstance(extensionType) as AudioListenerExtension);
+			}
+			return this.spatializerExtension;
 		}
 	}
 }

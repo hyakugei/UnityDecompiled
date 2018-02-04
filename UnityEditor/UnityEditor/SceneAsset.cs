@@ -5,5 +5,8 @@ namespace UnityEditor
 {
 	public sealed class SceneAsset : UnityEngine.Object
 	{
+		private SceneAsset()
+		{
+		}
 	}
 }

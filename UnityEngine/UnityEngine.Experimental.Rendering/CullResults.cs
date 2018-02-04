@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using UnityEngine.Scripting;
 
@@ -7,51 +8,80 @@ namespace UnityEngine.Experimental.Rendering
 	[UsedByNativeCode]
 	public struct CullResults
 	{
-		public VisibleLight[] visibleLights;
+		public List<VisibleLight> visibleLights;
 
-		public VisibleReflectionProbe[] visibleReflectionProbes;
+		public List<VisibleLight> visibleOffscreenVertexLights;
+
+		public List<VisibleReflectionProbe> visibleReflectionProbes;
+
+		public FilterResults visibleRenderers;
 
 		internal IntPtr cullResults;
 
-		public static bool GetCullingParameters(Camera camera, out CullingParameters cullingParameters)
+		private void Init()
 		{
-			return CullResults.GetCullingParameters_Internal(camera, out cullingParameters, sizeof(CullingParameters));
+			this.visibleLights = new List<VisibleLight>();
+			this.visibleOffscreenVertexLights = new List<VisibleLight>();
+			this.visibleReflectionProbes = new List<VisibleReflectionProbe>();
+			this.visibleRenderers = default(FilterResults);
+			this.cullResults = IntPtr.Zero;
+		}
+
+		public static bool GetCullingParameters(Camera camera, out ScriptableCullingParameters cullingParameters)
+		{
+			return CullResults.GetCullingParameters_Internal(camera, false, out cullingParameters, sizeof(ScriptableCullingParameters));
+		}
+
+		public static bool GetCullingParameters(Camera camera, bool stereoAware, out ScriptableCullingParameters cullingParameters)
+		{
+			return CullResults.GetCullingParameters_Internal(camera, stereoAware, out cullingParameters, sizeof(ScriptableCullingParameters));
 		}
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern bool GetCullingParameters_Internal(Camera camera, out CullingParameters cullingParameters, int managedCullingParametersSize);
+		private static extern bool GetCullingParameters_Internal(Camera camera, bool stereoAware, out ScriptableCullingParameters cullingParameters, int managedCullingParametersSize);
 
-		internal static void Internal_Cull(ref CullingParameters parameters, ScriptableRenderContext renderLoop, out CullResults results)
+		internal static void Internal_Cull(ref ScriptableCullingParameters parameters, ScriptableRenderContext renderLoop, ref CullResults results)
 		{
-			CullResults.INTERNAL_CALL_Internal_Cull(ref parameters, ref renderLoop, out results);
+			CullResults.INTERNAL_CALL_Internal_Cull(ref parameters, ref renderLoop, ref results);
 		}
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_Internal_Cull(ref CullingParameters parameters, ref ScriptableRenderContext renderLoop, out CullResults results);
+		private static extern void INTERNAL_CALL_Internal_Cull(ref ScriptableCullingParameters parameters, ref ScriptableRenderContext renderLoop, ref CullResults results);
 
-		public static CullResults Cull(ref CullingParameters parameters, ScriptableRenderContext renderLoop)
+		public static CullResults Cull(ref ScriptableCullingParameters parameters, ScriptableRenderContext renderLoop)
 		{
-			CullResults result;
-			CullResults.Internal_Cull(ref parameters, renderLoop, out result);
+			CullResults result = default(CullResults);
+			CullResults.Cull(ref parameters, renderLoop, ref result);
 			return result;
+		}
+
+		public static void Cull(ref ScriptableCullingParameters parameters, ScriptableRenderContext renderLoop, ref CullResults results)
+		{
+			if (results.visibleLights == null || results.visibleOffscreenVertexLights == null || results.visibleReflectionProbes == null)
+			{
+				results.Init();
+			}
+			CullResults.Internal_Cull(ref parameters, renderLoop, ref results);
 		}
 
 		public static bool Cull(Camera camera, ScriptableRenderContext renderLoop, out CullResults results)
 		{
 			results.cullResults = IntPtr.Zero;
 			results.visibleLights = null;
+			results.visibleOffscreenVertexLights = null;
 			results.visibleReflectionProbes = null;
-			CullingParameters cullingParameters;
+			results.visibleRenderers = default(FilterResults);
+			ScriptableCullingParameters scriptableCullingParameters;
 			bool result;
-			if (!CullResults.GetCullingParameters(camera, out cullingParameters))
+			if (!CullResults.GetCullingParameters(camera, out scriptableCullingParameters))
 			{
 				result = false;
 			}
 			else
 			{
-				results = CullResults.Cull(ref cullingParameters, renderLoop);
+				results = CullResults.Cull(ref scriptableCullingParameters, renderLoop);
 				result = true;
 			}
 			return result;
@@ -83,6 +113,24 @@ namespace UnityEngine.Experimental.Rendering
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern void FillLightIndices(IntPtr cullResults, ComputeBuffer computeBuffer);
+
+		public int[] GetLightIndexMap()
+		{
+			return CullResults.GetLightIndexMap(this.cullResults);
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern int[] GetLightIndexMap(IntPtr cullResults);
+
+		public void SetLightIndexMap(int[] mapping)
+		{
+			CullResults.SetLightIndexMap(this.cullResults, mapping);
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void SetLightIndexMap(IntPtr cullResults, int[] mapping);
 
 		public bool ComputeSpotShadowMatricesAndCullingPrimitives(int activeLightIndex, out Matrix4x4 viewMatrix, out Matrix4x4 projMatrix, out ShadowSplitData shadowSplitData)
 		{

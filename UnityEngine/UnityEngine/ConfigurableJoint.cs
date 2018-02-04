@@ -4,6 +4,7 @@ using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
+	[NativeClass("Unity::ConfigurableJoint")]
 	public sealed class ConfigurableJoint : Joint
 	{
 		public Vector3 secondaryAxis

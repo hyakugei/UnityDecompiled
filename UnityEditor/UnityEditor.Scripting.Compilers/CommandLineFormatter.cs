@@ -9,7 +9,7 @@ namespace UnityEditor.Scripting.Compilers
 {
 	internal static class CommandLineFormatter
 	{
-		private static readonly Regex UnsafeCharsWindows = new Regex("[^A-Za-z0-9\\_\\-\\.\\:\\,\\/\\@\\\\]");
+		private static readonly Regex UnsafeCharsWindows = new Regex("[^A-Za-z0-9_\\-\\.\\:\\,\\/\\@\\\\]");
 
 		private static readonly Regex UnescapeableChars = new Regex("[\\x00-\\x08\\x10-\\x1a\\x1c-\\x1f\\x7f\\xff]");
 
@@ -35,14 +35,15 @@ namespace UnityEditor.Scripting.Compilers
 
 		public static string PrepareFileName(string input)
 		{
+			input = FileUtil.ResolveSymlinks(input);
 			string result;
-			if (Application.platform == RuntimePlatform.OSXEditor)
+			if (Application.platform == RuntimePlatform.WindowsEditor)
 			{
-				result = CommandLineFormatter.EscapeCharsQuote(input);
+				result = CommandLineFormatter.EscapeCharsWindows(input);
 			}
 			else
 			{
-				result = CommandLineFormatter.EscapeCharsWindows(input);
+				result = CommandLineFormatter.EscapeCharsQuote(input);
 			}
 			return result;
 		}

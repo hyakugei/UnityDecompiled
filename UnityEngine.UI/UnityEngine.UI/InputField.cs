@@ -191,6 +191,8 @@ namespace UnityEngine.UI
 
 		private Event m_ProcessingEvent = new Event();
 
+		private const int k_MaxTextLength = 16382;
+
 		private BaseInput input
 		{
 			get
@@ -391,9 +393,21 @@ namespace UnityEngine.UI
 			}
 			set
 			{
+				if (this.m_TextComponent != null)
+				{
+					this.m_TextComponent.UnregisterDirtyVerticesCallback(new UnityAction(this.MarkGeometryAsDirty));
+					this.m_TextComponent.UnregisterDirtyVerticesCallback(new UnityAction(this.UpdateLabel));
+					this.m_TextComponent.UnregisterDirtyMaterialCallback(new UnityAction(this.UpdateCaretMaterial));
+				}
 				if (SetPropertyUtility.SetClass<Text>(ref this.m_TextComponent, value))
 				{
 					this.EnforceTextHOverflow();
+					if (this.m_TextComponent != null)
+					{
+						this.m_TextComponent.RegisterDirtyVerticesCallback(new UnityAction(this.MarkGeometryAsDirty));
+						this.m_TextComponent.RegisterDirtyVerticesCallback(new UnityAction(this.UpdateLabel));
+						this.m_TextComponent.RegisterDirtyMaterialCallback(new UnityAction(this.UpdateCaretMaterial));
+					}
 				}
 			}
 		}
@@ -567,6 +581,14 @@ namespace UnityEngine.UI
 				{
 					this.SetToCustom();
 				}
+			}
+		}
+
+		public TouchScreenKeyboard touchScreenKeyboard
+		{
+			get
+			{
+				return this.m_Keyboard;
 			}
 		}
 
@@ -1029,7 +1051,7 @@ namespace UnityEngine.UI
 			if (!this.InPlaceEditing() && this.isFocused)
 			{
 				this.AssignPositioningIfNeeded();
-				if (this.m_Keyboard == null || this.m_Keyboard.done)
+				if (this.m_Keyboard == null || this.m_Keyboard.status != TouchScreenKeyboard.Status.Visible)
 				{
 					if (this.m_Keyboard != null)
 					{
@@ -1037,7 +1059,7 @@ namespace UnityEngine.UI
 						{
 							this.text = this.m_Keyboard.text;
 						}
-						if (this.m_Keyboard.wasCanceled)
+						if (this.m_Keyboard.status == TouchScreenKeyboard.Status.Canceled)
 						{
 							this.m_WasCanceled = true;
 						}
@@ -1103,13 +1125,17 @@ namespace UnityEngine.UI
 							this.SendOnValueChangedAndUpdateLabel();
 						}
 					}
-					else if (this.m_Keyboard.canGetSelection)
+					else if (this.m_HideMobileInput && this.m_Keyboard.canSetSelection)
+					{
+						this.m_Keyboard.selection = new RangeInt(this.caretPositionInternal, this.caretSelectPositionInternal - this.caretPositionInternal);
+					}
+					else if (this.m_Keyboard.canGetSelection && !this.m_HideMobileInput)
 					{
 						this.UpdateCaretFromKeyboard();
 					}
-					if (this.m_Keyboard.done)
+					if (this.m_Keyboard.status != TouchScreenKeyboard.Status.Visible)
 					{
-						if (this.m_Keyboard.wasCanceled)
+						if (this.m_Keyboard.status == TouchScreenKeyboard.Status.Canceled)
 						{
 							this.m_WasCanceled = true;
 						}
@@ -1238,7 +1264,7 @@ namespace UnityEngine.UI
 
 		private bool MayDrag(PointerEventData eventData)
 		{
-			return this.IsActive() && this.IsInteractable() && eventData.button == PointerEventData.InputButton.Left && this.m_TextComponent != null && this.m_Keyboard == null;
+			return this.IsActive() && this.IsInteractable() && eventData.button == PointerEventData.InputButton.Left && this.m_TextComponent != null && (this.m_Keyboard == null || this.m_HideMobileInput);
 		}
 
 		public virtual void OnBeginDrag(PointerEventData eventData)
@@ -1862,6 +1888,7 @@ namespace UnityEngine.UI
 
 		private void SendOnValueChanged()
 		{
+			UISystemProfilerApi.AddMarker("InputField.value", this);
 			if (this.onValueChanged != null)
 			{
 				this.onValueChanged.Invoke(this.text);
@@ -1870,6 +1897,7 @@ namespace UnityEngine.UI
 
 		protected void SendOnSubmit()
 		{
+			UISystemProfilerApi.AddMarker("InputField.onSubmit", this);
 			if (this.onEndEdit != null)
 			{
 				this.onEndEdit.Invoke(this.m_Text);
@@ -1899,7 +1927,7 @@ namespace UnityEngine.UI
 
 		protected virtual void Append(char input)
 		{
-			if (!this.m_ReadOnly)
+			if (!this.m_ReadOnly && this.text.Length < 16382)
 			{
 				if (this.InPlaceEditing())
 				{
@@ -2340,15 +2368,16 @@ namespace UnityEngine.UI
 				if (this.characterValidation == InputField.CharacterValidation.Integer || this.characterValidation == InputField.CharacterValidation.Decimal)
 				{
 					bool flag = pos == 0 && text.Length > 0 && text[0] == '-';
-					bool flag2 = this.caretPositionInternal == 0 || this.caretSelectPositionInternal == 0;
-					if (!flag)
+					bool flag2 = text.Length > 0 && text[0] == '-' && ((this.caretPositionInternal == 0 && this.caretSelectPositionInternal > 0) || (this.caretSelectPositionInternal == 0 && this.caretPositionInternal > 0));
+					bool flag3 = this.caretPositionInternal == 0 || this.caretSelectPositionInternal == 0;
+					if (!flag || flag2)
 					{
 						if (ch >= '0' && ch <= '9')
 						{
 							result = ch;
 							return result;
 						}
-						if (ch == '-' && (pos == 0 || flag2))
+						if (ch == '-' && (pos == 0 || flag3))
 						{
 							result = ch;
 							return result;
@@ -2488,7 +2517,7 @@ namespace UnityEngine.UI
 					{
 						TouchScreenKeyboard.hideInput = this.shouldHideMobileInput;
 					}
-					this.m_Keyboard = ((this.inputType != InputField.InputType.Password) ? TouchScreenKeyboard.Open(this.m_Text, this.keyboardType, this.inputType == InputField.InputType.AutoCorrect, this.multiLine) : TouchScreenKeyboard.Open(this.m_Text, this.keyboardType, false, this.multiLine, true));
+					this.m_Keyboard = ((this.inputType != InputField.InputType.Password) ? TouchScreenKeyboard.Open(this.m_Text, this.keyboardType, this.inputType == InputField.InputType.AutoCorrect, this.multiLine, false, false, "", this.characterLimit) : TouchScreenKeyboard.Open(this.m_Text, this.keyboardType, false, this.multiLine, true, false, "", this.characterLimit));
 					this.MoveTextEnd(false);
 				}
 				else
@@ -2602,7 +2631,7 @@ namespace UnityEngine.UI
 			case InputField.ContentType.Name:
 				this.m_LineType = InputField.LineType.SingleLine;
 				this.m_InputType = InputField.InputType.Standard;
-				this.m_KeyboardType = TouchScreenKeyboardType.Default;
+				this.m_KeyboardType = TouchScreenKeyboardType.NamePhonePad;
 				this.m_CharacterValidation = InputField.CharacterValidation.Name;
 				break;
 			case InputField.ContentType.EmailAddress:

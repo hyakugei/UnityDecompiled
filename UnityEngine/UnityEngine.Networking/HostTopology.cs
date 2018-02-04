@@ -104,11 +104,11 @@ namespace UnityEngine.Networking
 			}
 			if (maxDefaultConnections <= 0)
 			{
-				throw new ArgumentOutOfRangeException("maxDefaultConnections", "Number of connections should be > 0");
+				throw new ArgumentOutOfRangeException("maxConnections", "Number of connections should be > 0");
 			}
 			if (maxDefaultConnections >= 65535)
 			{
-				throw new ArgumentOutOfRangeException("maxDefaultConnections", "Number of connections should be < 65535");
+				throw new ArgumentOutOfRangeException("maxConnections", "Number of connections should be < 65535");
 			}
 			ConnectionConfig.Validate(defaultConfig);
 			this.m_DefConfig = new ConnectionConfig(defaultConfig);
@@ -130,6 +130,10 @@ namespace UnityEngine.Networking
 
 		public int AddSpecialConnectionConfig(ConnectionConfig config)
 		{
+			if (this.m_MaxDefConnections + this.m_SpecialConnections.Count + 1 >= 65535)
+			{
+				throw new ArgumentOutOfRangeException("maxConnections", "Number of connections should be < 65535");
+			}
 			this.m_SpecialConnections.Add(new ConnectionConfig(config));
 			return this.m_SpecialConnections.Count;
 		}

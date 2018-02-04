@@ -14,7 +14,7 @@ namespace UnityEditor
 
 			public Texture2D smallWarningIcon;
 
-			public GUIContent restartNeededWarning = new GUIContent("Some settings will not take effect until you restart Unity.");
+			public GUIContent restartNeededWarning = EditorGUIUtility.TrTextContent("Some settings will not take effect until you restart Unity.", null, null);
 
 			public Resources()
 			{
@@ -102,7 +102,12 @@ namespace UnityEditor
 					}
 					else
 					{
-						diagnosticSwitch.persistentValue = EditorGUI.IntPopup(rect, label, (int)diagnosticSwitch.persistentValue, diagnosticSwitch.enumInfo.guiNames, diagnosticSwitch.enumInfo.values);
+						GUIContent[] array3 = new GUIContent[diagnosticSwitch.enumInfo.names.Length];
+						for (int j = 0; j < diagnosticSwitch.enumInfo.names.Length; j++)
+						{
+							array3[j] = new GUIContent(diagnosticSwitch.enumInfo.names[j], diagnosticSwitch.enumInfo.annotations[j]);
+						}
+						diagnosticSwitch.persistentValue = EditorGUI.IntPopup(rect, label, (int)diagnosticSwitch.persistentValue, array3, diagnosticSwitch.enumInfo.values);
 					}
 				}
 				else if (diagnosticSwitch.value is uint)
@@ -118,9 +123,28 @@ namespace UnityEditor
 						diagnosticSwitch.persistentValue = (uint)EditorGUI.IntField(rect, label, (int)((uint)diagnosticSwitch.persistentValue));
 					}
 				}
+				else if (diagnosticSwitch.value is int)
+				{
+					int num5 = (int)diagnosticSwitch.minValue;
+					int num6 = (int)diagnosticSwitch.maxValue;
+					if ((long)(num6 - num5) <= 10L && num6 - num5 > 0 && num5 < 2147483647 && num6 < 2147483647)
+					{
+						diagnosticSwitch.persistentValue = EditorGUI.IntSlider(rect, label, (int)diagnosticSwitch.persistentValue, num5, num6);
+					}
+					else
+					{
+						diagnosticSwitch.persistentValue = EditorGUI.IntField(rect, label, (int)diagnosticSwitch.persistentValue);
+					}
+				}
 				else if (diagnosticSwitch.value is string)
 				{
 					diagnosticSwitch.persistentValue = EditorGUI.TextField(rect, label, (string)diagnosticSwitch.persistentValue);
+				}
+				else
+				{
+					GUIStyle gUIStyle = new GUIStyle();
+					gUIStyle.normal.textColor = Color.red;
+					EditorGUI.LabelField(rect, label, EditorGUIUtility.TrTextContent("Unsupported type: " + diagnosticSwitch.value.GetType().Name, null, null), gUIStyle);
 				}
 			}
 			if (EditorGUI.EndChangeCheck())
@@ -131,7 +155,7 @@ namespace UnityEditor
 		}
 
 		[PreferenceItem("Diagnostics")]
-		public static void OnGUI()
+		private static void OnGUI()
 		{
 			List<DiagnosticSwitch> list = new List<DiagnosticSwitch>();
 			Debug.GetDiagnosticSwitches(list);

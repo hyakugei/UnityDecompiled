@@ -1,4 +1,5 @@
 using System;
+using UnityEngine;
 
 namespace UnityEditor.Modules
 {
@@ -6,17 +7,17 @@ namespace UnityEditor.Modules
 	{
 		void LaunchPlayer(BuildLaunchPlayerArgs args);
 
-		void PostProcess(BuildPostProcessArgs args);
+		void PostProcess(BuildPostProcessArgs args, out BuildProperties outProperties);
 
 		bool SupportsInstallInBuildFolder();
 
-		void PostProcessScriptsOnly(BuildPostProcessArgs args);
+		bool SupportsLz4Compression();
 
 		bool SupportsScriptsOnlyBuild();
 
-		string GetScriptLayoutFileFromBuild(BuildOptions options, string installPath, string fileName);
-
 		string PrepareForBuild(BuildOptions options, BuildTarget target);
+
+		void UpdateBootConfig(BuildTarget target, BootConfigData config, BuildOptions options);
 
 		string GetExtension(BuildTarget target, BuildOptions options);
 	}

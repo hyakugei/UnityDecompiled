@@ -1,4 +1,5 @@
 using System;
+using UnityEngine;
 
 namespace UnityEditor.U2D.Interface
 {
@@ -8,8 +9,8 @@ namespace UnityEditor.U2D.Interface
 
 		void UnregisterUndoCallback(Undo.UndoRedoCallback undoCallback);
 
-		void RegisterCompleteObjectUndo(IUndoableObject obj, string undoText);
+		void RegisterCompleteObjectUndo(ScriptableObject obj, string undoText);
 
-		void ClearUndo(IUndoableObject obj);
+		void ClearUndo(ScriptableObject obj);
 	}
 }

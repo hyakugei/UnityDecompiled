@@ -48,7 +48,7 @@ namespace UnityEditor
 				}
 				if (flag)
 				{
-					GUIContent gUIContent = EditorGUIUtility.TextContent("The associated script can not be loaded.\nPlease fix any compile errors\nand assign a valid script.");
+					GUIContent gUIContent = EditorGUIUtility.TrTextContent("The associated script can not be loaded.\nPlease fix any compile errors\nand assign a valid script.", null, null);
 					EditorGUILayout.HelpBox(gUIContent.text, MessageType.Warning, true);
 				}
 				if (base.serializedObject.ApplyModifiedProperties())

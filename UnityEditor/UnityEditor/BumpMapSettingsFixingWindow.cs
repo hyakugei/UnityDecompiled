@@ -9,13 +9,13 @@ namespace UnityEditor
 	{
 		private class Styles
 		{
-			public GUIStyle selected = "ServerUpdateChangesetOn";
+			public GUIStyle selected = "OL SelectedRow";
 
 			public GUIStyle box = "OL Box";
 
 			public GUIStyle button = "LargeButton";
 
-			public GUIContent overviewText = EditorGUIUtility.TextContent("A Material is using the texture as a normal map.\nThe texture must be marked as a normal map in the import settings.");
+			public GUIContent overviewText = EditorGUIUtility.TrTextContent("A Material is using the texture as a normal map.\nThe texture must be marked as a normal map in the import settings.", null, null);
 		}
 
 		private static BumpMapSettingsFixingWindow.Styles s_Styles = null;
@@ -26,7 +26,7 @@ namespace UnityEditor
 
 		public BumpMapSettingsFixingWindow()
 		{
-			base.titleContent = new GUIContent("NormalMap settings");
+			base.titleContent = EditorGUIUtility.TrTextContent("NormalMap settings", null, null);
 		}
 
 		public static void ShowWindow(string[] paths)

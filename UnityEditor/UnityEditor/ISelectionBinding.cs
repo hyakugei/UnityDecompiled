@@ -25,11 +25,6 @@ namespace UnityEditor
 			get;
 		}
 
-		float timeOffset
-		{
-			get;
-		}
-
 		int id
 		{
 			get;

@@ -16,7 +16,7 @@ namespace UnityEngine
 			{
 				if (this.muscles.Length != HumanTrait.MuscleCount)
 				{
-					throw new ArgumentException("Bad array size for HumanPose.muscles. Size must equal HumanTrait.MuscleCount");
+					throw new InvalidOperationException("Bad array size for HumanPose.muscles. Size must equal HumanTrait.MuscleCount");
 				}
 			}
 			if (this.muscles == null)

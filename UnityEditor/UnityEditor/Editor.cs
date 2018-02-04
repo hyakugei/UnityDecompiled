@@ -2,18 +2,23 @@ using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using UnityEditor.Experimental.AssetImporters;
 using UnityEngine;
 using UnityEngine.Internal;
 using UnityEngine.Scripting;
 
 namespace UnityEditor
 {
-	[RequiredByNativeCode]
+	[ExcludeFromObjectFactory, RequiredByNativeCode]
 	[StructLayout(LayoutKind.Sequential)]
-	public class Editor : ScriptableObject, IPreviewable
+	public class Editor : ScriptableObject, IPreviewable, IToolModeOwner
 	{
+		internal delegate void OnEditorGUIDelegate(Editor editor, Rect drawRect);
+
 		private class Styles
 		{
+			public GUIContent open = EditorGUIUtility.TrTextContent("Open", null, null);
+
 			public GUIStyle inspectorBig = new GUIStyle(EditorStyles.inspectorBig);
 
 			public GUIStyle inspectorBigInner = new GUIStyle("IN BigTitle inner");
@@ -54,6 +59,16 @@ namespace UnityEditor
 		private static Editor.Styles s_Styles;
 
 		private const float kImageSectionWidth = 44f;
+
+		internal static Editor.OnEditorGUIDelegate OnPostIconGUI = null;
+
+		bool IToolModeOwner.areToolModesAvailable
+		{
+			get
+			{
+				return !EditorUtility.IsPersistent(this.target);
+			}
+		}
 
 		internal bool canEditMultipleObjects
 		{
@@ -114,7 +129,7 @@ namespace UnityEditor
 					{
 						this.m_Targets.Length,
 						" ",
-						ObjectNames.NicifyVariableName(ObjectNames.GetClassName(this.target)),
+						ObjectNames.NicifyVariableName(ObjectNames.GetTypeName(this.target)),
 						"s"
 					});
 				}
@@ -276,14 +291,19 @@ namespace UnityEditor
 
 		internal bool GetOptimizedGUIBlockImplementation(bool isDirty, bool isVisible, out OptimizedGUIBlock block, out float height)
 		{
-			if (this.m_OptimizedBlock == null)
+			if (isDirty && this.m_OptimizedBlock != null)
 			{
-				this.m_OptimizedBlock = new OptimizedGUIBlock();
+				this.m_OptimizedBlock.Dispose();
+				this.m_OptimizedBlock = null;
 			}
-			block = this.m_OptimizedBlock;
 			bool result;
 			if (!isVisible)
 			{
+				if (this.m_OptimizedBlock == null)
+				{
+					this.m_OptimizedBlock = new OptimizedGUIBlock();
+				}
+				block = this.m_OptimizedBlock;
 				height = 0f;
 				result = true;
 			}
@@ -303,6 +323,16 @@ namespace UnityEditor
 				bool enterChildren = true;
 				while (iterator.NextVisible(enterChildren))
 				{
+					if (!EditorGUI.CanCacheInspectorGUI(iterator))
+					{
+						if (this.m_OptimizedBlock != null)
+						{
+							this.m_OptimizedBlock.Dispose();
+						}
+						block = (this.m_OptimizedBlock = null);
+						result = false;
+						return result;
+					}
 					height += EditorGUI.GetPropertyHeight(iterator, null, true) + 2f;
 					enterChildren = false;
 				}
@@ -310,6 +340,11 @@ namespace UnityEditor
 				{
 					height = 0f;
 				}
+				if (this.m_OptimizedBlock == null)
+				{
+					this.m_OptimizedBlock = new OptimizedGUIBlock();
+				}
+				block = this.m_OptimizedBlock;
 				result = true;
 			}
 			return result;
@@ -443,6 +478,38 @@ namespace UnityEditor
 			this.preview.ReloadPreviewInstances();
 		}
 
+		Bounds IToolModeOwner.GetWorldBoundsOfTargets()
+		{
+			Bounds result = default(Bounds);
+			bool flag = false;
+			UnityEngine.Object[] targets = this.targets;
+			for (int i = 0; i < targets.Length; i++)
+			{
+				UnityEngine.Object @object = targets[i];
+				if (!(@object == null))
+				{
+					Bounds worldBoundsOfTarget = this.GetWorldBoundsOfTarget(@object);
+					if (!flag)
+					{
+						result = worldBoundsOfTarget;
+					}
+					result.Encapsulate(worldBoundsOfTarget);
+					flag = true;
+				}
+			}
+			return result;
+		}
+
+		internal virtual Bounds GetWorldBoundsOfTarget(UnityEngine.Object targetObject)
+		{
+			return (!(targetObject is Component)) ? default(Bounds) : ((Component)targetObject).gameObject.CalculateBounds();
+		}
+
+		bool IToolModeOwner.ModeSurvivesSelectionChange(int toolMode)
+		{
+			return false;
+		}
+
 		internal static bool DoDrawDefaultInspector(SerializedObject obj)
 		{
 			EditorGUI.BeginChangeCheck();
@@ -488,25 +555,26 @@ namespace UnityEditor
 			GUILayoutUtility.GetRect(10f, 10f, 16f, 16f, EditorStyles.layerMaskField);
 			GUILayout.FlexibleSpace();
 			bool flag = true;
-			if (!(this is AssetImporterInspector))
+			if (!(this is AssetImporterEditor) && !(this.targets[0] is AssetImportInProgressProxy))
 			{
+				string assetPath = AssetDatabase.GetAssetPath(this.targets[0]);
 				if (!AssetDatabase.IsMainAsset(this.targets[0]))
 				{
 					flag = false;
 				}
-				AssetImporter atPath = AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(this.targets[0]));
+				AssetImporter atPath = AssetImporter.GetAtPath(assetPath);
 				if (atPath && atPath.GetType() != typeof(AssetImporter))
 				{
 					flag = false;
 				}
 			}
-			if (flag)
+			if (flag && !this.ShouldHideOpenButton())
 			{
-				if (GUILayout.Button("Open", EditorStyles.miniButton, new GUILayoutOption[0]))
+				if (GUILayout.Button(Editor.s_Styles.open, EditorStyles.miniButton, new GUILayoutOption[0]))
 				{
-					if (this is AssetImporterInspector)
+					if (this is AssetImporterEditor)
 					{
-						AssetDatabase.OpenAsset((this as AssetImporterInspector).assetEditor.targets);
+						AssetDatabase.OpenAsset((this as AssetImporterEditor).assetTargets);
 					}
 					else
 					{
@@ -515,6 +583,11 @@ namespace UnityEditor
 					GUIUtility.ExitGUI();
 				}
 			}
+		}
+
+		protected virtual bool ShouldHideOpenButton()
+		{
+			return false;
 		}
 
 		internal virtual void OnHeaderIconGUI(Rect iconRect)
@@ -556,7 +629,6 @@ namespace UnityEditor
 
 		internal virtual void DrawHeaderHelpAndSettingsGUI(Rect r)
 		{
-			UnityEngine.Object target = this.target;
 			Vector2 vector = EditorStyles.iconButton.CalcSize(EditorGUI.GUIContents.titleSettingsIcon);
 			float num = vector.x;
 			Rect position = new Rect(r.xMax - num, r.y + 5f, vector.x, vector.y);
@@ -565,7 +637,7 @@ namespace UnityEditor
 				EditorUtility.DisplayObjectContextMenu(position, this.targets, 0);
 			}
 			num += vector.x;
-			EditorGUI.HelpIconButton(new Rect(r.xMax - num, r.y + 5f, vector.x, vector.y), target);
+			EditorGUIUtility.DrawEditorHeaderItems(new Rect(r.xMax - num, r.y + 5f, vector.x, vector.y), this.targets);
 		}
 
 		private void DrawHeaderFromInsideHierarchy()
@@ -618,6 +690,10 @@ namespace UnityEditor
 			{
 				GUI.Label(rect, AssetPreview.GetMiniTypeThumbnail(typeof(UnityEngine.Object)), Editor.s_Styles.centerStyle);
 			}
+			if (editor)
+			{
+				editor.DrawPostIconContent(rect);
+			}
 			Rect rect2 = new Rect(r.x + 44f, r.y + 6f, r.width - 44f - 38f - 4f, 16f);
 			if (editor)
 			{
@@ -638,6 +714,28 @@ namespace UnityEditor
 				current.Use();
 			}
 			return lastRect;
+		}
+
+		internal void DrawPostIconContent(Rect iconRect)
+		{
+			if (Editor.OnPostIconGUI != null)
+			{
+				Rect drawRect = iconRect;
+				drawRect.x = drawRect.xMax - 16f + 4f;
+				drawRect.y = drawRect.yMax - 16f + 1f;
+				drawRect.width = 16f;
+				drawRect.height = 16f;
+				Editor.OnPostIconGUI(this, drawRect);
+			}
+		}
+
+		internal void DrawPostIconContent()
+		{
+			if (Event.current.type == EventType.Repaint)
+			{
+				Rect lastRect = GUILayoutUtility.GetLastRect();
+				this.DrawPostIconContent(lastRect);
+			}
 		}
 
 		public virtual void DrawPreview(Rect previewArea)
@@ -682,23 +780,31 @@ namespace UnityEditor
 		{
 			message = string.Empty;
 			bool result;
-			if (AssetDatabase.IsNativeAsset(assetObject))
+			if (assetObject == null)
 			{
-				if (!AssetDatabase.IsOpenForEdit(assetObject, out message, StatusQueryOptions.UseCachedIfPossible))
-				{
-					result = false;
-					return result;
-				}
+				result = false;
 			}
-			else if (AssetDatabase.IsForeignAsset(assetObject))
+			else
 			{
-				if (!AssetDatabase.IsMetaFileOpenForEdit(assetObject, out message, StatusQueryOptions.UseCachedIfPossible))
+				StatusQueryOptions statusOptions = (!EditorUserSettings.allowAsyncStatusUpdate) ? StatusQueryOptions.UseCachedIfPossible : StatusQueryOptions.UseCachedAsync;
+				if (AssetDatabase.IsNativeAsset(assetObject))
 				{
-					result = false;
-					return result;
+					if (!AssetDatabase.IsOpenForEdit(assetObject, out message, statusOptions))
+					{
+						result = false;
+						return result;
+					}
 				}
+				else if (AssetDatabase.IsForeignAsset(assetObject))
+				{
+					if (!AssetDatabase.IsMetaFileOpenForEdit(assetObject, out message, statusOptions))
+					{
+						result = false;
+						return result;
+					}
+				}
+				result = true;
 			}
-			result = true;
 			return result;
 		}
 
@@ -772,6 +878,11 @@ namespace UnityEditor
 		public void ResetTarget()
 		{
 			this.referenceTargetIndex = 0;
+		}
+
+		int IToolModeOwner.GetInstanceID()
+		{
+			return base.GetInstanceID();
 		}
 	}
 }

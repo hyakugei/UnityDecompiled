@@ -12,18 +12,14 @@ namespace UnityEditor
 	{
 		private class Styles
 		{
-			public GUIStyle optionsButton = "PaneOptions";
+			public GUIContent header = EditorGUIUtility.TrTextContent("Mixers", "All mixers in the project are shown here. By default a mixer outputs to the AudioListener but mixers can also route their output to other mixers. Each mixer shows where it outputs (in parenthesis). To reroute a mixer simply drag the mixer upon another mixer and select a group from the popup.", null);
 
-			public GUIContent header = new GUIContent("Mixers", "All mixers in the project are shown here. By default a mixer outputs to the AudioListener but mixers can also route their output to other mixers. Each mixer shows where it outputs (in parenthesis). To reroute a mixer simply drag the mixer upon another mixer and select a group from the popup.");
+			public GUIContent addText = EditorGUIUtility.TrTextContent("+", "Add mixer asset. The asset will be saved in the same folder as the current selected mixer or if none is selected saved in the Assets folder.", null);
 
-			public GUIContent addText = new GUIContent("+", "Add mixer asset. The asset will be saved in the same folder as the current selected mixer or if none is selected saved in the Assets folder.");
-
-			public Texture2D audioMixerIcon = EditorGUIUtility.FindTexture("AudioMixerController Icon");
+			public Texture2D audioMixerIcon = EditorGUIUtility.FindTexture(typeof(AudioMixerController));
 		}
 
 		private TreeViewController m_TreeView;
-
-		private int m_TreeViewKeyboardControlID;
 
 		private const int kObjectSelectorID = 1212;
 
@@ -70,8 +66,10 @@ namespace UnityEditor
 			AudioMixerController audioMixerController = (AudioMixerController)obj;
 			if (audioMixerController != null)
 			{
-				Selection.activeObject = audioMixerController;
-				ProjectBrowser.DeleteSelectedAssets(true);
+				ProjectWindowUtil.DeleteAssets(new int[]
+				{
+					audioMixerController.GetInstanceID()
+				}.ToList<int>(), true);
 			}
 		}
 
@@ -81,7 +79,7 @@ namespace UnityEditor
 			if (audioMixerItem != null)
 			{
 				GenericMenu genericMenu = new GenericMenu();
-				genericMenu.AddItem(new GUIContent("Delete AudioMixer"), false, new GenericMenu.MenuFunction2(this.DeleteAudioMixerCallback), audioMixerItem.mixer);
+				genericMenu.AddItem(EditorGUIUtility.TrTextContent("Delete AudioMixer", null, null), false, new GenericMenu.MenuFunction2(this.DeleteAudioMixerCallback), audioMixerItem.mixer);
 				genericMenu.ShowAsContext();
 			}
 		}
@@ -139,7 +137,7 @@ namespace UnityEditor
 						Event.current.Use();
 						if (flag)
 						{
-							ProjectBrowser.DeleteSelectedAssets(true);
+							ProjectWindowUtil.DeleteAssets(this.m_TreeView.GetSelection().ToList<int>(), true);
 						}
 					}
 					else if (Event.current.commandName == "Duplicate")
@@ -147,7 +145,7 @@ namespace UnityEditor
 						Event.current.Use();
 						if (flag)
 						{
-							ProjectWindowUtil.DuplicateSelectedAssets();
+							ProjectWindowUtil.DuplicateAssets(this.m_TreeView.GetSelection());
 						}
 					}
 				}
@@ -188,7 +186,7 @@ namespace UnityEditor
 					droppedUponMixer.GetInstanceID()
 				});
 				ObjectSelector.get.objectSelectorID = 1212;
-				ObjectSelector.get.titleContent = new GUIContent("Select Output Audio Mixer Group");
+				ObjectSelector.get.titleContent = EditorGUIUtility.TrTextContent("Select Output Audio Mixer Group", null, null);
 				GUIUtility.ExitGUI();
 			}
 		}

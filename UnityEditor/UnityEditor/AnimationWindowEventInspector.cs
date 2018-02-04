@@ -133,7 +133,7 @@ namespace UnityEditor
 				{
 					EditorGUI.showMixedValue = !flag;
 					string text = (!flag) ? "" : firstEvent.functionName;
-					string text2 = EditorGUILayout.TextField(new GUIContent("Function"), text, new GUILayoutOption[0]);
+					string text2 = EditorGUILayout.TextField(EditorGUIUtility.TrTextContent("Function", null, null), text, new GUILayoutOption[0]);
 					if (text2 != text)
 					{
 						AnimationEvent[] selectedEvents2 = data.selectedEvents;
@@ -173,7 +173,7 @@ namespace UnityEditor
 			AnimationEvent animationEvent = new AnimationEvent();
 			using (new EditorGUI.DisabledScope(true))
 			{
-				animationEvent.functionName = EditorGUILayout.TextField(new GUIContent("Function"), animationEvent.functionName, new GUILayoutOption[0]);
+				animationEvent.functionName = EditorGUILayout.TextField(EditorGUIUtility.TrTextContent("Function", null, null), animationEvent.functionName, new GUILayoutOption[0]);
 				AnimationWindowEventInspector.DoEditRegularParameters(new AnimationEvent[]
 				{
 					animationEvent

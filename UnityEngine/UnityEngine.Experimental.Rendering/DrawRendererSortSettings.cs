@@ -12,6 +12,10 @@ namespace UnityEngine.Experimental.Rendering
 
 		private int _sortOrthographic;
 
+		private Matrix4x4 _previousVPMatrix;
+
+		private Matrix4x4 _nonJitteredVPMatrix;
+
 		public bool sortOrthographic
 		{
 			get

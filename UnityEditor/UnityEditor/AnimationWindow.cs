@@ -7,7 +7,7 @@ using UnityEngine.Profiling;
 namespace UnityEditor
 {
 	[EditorWindowTitle(title = "Animation", useTypeNameAsIconName = true)]
-	internal class AnimationWindow : EditorWindow
+	internal class AnimationWindow : EditorWindow, IHasCustomMenu
 	{
 		private static List<AnimationWindow> s_AnimationWindows = new List<AnimationWindow>();
 
@@ -15,9 +15,16 @@ namespace UnityEditor
 		private AnimEditor m_AnimEditor;
 
 		[SerializeField]
-		private bool m_Locked = false;
+		private EditorGUIUtility.EditorLockTracker m_LockTracker = new EditorGUIUtility.EditorLockTracker();
+
+		[SerializeField]
+		private int m_LastSelectedObjectID;
 
 		private GUIStyle m_LockButtonStyle;
+
+		private GUIContent m_DefaultTitleContent;
+
+		private GUIContent m_RecordTitleContent;
 
 		internal AnimationWindowState state
 		{
@@ -58,6 +65,8 @@ namespace UnityEditor
 			}
 			AnimationWindow.s_AnimationWindows.Add(this);
 			base.titleContent = base.GetLocalizedTitleContent();
+			this.m_DefaultTitleContent = base.titleContent;
+			this.m_RecordTitleContent = EditorGUIUtility.TextContentWithIcon(base.titleContent.text, "Animation.Record");
 			this.OnSelectionChange();
 			Undo.undoRedoPerformed = (Undo.UndoRedoCallback)Delegate.Combine(Undo.undoRedoPerformed, new Undo.UndoRedoCallback(this.UndoRedoPerformed));
 		}
@@ -82,6 +91,7 @@ namespace UnityEditor
 		public void OnGUI()
 		{
 			Profiler.BeginSample("AnimationWindow.OnGUI");
+			base.titleContent = ((!this.m_AnimEditor.state.recording) ? this.m_DefaultTitleContent : this.m_RecordTitleContent);
 			this.m_AnimEditor.OnAnimEditorGUI(this, base.position);
 			Profiler.EndSample();
 		}
@@ -90,18 +100,30 @@ namespace UnityEditor
 		{
 			if (!(this.m_AnimEditor == null))
 			{
-				GameObject activeGameObject = Selection.activeGameObject;
-				if (activeGameObject != null)
+				UnityEngine.Object @object = Selection.activeObject;
+				bool flag = false;
+				if (this.m_LockTracker.isLocked && this.m_AnimEditor.stateDisabled)
 				{
-					this.EditGameObject(activeGameObject);
+					@object = EditorUtility.InstanceIDToObject(this.m_LastSelectedObjectID);
+					flag = true;
+					this.m_LockTracker.isLocked = false;
+				}
+				GameObject gameObject = @object as GameObject;
+				if (gameObject != null)
+				{
+					this.EditGameObject(gameObject);
 				}
 				else
 				{
-					AnimationClip animationClip = Selection.activeObject as AnimationClip;
+					AnimationClip animationClip = @object as AnimationClip;
 					if (animationClip != null)
 					{
 						this.EditAnimationClip(animationClip);
 					}
+				}
+				if (flag && !this.m_AnimEditor.stateDisabled)
+				{
+					this.m_LockTracker.isLocked = true;
 				}
 			}
 		}
@@ -175,13 +197,13 @@ namespace UnityEditor
 				GameObjectSelectionItem gameObjectSelectionItem = GameObjectSelectionItem.Create(gameObject);
 				if (this.ShouldUpdateGameObjectSelection(gameObjectSelectionItem))
 				{
-					this.m_AnimEditor.selectedItem = gameObjectSelectionItem;
+					this.m_AnimEditor.selection = gameObjectSelectionItem;
 					this.m_AnimEditor.overrideControlInterface = controlInterface;
+					this.m_LastSelectedObjectID = ((!(gameObject != null)) ? 0 : gameObject.GetInstanceID());
 					result = true;
 				}
 				else
 				{
-					UnityEngine.Object.DestroyImmediate(gameObjectSelectionItem);
 					result = false;
 				}
 			}
@@ -194,13 +216,13 @@ namespace UnityEditor
 			bool result;
 			if (this.ShouldUpdateSelection(animationClipSelectionItem))
 			{
-				this.m_AnimEditor.selectedItem = animationClipSelectionItem;
+				this.m_AnimEditor.selection = animationClipSelectionItem;
 				this.m_AnimEditor.overrideControlInterface = controlInterface;
+				this.m_LastSelectedObjectID = ((!(animationClip != null)) ? 0 : animationClip.GetInstanceID());
 				result = true;
 			}
 			else
 			{
-				UnityEngine.Object.DestroyImmediate(animationClipSelectionItem);
 				result = false;
 			}
 			return result;
@@ -212,15 +234,8 @@ namespace UnityEditor
 			{
 				this.m_LockButtonStyle = "IN LockButton";
 			}
-			if (this.m_AnimEditor.stateDisabled)
-			{
-				this.m_Locked = false;
-			}
 			EditorGUI.BeginChangeCheck();
-			using (new EditorGUI.DisabledScope(this.m_AnimEditor.stateDisabled))
-			{
-				this.m_Locked = GUI.Toggle(r, this.m_Locked, GUIContent.none, this.m_LockButtonStyle);
-			}
+			this.m_LockTracker.ShowButton(r, this.m_LockButtonStyle, this.m_AnimEditor.stateDisabled);
 			if (EditorGUI.EndChangeCheck())
 			{
 				this.OnSelectionChange();
@@ -230,7 +245,7 @@ namespace UnityEditor
 		private bool ShouldUpdateGameObjectSelection(GameObjectSelectionItem selectedItem)
 		{
 			bool result;
-			if (this.m_Locked)
+			if (this.m_LockTracker.isLocked)
 			{
 				result = false;
 			}
@@ -240,34 +255,27 @@ namespace UnityEditor
 			}
 			else
 			{
-				AnimationWindowSelectionItem currentlySelectedItem = this.m_AnimEditor.selectedItem;
-				if (currentlySelectedItem != null)
+				AnimationWindowSelectionItem currentSelection = this.m_AnimEditor.selection;
+				if (selectedItem.rootGameObject != currentSelection.rootGameObject)
 				{
-					if (selectedItem.rootGameObject != currentlySelectedItem.rootGameObject)
-					{
-						result = true;
-					}
-					else if (currentlySelectedItem.animationClip == null)
-					{
-						result = true;
-					}
-					else
-					{
-						if (currentlySelectedItem.rootGameObject != null)
-						{
-							AnimationClip[] animationClips = AnimationUtility.GetAnimationClips(currentlySelectedItem.rootGameObject);
-							if (!Array.Exists<AnimationClip>(animationClips, (AnimationClip x) => x == currentlySelectedItem.animationClip))
-							{
-								result = true;
-								return result;
-							}
-						}
-						result = false;
-					}
+					result = true;
+				}
+				else if (currentSelection.animationClip == null)
+				{
+					result = true;
 				}
 				else
 				{
-					result = true;
+					if (currentSelection.rootGameObject != null)
+					{
+						AnimationClip[] animationClips = AnimationUtility.GetAnimationClips(currentSelection.rootGameObject);
+						if (!Array.Exists<AnimationClip>(animationClips, (AnimationClip x) => x == currentSelection.animationClip))
+						{
+							result = true;
+							return result;
+						}
+					}
+					result = false;
 				}
 			}
 			return result;
@@ -276,14 +284,14 @@ namespace UnityEditor
 		private bool ShouldUpdateSelection(AnimationWindowSelectionItem selectedItem)
 		{
 			bool result;
-			if (this.m_Locked)
+			if (this.m_LockTracker.isLocked)
 			{
 				result = false;
 			}
 			else
 			{
-				AnimationWindowSelectionItem selectedItem2 = this.m_AnimEditor.selectedItem;
-				result = (!(selectedItem2 != null) || selectedItem.GetRefreshHash() != selectedItem2.GetRefreshHash());
+				AnimationWindowSelectionItem selection = this.m_AnimEditor.selection;
+				result = (selectedItem.GetRefreshHash() != selection.GetRefreshHash());
 			}
 			return result;
 		}
@@ -291,6 +299,11 @@ namespace UnityEditor
 		private void UndoRedoPerformed()
 		{
 			base.Repaint();
+		}
+
+		public virtual void AddItemsToMenu(GenericMenu menu)
+		{
+			this.m_LockTracker.AddItemsToMenu(menu, this.m_AnimEditor.stateDisabled);
 		}
 	}
 }

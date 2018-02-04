@@ -1,3 +1,4 @@
+using Mono.Cecil;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -5,11 +6,18 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEditor.Modules;
 using UnityEditorInternal;
+using UnityEngine;
+using UnityEngine.Scripting;
 
 namespace UnityEditor
 {
+	[ExcludeFromPreset]
 	public sealed class PluginImporter : AssetImporter
 	{
+		public delegate bool IncludeInBuildDelegate(string path);
+
+		private static Dictionary<string, PluginImporter.IncludeInBuildDelegate> s_includeInBuildDelegateMap = new Dictionary<string, PluginImporter.IncludeInBuildDelegate>();
+
 		public extern bool isNativePlugin
 		{
 			[MethodImpl(MethodImplOptions.InternalCall)]
@@ -22,22 +30,18 @@ namespace UnityEditor
 			get;
 		}
 
-		private static bool IsCompatible(PluginImporter imp, string platformName)
-		{
-			return !string.IsNullOrEmpty(imp.assetPath) && (imp.GetCompatibleWithPlatform(platformName) || (imp.GetCompatibleWithAnyPlatform() && !imp.GetExcludeFromAnyPlatform(platformName))) && imp.ShouldIncludeInBuild();
-		}
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern bool GetCompatibleWithPlatformOrAnyPlatformBuildTarget(string buildTarget);
 
-		private static bool IsCompatible(PluginImporter imp, string buildTargetGroup, string buildTarget)
-		{
-			return !string.IsNullOrEmpty(imp.assetPath) && (imp.GetCompatibleWithPlatform(buildTargetGroup, buildTarget) || imp.GetCompatibleWithAnyPlatform());
-		}
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern bool GetCompatibleWithPlatformOrAnyPlatformBuildGroupAndTarget(string buildTargetGroup, string buildTarget);
 
 		public static PluginImporter[] GetImporters(string platformName)
 		{
 			List<PluginImporter> list = new List<PluginImporter>();
 			Dictionary<string, PluginImporter> dictionary = new Dictionary<string, PluginImporter>();
 			PluginImporter[] array = (from imp in PluginImporter.GetAllImporters()
-			where PluginImporter.IsCompatible(imp, platformName)
+			where imp.GetCompatibleWithPlatformOrAnyPlatformBuildTarget(platformName)
 			select imp).ToArray<PluginImporter>();
 			IPluginImporterExtension pluginImporterExtension = ModuleManager.GetPluginImporterExtension(platformName);
 			if (pluginImporterExtension == null)
@@ -87,6 +91,25 @@ namespace UnityEditor
 			return result;
 		}
 
+		internal string HasDiscouragedReferences()
+		{
+			string result;
+			if (!this.isNativePlugin)
+			{
+				AssemblyDefinition assemblyDefinition = AssemblyDefinition.ReadAssembly(base.assetPath, new ReaderParameters());
+				foreach (AssemblyNameReference current in assemblyDefinition.MainModule.AssemblyReferences)
+				{
+					if (current.Name.StartsWith("UnityEngine.") && current.Name.EndsWith("Module"))
+					{
+						result = current.Name;
+						return result;
+					}
+				}
+			}
+			result = null;
+			return result;
+		}
+
 		public static PluginImporter[] GetImporters(BuildTarget platform)
 		{
 			return PluginImporter.GetImporters(BuildPipeline.GetBuildTargetName(platform));
@@ -95,7 +118,7 @@ namespace UnityEditor
 		public static PluginImporter[] GetImporters(string buildTargetGroup, string buildTarget)
 		{
 			return (from imp in PluginImporter.GetAllImporters()
-			where PluginImporter.IsCompatible(imp, buildTargetGroup, buildTarget)
+			where imp.GetCompatibleWithPlatformOrAnyPlatformBuildGroupAndTarget(buildTargetGroup, buildTarget)
 			select imp).ToArray<PluginImporter>();
 		}
 
@@ -128,6 +151,17 @@ namespace UnityEditor
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern bool GetExcludeFromAnyPlatform(string platformName);
+
+		public void SetIncludeInBuildDelegate(PluginImporter.IncludeInBuildDelegate includeInBuildDelegate)
+		{
+			PluginImporter.s_includeInBuildDelegateMap[base.assetPath] = includeInBuildDelegate;
+		}
+
+		[RequiredByNativeCode]
+		private bool InvokeIncludeInBuildDelegate()
+		{
+			return !PluginImporter.s_includeInBuildDelegateMap.ContainsKey(base.assetPath) || PluginImporter.s_includeInBuildDelegateMap[base.assetPath](base.assetPath);
+		}
 
 		public void SetExcludeFromAnyPlatform(BuildTarget platform, bool excludedFromAny)
 		{

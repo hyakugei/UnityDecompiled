@@ -22,6 +22,10 @@ namespace UnityEditor.Modules
 
 		bool SupportsDynamicBatching();
 
+		bool SupportsHighDynamicRangeDisplays();
+
+		bool SupportsGfxJobModes();
+
 		bool CanShowUnitySplashScreen();
 
 		void SplashSectionGUI();
@@ -35,5 +39,11 @@ namespace UnityEditor.Modules
 		void ResolutionSectionGUI(float h, float midWidth, float maxWidth);
 
 		bool HasBundleIdentifier();
+
+		bool SupportsMultithreadedRendering();
+
+		void MultithreadedRenderingGUI(BuildTargetGroup targetGroup);
+
+		bool SupportsCustomLightmapEncoding();
 	}
 }

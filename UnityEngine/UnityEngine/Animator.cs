@@ -2,53 +2,48 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using UnityEngine.Experimental.Director;
+using UnityEngine.Bindings;
 using UnityEngine.Internal;
+using UnityEngine.Playables;
 using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
 	[UsedByNativeCode]
-	public sealed class Animator : Behaviour
+	public class Animator : Behaviour
 	{
 		public extern bool isOptimizable
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
 
 		public extern bool isHuman
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
 
 		public extern bool hasRootMotion
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
 
 		internal extern bool isRootPositionOrRotationControlledByCurves
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
 
 		public extern float humanScale
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
 
 		public extern bool isInitialized
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
@@ -58,7 +53,7 @@ namespace UnityEngine
 			get
 			{
 				Vector3 result;
-				this.INTERNAL_get_deltaPosition(out result);
+				this.get_deltaPosition_Injected(out result);
 				return result;
 			}
 		}
@@ -68,7 +63,7 @@ namespace UnityEngine
 			get
 			{
 				Quaternion result;
-				this.INTERNAL_get_deltaRotation(out result);
+				this.get_deltaRotation_Injected(out result);
 				return result;
 			}
 		}
@@ -78,7 +73,7 @@ namespace UnityEngine
 			get
 			{
 				Vector3 result;
-				this.INTERNAL_get_velocity(out result);
+				this.get_velocity_Injected(out result);
 				return result;
 			}
 		}
@@ -88,7 +83,7 @@ namespace UnityEngine
 			get
 			{
 				Vector3 result;
-				this.INTERNAL_get_angularVelocity(out result);
+				this.get_angularVelocity_Injected(out result);
 				return result;
 			}
 		}
@@ -98,12 +93,12 @@ namespace UnityEngine
 			get
 			{
 				Vector3 result;
-				this.INTERNAL_get_rootPosition(out result);
+				this.get_rootPosition_Injected(out result);
 				return result;
 			}
 			set
 			{
-				this.INTERNAL_set_rootPosition(ref value);
+				this.set_rootPosition_Injected(ref value);
 			}
 		}
 
@@ -112,36 +107,32 @@ namespace UnityEngine
 			get
 			{
 				Quaternion result;
-				this.INTERNAL_get_rootRotation(out result);
+				this.get_rootRotation_Injected(out result);
 				return result;
 			}
 			set
 			{
-				this.INTERNAL_set_rootRotation(ref value);
+				this.set_rootRotation_Injected(ref value);
 			}
 		}
 
 		public extern bool applyRootMotion
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern bool linearVelocityBlending
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
-		[Obsolete("Use Animator.updateMode instead")]
+		[Obsolete("Animator.animatePhysics has been deprecated. Use Animator.updateMode instead.")]
 		public bool animatePhysics
 		{
 			get
@@ -156,34 +147,28 @@ namespace UnityEngine
 
 		public extern AnimatorUpdateMode updateMode
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern bool hasTransformHierarchy
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
 
 		internal extern bool allowConstantClipSamplingOptimization
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern float gravityWeight
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
@@ -193,12 +178,26 @@ namespace UnityEngine
 			get
 			{
 				this.CheckIfInIKPass();
-				return this.GetBodyPositionInternal();
+				return this.bodyPositionInternal;
 			}
 			set
 			{
 				this.CheckIfInIKPass();
-				this.SetBodyPositionInternal(value);
+				this.bodyPositionInternal = value;
+			}
+		}
+
+		internal Vector3 bodyPositionInternal
+		{
+			get
+			{
+				Vector3 result;
+				this.get_bodyPositionInternal_Injected(out result);
+				return result;
+			}
+			set
+			{
+				this.set_bodyPositionInternal_Injected(ref value);
 			}
 		}
 
@@ -207,59 +206,65 @@ namespace UnityEngine
 			get
 			{
 				this.CheckIfInIKPass();
-				return this.GetBodyRotationInternal();
+				return this.bodyRotationInternal;
 			}
 			set
 			{
 				this.CheckIfInIKPass();
-				this.SetBodyRotationInternal(value);
+				this.bodyRotationInternal = value;
+			}
+		}
+
+		internal Quaternion bodyRotationInternal
+		{
+			get
+			{
+				Quaternion result;
+				this.get_bodyRotationInternal_Injected(out result);
+				return result;
+			}
+			set
+			{
+				this.set_bodyRotationInternal_Injected(ref value);
 			}
 		}
 
 		public extern bool stabilizeFeet
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern int layerCount
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
 
 		public extern AnimatorControllerParameter[] parameters
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
 
 		public extern int parameterCount
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
 
 		public extern float feetPivotActive
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern float pivotWeight
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
@@ -269,24 +274,21 @@ namespace UnityEngine
 			get
 			{
 				Vector3 result;
-				this.INTERNAL_get_pivotPosition(out result);
+				this.get_pivotPosition_Injected(out result);
 				return result;
 			}
 		}
 
 		public extern bool isMatchingTarget
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
 
 		public extern float speed
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
@@ -296,7 +298,7 @@ namespace UnityEngine
 			get
 			{
 				Vector3 result;
-				this.INTERNAL_get_targetPosition(out result);
+				this.get_targetPosition_Injected(out result);
 				return result;
 			}
 		}
@@ -306,88 +308,79 @@ namespace UnityEngine
 			get
 			{
 				Quaternion result;
-				this.INTERNAL_get_targetRotation(out result);
+				this.get_targetRotation_Injected(out result);
 				return result;
 			}
 		}
 
 		internal extern Transform avatarRoot
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
 
 		public extern AnimatorCullingMode cullingMode
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern float playbackTime
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
-		public extern float recorderStartTime
+		public float recorderStartTime
 		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
+			get
+			{
+				return this.GetRecorderStartTime();
+			}
+			set
+			{
+			}
 		}
 
-		public extern float recorderStopTime
+		public float recorderStopTime
 		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
+			get
+			{
+				return this.GetRecorderStopTime();
+			}
+			set
+			{
+			}
 		}
 
 		public extern AnimatorRecorderMode recorderMode
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
 
 		public extern RuntimeAnimatorController runtimeAnimatorController
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern bool hasBoundPlayables
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
 
 		public extern Avatar avatar
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
@@ -397,58 +390,57 @@ namespace UnityEngine
 			get
 			{
 				PlayableGraph result = default(PlayableGraph);
-				this.InternalGetCurrentGraph(ref result);
+				this.GetCurrentGraph(ref result);
 				return result;
 			}
 		}
 
 		public extern bool layersAffectMassCenter
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern float leftFeetBottomHeight
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
 
 		public extern float rightFeetBottomHeight
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
 
 		internal extern bool supportsOnAnimatorMove
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
 
 		public extern bool logWarnings
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern bool fireEvents
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public extern bool keepAnimatorControllerStateOnDisable
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
@@ -463,6 +455,11 @@ namespace UnityEngine
 		public AnimationInfo[] GetNextAnimationClipState(int layerIndex)
 		{
 			return null;
+		}
+
+		[EditorBrowsable(EditorBrowsableState.Never), Obsolete("Stop is obsolete. Use Animator.enabled = false instead", true)]
+		public void Stop()
+		{
 		}
 
 		public float GetFloat(string name)
@@ -565,233 +562,131 @@ namespace UnityEngine
 			return this.IsParameterControlledByCurveID(id);
 		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void INTERNAL_get_deltaPosition(out Vector3 value);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void INTERNAL_get_deltaRotation(out Quaternion value);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void INTERNAL_get_velocity(out Vector3 value);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void INTERNAL_get_angularVelocity(out Vector3 value);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void INTERNAL_get_rootPosition(out Vector3 value);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void INTERNAL_set_rootPosition(ref Vector3 value);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void INTERNAL_get_rootRotation(out Quaternion value);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void INTERNAL_set_rootRotation(ref Quaternion value);
-
-		internal Vector3 GetBodyPositionInternal()
-		{
-			Vector3 result;
-			Animator.INTERNAL_CALL_GetBodyPositionInternal(this, out result);
-			return result;
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_GetBodyPositionInternal(Animator self, out Vector3 value);
-
-		internal void SetBodyPositionInternal(Vector3 bodyPosition)
-		{
-			Animator.INTERNAL_CALL_SetBodyPositionInternal(this, ref bodyPosition);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_SetBodyPositionInternal(Animator self, ref Vector3 bodyPosition);
-
-		internal Quaternion GetBodyRotationInternal()
-		{
-			Quaternion result;
-			Animator.INTERNAL_CALL_GetBodyRotationInternal(this, out result);
-			return result;
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_GetBodyRotationInternal(Animator self, out Quaternion value);
-
-		internal void SetBodyRotationInternal(Quaternion bodyRotation)
-		{
-			Animator.INTERNAL_CALL_SetBodyRotationInternal(this, ref bodyRotation);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_SetBodyRotationInternal(Animator self, ref Quaternion bodyRotation);
-
 		public Vector3 GetIKPosition(AvatarIKGoal goal)
 		{
 			this.CheckIfInIKPass();
-			return this.GetIKPositionInternal(goal);
+			return this.GetGoalPosition(goal);
 		}
 
-		internal Vector3 GetIKPositionInternal(AvatarIKGoal goal)
+		private Vector3 GetGoalPosition(AvatarIKGoal goal)
 		{
 			Vector3 result;
-			Animator.INTERNAL_CALL_GetIKPositionInternal(this, goal, out result);
+			this.GetGoalPosition_Injected(goal, out result);
 			return result;
 		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_GetIKPositionInternal(Animator self, AvatarIKGoal goal, out Vector3 value);
 
 		public void SetIKPosition(AvatarIKGoal goal, Vector3 goalPosition)
 		{
 			this.CheckIfInIKPass();
-			this.SetIKPositionInternal(goal, goalPosition);
+			this.SetGoalPosition(goal, goalPosition);
 		}
 
-		internal void SetIKPositionInternal(AvatarIKGoal goal, Vector3 goalPosition)
+		private void SetGoalPosition(AvatarIKGoal goal, Vector3 goalPosition)
 		{
-			Animator.INTERNAL_CALL_SetIKPositionInternal(this, goal, ref goalPosition);
+			this.SetGoalPosition_Injected(goal, ref goalPosition);
 		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_SetIKPositionInternal(Animator self, AvatarIKGoal goal, ref Vector3 goalPosition);
 
 		public Quaternion GetIKRotation(AvatarIKGoal goal)
 		{
 			this.CheckIfInIKPass();
-			return this.GetIKRotationInternal(goal);
+			return this.GetGoalRotation(goal);
 		}
 
-		internal Quaternion GetIKRotationInternal(AvatarIKGoal goal)
+		private Quaternion GetGoalRotation(AvatarIKGoal goal)
 		{
 			Quaternion result;
-			Animator.INTERNAL_CALL_GetIKRotationInternal(this, goal, out result);
+			this.GetGoalRotation_Injected(goal, out result);
 			return result;
 		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_GetIKRotationInternal(Animator self, AvatarIKGoal goal, out Quaternion value);
 
 		public void SetIKRotation(AvatarIKGoal goal, Quaternion goalRotation)
 		{
 			this.CheckIfInIKPass();
-			this.SetIKRotationInternal(goal, goalRotation);
+			this.SetGoalRotation(goal, goalRotation);
 		}
 
-		internal void SetIKRotationInternal(AvatarIKGoal goal, Quaternion goalRotation)
+		private void SetGoalRotation(AvatarIKGoal goal, Quaternion goalRotation)
 		{
-			Animator.INTERNAL_CALL_SetIKRotationInternal(this, goal, ref goalRotation);
+			this.SetGoalRotation_Injected(goal, ref goalRotation);
 		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_SetIKRotationInternal(Animator self, AvatarIKGoal goal, ref Quaternion goalRotation);
 
 		public float GetIKPositionWeight(AvatarIKGoal goal)
 		{
 			this.CheckIfInIKPass();
-			return this.GetIKPositionWeightInternal(goal);
+			return this.GetGoalWeightPosition(goal);
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern float GetIKPositionWeightInternal(AvatarIKGoal goal);
+		private extern float GetGoalWeightPosition(AvatarIKGoal goal);
 
 		public void SetIKPositionWeight(AvatarIKGoal goal, float value)
 		{
 			this.CheckIfInIKPass();
-			this.SetIKPositionWeightInternal(goal, value);
+			this.SetGoalWeightPosition(goal, value);
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern void SetIKPositionWeightInternal(AvatarIKGoal goal, float value);
+		private extern void SetGoalWeightPosition(AvatarIKGoal goal, float value);
 
 		public float GetIKRotationWeight(AvatarIKGoal goal)
 		{
 			this.CheckIfInIKPass();
-			return this.GetIKRotationWeightInternal(goal);
+			return this.GetGoalWeightRotation(goal);
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern float GetIKRotationWeightInternal(AvatarIKGoal goal);
+		private extern float GetGoalWeightRotation(AvatarIKGoal goal);
 
 		public void SetIKRotationWeight(AvatarIKGoal goal, float value)
 		{
 			this.CheckIfInIKPass();
-			this.SetIKRotationWeightInternal(goal, value);
+			this.SetGoalWeightRotation(goal, value);
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern void SetIKRotationWeightInternal(AvatarIKGoal goal, float value);
+		private extern void SetGoalWeightRotation(AvatarIKGoal goal, float value);
 
 		public Vector3 GetIKHintPosition(AvatarIKHint hint)
 		{
 			this.CheckIfInIKPass();
-			return this.GetIKHintPositionInternal(hint);
+			return this.GetHintPosition(hint);
 		}
 
-		internal Vector3 GetIKHintPositionInternal(AvatarIKHint hint)
+		private Vector3 GetHintPosition(AvatarIKHint hint)
 		{
 			Vector3 result;
-			Animator.INTERNAL_CALL_GetIKHintPositionInternal(this, hint, out result);
+			this.GetHintPosition_Injected(hint, out result);
 			return result;
 		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_GetIKHintPositionInternal(Animator self, AvatarIKHint hint, out Vector3 value);
 
 		public void SetIKHintPosition(AvatarIKHint hint, Vector3 hintPosition)
 		{
 			this.CheckIfInIKPass();
-			this.SetIKHintPositionInternal(hint, hintPosition);
+			this.SetHintPosition(hint, hintPosition);
 		}
 
-		internal void SetIKHintPositionInternal(AvatarIKHint hint, Vector3 hintPosition)
+		private void SetHintPosition(AvatarIKHint hint, Vector3 hintPosition)
 		{
-			Animator.INTERNAL_CALL_SetIKHintPositionInternal(this, hint, ref hintPosition);
+			this.SetHintPosition_Injected(hint, ref hintPosition);
 		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_SetIKHintPositionInternal(Animator self, AvatarIKHint hint, ref Vector3 hintPosition);
 
 		public float GetIKHintPositionWeight(AvatarIKHint hint)
 		{
 			this.CheckIfInIKPass();
-			return this.GetHintWeightPositionInternal(hint);
+			return this.GetHintWeightPosition(hint);
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern float GetHintWeightPositionInternal(AvatarIKHint hint);
+		private extern float GetHintWeightPosition(AvatarIKHint hint);
 
 		public void SetIKHintPositionWeight(AvatarIKHint hint, float value)
 		{
 			this.CheckIfInIKPass();
-			this.SetIKHintPositionWeightInternal(hint, value);
+			this.SetHintWeightPosition(hint, value);
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern void SetIKHintPositionWeightInternal(AvatarIKHint hint, float value);
+		private extern void SetHintWeightPosition(AvatarIKHint hint, float value);
 
 		public void SetLookAtPosition(Vector3 lookAtPosition)
 		{
@@ -799,122 +694,64 @@ namespace UnityEngine
 			this.SetLookAtPositionInternal(lookAtPosition);
 		}
 
-		internal void SetLookAtPositionInternal(Vector3 lookAtPosition)
+		private void SetLookAtPositionInternal(Vector3 lookAtPosition)
 		{
-			Animator.INTERNAL_CALL_SetLookAtPositionInternal(this, ref lookAtPosition);
+			this.SetLookAtPositionInternal_Injected(ref lookAtPosition);
 		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_SetLookAtPositionInternal(Animator self, ref Vector3 lookAtPosition);
-
-		[ExcludeFromDocs]
-		public void SetLookAtWeight(float weight, float bodyWeight, float headWeight, float eyesWeight)
-		{
-			float clampWeight = 0.5f;
-			this.SetLookAtWeight(weight, bodyWeight, headWeight, eyesWeight, clampWeight);
-		}
-
-		[ExcludeFromDocs]
-		public void SetLookAtWeight(float weight, float bodyWeight, float headWeight)
-		{
-			float clampWeight = 0.5f;
-			float eyesWeight = 0f;
-			this.SetLookAtWeight(weight, bodyWeight, headWeight, eyesWeight, clampWeight);
-		}
-
-		[ExcludeFromDocs]
-		public void SetLookAtWeight(float weight, float bodyWeight)
-		{
-			float clampWeight = 0.5f;
-			float eyesWeight = 0f;
-			float headWeight = 1f;
-			this.SetLookAtWeight(weight, bodyWeight, headWeight, eyesWeight, clampWeight);
-		}
-
-		[ExcludeFromDocs]
 		public void SetLookAtWeight(float weight)
 		{
-			float clampWeight = 0.5f;
-			float eyesWeight = 0f;
-			float headWeight = 1f;
-			float bodyWeight = 0f;
-			this.SetLookAtWeight(weight, bodyWeight, headWeight, eyesWeight, clampWeight);
+			this.CheckIfInIKPass();
+			this.SetLookAtWeightInternal(weight, 0f, 1f, 0f, 0.5f);
 		}
 
-		public void SetLookAtWeight(float weight, [UnityEngine.Internal.DefaultValue("0.00f")] float bodyWeight, [UnityEngine.Internal.DefaultValue("1.00f")] float headWeight, [UnityEngine.Internal.DefaultValue("0.00f")] float eyesWeight, [UnityEngine.Internal.DefaultValue("0.50f")] float clampWeight)
+		public void SetLookAtWeight(float weight, float bodyWeight)
+		{
+			this.CheckIfInIKPass();
+			this.SetLookAtWeightInternal(weight, bodyWeight, 1f, 0f, 0.5f);
+		}
+
+		public void SetLookAtWeight(float weight, float bodyWeight, float headWeight)
+		{
+			this.CheckIfInIKPass();
+			this.SetLookAtWeightInternal(weight, bodyWeight, headWeight, 0f, 0.5f);
+		}
+
+		public void SetLookAtWeight(float weight, float bodyWeight, float headWeight, float eyesWeight)
+		{
+			this.CheckIfInIKPass();
+			this.SetLookAtWeightInternal(weight, bodyWeight, headWeight, eyesWeight, 0.5f);
+		}
+
+		public void SetLookAtWeight(float weight, [UnityEngine.Internal.DefaultValue("0.0f")] float bodyWeight, [UnityEngine.Internal.DefaultValue("1.0f")] float headWeight, [UnityEngine.Internal.DefaultValue("0.0f")] float eyesWeight, [UnityEngine.Internal.DefaultValue("0.5f")] float clampWeight)
 		{
 			this.CheckIfInIKPass();
 			this.SetLookAtWeightInternal(weight, bodyWeight, headWeight, eyesWeight, clampWeight);
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern void SetLookAtWeightInternal(float weight, [UnityEngine.Internal.DefaultValue("0.00f")] float bodyWeight, [UnityEngine.Internal.DefaultValue("1.00f")] float headWeight, [UnityEngine.Internal.DefaultValue("0.00f")] float eyesWeight, [UnityEngine.Internal.DefaultValue("0.50f")] float clampWeight);
-
-		[ExcludeFromDocs]
-		internal void SetLookAtWeightInternal(float weight, float bodyWeight, float headWeight, float eyesWeight)
-		{
-			float clampWeight = 0.5f;
-			this.SetLookAtWeightInternal(weight, bodyWeight, headWeight, eyesWeight, clampWeight);
-		}
-
-		[ExcludeFromDocs]
-		internal void SetLookAtWeightInternal(float weight, float bodyWeight, float headWeight)
-		{
-			float clampWeight = 0.5f;
-			float eyesWeight = 0f;
-			this.SetLookAtWeightInternal(weight, bodyWeight, headWeight, eyesWeight, clampWeight);
-		}
-
-		[ExcludeFromDocs]
-		internal void SetLookAtWeightInternal(float weight, float bodyWeight)
-		{
-			float clampWeight = 0.5f;
-			float eyesWeight = 0f;
-			float headWeight = 1f;
-			this.SetLookAtWeightInternal(weight, bodyWeight, headWeight, eyesWeight, clampWeight);
-		}
-
-		[ExcludeFromDocs]
-		internal void SetLookAtWeightInternal(float weight)
-		{
-			float clampWeight = 0.5f;
-			float eyesWeight = 0f;
-			float headWeight = 1f;
-			float bodyWeight = 0f;
-			this.SetLookAtWeightInternal(weight, bodyWeight, headWeight, eyesWeight, clampWeight);
-		}
+		private extern void SetLookAtWeightInternal(float weight, float bodyWeight, float headWeight, float eyesWeight, float clampWeight);
 
 		public void SetBoneLocalRotation(HumanBodyBones humanBoneId, Quaternion rotation)
 		{
 			this.CheckIfInIKPass();
-			this.SetBoneLocalRotationInternal((int)humanBoneId, rotation);
+			this.SetBoneLocalRotationInternal(HumanTrait.GetBoneIndexFromMono((int)humanBoneId), rotation);
 		}
 
-		internal void SetBoneLocalRotationInternal(int humanBoneId, Quaternion rotation)
+		private void SetBoneLocalRotationInternal(int humanBoneId, Quaternion rotation)
 		{
-			Animator.INTERNAL_CALL_SetBoneLocalRotationInternal(this, humanBoneId, ref rotation);
+			this.SetBoneLocalRotationInternal_Injected(humanBoneId, ref rotation);
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_SetBoneLocalRotationInternal(Animator self, int humanBoneId, ref Quaternion rotation);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern ScriptableObject GetBehaviour(Type type);
+		private extern ScriptableObject GetBehaviour([NotNull] Type type);
 
 		public T GetBehaviour<T>() where T : StateMachineBehaviour
 		{
 			return this.GetBehaviour(typeof(T)) as T;
 		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern ScriptableObject[] GetBehaviours(Type type);
-
-		internal static T[] ConvertStateMachineBehaviour<T>(ScriptableObject[] rawObjects) where T : StateMachineBehaviour
+		private static T[] ConvertStateMachineBehaviour<T>(ScriptableObject[] rawObjects) where T : StateMachineBehaviour
 		{
 			T[] result;
 			if (rawObjects == null)
@@ -935,44 +772,77 @@ namespace UnityEngine
 
 		public T[] GetBehaviours<T>() where T : StateMachineBehaviour
 		{
-			return Animator.ConvertStateMachineBehaviour<T>(this.GetBehaviours(typeof(T)));
+			return Animator.ConvertStateMachineBehaviour<T>(this.InternalGetBehaviours(typeof(T)));
 		}
 
-		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern ScriptableObject[] InternalGetBehaviours([NotNull] Type type);
+
+		public StateMachineBehaviour[] GetBehaviours(int fullPathHash, int layerIndex)
+		{
+			return this.InternalGetBehavioursByKey(fullPathHash, layerIndex, typeof(StateMachineBehaviour)) as StateMachineBehaviour[];
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern ScriptableObject[] InternalGetBehavioursByKey(int fullPathHash, int layerIndex, [NotNull] Type type);
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern string GetLayerName(int layerIndex);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern int GetLayerIndex(string layerName);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern float GetLayerWeight(int layerIndex);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern void SetLayerWeight(int layerIndex, float weight);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern AnimatorStateInfo GetCurrentAnimatorStateInfo(int layerIndex);
+		private extern void GetAnimatorStateInfo(int layerIndex, StateInfoIndex stateInfoIndex, out AnimatorStateInfo info);
 
-		[GeneratedByOldBindingsGenerator]
+		public AnimatorStateInfo GetCurrentAnimatorStateInfo(int layerIndex)
+		{
+			AnimatorStateInfo result;
+			this.GetAnimatorStateInfo(layerIndex, StateInfoIndex.CurrentState, out result);
+			return result;
+		}
+
+		public AnimatorStateInfo GetNextAnimatorStateInfo(int layerIndex)
+		{
+			AnimatorStateInfo result;
+			this.GetAnimatorStateInfo(layerIndex, StateInfoIndex.NextState, out result);
+			return result;
+		}
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern AnimatorStateInfo GetNextAnimatorStateInfo(int layerIndex);
+		private extern void GetAnimatorTransitionInfo(int layerIndex, out AnimatorTransitionInfo info);
 
-		[GeneratedByOldBindingsGenerator]
+		public AnimatorTransitionInfo GetAnimatorTransitionInfo(int layerIndex)
+		{
+			AnimatorTransitionInfo result;
+			this.GetAnimatorTransitionInfo(layerIndex, out result);
+			return result;
+		}
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern AnimatorTransitionInfo GetAnimatorTransitionInfo(int layerIndex);
+		internal extern int GetAnimatorClipInfoCount(int layerIndex, bool current);
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern int GetCurrentAnimatorClipInfoCount(int layerIndex);
+		public int GetCurrentAnimatorClipInfoCount(int layerIndex)
+		{
+			return this.GetAnimatorClipInfoCount(layerIndex, true);
+		}
 
-		[GeneratedByOldBindingsGenerator]
+		public int GetNextAnimatorClipInfoCount(int layerIndex)
+		{
+			return this.GetAnimatorClipInfoCount(layerIndex, false);
+		}
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern AnimatorClipInfo[] GetCurrentAnimatorClipInfo(int layerIndex);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public extern AnimatorClipInfo[] GetNextAnimatorClipInfo(int layerIndex);
 
 		public void GetCurrentAnimatorClipInfo(int layerIndex, List<AnimatorClipInfo> clips)
 		{
@@ -983,17 +853,11 @@ namespace UnityEngine
 			this.GetAnimatorClipInfoInternal(layerIndex, true, clips);
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern void GetAnimatorClipInfoInternal(int layerIndex, bool isCurrent, object clips);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern int GetNextAnimatorClipInfoCount(int layerIndex);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern AnimatorClipInfo[] GetNextAnimatorClipInfo(int layerIndex);
+		private extern AnimatorClipInfo[] GetAnimatorClipInfoInternalWinRT(int layerIndex, bool isCurrent);
 
 		public void GetNextAnimatorClipInfo(int layerIndex, List<AnimatorClipInfo> clips)
 		{
@@ -1004,7 +868,6 @@ namespace UnityEngine
 			this.GetAnimatorClipInfoInternal(layerIndex, false, clips);
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern bool IsInTransition(int layerIndex);
 
@@ -1018,36 +881,28 @@ namespace UnityEngine
 			return parameters[index];
 		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void INTERNAL_get_pivotPosition(out Vector3 value);
+		private void MatchTarget(Vector3 matchPosition, Quaternion matchRotation, int targetBodyPart, MatchTargetWeightMask weightMask, float startNormalizedTime, float targetNormalizedTime)
+		{
+			this.MatchTarget_Injected(ref matchPosition, ref matchRotation, targetBodyPart, ref weightMask, startNormalizedTime, targetNormalizedTime);
+		}
+
+		public void MatchTarget(Vector3 matchPosition, Quaternion matchRotation, AvatarTarget targetBodyPart, MatchTargetWeightMask weightMask, float startNormalizedTime)
+		{
+			this.MatchTarget(matchPosition, matchRotation, (int)targetBodyPart, weightMask, startNormalizedTime, 1f);
+		}
 
 		public void MatchTarget(Vector3 matchPosition, Quaternion matchRotation, AvatarTarget targetBodyPart, MatchTargetWeightMask weightMask, float startNormalizedTime, [UnityEngine.Internal.DefaultValue("1")] float targetNormalizedTime)
 		{
-			Animator.INTERNAL_CALL_MatchTarget(this, ref matchPosition, ref matchRotation, targetBodyPart, ref weightMask, startNormalizedTime, targetNormalizedTime);
+			this.MatchTarget(matchPosition, matchRotation, (int)targetBodyPart, weightMask, startNormalizedTime, targetNormalizedTime);
 		}
 
-		[ExcludeFromDocs]
-		public void MatchTarget(Vector3 matchPosition, Quaternion matchRotation, AvatarTarget targetBodyPart, MatchTargetWeightMask weightMask, float startNormalizedTime)
-		{
-			float targetNormalizedTime = 1f;
-			Animator.INTERNAL_CALL_MatchTarget(this, ref matchPosition, ref matchRotation, targetBodyPart, ref weightMask, startNormalizedTime, targetNormalizedTime);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_MatchTarget(Animator self, ref Vector3 matchPosition, ref Quaternion matchRotation, AvatarTarget targetBodyPart, ref MatchTargetWeightMask weightMask, float startNormalizedTime, float targetNormalizedTime);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern void InterruptMatchTarget([UnityEngine.Internal.DefaultValue("true")] bool completeMatch);
-
-		[ExcludeFromDocs]
 		public void InterruptMatchTarget()
 		{
-			bool completeMatch = true;
-			this.InterruptMatchTarget(completeMatch);
+			this.InterruptMatchTarget(true);
 		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public extern void InterruptMatchTarget([UnityEngine.Internal.DefaultValue("true")] bool completeMatch);
 
 		[Obsolete("ForceStateNormalizedTime is deprecated. Please use Play or CrossFade instead.")]
 		public void ForceStateNormalizedTime(float normalizedTime)
@@ -1055,92 +910,112 @@ namespace UnityEngine
 			this.Play(0, 0, normalizedTime);
 		}
 
-		[ExcludeFromDocs]
-		public void CrossFadeInFixedTime(string stateName, float transitionDuration, int layer)
+		public void CrossFadeInFixedTime(string stateName, float fixedTransitionDuration)
 		{
-			float fixedTime = 0f;
-			this.CrossFadeInFixedTime(stateName, transitionDuration, layer, fixedTime);
-		}
-
-		[ExcludeFromDocs]
-		public void CrossFadeInFixedTime(string stateName, float transitionDuration)
-		{
-			float fixedTime = 0f;
+			float normalizedTransitionTime = 0f;
+			float fixedTimeOffset = 0f;
 			int layer = -1;
-			this.CrossFadeInFixedTime(stateName, transitionDuration, layer, fixedTime);
+			this.CrossFadeInFixedTime(Animator.StringToHash(stateName), fixedTransitionDuration, layer, fixedTimeOffset, normalizedTransitionTime);
 		}
 
-		public void CrossFadeInFixedTime(string stateName, float transitionDuration, [UnityEngine.Internal.DefaultValue("-1")] int layer, [UnityEngine.Internal.DefaultValue("0.0f")] float fixedTime)
+		public void CrossFadeInFixedTime(string stateName, float fixedTransitionDuration, int layer)
 		{
-			this.CrossFadeInFixedTime(Animator.StringToHash(stateName), transitionDuration, layer, fixedTime);
+			float normalizedTransitionTime = 0f;
+			float fixedTimeOffset = 0f;
+			this.CrossFadeInFixedTime(Animator.StringToHash(stateName), fixedTransitionDuration, layer, fixedTimeOffset, normalizedTransitionTime);
 		}
 
-		[GeneratedByOldBindingsGenerator]
+		public void CrossFadeInFixedTime(string stateName, float fixedTransitionDuration, int layer, float fixedTimeOffset)
+		{
+			float normalizedTransitionTime = 0f;
+			this.CrossFadeInFixedTime(Animator.StringToHash(stateName), fixedTransitionDuration, layer, fixedTimeOffset, normalizedTransitionTime);
+		}
+
+		public void CrossFadeInFixedTime(string stateName, float fixedTransitionDuration, [UnityEngine.Internal.DefaultValue("-1")] int layer, [UnityEngine.Internal.DefaultValue("0.0f")] float fixedTimeOffset, [UnityEngine.Internal.DefaultValue("0.0f")] float normalizedTransitionTime)
+		{
+			this.CrossFadeInFixedTime(Animator.StringToHash(stateName), fixedTransitionDuration, layer, fixedTimeOffset, normalizedTransitionTime);
+		}
+
+		public void CrossFadeInFixedTime(int stateHashName, float fixedTransitionDuration, int layer, float fixedTimeOffset)
+		{
+			float normalizedTransitionTime = 0f;
+			this.CrossFadeInFixedTime(stateHashName, fixedTransitionDuration, layer, fixedTimeOffset, normalizedTransitionTime);
+		}
+
+		public void CrossFadeInFixedTime(int stateHashName, float fixedTransitionDuration, int layer)
+		{
+			float normalizedTransitionTime = 0f;
+			float fixedTimeOffset = 0f;
+			this.CrossFadeInFixedTime(stateHashName, fixedTransitionDuration, layer, fixedTimeOffset, normalizedTransitionTime);
+		}
+
+		public void CrossFadeInFixedTime(int stateHashName, float fixedTransitionDuration)
+		{
+			float normalizedTransitionTime = 0f;
+			float fixedTimeOffset = 0f;
+			int layer = -1;
+			this.CrossFadeInFixedTime(stateHashName, fixedTransitionDuration, layer, fixedTimeOffset, normalizedTransitionTime);
+		}
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern void CrossFadeInFixedTime(int stateNameHash, float transitionDuration, [UnityEngine.Internal.DefaultValue("-1")] int layer, [UnityEngine.Internal.DefaultValue("0.0f")] float fixedTime);
+		public extern void CrossFadeInFixedTime(int stateHashName, float fixedTransitionDuration, [UnityEngine.Internal.DefaultValue("-1")] int layer, [UnityEngine.Internal.DefaultValue("0.0f")] float fixedTimeOffset, [UnityEngine.Internal.DefaultValue("0.0f")] float normalizedTransitionTime);
 
-		[ExcludeFromDocs]
-		public void CrossFadeInFixedTime(int stateNameHash, float transitionDuration, int layer)
+		public void CrossFade(string stateName, float normalizedTransitionDuration, int layer, float normalizedTimeOffset)
 		{
-			float fixedTime = 0f;
-			this.CrossFadeInFixedTime(stateNameHash, transitionDuration, layer, fixedTime);
+			float normalizedTransitionTime = 0f;
+			this.CrossFade(stateName, normalizedTransitionDuration, layer, normalizedTimeOffset, normalizedTransitionTime);
 		}
 
-		[ExcludeFromDocs]
-		public void CrossFadeInFixedTime(int stateNameHash, float transitionDuration)
+		public void CrossFade(string stateName, float normalizedTransitionDuration, int layer)
 		{
-			float fixedTime = 0f;
+			float normalizedTransitionTime = 0f;
+			float normalizedTimeOffset = float.NegativeInfinity;
+			this.CrossFade(stateName, normalizedTransitionDuration, layer, normalizedTimeOffset, normalizedTransitionTime);
+		}
+
+		public void CrossFade(string stateName, float normalizedTransitionDuration)
+		{
+			float normalizedTransitionTime = 0f;
+			float normalizedTimeOffset = float.NegativeInfinity;
 			int layer = -1;
-			this.CrossFadeInFixedTime(stateNameHash, transitionDuration, layer, fixedTime);
+			this.CrossFade(stateName, normalizedTransitionDuration, layer, normalizedTimeOffset, normalizedTransitionTime);
 		}
 
-		[ExcludeFromDocs]
-		public void CrossFade(string stateName, float transitionDuration, int layer)
+		public void CrossFade(string stateName, float normalizedTransitionDuration, [UnityEngine.Internal.DefaultValue("-1")] int layer, [UnityEngine.Internal.DefaultValue("float.NegativeInfinity")] float normalizedTimeOffset, [UnityEngine.Internal.DefaultValue("0.0f")] float normalizedTransitionTime)
 		{
-			float normalizedTime = float.NegativeInfinity;
-			this.CrossFade(stateName, transitionDuration, layer, normalizedTime);
+			this.CrossFade(Animator.StringToHash(stateName), normalizedTransitionDuration, layer, normalizedTimeOffset, normalizedTransitionTime);
 		}
 
-		[ExcludeFromDocs]
-		public void CrossFade(string stateName, float transitionDuration)
-		{
-			float normalizedTime = float.NegativeInfinity;
-			int layer = -1;
-			this.CrossFade(stateName, transitionDuration, layer, normalizedTime);
-		}
-
-		public void CrossFade(string stateName, float transitionDuration, [UnityEngine.Internal.DefaultValue("-1")] int layer, [UnityEngine.Internal.DefaultValue("float.NegativeInfinity")] float normalizedTime)
-		{
-			this.CrossFade(Animator.StringToHash(stateName), transitionDuration, layer, normalizedTime);
-		}
-
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern void CrossFade(int stateNameHash, float transitionDuration, [UnityEngine.Internal.DefaultValue("-1")] int layer, [UnityEngine.Internal.DefaultValue("float.NegativeInfinity")] float normalizedTime);
+		public extern void CrossFade(int stateHashName, float normalizedTransitionDuration, [UnityEngine.Internal.DefaultValue("-1")] int layer, [UnityEngine.Internal.DefaultValue("0.0f")] float normalizedTimeOffset, [UnityEngine.Internal.DefaultValue("0.0f")] float normalizedTransitionTime);
 
-		[ExcludeFromDocs]
-		public void CrossFade(int stateNameHash, float transitionDuration, int layer)
+		public void CrossFade(int stateHashName, float normalizedTransitionDuration, int layer, float normalizedTimeOffset)
 		{
-			float normalizedTime = float.NegativeInfinity;
-			this.CrossFade(stateNameHash, transitionDuration, layer, normalizedTime);
+			float normalizedTransitionTime = 0f;
+			this.CrossFade(stateHashName, normalizedTransitionDuration, layer, normalizedTimeOffset, normalizedTransitionTime);
 		}
 
-		[ExcludeFromDocs]
-		public void CrossFade(int stateNameHash, float transitionDuration)
+		public void CrossFade(int stateHashName, float normalizedTransitionDuration, int layer)
 		{
-			float normalizedTime = float.NegativeInfinity;
+			float normalizedTransitionTime = 0f;
+			float normalizedTimeOffset = float.NegativeInfinity;
+			this.CrossFade(stateHashName, normalizedTransitionDuration, layer, normalizedTimeOffset, normalizedTransitionTime);
+		}
+
+		public void CrossFade(int stateHashName, float normalizedTransitionDuration)
+		{
+			float normalizedTransitionTime = 0f;
+			float normalizedTimeOffset = float.NegativeInfinity;
 			int layer = -1;
-			this.CrossFade(stateNameHash, transitionDuration, layer, normalizedTime);
+			this.CrossFade(stateHashName, normalizedTransitionDuration, layer, normalizedTimeOffset, normalizedTransitionTime);
 		}
 
-		[ExcludeFromDocs]
 		public void PlayInFixedTime(string stateName, int layer)
 		{
 			float fixedTime = float.NegativeInfinity;
 			this.PlayInFixedTime(stateName, layer, fixedTime);
 		}
 
-		[ExcludeFromDocs]
 		public void PlayInFixedTime(string stateName)
 		{
 			float fixedTime = float.NegativeInfinity;
@@ -1153,18 +1028,15 @@ namespace UnityEngine
 			this.PlayInFixedTime(Animator.StringToHash(stateName), layer, fixedTime);
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern void PlayInFixedTime(int stateNameHash, [UnityEngine.Internal.DefaultValue("-1")] int layer, [UnityEngine.Internal.DefaultValue("float.NegativeInfinity")] float fixedTime);
 
-		[ExcludeFromDocs]
 		public void PlayInFixedTime(int stateNameHash, int layer)
 		{
 			float fixedTime = float.NegativeInfinity;
 			this.PlayInFixedTime(stateNameHash, layer, fixedTime);
 		}
 
-		[ExcludeFromDocs]
 		public void PlayInFixedTime(int stateNameHash)
 		{
 			float fixedTime = float.NegativeInfinity;
@@ -1172,14 +1044,12 @@ namespace UnityEngine
 			this.PlayInFixedTime(stateNameHash, layer, fixedTime);
 		}
 
-		[ExcludeFromDocs]
 		public void Play(string stateName, int layer)
 		{
 			float normalizedTime = float.NegativeInfinity;
 			this.Play(stateName, layer, normalizedTime);
 		}
 
-		[ExcludeFromDocs]
 		public void Play(string stateName)
 		{
 			float normalizedTime = float.NegativeInfinity;
@@ -1192,18 +1062,15 @@ namespace UnityEngine
 			this.Play(Animator.StringToHash(stateName), layer, normalizedTime);
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern void Play(int stateNameHash, [UnityEngine.Internal.DefaultValue("-1")] int layer, [UnityEngine.Internal.DefaultValue("float.NegativeInfinity")] float normalizedTime);
 
-		[ExcludeFromDocs]
 		public void Play(int stateNameHash, int layer)
 		{
 			float normalizedTime = float.NegativeInfinity;
 			this.Play(stateNameHash, layer, normalizedTime);
 		}
 
-		[ExcludeFromDocs]
 		public void Play(int stateNameHash)
 		{
 			float normalizedTime = float.NegativeInfinity;
@@ -1211,196 +1078,177 @@ namespace UnityEngine
 			this.Play(stateNameHash, layer, normalizedTime);
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern void SetTarget(AvatarTarget targetIndex, float targetNormalizedTime);
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void INTERNAL_get_targetPosition(out Vector3 value);
+		[Obsolete("Use mask and layers to control subset of transfroms in a skeleton.", true)]
+		public bool IsControlled(Transform transform)
+		{
+			return false;
+		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void INTERNAL_get_targetRotation(out Quaternion value);
-
-		[Obsolete("use mask and layers to control subset of transfroms in a skeleton", true), GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern bool IsControlled(Transform transform);
-
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern bool IsBoneTransform(Transform transform);
 
 		public Transform GetBoneTransform(HumanBodyBones humanBoneId)
 		{
-			return this.GetBoneTransformInternal((int)humanBoneId);
+			return this.GetBoneTransformInternal(HumanTrait.GetBoneIndexFromMono((int)humanBoneId));
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern Transform GetBoneTransformInternal(int humanBoneId);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern void StartPlayback();
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern void StopPlayback();
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern void StartRecording(int frameCount);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern void StopRecording();
 
-		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern float GetRecorderStartTime();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern float GetRecorderStopTime();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern void ClearInternalControllerPlayable();
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern bool HasState(int layerIndex, int stateID);
 
-		[GeneratedByOldBindingsGenerator, ThreadAndSerializationSafe]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern int StringToHash(string name);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern string GetStats();
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void InternalGetCurrentGraph(ref PlayableGraph graph);
+		private extern void GetCurrentGraph(ref PlayableGraph graph);
 
 		private void CheckIfInIKPass()
 		{
-			if (this.logWarnings && !this.CheckIfInIKPassInternal())
+			if (this.logWarnings && !this.IsInIKPass())
 			{
 				Debug.LogWarning("Setting and getting Body Position/Rotation, IK Goals, Lookat and BoneLocalRotation should only be done in OnAnimatorIK or OnStateIK");
 			}
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern bool CheckIfInIKPassInternal();
+		private extern bool IsInIKPass();
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern void SetFloatString(string name, float value);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern void SetFloatID(int id, float value);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern float GetFloatString(string name);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern float GetFloatID(int id);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern void SetBoolString(string name, bool value);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern void SetBoolID(int id, bool value);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern bool GetBoolString(string name);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern bool GetBoolID(int id);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern void SetIntegerString(string name, int value);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern void SetIntegerID(int id, int value);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern int GetIntegerString(string name);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern int GetIntegerID(int id);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern void SetTriggerString(string name);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern void SetTriggerID(int id);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern void ResetTriggerString(string name);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern void ResetTriggerID(int id);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern bool IsParameterControlledByCurveString(string name);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern bool IsParameterControlledByCurveID(int id);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern void SetFloatStringDamp(string name, float value, float dampTime, float deltaTime);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private extern void SetFloatIDDamp(int id, float value, float dampTime, float deltaTime);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern void OnUpdateModeChanged();
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern void OnCullingModeChanged();
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern void WriteDefaultPose();
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern void Update(float deltaTime);
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern void Rebind();
+		public void Rebind()
+		{
+			this.Rebind(true);
+		}
 
-		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void Rebind(bool writeDefaultValues);
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern void ApplyBuiltinRootMotion();
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern void EvaluateController();
+		[NativeConditional("UNITY_EDITOR")]
+		internal void EvaluateController()
+		{
+			this.EvaluateController(0f);
+		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern string GetCurrentStateName(int layerIndex);
+		private extern void EvaluateController(float deltaTime);
 
-		[GeneratedByOldBindingsGenerator]
+		[NativeConditional("UNITY_EDITOR")]
+		internal string GetCurrentStateName(int layerIndex)
+		{
+			return this.GetAnimatorStateName(layerIndex, true);
+		}
+
+		[NativeConditional("UNITY_EDITOR")]
+		internal string GetNextStateName(int layerIndex)
+		{
+			return this.GetAnimatorStateName(layerIndex, false);
+		}
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern string GetNextStateName(int layerIndex);
+		private extern string GetAnimatorStateName(int layerIndex, bool current);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern string ResolveHash(int hash);
 
@@ -1447,5 +1295,77 @@ namespace UnityEngine
 		public void SetQuaternion(int id, Quaternion value)
 		{
 		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void get_deltaPosition_Injected(out Vector3 ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void get_deltaRotation_Injected(out Quaternion ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void get_velocity_Injected(out Vector3 ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void get_angularVelocity_Injected(out Vector3 ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void get_rootPosition_Injected(out Vector3 ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void set_rootPosition_Injected(ref Vector3 value);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void get_rootRotation_Injected(out Quaternion ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void set_rootRotation_Injected(ref Quaternion value);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void get_bodyPositionInternal_Injected(out Vector3 ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void set_bodyPositionInternal_Injected(ref Vector3 value);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void get_bodyRotationInternal_Injected(out Quaternion ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void set_bodyRotationInternal_Injected(ref Quaternion value);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void GetGoalPosition_Injected(AvatarIKGoal goal, out Vector3 ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void SetGoalPosition_Injected(AvatarIKGoal goal, ref Vector3 goalPosition);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void GetGoalRotation_Injected(AvatarIKGoal goal, out Quaternion ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void SetGoalRotation_Injected(AvatarIKGoal goal, ref Quaternion goalRotation);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void GetHintPosition_Injected(AvatarIKHint hint, out Vector3 ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void SetHintPosition_Injected(AvatarIKHint hint, ref Vector3 hintPosition);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void SetLookAtPositionInternal_Injected(ref Vector3 lookAtPosition);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void SetBoneLocalRotationInternal_Injected(int humanBoneId, ref Quaternion rotation);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void get_pivotPosition_Injected(out Vector3 ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void MatchTarget_Injected(ref Vector3 matchPosition, ref Quaternion matchRotation, int targetBodyPart, ref MatchTargetWeightMask weightMask, float startNormalizedTime, float targetNormalizedTime);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void get_targetPosition_Injected(out Vector3 ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void get_targetRotation_Injected(out Quaternion ret);
 	}
 }

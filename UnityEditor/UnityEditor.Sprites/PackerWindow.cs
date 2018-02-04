@@ -9,19 +9,19 @@ namespace UnityEditor.Sprites
 	{
 		private class PackerWindowStyle
 		{
-			public static readonly GUIContent packLabel = EditorGUIUtility.TextContent("Pack");
+			public static readonly GUIContent packLabel = EditorGUIUtility.TrTextContent("Pack", null, null);
 
-			public static readonly GUIContent repackLabel = EditorGUIUtility.TextContent("Repack");
+			public static readonly GUIContent repackLabel = EditorGUIUtility.TrTextContent("Repack", null, null);
 
-			public static readonly GUIContent viewAtlasLabel = EditorGUIUtility.TextContent("View Atlas:");
+			public static readonly GUIContent viewAtlasLabel = EditorGUIUtility.TrTextContent("View Atlas:", null, null);
 
-			public static readonly GUIContent windowTitle = EditorGUIUtility.TextContent("Sprite Packer");
+			public static readonly GUIContent windowTitle = EditorGUIUtility.TrTextContent("Sprite Packer", null, null);
 
-			public static readonly GUIContent pageContentLabel = EditorGUIUtility.TextContent("Page {0}");
+			public static readonly GUIContent pageContentLabel = EditorGUIUtility.TrTextContent("Page {0}", null, null);
 
-			public static readonly GUIContent packingDisabledLabel = EditorGUIUtility.TextContent("Sprite packing is disabled. Enable it in Edit > Project Settings > Editor.");
+			public static readonly GUIContent packingDisabledLabel = EditorGUIUtility.TrTextContent("Legacy sprite packing is disabled. Enable it in Edit > Project Settings > Editor.", null, null);
 
-			public static readonly GUIContent openProjectSettingButton = EditorGUIUtility.TextContent("Open Project Editor Settings");
+			public static readonly GUIContent openProjectSettingButton = EditorGUIUtility.TrTextContent("Open Project Editor Settings", null, null);
 		}
 
 		private struct Edge
@@ -133,7 +133,7 @@ namespace UnityEditor.Sprites
 		private bool ValidateIsPackingEnabled()
 		{
 			bool result;
-			if (EditorSettings.spritePackerMode == SpritePackerMode.Disabled)
+			if (EditorSettings.spritePackerMode != SpritePackerMode.BuildTimeOnly && EditorSettings.spritePackerMode != SpritePackerMode.AlwaysOn)
 			{
 				EditorGUILayout.BeginVertical(new GUILayoutOption[0]);
 				GUILayout.Label(PackerWindow.PackerWindowStyle.packingDisabledLabel, new GUILayoutOption[0]);

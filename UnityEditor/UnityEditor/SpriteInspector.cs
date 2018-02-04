@@ -1,7 +1,11 @@
 using System;
+using Unity.Collections;
+using UnityEditor.Experimental.U2D;
 using UnityEditor.Sprites;
 using UnityEditorInternal;
 using UnityEngine;
+using UnityEngine.Experimental.Rendering;
+using UnityEngine.Experimental.U2D;
 
 namespace UnityEditor
 {
@@ -12,19 +16,19 @@ namespace UnityEditor
 		{
 			public static readonly GUIContent[] spriteAlignmentOptions = new GUIContent[]
 			{
-				EditorGUIUtility.TextContent("Center"),
-				EditorGUIUtility.TextContent("Top Left"),
-				EditorGUIUtility.TextContent("Top"),
-				EditorGUIUtility.TextContent("Top Right"),
-				EditorGUIUtility.TextContent("Left"),
-				EditorGUIUtility.TextContent("Right"),
-				EditorGUIUtility.TextContent("Bottom Left"),
-				EditorGUIUtility.TextContent("Bottom"),
-				EditorGUIUtility.TextContent("Bottom Right"),
-				EditorGUIUtility.TextContent("Custom")
+				EditorGUIUtility.TrTextContent("Center", null, null),
+				EditorGUIUtility.TrTextContent("Top Left", null, null),
+				EditorGUIUtility.TrTextContent("Top", null, null),
+				EditorGUIUtility.TrTextContent("Top Right", null, null),
+				EditorGUIUtility.TrTextContent("Left", null, null),
+				EditorGUIUtility.TrTextContent("Right", null, null),
+				EditorGUIUtility.TrTextContent("Bottom Left", null, null),
+				EditorGUIUtility.TrTextContent("Bottom", null, null),
+				EditorGUIUtility.TrTextContent("Bottom Right", null, null),
+				EditorGUIUtility.TrTextContent("Custom", null, null)
 			};
 
-			public static readonly GUIContent spriteAlignment = EditorGUIUtility.TextContent("Pivot|Sprite pivot point in its localspace. May be used for syncing animation frames of different sizes.");
+			public static readonly GUIContent spriteAlignment = EditorGUIUtility.TrTextContent("Pivot", "Sprite pivot point in its localspace. May be used for syncing animation frames of different sizes.", null);
 		}
 
 		private Sprite sprite
@@ -135,41 +139,45 @@ namespace UnityEditor
 			if (base.targets.Length >= 2)
 			{
 				string assetPath = AssetDatabase.GetAssetPath(this.sprite);
-				TextureImporter textureImporter = AssetImporter.GetAtPath(assetPath) as TextureImporter;
-				SpriteMetaData[] spritesheet = textureImporter.spritesheet;
-				string text = null;
-				int num = -1;
-				Vector4? vector = null;
-				for (int i = 0; i < base.targets.Length; i++)
+				ISpriteEditorDataProvider spriteEditorDataProvider = AssetImporter.GetAtPath(assetPath) as ISpriteEditorDataProvider;
+				if (spriteEditorDataProvider != null)
 				{
-					Sprite sprite = base.targets[i] as Sprite;
-					for (int j = 0; j < spritesheet.Length; j++)
+					spriteEditorDataProvider.InitSpriteEditorDataProvider();
+					SpriteRect[] spriteRects = spriteEditorDataProvider.GetSpriteRects();
+					string text = null;
+					int num = -1;
+					Vector4? vector = null;
+					for (int i = 0; i < base.targets.Length; i++)
 					{
-						if (spritesheet[j].name.Equals(sprite.name))
+						Sprite sprite = base.targets[i] as Sprite;
+						for (int j = 0; j < spriteRects.Length; j++)
 						{
-							if (spritesheet[j].alignment != num && num > 0)
+							if (spriteRects[j].name.Equals(sprite.name))
 							{
-								alignment = false;
-							}
-							else
-							{
-								num = spritesheet[j].alignment;
-							}
-							if (spritesheet[j].name != text && text != null)
-							{
-								name = false;
-							}
-							else
-							{
-								text = spritesheet[j].name;
-							}
-							if (spritesheet[j].border != vector && vector.HasValue)
-							{
-								border = false;
-							}
-							else
-							{
-								vector = new Vector4?(spritesheet[j].border);
+								if (spriteRects[j].alignment != (SpriteAlignment)num && num > 0)
+								{
+									alignment = false;
+								}
+								else
+								{
+									num = (int)spriteRects[j].alignment;
+								}
+								if (spriteRects[j].name != text && text != null)
+								{
+									name = false;
+								}
+								else
+								{
+									text = spriteRects[j].name;
+								}
+								if (spriteRects[j].border != vector && vector.HasValue)
+								{
+									border = false;
+								}
+								else
+								{
+									vector = new Vector4?(spriteRects[j].border);
+								}
 							}
 						}
 					}
@@ -194,9 +202,8 @@ namespace UnityEditor
 					PreviewHelpers.AdjustWidthAndHeightForStaticPreview((int)width2, (int)height2, ref width, ref height);
 				}
 				SavedRenderTargetState savedRenderTargetState = new SavedRenderTargetState();
-				RenderTexture temporary = RenderTexture.GetTemporary(width, height, 0, RenderTextureFormat.Default, RenderTextureReadWrite.Default);
+				RenderTexture temporary = RenderTexture.GetTemporary(width, height, 0, RenderTextureFormat.Default, RenderTextureReadWrite.Linear);
 				RenderTexture.active = temporary;
-				GL.sRGBWrite = (QualitySettings.activeColorSpace == ColorSpace.Linear);
 				GL.Clear(true, true, new Color(0f, 0f, 0f, 0f));
 				Texture value = null;
 				Vector4 vector = new Vector4(0f, 0f, 0f, 0f);
@@ -207,6 +214,7 @@ namespace UnityEditor
 					flag = spriteRendererMaterial.HasProperty("_MainTex");
 					flag2 = spriteRendererMaterial.HasProperty("_MainTex_TexelSize");
 				}
+				bool flag3 = sprite.HasVertexAttribute(VertexAttribute.Color);
 				Material material = null;
 				if (spriteRendererMaterial != null)
 				{
@@ -222,7 +230,11 @@ namespace UnityEditor
 					}
 					spriteRendererMaterial.SetPass(0);
 				}
-				else
+				else if (flag3)
+				{
+					SpriteUtility.previewSpriteDefaultMaterial.SetPass(0);
+				}
+				else if (spriteTexture != null)
 				{
 					material = new Material(Shader.Find("Hidden/BlitCopy"));
 					material.mainTexture = spriteTexture;
@@ -235,6 +247,11 @@ namespace UnityEditor
 				Vector2[] uv = sprite.uv;
 				ushort[] triangles = sprite.triangles;
 				Vector2 pivot = sprite.pivot;
+				NativeSlice<Color32>? nativeSlice = null;
+				if (flag3)
+				{
+					nativeSlice = new NativeSlice<Color32>?(sprite.GetVertexAttribute(VertexAttribute.Color));
+				}
 				GL.PushMatrix();
 				GL.LoadOrtho();
 				GL.Color(new Color(1f, 1f, 1f, 1f));
@@ -245,11 +262,14 @@ namespace UnityEditor
 					Vector2 vector2 = vertices[(int)num2];
 					Vector2 vector3 = uv[(int)num2];
 					GL.TexCoord(new Vector3(vector3.x, vector3.y, 0f));
+					if (nativeSlice.HasValue)
+					{
+						GL.Color(nativeSlice.Value[(int)num2]);
+					}
 					GL.Vertex3((vector2.x * num + pivot.x) / width2, (vector2.y * num + pivot.y) / height2, 0f);
 				}
 				GL.End();
 				GL.PopMatrix();
-				GL.sRGBWrite = false;
 				if (spriteRendererMaterial != null)
 				{
 					if (flag)
@@ -261,14 +281,18 @@ namespace UnityEditor
 						spriteRendererMaterial.SetVector("_MainTex_TexelSize", vector);
 					}
 				}
+				RenderTexture temporary2 = RenderTexture.GetTemporary(width, height, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Linear);
+				Graphics.Blit(temporary, temporary2, EditorGUIUtility.GUITextureBlit2SRGBMaterial);
+				RenderTexture.active = temporary2;
 				Texture2D texture2D = new Texture2D(width, height, TextureFormat.RGBA32, false);
 				texture2D.hideFlags = HideFlags.HideAndDontSave;
-				texture2D.filterMode = spriteTexture.filterMode;
-				texture2D.anisoLevel = spriteTexture.anisoLevel;
-				texture2D.wrapMode = spriteTexture.wrapMode;
+				texture2D.filterMode = ((!(spriteTexture != null)) ? FilterMode.Point : spriteTexture.filterMode);
+				texture2D.anisoLevel = ((!(spriteTexture != null)) ? 0 : spriteTexture.anisoLevel);
+				texture2D.wrapMode = ((!(spriteTexture != null)) ? TextureWrapMode.Clamp : spriteTexture.wrapMode);
 				texture2D.ReadPixels(new Rect(0f, 0f, (float)width, (float)height), 0, 0);
 				texture2D.Apply();
 				RenderTexture.ReleaseTemporary(temporary);
+				RenderTexture.ReleaseTemporary(temporary2);
 				savedRenderTargetState.Restore();
 				if (material != null)
 				{
@@ -292,7 +316,8 @@ namespace UnityEditor
 
 		public override bool HasPreviewGUI()
 		{
-			return base.target != null;
+			Sprite sprite = base.target as Sprite;
+			return sprite != null && UnityEditor.Sprites.SpriteUtility.GetSpriteTexture(sprite, false) != null;
 		}
 
 		public override void OnPreviewGUI(Rect r, GUIStyle background)

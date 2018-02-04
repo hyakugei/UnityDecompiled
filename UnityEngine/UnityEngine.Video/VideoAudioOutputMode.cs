@@ -6,6 +6,7 @@ namespace UnityEngine.Video
 	{
 		None,
 		AudioSource,
-		Direct
+		Direct,
+		APIOnly
 	}
 }

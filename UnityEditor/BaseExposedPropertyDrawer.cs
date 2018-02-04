@@ -24,13 +24,13 @@ internal abstract class BaseExposedPropertyDrawer : PropertyDrawer
 
 	private static Color kMissingOverrideColor = new Color(1f, 0.11f, 0.11f, 1f);
 
-	protected readonly GUIContent ExposePropertyContent = EditorGUIUtility.TextContent("Expose Property");
+	protected readonly GUIContent ExposePropertyContent = EditorGUIUtility.TrTextContent("Expose Property", null, null);
 
-	protected readonly GUIContent UnexposePropertyContent = EditorGUIUtility.TextContent("Unexpose Property");
+	protected readonly GUIContent UnexposePropertyContent = EditorGUIUtility.TrTextContent("Unexpose Property", null, null);
 
-	protected readonly GUIContent NotFoundOn = EditorGUIUtility.TextContent("not found on");
+	protected readonly GUIContent NotFoundOn = EditorGUIUtility.TrTextContent("not found on", null, null);
 
-	protected readonly GUIContent OverridenByContent = EditorGUIUtility.TextContent("Overriden by ");
+	protected readonly GUIContent OverridenByContent = EditorGUIUtility.TrTextContent("Overriden by ", null, null);
 
 	private GUIContent m_ModifiedLabel = new GUIContent();
 

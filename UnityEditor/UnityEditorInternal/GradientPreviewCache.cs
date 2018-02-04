@@ -19,5 +19,8 @@ namespace UnityEditorInternal
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern Texture2D GetGradientPreview(Gradient curve);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern Texture2D GenerateGradientPreview(Gradient gradient, Texture2D existingTexture);
 	}
 }

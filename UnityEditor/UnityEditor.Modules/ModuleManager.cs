@@ -7,15 +7,34 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Unity.DataContract;
+using UnityEditor.Build;
+using UnityEditor.DeploymentTargets;
 using UnityEditor.Hardware;
 using UnityEditor.Utils;
 using UnityEditorInternal;
 using UnityEngine;
+using UnityEngine.Scripting;
 
 namespace UnityEditor.Modules
 {
 	internal static class ModuleManager
 	{
+		private class BuildTargetChangedHandler : IActiveBuildTargetChanged, IOrderedCallback
+		{
+			public int callbackOrder
+			{
+				get
+				{
+					return 0;
+				}
+			}
+
+			public void OnActiveBuildTargetChanged(BuildTarget oldTarget, BuildTarget newTarget)
+			{
+				ModuleManager.OnActiveBuildTargetChanged(oldTarget, newTarget);
+			}
+		}
+
 		[NonSerialized]
 		private static List<IPlatformSupportModule> s_PlatformModules;
 
@@ -32,16 +51,21 @@ namespace UnityEditor.Modules
 		private static IPlatformSupportModule s_ActivePlatformModule;
 
 		[CompilerGenerated]
-		private static Action <>f__mg$cache0;
+		private static Func<Assembly, IEnumerable<IPlatformSupportModule>> <>f__mg$cache0;
 
-		[CompilerGenerated]
-		private static Func<Assembly, IEnumerable<IPlatformSupportModule>> <>f__mg$cache1;
+		internal static bool EnableLogging
+		{
+			get
+			{
+				return (bool)(UnityEngine.Debug.GetDiagnosticSwitch("ModuleManagerLogging") ?? false);
+			}
+		}
 
 		internal static IPackageManagerModule packageManager
 		{
 			get
 			{
-				ModuleManager.Initialize();
+				ModuleManager.InitializeModuleManager();
 				return ModuleManager.s_PackageManager;
 			}
 		}
@@ -50,7 +74,7 @@ namespace UnityEditor.Modules
 		{
 			get
 			{
-				ModuleManager.Initialize();
+				ModuleManager.InitializeModuleManager();
 				if (ModuleManager.s_PlatformModules == null)
 				{
 					ModuleManager.RegisterPlatformSupportModules();
@@ -93,19 +117,9 @@ namespace UnityEditor.Modules
 			}
 		}
 
-		static ModuleManager()
+		private static void OnActiveBuildTargetChanged(BuildTarget oldTarget, BuildTarget newTarget)
 		{
-			Delegate arg_23_0 = EditorUserBuildSettings.activeBuildTargetChanged;
-			if (ModuleManager.<>f__mg$cache0 == null)
-			{
-				ModuleManager.<>f__mg$cache0 = new Action(ModuleManager.OnActiveBuildTargetChanged);
-			}
-			EditorUserBuildSettings.activeBuildTargetChanged = (Action)Delegate.Combine(arg_23_0, ModuleManager.<>f__mg$cache0);
-		}
-
-		private static void OnActiveBuildTargetChanged()
-		{
-			string targetStringFromBuildTarget = ModuleManager.GetTargetStringFromBuildTarget(EditorUserBuildSettings.activeBuildTarget);
+			string targetStringFromBuildTarget = ModuleManager.GetTargetStringFromBuildTarget(newTarget);
 			ModuleManager.ChangeActivePlatformModuleTo(targetStringFromBuildTarget);
 		}
 
@@ -137,6 +151,7 @@ namespace UnityEditor.Modules
 			return ModuleManager.s_PackageManager != null && ModuleManager.s_PackageManager.GetType().Assembly.Location.NormalizePath() == file.NormalizePath();
 		}
 
+		[RequiredByNativeCode]
 		internal static bool IsPlatformSupportLoaded(string target)
 		{
 			bool result;
@@ -152,6 +167,7 @@ namespace UnityEditor.Modules
 			return result;
 		}
 
+		[RequiredByNativeCode]
 		internal static void RegisterAdditionalUnityExtensions()
 		{
 			foreach (IPlatformSupportModule current in ModuleManager.platformSupportModules)
@@ -160,7 +176,8 @@ namespace UnityEditor.Modules
 			}
 		}
 
-		internal static void Initialize()
+		[RequiredByNativeCode]
+		internal static void InitializeModuleManager()
 		{
 			if (ModuleManager.s_PackageManager == null)
 			{
@@ -203,13 +220,16 @@ namespace UnityEditor.Modules
 		{
 			foreach (Unity.DataContract.PackageInfo current in ModuleManager.s_PackageManager.unityExtensions)
 			{
-				Console.WriteLine("Setting {0} v{1} for Unity v{2} to {3}", new object[]
+				if (ModuleManager.EnableLogging)
 				{
-					current.name,
-					current.version,
-					current.unityVersion,
-					current.basePath
-				});
+					Console.WriteLine("Setting {0} v{1} for Unity v{2} to {3}", new object[]
+					{
+						current.name,
+						current.version,
+						current.unityVersion,
+						current.basePath
+					});
+				}
 				foreach (KeyValuePair<string, PackageFileData> current2 in from f in current.files
 				where f.Value.type == PackageFileType.Dll
 				select f)
@@ -226,14 +246,17 @@ namespace UnityEditor.Modules
 					else
 					{
 						bool flag = !string.IsNullOrEmpty(current2.Value.guid);
-						Console.WriteLine("  {0} ({1}) GUID: {2}", current2.Key, (!flag) ? "Custom" : "Extension", current2.Value.guid);
+						if (ModuleManager.EnableLogging)
+						{
+							Console.WriteLine("  {0} ({1}) GUID: {2}", current2.Key, (!flag) ? "Custom" : "Extension", current2.Value.guid);
+						}
 						if (flag)
 						{
 							InternalEditorUtility.RegisterExtensionDll(text.Replace('\\', '/'), current2.Value.guid);
 						}
 						else
 						{
-							InternalEditorUtility.SetupCustomDll(Path.GetFileName(text), text);
+							InternalEditorUtility.RegisterPrecompiledAssembly(Path.GetFileName(text), text);
 						}
 					}
 				}
@@ -241,6 +264,7 @@ namespace UnityEditor.Modules
 			}
 		}
 
+		[RequiredByNativeCode]
 		internal static void InitializePlatformSupportModules()
 		{
 			if (ModuleManager.s_PlatformModulesInitialized)
@@ -249,7 +273,7 @@ namespace UnityEditor.Modules
 			}
 			else
 			{
-				ModuleManager.Initialize();
+				ModuleManager.InitializeModuleManager();
 				ModuleManager.RegisterPlatformSupportModules();
 				foreach (IPlatformSupportModule current in ModuleManager.platformSupportModules)
 				{
@@ -263,16 +287,17 @@ namespace UnityEditor.Modules
 					for (int j = 0; j < assemblyReferencesForUserScripts.Length; j++)
 					{
 						string text = assemblyReferencesForUserScripts[j];
-						InternalEditorUtility.SetupCustomDll(Path.GetFileName(text), text);
+						InternalEditorUtility.RegisterPrecompiledAssembly(Path.GetFileName(text), text);
 					}
 					EditorUtility.LoadPlatformSupportModuleNativeDllInternal(current.TargetName);
 					current.OnLoad();
 				}
-				ModuleManager.OnActiveBuildTargetChanged();
+				ModuleManager.OnActiveBuildTargetChanged(BuildTarget.NoTarget, EditorUserBuildSettings.activeBuildTarget);
 				ModuleManager.s_PlatformModulesInitialized = true;
 			}
 		}
 
+		[RequiredByNativeCode]
 		internal static void ShutdownPlatformSupportModules()
 		{
 			ModuleManager.DeactivateActivePlatformModule();
@@ -285,7 +310,8 @@ namespace UnityEditor.Modules
 			}
 		}
 
-		internal static void Shutdown()
+		[RequiredByNativeCode(true)]
+		internal static void ShutdownModuleManager()
 		{
 			if (ModuleManager.s_PackageManager != null)
 			{
@@ -319,11 +345,17 @@ namespace UnityEditor.Modules
 			select a.GetType("Unity.PackageManager.Locator")).FirstOrDefault<Type>();
 			try
 			{
+				string unityPath = FileUtil.CombinePaths(new string[]
+				{
+					Directory.GetParent(EditorApplication.applicationPath).ToString(),
+					"PlaybackEngines"
+				});
 				type.InvokeMember("Scan", BindingFlags.Static | BindingFlags.Public | BindingFlags.InvokeMethod, null, null, new object[]
 				{
 					new string[]
 					{
-						FileUtil.NiceWinPath(EditorApplication.applicationContentsPath)
+						FileUtil.NiceWinPath(EditorApplication.applicationContentsPath),
+						FileUtil.NiceWinPath(unityPath)
 					},
 					Application.unityVersion
 				});
@@ -397,7 +429,7 @@ namespace UnityEditor.Modules
 				string location = assembly.Location;
 				if (package != null)
 				{
-					InternalEditorUtility.SetupCustomDll(Path.GetFileName(location), location);
+					InternalEditorUtility.RegisterPrecompiledAssembly(Path.GetFileName(location), location);
 				}
 				else
 				{
@@ -416,14 +448,17 @@ namespace UnityEditor.Modules
 					BuildTarget buildTarget;
 					if (ModuleManager.TryParseBuildTarget(current.name, out buildTargetGroup, out buildTarget))
 					{
-						Console.WriteLine("Setting {4}:{0} v{1} for Unity v{2} to {3}", new object[]
+						if (ModuleManager.EnableLogging)
 						{
-							buildTarget,
-							current.version,
-							current.unityVersion,
-							current.basePath,
-							buildTargetGroup
-						});
+							Console.WriteLine("Setting {4}:{0} v{1} for Unity v{2} to {3}", new object[]
+							{
+								buildTarget,
+								current.version,
+								current.unityVersion,
+								current.basePath,
+								buildTargetGroup
+							});
+						}
 						foreach (KeyValuePair<string, PackageFileData> current2 in from f in current.files
 						where f.Value.type == PackageFileType.Dll
 						select f)
@@ -439,7 +474,7 @@ namespace UnityEditor.Modules
 							}
 							else
 							{
-								InternalEditorUtility.SetupCustomDll(Path.GetFileName(location), location);
+								InternalEditorUtility.RegisterPrecompiledAssembly(Path.GetFileName(location), location);
 							}
 						}
 						BuildPipeline.SetPlaybackEngineDirectory(buildTarget, BuildOptions.None, current.basePath);
@@ -490,11 +525,11 @@ namespace UnityEditor.Modules
 			{
 				Console.WriteLine("Registering platform support modules:");
 				Stopwatch stopwatch = Stopwatch.StartNew();
-				if (ModuleManager.<>f__mg$cache1 == null)
+				if (ModuleManager.<>f__mg$cache0 == null)
 				{
-					ModuleManager.<>f__mg$cache1 = new Func<Assembly, IEnumerable<IPlatformSupportModule>>(ModuleManager.RegisterPlatformSupportModulesFromAssembly);
+					ModuleManager.<>f__mg$cache0 = new Func<Assembly, IEnumerable<IPlatformSupportModule>>(ModuleManager.RegisterPlatformSupportModulesFromAssembly);
 				}
-				ModuleManager.s_PlatformModules = ModuleManager.RegisterModulesFromLoadedAssemblies<IPlatformSupportModule>(ModuleManager.<>f__mg$cache1).ToList<IPlatformSupportModule>();
+				ModuleManager.s_PlatformModules = ModuleManager.RegisterModulesFromLoadedAssemblies<IPlatformSupportModule>(ModuleManager.<>f__mg$cache0).ToList<IPlatformSupportModule>();
 				stopwatch.Stop();
 				Console.WriteLine("Registered platform support modules in: " + stopwatch.Elapsed.TotalSeconds + "s.");
 			}
@@ -621,6 +656,33 @@ namespace UnityEditor.Modules
 		internal static IBuildPostprocessor GetBuildPostProcessor(BuildTargetGroup targetGroup, BuildTarget target)
 		{
 			return ModuleManager.GetBuildPostProcessor(ModuleManager.GetTargetStringFrom(targetGroup, target));
+		}
+
+		internal static IDeploymentTargetsExtension GetDeploymentTargetsExtension(string target)
+		{
+			IDeploymentTargetsExtension result;
+			if (target == null)
+			{
+				result = null;
+			}
+			else
+			{
+				foreach (IPlatformSupportModule current in ModuleManager.platformSupportModules)
+				{
+					if (current.TargetName == target)
+					{
+						result = current.CreateDeploymentTargetsExtension();
+						return result;
+					}
+				}
+				result = null;
+			}
+			return result;
+		}
+
+		internal static IDeploymentTargetsExtension GetDeploymentTargetsExtension(BuildTargetGroup targetGroup, BuildTarget target)
+		{
+			return ModuleManager.GetDeploymentTargetsExtension(ModuleManager.GetTargetStringFrom(targetGroup, target));
 		}
 
 		internal static IBuildAnalyzer GetBuildAnalyzer(string target)
@@ -826,12 +888,15 @@ namespace UnityEditor.Modules
 			case (BuildTarget)23:
 			case BuildTarget.WP8Player:
 			case BuildTarget.BlackBerry:
+			case BuildTarget.PSM:
+			case BuildTarget.SamsungTV:
+			case BuildTarget.WiiU:
 				IL_62:
 				switch (target)
 				{
-				case BuildTarget.StandaloneOSXUniversal:
+				case BuildTarget.StandaloneOSX:
 				case BuildTarget.StandaloneOSXIntel:
-					goto IL_147;
+					goto IL_126;
 				case (BuildTarget)3:
 				case BuildTarget.WebPlayer:
 				case BuildTarget.WebPlayerStreamed:
@@ -845,14 +910,14 @@ namespace UnityEditor.Modules
 					result = "Android";
 					return result;
 				case BuildTarget.StandaloneWindows:
-					goto IL_13C;
+					goto IL_11B;
 				case BuildTarget.iOS:
 					result = "iOS";
 					return result;
 				}
 				goto IL_8A;
 			case BuildTarget.StandaloneWindows64:
-				goto IL_13C;
+				goto IL_11B;
 			case BuildTarget.WebGL:
 				result = "WebGL";
 				return result;
@@ -860,7 +925,7 @@ namespace UnityEditor.Modules
 				result = "Metro";
 				return result;
 			case BuildTarget.StandaloneOSXIntel64:
-				goto IL_147;
+				goto IL_126;
 			case BuildTarget.Tizen:
 				result = "Tizen";
 				return result;
@@ -870,20 +935,11 @@ namespace UnityEditor.Modules
 			case BuildTarget.PS4:
 				result = "PS4";
 				return result;
-			case BuildTarget.PSM:
-				result = "PSM";
-				return result;
 			case BuildTarget.XboxOne:
 				result = "XboxOne";
 				return result;
-			case BuildTarget.SamsungTV:
-				result = "SamsungTV";
-				return result;
 			case BuildTarget.N3DS:
 				result = "N3DS";
-				return result;
-			case BuildTarget.WiiU:
-				result = "WiiU";
 				return result;
 			case BuildTarget.tvOS:
 				result = "tvOS";
@@ -893,10 +949,10 @@ namespace UnityEditor.Modules
 				return result;
 			}
 			goto IL_62;
-			IL_13C:
+			IL_11B:
 			result = "WindowsStandalone";
 			return result;
-			IL_147:
+			IL_126:
 			result = "OSXStandalone";
 			return result;
 		}
@@ -917,6 +973,9 @@ namespace UnityEditor.Modules
 			}
 			case BuildTargetGroup.WP8:
 			case BuildTargetGroup.BlackBerry:
+			case BuildTargetGroup.PSM:
+			case BuildTargetGroup.SamsungTV:
+			case BuildTargetGroup.WiiU:
 			{
 				IL_46:
 				string result;
@@ -947,29 +1006,14 @@ namespace UnityEditor.Modules
 				string result = "PS4";
 				return result;
 			}
-			case BuildTargetGroup.PSM:
-			{
-				string result = "PSM";
-				return result;
-			}
 			case BuildTargetGroup.XboxOne:
 			{
 				string result = "XboxOne";
 				return result;
 			}
-			case BuildTargetGroup.SamsungTV:
-			{
-				string result = "SamsungTV";
-				return result;
-			}
 			case BuildTargetGroup.N3DS:
 			{
 				string result = "N3DS";
-				return result;
-			}
-			case BuildTargetGroup.WiiU:
-			{
-				string result = "WiiU";
 				return result;
 			}
 			case BuildTargetGroup.tvOS:
@@ -1048,6 +1092,12 @@ namespace UnityEditor.Modules
 				result = null;
 			}
 			return result;
+		}
+
+		internal static bool ShouldShowMultiDisplayOption()
+		{
+			GUIContent[] displayNames = ModuleManager.GetDisplayNames(EditorUserBuildSettings.activeBuildTarget.ToString());
+			return BuildPipeline.GetBuildTargetGroup(EditorUserBuildSettings.activeBuildTarget) == BuildTargetGroup.Standalone || BuildPipeline.GetBuildTargetGroup(EditorUserBuildSettings.activeBuildTarget) == BuildTargetGroup.WSA || displayNames != null;
 		}
 
 		internal static GUIContent[] GetDisplayNames(string target)

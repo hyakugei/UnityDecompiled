@@ -23,5 +23,10 @@ namespace UnityEditor
 		{
 			return 16f;
 		}
+
+		public virtual bool CanCacheInspectorGUI()
+		{
+			return true;
+		}
 	}
 }

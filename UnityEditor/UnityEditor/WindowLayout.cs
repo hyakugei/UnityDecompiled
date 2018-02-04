@@ -503,12 +503,17 @@ namespace UnityEditor
 					position = containerWindow.position;
 				}
 			}
+			bool flag = false;
 			bool result;
 			try
 			{
 				ContainerWindow.SetFreezeDisplay(true);
 				WindowLayout.CloseWindows();
 				UnityEngine.Object[] array3 = InternalEditorUtility.LoadSerializedFileAndForget(path);
+				if (array3 == null || array3.Length == 0)
+				{
+					throw new ArgumentException("Window layout at '" + path + "' could not be loaded.");
+				}
 				List<UnityEngine.Object> list = new List<UnityEngine.Object>();
 				int j = 0;
 				while (j < array3.Length)
@@ -519,41 +524,43 @@ namespace UnityEditor
 					{
 						if (!(editorWindow.m_Parent == null))
 						{
-							goto IL_17D;
+							goto IL_1AD;
 						}
 						UnityEngine.Object.DestroyImmediate(editorWindow, true);
-						UnityEngine.Debug.LogError(string.Concat(new object[]
+						Console.WriteLine(string.Concat(new object[]
 						{
-							"Removed unparented EditorWindow while reading window layout: window #",
+							"LoadWindowLayout: Removed unparented EditorWindow while reading window layout: window #",
 							j,
 							", type=",
 							@object.GetType().ToString(),
 							", instanceID=",
 							@object.GetInstanceID()
 						}));
+						flag = true;
 					}
 					else
 					{
 						DockArea dockArea = @object as DockArea;
 						if (!(dockArea != null) || dockArea.m_Panes.Count != 0)
 						{
-							goto IL_17D;
+							goto IL_1AD;
 						}
 						dockArea.Close(null);
-						UnityEngine.Debug.LogError(string.Concat(new object[]
+						Console.WriteLine(string.Concat(new object[]
 						{
-							"Removed empty DockArea while reading window layout: window #",
+							"LoadWindowLayout: Removed empty DockArea while reading window layout: window #",
 							j,
 							", instanceID=",
 							@object.GetInstanceID()
 						}));
+						flag = true;
 					}
-					IL_187:
+					IL_1B7:
 					j++;
 					continue;
-					IL_17D:
+					IL_1AD:
 					list.Add(@object);
-					goto IL_187;
+					goto IL_1B7;
 				}
 				ContainerWindow containerWindow2 = null;
 				ContainerWindow containerWindow3 = null;
@@ -575,17 +582,19 @@ namespace UnityEditor
 					UnityEngine.Object object2 = list[l];
 					if (object2 == null)
 					{
-						UnityEngine.Debug.LogError("Error while reading window layout: window #" + l + " is null");
+						Console.WriteLine("LoadWindowLayout: Error while reading window layout: window #" + l + " is null");
+						flag = true;
 					}
 					else if (object2.GetType() == null)
 					{
-						UnityEngine.Debug.LogError(string.Concat(new object[]
+						Console.WriteLine(string.Concat(new object[]
 						{
-							"Error while reading window layout: window #",
+							"LoadWindowLayout: Error while reading window layout: window #",
 							l,
 							" type is null, instanceID=",
 							object2.GetInstanceID()
 						}));
+						flag = true;
 					}
 					else if (newProjectLayoutWasCreated)
 					{
@@ -629,7 +638,7 @@ namespace UnityEditor
 				{
 					if (UnityConnect.instance.online && UnityConnect.instance.loggedIn && UnityConnect.instance.shouldShowServicesWindow)
 					{
-						UnityConnectServiceCollection.instance.ShowService("Hub", true);
+						UnityConnectServiceCollection.instance.ShowService("Hub", true, "new_project_created");
 					}
 					else
 					{
@@ -641,7 +650,8 @@ namespace UnityEditor
 			{
 				UnityEngine.Debug.LogError("Failed to load window layout: " + arg);
 				int num = 0;
-				if (!Application.isTestRun)
+				UnityEngine.Object[] array4 = Resources.FindObjectsOfTypeAll(typeof(ContainerWindow));
+				if (!Application.isTestRun && array4.Length > 0)
 				{
 					num = EditorUtility.DisplayDialogComplex("Failed to load window layout", "This can happen if layout contains custom windows and there are compile errors in the project.", "Load Default Layout", "Quit", "Revert Factory Settings");
 				}
@@ -677,6 +687,10 @@ namespace UnityEditor
 				{
 					Toolbar.lastLoadedLayoutName = null;
 				}
+			}
+			if (flag)
+			{
+				UnityEngine.Debug.Log("The editor layout could not be fully loaded, this can happen when the layout contains EditorWindows not available in this project");
 			}
 			result = true;
 			return result;

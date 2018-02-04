@@ -2,117 +2,142 @@ using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using UnityEngine.Internal;
-using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
 	public sealed class Screen
 	{
-		public static extern Resolution[] resolutions
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-		}
-
-		public static extern Resolution currentResolution
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-		}
-
-		[ThreadAndSerializationSafe]
 		public static extern int width
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
 
-		[ThreadAndSerializationSafe]
 		public static extern int height
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
 
 		public static extern float dpi
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
 
-		public static extern bool fullScreen
+		public static ScreenOrientation orientation
 		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		public static extern bool autorotateToPortrait
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		public static extern bool autorotateToPortraitUpsideDown
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		public static extern bool autorotateToLandscapeLeft
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		public static extern bool autorotateToLandscapeRight
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		public static extern ScreenOrientation orientation
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
+			get
+			{
+				return Screen.GetScreenOrientation();
+			}
+			set
+			{
+				if (value == ScreenOrientation.Unknown)
+				{
+					Debug.Log("ScreenOrientation.Unknown is deprecated. Please use ScreenOrientation.AutoRotation");
+					value = ScreenOrientation.AutoRotation;
+				}
+				Screen.RequestOrientation(value);
+			}
 		}
 
 		public static extern int sleepTimeout
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
+		}
+
+		public static bool autorotateToPortrait
+		{
+			get
+			{
+				return Screen.IsOrientationEnabled(EnabledOrientation.kAutorotateToPortrait);
+			}
+			set
+			{
+				Screen.SetOrientationEnabled(EnabledOrientation.kAutorotateToPortrait, value);
+			}
+		}
+
+		public static bool autorotateToPortraitUpsideDown
+		{
+			get
+			{
+				return Screen.IsOrientationEnabled(EnabledOrientation.kAutorotateToPortraitUpsideDown);
+			}
+			set
+			{
+				Screen.SetOrientationEnabled(EnabledOrientation.kAutorotateToPortraitUpsideDown, value);
+			}
+		}
+
+		public static bool autorotateToLandscapeLeft
+		{
+			get
+			{
+				return Screen.IsOrientationEnabled(EnabledOrientation.kAutorotateToLandscapeLeft);
+			}
+			set
+			{
+				Screen.SetOrientationEnabled(EnabledOrientation.kAutorotateToLandscapeLeft, value);
+			}
+		}
+
+		public static bool autorotateToLandscapeRight
+		{
+			get
+			{
+				return Screen.IsOrientationEnabled(EnabledOrientation.kAutorotateToLandscapeRight);
+			}
+			set
+			{
+				Screen.SetOrientationEnabled(EnabledOrientation.kAutorotateToLandscapeRight, value);
+			}
+		}
+
+		public static Resolution currentResolution
+		{
+			get
+			{
+				Resolution result;
+				Screen.get_currentResolution_Injected(out result);
+				return result;
+			}
+		}
+
+		public static extern bool fullScreen
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public static extern FullScreenMode fullScreenMode
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public static Rect safeArea
+		{
+			get
+			{
+				Rect result;
+				Screen.get_safeArea_Injected(out result);
+				return result;
+			}
+		}
+
+		public static extern Resolution[] resolutions
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never), Obsolete("Property GetResolution has been deprecated. Use resolutions instead (UnityUpgradable) -> resolutions", true)]
@@ -153,15 +178,40 @@ namespace UnityEngine
 			}
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern void SetResolution(int width, int height, bool fullscreen, [UnityEngine.Internal.DefaultValue("0")] int preferredRefreshRate);
+		private static extern void RequestOrientation(ScreenOrientation orient);
 
-		[ExcludeFromDocs]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern ScreenOrientation GetScreenOrientation();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern bool IsOrientationEnabled(EnabledOrientation orient);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void SetOrientationEnabled(EnabledOrientation orient, bool enabled);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern void SetResolution(int width, int height, FullScreenMode fullscreenMode, [UnityEngine.Internal.DefaultValue("0")] int preferredRefreshRate);
+
+		public static void SetResolution(int width, int height, FullScreenMode fullscreenMode)
+		{
+			Screen.SetResolution(width, height, fullscreenMode, 0);
+		}
+
+		public static void SetResolution(int width, int height, bool fullscreen, [UnityEngine.Internal.DefaultValue("0")] int preferredRefreshRate)
+		{
+			Screen.SetResolution(width, height, (!fullscreen) ? FullScreenMode.Windowed : FullScreenMode.FullScreenWindow, preferredRefreshRate);
+		}
+
 		public static void SetResolution(int width, int height, bool fullscreen)
 		{
-			int preferredRefreshRate = 0;
-			Screen.SetResolution(width, height, fullscreen, preferredRefreshRate);
+			Screen.SetResolution(width, height, fullscreen, 0);
 		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void get_currentResolution_Injected(out Resolution ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void get_safeArea_Injected(out Rect ret);
 	}
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEditor.Experimental.U2D;
 using UnityEditor.Sprites;
 using UnityEditor.U2D.Interface;
 using UnityEditorInternal;
@@ -8,19 +9,24 @@ using UnityEngine.U2D.Interface;
 
 namespace UnityEditor.U2D
 {
-	internal class SpriteOutlineModule : ISpriteEditorModule
+	[RequireSpriteDataProvider(new Type[]
+	{
+		typeof(ISpriteOutlineDataProvider),
+		typeof(ITextureDataProvider)
+	})]
+	internal class SpriteOutlineModule : SpriteEditorModuleBase
 	{
 		private class Styles
 		{
-			public GUIContent generateOutlineLabel = EditorGUIUtility.TextContent("Update|Update new outline based on mesh detail value.");
+			public GUIContent generateOutlineLabel = EditorGUIUtility.TrTextContent("Update", "Update new outline based on mesh detail value.", null);
 
-			public GUIContent outlineTolerance = EditorGUIUtility.TextContent("Outline Tolerance|Sets how tight the outline should be from the sprite.");
+			public GUIContent outlineTolerance = EditorGUIUtility.TrTextContent("Outline Tolerance", "Sets how tight the outline should be from the sprite.", null);
 
-			public GUIContent snapButtonLabel = EditorGUIUtility.TextContent("Snap|Snap points to nearest pixel");
+			public GUIContent snapButtonLabel = EditorGUIUtility.TrTextContent("Snap", "Snap points to nearest pixel", null);
 
-			public GUIContent generatingOutlineDialogTitle = EditorGUIUtility.TextContent("Outline");
+			public GUIContent generatingOutlineDialogTitle = EditorGUIUtility.TrTextContent("Outline", null, null);
 
-			public GUIContent generatingOutlineDialogContent = EditorGUIUtility.TextContent("Generating outline {0}/{1}");
+			public GUIContent generatingOutlineDialogContent = EditorGUIUtility.TrTextContent("Generating outline {0}/{1}", null, null);
 
 			public Color spriteBorderColor = new Color(0.25f, 0.5f, 1f, 0.75f);
 		}
@@ -41,7 +47,7 @@ namespace UnityEditor.U2D
 
 		private Vector2 m_MousePosition;
 
-		private bool m_Snap;
+		private bool m_Snap = true;
 
 		private ShapeEditorRectSelectionTool m_ShapeSelectionUI;
 
@@ -53,7 +59,11 @@ namespace UnityEditor.U2D
 
 		private SpriteOutlineModule.Styles m_Styles;
 
-		public virtual string moduleName
+		protected SpriteOutlineModel m_Outline;
+
+		protected ITextureDataProvider m_TextureDataProvider;
+
+		public override string moduleName
 		{
 			get
 			{
@@ -73,15 +83,15 @@ namespace UnityEditor.U2D
 			}
 		}
 
-		private List<SpriteOutline> selectedShapeOutline
+		protected virtual List<SpriteOutline> selectedShapeOutline
 		{
 			get
 			{
-				return this.m_Selected.outline;
+				return this.m_Outline[this.m_Selected.spriteID].spriteOutlines;
 			}
 			set
 			{
-				this.m_Selected.outline = value;
+				this.m_Outline[this.m_Selected.spriteID].spriteOutlines = value;
 			}
 		}
 
@@ -149,6 +159,25 @@ namespace UnityEditor.U2D
 			this.m_ShapeSelectionUI.ClearSelection += new Action(this.ClearSelection);
 		}
 
+		public override bool ApplyRevert(bool apply)
+		{
+			if (this.m_Outline != null)
+			{
+				if (apply)
+				{
+					ISpriteOutlineDataProvider dataProvider = this.spriteEditorWindow.GetDataProvider<ISpriteOutlineDataProvider>();
+					for (int i = 0; i < this.m_Outline.Count; i++)
+					{
+						dataProvider.SetOutlines(this.m_Outline[i].spriteID, this.m_Outline[i].ToListVector());
+						dataProvider.SetTessellationDetail(this.m_Outline[i].spriteID, this.m_Outline[i].tessellationDetail);
+					}
+				}
+				UnityEngine.Object.DestroyImmediate(this.m_Outline);
+				this.m_Outline = null;
+			}
+			return true;
+		}
+
 		private void RectSelect(Rect r, ShapeEditor.SelectionType selectionType)
 		{
 			Rect value = EditorGUIExt.FromToRect(this.ScreenToLocal(r.min), this.ScreenToLocal(r.max));
@@ -160,8 +189,25 @@ namespace UnityEditor.U2D
 			this.m_RequestRepaint = true;
 		}
 
-		public void OnModuleActivate()
+		protected virtual void LoadOutline()
 		{
+			this.m_Outline = ScriptableObject.CreateInstance<SpriteOutlineModel>();
+			ISpriteEditorDataProvider dataProvider = this.spriteEditorWindow.GetDataProvider<ISpriteEditorDataProvider>();
+			ISpriteOutlineDataProvider dataProvider2 = this.spriteEditorWindow.GetDataProvider<ISpriteOutlineDataProvider>();
+			SpriteRect[] spriteRects = dataProvider.GetSpriteRects();
+			for (int i = 0; i < spriteRects.Length; i++)
+			{
+				SpriteRect spriteRect = spriteRects[i];
+				List<Vector2[]> outlines = dataProvider2.GetOutlines(spriteRect.spriteID);
+				this.m_Outline.AddListVector2(spriteRect.spriteID, outlines);
+				this.m_Outline[this.m_Outline.Count - 1].tessellationDetail = dataProvider2.GetTessellationDetail(spriteRect.spriteID);
+			}
+		}
+
+		public override void OnModuleActivate()
+		{
+			this.m_TextureDataProvider = this.spriteEditorWindow.GetDataProvider<ITextureDataProvider>();
+			this.LoadOutline();
 			this.GenerateOutlineIfNotExist();
 			this.undoSystem.RegisterUndoCallback(new Undo.UndoRedoCallback(this.UndoRedoPerformed));
 			this.shapeEditorDirty = true;
@@ -171,31 +217,44 @@ namespace UnityEditor.U2D
 
 		private void GenerateOutlineIfNotExist()
 		{
-			ISpriteRectCache spriteRects = this.spriteEditorWindow.spriteRects;
+			SpriteRect[] spriteRects = this.spriteEditorWindow.GetDataProvider<ISpriteEditorDataProvider>().GetSpriteRects();
 			if (spriteRects != null)
 			{
-				for (int i = 0; i < spriteRects.Count; i++)
+				bool flag = false;
+				for (int i = 0; i < spriteRects.Length; i++)
 				{
-					SpriteRect spriteRect = spriteRects.RectAt(i);
-					if (spriteRect.outline == null || spriteRect.outline.Count == 0)
+					SpriteRect spriteRect = spriteRects[i];
+					if (!this.HasShapeOutline(spriteRect))
 					{
-						this.spriteEditorWindow.DisplayProgressBar(this.styles.generatingOutlineDialogTitle.text, string.Format(this.styles.generatingOutlineDialogContent.text, i + 1, spriteRects.Count), (float)i / (float)spriteRects.Count);
+						EditorUtility.DisplayProgressBar(this.styles.generatingOutlineDialogTitle.text, string.Format(this.styles.generatingOutlineDialogContent.text, i + 1, spriteRects.Length), (float)i / (float)spriteRects.Length);
 						this.SetupShapeEditorOutline(spriteRect);
+						flag = true;
 					}
 				}
-				this.spriteEditorWindow.ClearProgressBar();
+				if (flag)
+				{
+					EditorUtility.ClearProgressBar();
+					this.spriteEditorWindow.ApplyOrRevertModification(true);
+					this.LoadOutline();
+				}
 			}
 		}
 
-		public void OnModuleDeactivate()
+		public override void OnModuleDeactivate()
 		{
 			this.undoSystem.UnregisterUndoCallback(new Undo.UndoRedoCallback(this.UndoRedoPerformed));
 			this.CleanupShapeEditors();
 			this.m_Selected = null;
 			this.spriteEditorWindow.enableMouseMoveEvent = false;
+			if (this.m_Outline != null)
+			{
+				this.undoSystem.ClearUndo(this.m_Outline);
+				UnityEngine.Object.DestroyImmediate(this.m_Outline);
+				this.m_Outline = null;
+			}
 		}
 
-		public void DoTextureGUI()
+		public override void DoMainGUI()
 		{
 			IEvent current = this.eventSystem.current;
 			this.m_RequestRepaint = false;
@@ -216,7 +275,7 @@ namespace UnityEditor.U2D
 			}
 		}
 
-		public void DrawToolbarGUI(Rect drawArea)
+		public override void DoToolbarGUI(Rect drawArea)
 		{
 			SpriteOutlineModule.Styles styles = this.styles;
 			Rect position = new Rect(drawArea.x, drawArea.y, EditorStyles.toolbarButton.CalcSize(styles.snapButtonLabel).x, drawArea.height);
@@ -244,7 +303,7 @@ namespace UnityEditor.U2D
 				}
 				if (drawArea.width > 0f)
 				{
-					float num2 = (this.m_Selected == null) ? 0f : this.m_Selected.tessellationDetail;
+					float num2 = (this.m_Selected == null) ? 0f : this.m_Outline[this.m_Selected.spriteID].tessellationDetail;
 					EditorGUI.BeginChangeCheck();
 					float fieldWidth = EditorGUIUtility.fieldWidth;
 					float labelWidth = EditorGUIUtility.labelWidth;
@@ -254,7 +313,7 @@ namespace UnityEditor.U2D
 					if (EditorGUI.EndChangeCheck())
 					{
 						this.RecordUndo();
-						this.m_Selected.tessellationDetail = num2;
+						this.m_Outline[this.m_Selected.spriteID].tessellationDetail = num2;
 					}
 					EditorGUIUtility.fieldWidth = fieldWidth;
 					EditorGUIUtility.labelWidth = labelWidth;
@@ -271,25 +330,24 @@ namespace UnityEditor.U2D
 					this.RecordUndo();
 					this.selectedShapeOutline.Clear();
 					this.SetupShapeEditorOutline(this.m_Selected);
-					this.selectedShapeOutline = this.m_Selected.outline;
 					this.spriteEditorWindow.SetDataModified();
 					this.shapeEditorDirty = true;
 				}
 			}
 		}
 
-		public void OnPostGUI()
+		public override void DoPostGUI()
 		{
 		}
 
-		public bool CanBeActivated()
+		public override bool CanBeActivated()
 		{
-			return UnityEditor.SpriteUtility.GetSpriteImportMode(this.assetDatabase, this.spriteEditorWindow.selectedTexture) != SpriteImportMode.None;
+			return UnityEditor.SpriteUtility.GetSpriteImportMode(this.spriteEditorWindow.GetDataProvider<ISpriteEditorDataProvider>()) != SpriteImportMode.None;
 		}
 
 		private void RecordUndo()
 		{
-			this.undoSystem.RegisterCompleteObjectUndo(this.spriteEditorWindow.spriteRects, "Outline changed");
+			this.undoSystem.RegisterCompleteObjectUndo(this.m_Outline, "Outline changed");
 		}
 
 		public void CreateNewOutline(Rect rectOutline)
@@ -436,7 +494,6 @@ namespace UnityEditor.U2D
 				if (this.m_Selected != null)
 				{
 					this.SetupShapeEditorOutline(this.m_Selected);
-					this.selectedShapeOutline = this.m_Selected.outline;
 					this.m_ShapeEditors = new ShapeEditor[this.selectedShapeOutline.Count];
 					for (int i = 0; i < this.selectedShapeOutline.Count; i++)
 					{
@@ -484,15 +541,23 @@ namespace UnityEditor.U2D
 			this.shapeEditorDirty = false;
 		}
 
+		protected virtual bool HasShapeOutline(SpriteRect spriteRect)
+		{
+			SpriteOutlineList expr_12 = this.m_Outline[spriteRect.spriteID];
+			List<SpriteOutline> list = (expr_12 != null) ? expr_12.spriteOutlines : null;
+			return list != null && list.Count > 0;
+		}
+
 		protected virtual void SetupShapeEditorOutline(SpriteRect spriteRect)
 		{
-			if (spriteRect.outline == null || spriteRect.outline.Count == 0)
+			SpriteOutlineList spriteOutlineList = this.m_Outline[spriteRect.spriteID];
+			if (spriteOutlineList.spriteOutlines == null || spriteOutlineList.spriteOutlines.Count == 0)
 			{
-				spriteRect.outline = SpriteOutlineModule.GenerateSpriteRectOutline(spriteRect.rect, this.spriteEditorWindow.selectedTexture, spriteRect.tessellationDetail, 0);
-				if (spriteRect.outline.Count == 0)
+				List<SpriteOutline> list = SpriteOutlineModule.GenerateSpriteRectOutline(spriteRect.rect, (Math.Abs(spriteOutlineList.tessellationDetail - -1f) >= Mathf.Epsilon) ? spriteOutlineList.tessellationDetail : 0f, 0, this.m_TextureDataProvider);
+				if (list.Count == 0)
 				{
 					Vector2 vector = spriteRect.rect.size * 0.5f;
-					spriteRect.outline = new List<SpriteOutline>
+					list = new List<SpriteOutline>
 					{
 						new SpriteOutline
 						{
@@ -506,7 +571,7 @@ namespace UnityEditor.U2D
 						}
 					};
 				}
-				this.spriteEditorWindow.SetDataModified();
+				this.m_Outline[spriteRect.spriteID].spriteOutlines = list;
 			}
 		}
 
@@ -585,7 +650,7 @@ namespace UnityEditor.U2D
 
 		private void DrawGizmos()
 		{
-			if (this.eventSystem.current.type == EventType.Layout || this.eventSystem.current.type == EventType.Repaint)
+			if (this.eventSystem.current.type == EventType.Repaint)
 			{
 				SpriteRect selectedSpriteRect = this.spriteEditorWindow.selectedSpriteRect;
 				if (selectedSpriteRect != null)
@@ -597,15 +662,15 @@ namespace UnityEditor.U2D
 			}
 		}
 
-		private static List<SpriteOutline> GenerateSpriteRectOutline(Rect rect, ITexture2D texture, float detail, byte alphaTolerance)
+		protected static List<SpriteOutline> GenerateSpriteRectOutline(Rect rect, float detail, byte alphaTolerance, ITextureDataProvider textureProvider)
 		{
 			List<SpriteOutline> list = new List<SpriteOutline>();
+			UnityEngine.Texture2D texture = textureProvider.texture;
 			if (texture != null)
 			{
 				int num = 0;
 				int num2 = 0;
-				UnityEditor.TextureImporter textureImporter = AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(texture)) as UnityEditor.TextureImporter;
-				textureImporter.GetWidthAndHeight(ref num, ref num2);
+				textureProvider.GetTextureActualWidthAndHeight(out num, out num2);
 				int width = texture.width;
 				int height = texture.height;
 				Vector2 vector = new Vector2((float)width / (float)num, (float)height / (float)num2);

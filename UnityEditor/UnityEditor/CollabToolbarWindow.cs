@@ -80,7 +80,6 @@ namespace UnityEditor
 				{
 					CollabToolbarWindow.s_CollabToolbarWindow = ScriptableObject.CreateInstance<CollabToolbarWindow>();
 				}
-				buttonRect = GUIUtility.GUIToScreenRect(buttonRect);
 				Vector2 windowSize = new Vector2(320f, 350f);
 				CollabToolbarWindow.s_CollabToolbarWindow.initialOpenUrl = "file:///" + EditorApplication.userJavascriptPackagesPath + "unityeditor-collab-toolbar/dist/index.html";
 				CollabToolbarWindow.s_CollabToolbarWindow.Init();
@@ -131,20 +130,8 @@ namespace UnityEditor
 
 		public new void OnDestroy()
 		{
-			this.OnLostFocus();
-			base.OnDestroy();
-		}
-
-		public new void OnFocus()
-		{
-			base.OnFocus();
-			EditorApplication.LockReloadAssemblies();
-		}
-
-		public new void OnLostFocus()
-		{
 			base.OnLostFocus();
-			EditorApplication.UnlockReloadAssemblies();
+			base.OnDestroy();
 		}
 	}
 }

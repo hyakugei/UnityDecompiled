@@ -124,7 +124,7 @@ namespace UnityEditor
 			GUILayout.Space(6f);
 			if (!flag)
 			{
-				GUIContent content = new GUIContent("Preset libraries should be placed in an 'Editor' folder.", EditorGUIUtility.warningIcon);
+				GUIContent content = EditorGUIUtility.TrTextContent("Preset libraries should be placed in an 'Editor' folder.", EditorGUIUtility.warningIcon);
 				GUILayout.Label(content, EditorStyles.helpBox, new GUILayoutOption[0]);
 			}
 			this.DrawPresets(text);

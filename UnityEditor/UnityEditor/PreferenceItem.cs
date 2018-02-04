@@ -11,5 +11,10 @@ namespace UnityEditor
 		{
 			this.name = name;
 		}
+
+		[RequiredSignature]
+		private static void signature()
+		{
+		}
 	}
 }

@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditor.Animations;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -15,13 +14,13 @@ namespace UnityEditor
 		{
 			public GUIContent[] tabs = new GUIContent[]
 			{
-				EditorGUIUtility.TextContent("Mapping"),
-				EditorGUIUtility.TextContent("Muscles & Settings")
+				EditorGUIUtility.TrTextContent("Mapping", null, null),
+				EditorGUIUtility.TrTextContent("Muscles & Settings", null, null)
 			};
 
-			public GUIContent editCharacter = EditorGUIUtility.TextContent("Configure Avatar");
+			public GUIContent editCharacter = EditorGUIUtility.TrTextContent("Configure Avatar", null, null);
 
-			public GUIContent reset = EditorGUIUtility.TextContent("Reset");
+			public GUIContent reset = EditorGUIUtility.TrTextContent("Reset", null, null);
 		}
 
 		private enum EditMode
@@ -79,8 +78,6 @@ namespace UnityEditor
 		private const int sColliderTab = 3;
 
 		private const int sDefaultTab = 0;
-
-		private GameObject m_PrefabInstance;
 
 		private static AvatarEditor.Styles styles
 		{
@@ -295,11 +292,12 @@ namespace UnityEditor
 
 		private void EditingGUI()
 		{
-			GUILayout.BeginHorizontal(new GUILayoutOption[0]);
+			EditorGUILayout.BeginHorizontal(new GUILayoutOption[0]);
+			GUILayout.FlexibleSpace();
 			int num = this.m_TabIndex;
 			bool enabled = GUI.enabled;
 			GUI.enabled = (!(this.avatar == null) && this.avatar.isHuman);
-			num = GUILayout.Toolbar(num, AvatarEditor.styles.tabs, new GUILayoutOption[0]);
+			num = GUILayout.Toolbar(num, AvatarEditor.styles.tabs, "LargeButton", GUI.ToolbarButtonSize.FitToContents, new GUILayoutOption[0]);
 			GUI.enabled = enabled;
 			if (num != this.m_TabIndex)
 			{
@@ -310,7 +308,8 @@ namespace UnityEditor
 				}
 				this.CreateEditor();
 			}
-			GUILayout.EndHorizontal();
+			GUILayout.FlexibleSpace();
+			EditorGUILayout.EndHorizontal();
 			this.editor.OnInspectorGUI();
 		}
 
@@ -333,15 +332,6 @@ namespace UnityEditor
 			{
 				AnimatorUtility.DeoptimizeTransformHierarchy(this.m_GameObject);
 			}
-			Animator component = this.m_GameObject.GetComponent<Animator>();
-			if (component != null && component.runtimeAnimatorController == null)
-			{
-				AnimatorController animatorController = new AnimatorController();
-				animatorController.hideFlags = HideFlags.DontSave;
-				animatorController.AddLayer("preview");
-				animatorController.layers[0].stateMachine.hideFlags = HideFlags.DontSave;
-				component.runtimeAnimatorController = animatorController;
-			}
 			Dictionary<Transform, bool> modelBones = AvatarSetupTool.GetModelBones(this.m_GameObject.transform, true, null);
 			AvatarSetupTool.BoneWrapper[] humanBones = AvatarSetupTool.GetHumanBones(base.serializedObject, modelBones);
 			this.m_ModelBones = AvatarSetupTool.GetModelBones(this.m_GameObject.transform, false, humanBones);
@@ -363,14 +353,15 @@ namespace UnityEditor
 					SceneView sceneView = (SceneView)enumerator.Current;
 					this.m_SceneStates.Add(new AvatarEditor.SceneStateCache
 					{
-						state = new SceneView.SceneViewState(sceneView.m_SceneViewState),
+						state = new SceneView.SceneViewState(sceneView.sceneViewState),
 						view = sceneView
 					});
-					sceneView.m_SceneViewState.showFlares = false;
-					sceneView.m_SceneViewState.showMaterialUpdate = false;
-					sceneView.m_SceneViewState.showFog = false;
-					sceneView.m_SceneViewState.showSkybox = false;
-					sceneView.m_SceneViewState.showImageEffects = false;
+					sceneView.sceneViewState.showFlares = false;
+					sceneView.sceneViewState.showMaterialUpdate = false;
+					sceneView.sceneViewState.showFog = false;
+					sceneView.sceneViewState.showSkybox = false;
+					sceneView.sceneViewState.showImageEffects = false;
+					sceneView.sceneViewState.showParticleSystems = false;
 					sceneView.FrameSelected();
 				}
 			}
@@ -390,39 +381,24 @@ namespace UnityEditor
 			{
 				if (!(current.view == null))
 				{
-					current.view.m_SceneViewState.showFog = current.state.showFog;
-					current.view.m_SceneViewState.showFlares = current.state.showFlares;
-					current.view.m_SceneViewState.showMaterialUpdate = current.state.showMaterialUpdate;
-					current.view.m_SceneViewState.showSkybox = current.state.showSkybox;
-					current.view.m_SceneViewState.showImageEffects = current.state.showImageEffects;
+					current.view.sceneViewState.showFog = current.state.showFog;
+					current.view.sceneViewState.showFlares = current.state.showFlares;
+					current.view.sceneViewState.showMaterialUpdate = current.state.showMaterialUpdate;
+					current.view.sceneViewState.showSkybox = current.state.showSkybox;
+					current.view.sceneViewState.showImageEffects = current.state.showImageEffects;
+					current.view.sceneViewState.showParticleSystems = current.state.showParticleSystems;
 				}
 			}
 			this.m_EditMode = AvatarEditor.EditMode.Stopping;
 			this.DestroyEditor();
 			this.ChangeInspectorLock(this.m_InspectorLocked);
-			if (!EditorApplication.isUpdating && !Unsupported.IsDestroyScriptableObject(this))
-			{
-				string path = SceneManager.GetActiveScene().path;
-				if (path.Length <= 0)
-				{
-					if (this.sceneSetup != null && this.sceneSetup.Length > 0)
-					{
-						EditorSceneManager.RestoreSceneManagerSetup(this.sceneSetup);
-						this.sceneSetup = null;
-					}
-					else
-					{
-						EditorSceneManager.NewScene(NewSceneSetup.DefaultGameObjects);
-					}
-				}
-			}
-			else if (Unsupported.IsDestroyScriptableObject(this))
+			if (!EditorApplication.isPlaying)
 			{
 				EditorApplication.CallbackFunction CleanUpSceneOnDestroy = null;
 				CleanUpSceneOnDestroy = delegate
 				{
-					string path2 = SceneManager.GetActiveScene().path;
-					if (path2.Length <= 0)
+					string path = SceneManager.GetActiveScene().path;
+					if (path.Length <= 0)
 					{
 						if (this.sceneSetup != null && this.sceneSetup.Length > 0)
 						{
@@ -477,11 +453,7 @@ namespace UnityEditor
 			}
 			if (this.m_EditMode == AvatarEditor.EditMode.Editing)
 			{
-				if (this.m_GameObject == null || this.m_ModelBones == null)
-				{
-					this.SwitchToAssetMode();
-				}
-				else if (EditorApplication.isPlaying)
+				if (this.m_GameObject == null || this.m_ModelBones == null || EditorApplication.isPlaying)
 				{
 					this.SwitchToAssetMode();
 				}

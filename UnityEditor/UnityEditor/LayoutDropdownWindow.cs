@@ -169,8 +169,8 @@ namespace UnityEditor
 			{
 				base.editorWindow.Close();
 			}
-			GUI.Label(new Rect(rect.x + 5f, rect.y + 3f, rect.width - 10f, 16f), new GUIContent("Anchor Presets"), EditorStyles.boldLabel);
-			GUI.Label(new Rect(rect.x + 5f, rect.y + 3f + 16f, rect.width - 10f, 16f), new GUIContent("Shift: Also set pivot     Alt: Also set position"), EditorStyles.label);
+			GUI.Label(new Rect(rect.x + 5f, rect.y + 3f, rect.width - 10f, 16f), EditorGUIUtility.TrTextContent("Anchor Presets", null, null), EditorStyles.boldLabel);
+			GUI.Label(new Rect(rect.x + 5f, rect.y + 3f + 16f, rect.width - 10f, 16f), EditorGUIUtility.TrTextContent("Shift: Also set pivot     Alt: Also set position", null, null), EditorStyles.label);
 			Color color = GUI.color;
 			GUI.color = LayoutDropdownWindow.s_Styles.tableLineColor * color;
 			GUI.DrawTexture(new Rect(0f, 37f, 400f, 1f), EditorGUIUtility.whiteTexture);
@@ -200,8 +200,8 @@ namespace UnityEditor
 
 		internal static void DrawLayoutModeHeadersOutsideRect(Rect rect, SerializedProperty anchorMin, SerializedProperty anchorMax, SerializedProperty position, SerializedProperty sizeDelta)
 		{
-			LayoutDropdownWindow.LayoutMode layoutModeForAxis = LayoutDropdownWindow.GetLayoutModeForAxis(anchorMin, sizeDelta, 0);
-			LayoutDropdownWindow.LayoutMode layoutMode = LayoutDropdownWindow.GetLayoutModeForAxis(anchorMin, sizeDelta, 1);
+			LayoutDropdownWindow.LayoutMode layoutModeForAxis = LayoutDropdownWindow.GetLayoutModeForAxis(anchorMin, anchorMax, 0);
+			LayoutDropdownWindow.LayoutMode layoutMode = LayoutDropdownWindow.GetLayoutModeForAxis(anchorMin, anchorMax, 1);
 			layoutMode = LayoutDropdownWindow.SwappedVMode(layoutMode);
 			LayoutDropdownWindow.DrawLayoutModeHeaderOutsideRect(rect, 0, layoutModeForAxis);
 			LayoutDropdownWindow.DrawLayoutModeHeaderOutsideRect(rect, 1, layoutMode);

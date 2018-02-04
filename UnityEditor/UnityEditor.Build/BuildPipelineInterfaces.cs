@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using UnityEditor.Build.Reporting;
 using UnityEditor.Callbacks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -11,7 +12,16 @@ namespace UnityEditor.Build
 {
 	internal static class BuildPipelineInterfaces
 	{
-		private class AttributeCallbackWrapper : IPostprocessBuild, IProcessScene, IOrderedCallback
+		[Flags]
+		internal enum BuildCallbacks
+		{
+			None = 0,
+			BuildProcessors = 1,
+			SceneProcessors = 2,
+			BuildTargetProcessors = 4
+		}
+
+		private class AttributeCallbackWrapper : IPostprocessBuild, IProcessScene, IActiveBuildTargetChanged, IOrderedCallback
 		{
 			private int m_callbackOrder;
 
@@ -31,16 +41,25 @@ namespace UnityEditor.Build
 				this.m_method = m;
 			}
 
-			public void OnPostprocessBuild(BuildTarget target, string path)
+			public void OnActiveBuildTargetChanged(BuildTarget previousTarget, BuildTarget newTarget)
 			{
 				this.m_method.Invoke(null, new object[]
 				{
-					target,
-					path
+					previousTarget,
+					newTarget
 				});
 			}
 
-			public void OnProcessScene(Scene scene)
+			public void OnPostprocessBuild(BuildReport report)
+			{
+				this.m_method.Invoke(null, new object[]
+				{
+					report.summary.platform,
+					report.summary.outputPath
+				});
+			}
+
+			public void OnProcessScene(Scene scene, BuildReport report)
 			{
 				this.m_method.Invoke(null, null);
 			}
@@ -52,6 +71,10 @@ namespace UnityEditor.Build
 
 		private static List<IProcessScene> sceneProcessors;
 
+		private static List<IActiveBuildTargetChanged> buildTargetProcessors;
+
+		private static BuildPipelineInterfaces.BuildCallbacks previousFlags = BuildPipelineInterfaces.BuildCallbacks.None;
+
 		[CompilerGenerated]
 		private static Comparison<IPreprocessBuild> <>f__mg$cache0;
 
@@ -59,9 +82,12 @@ namespace UnityEditor.Build
 		private static Comparison<IPostprocessBuild> <>f__mg$cache1;
 
 		[CompilerGenerated]
-		private static Comparison<IProcessScene> <>f__mg$cache2;
+		private static Comparison<IActiveBuildTargetChanged> <>f__mg$cache2;
 
-		private static int CompareICallbackOrder(IOrderedCallback a, IOrderedCallback b)
+		[CompilerGenerated]
+		private static Comparison<IProcessScene> <>f__mg$cache3;
+
+		internal static int CompareICallbackOrder(IOrderedCallback a, IOrderedCallback b)
 		{
 			return a.callbackOrder - b.callbackOrder;
 		}
@@ -80,136 +106,119 @@ namespace UnityEditor.Build
 		}
 
 		[RequiredByNativeCode]
-		internal static void InitializeBuildCallbacks(bool findBuildProcessors, bool findSceneProcessors)
+		internal static void InitializeBuildCallbacks(BuildPipelineInterfaces.BuildCallbacks findFlags)
 		{
-			BuildPipelineInterfaces.CleanupBuildCallbacks();
-			HashSet<string> hashSet = new HashSet<string>();
-			hashSet.Add("UnityEditor");
-			hashSet.Add("UnityEngine.UI");
-			hashSet.Add("Unity.PackageManager");
-			hashSet.Add("UnityEngine.Networking");
-			hashSet.Add("nunit.framework");
-			hashSet.Add("UnityEditor.TreeEditor");
-			hashSet.Add("UnityEditor.Graphs");
-			hashSet.Add("UnityEditor.UI");
-			hashSet.Add("UnityEditor.TestRunner");
-			hashSet.Add("UnityEngine.TestRunner");
-			hashSet.Add("UnityEngine.HoloLens");
-			hashSet.Add("SyntaxTree.VisualStudio.Unity.Bridge");
-			hashSet.Add("UnityEditor.Android.Extensions");
-			BindingFlags bindingAttr = BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
-			Type[] expectedArguments = new Type[]
+			if (findFlags != BuildPipelineInterfaces.previousFlags)
 			{
-				typeof(BuildTarget),
-				typeof(string)
-			};
-			for (int i = 0; i < EditorAssemblies.loadedAssemblies.Length; i++)
-			{
-				Assembly assembly = EditorAssemblies.loadedAssemblies[i];
-				bool flag = !hashSet.Contains(assembly.FullName.Substring(0, assembly.FullName.IndexOf(',')));
-				Type[] array = null;
-				try
+				BuildPipelineInterfaces.previousFlags = findFlags;
+				BuildPipelineInterfaces.CleanupBuildCallbacks();
+				bool flag = (findFlags & BuildPipelineInterfaces.BuildCallbacks.BuildProcessors) == BuildPipelineInterfaces.BuildCallbacks.BuildProcessors;
+				bool flag2 = (findFlags & BuildPipelineInterfaces.BuildCallbacks.SceneProcessors) == BuildPipelineInterfaces.BuildCallbacks.SceneProcessors;
+				bool flag3 = (findFlags & BuildPipelineInterfaces.BuildCallbacks.BuildTargetProcessors) == BuildPipelineInterfaces.BuildCallbacks.BuildTargetProcessors;
+				Type[] expectedArguments = new Type[]
 				{
-					array = assembly.GetTypes();
-				}
-				catch (ReflectionTypeLoadException ex)
+					typeof(BuildTarget),
+					typeof(string)
+				};
+				foreach (Type current in EditorAssemblies.GetAllTypesWithInterface<IOrderedCallback>())
 				{
-					array = ex.Types;
-				}
-				for (int j = 0; j < array.Length; j++)
-				{
-					Type type = array[j];
-					if (type != null)
+					if (!current.IsAbstract && !current.IsInterface)
 					{
 						object obj = null;
-						bool flag2 = false;
-						if (findBuildProcessors)
-						{
-							flag2 = typeof(IOrderedCallback).IsAssignableFrom(type);
-							if (flag2)
-							{
-								if (!type.IsInterface && typeof(IPreprocessBuild).IsAssignableFrom(type) && type != typeof(BuildPipelineInterfaces.AttributeCallbackWrapper))
-								{
-									obj = Activator.CreateInstance(type);
-									BuildPipelineInterfaces.AddToList<IPreprocessBuild>(obj, ref BuildPipelineInterfaces.buildPreprocessors);
-								}
-								if (!type.IsInterface && typeof(IPostprocessBuild).IsAssignableFrom(type) && type != typeof(BuildPipelineInterfaces.AttributeCallbackWrapper))
-								{
-									obj = ((obj != null) ? obj : Activator.CreateInstance(type));
-									BuildPipelineInterfaces.AddToList<IPostprocessBuild>(obj, ref BuildPipelineInterfaces.buildPostprocessors);
-								}
-							}
-						}
-						if (findSceneProcessors)
-						{
-							if (!findBuildProcessors || flag2)
-							{
-								if (!type.IsInterface && typeof(IProcessScene).IsAssignableFrom(type) && type != typeof(BuildPipelineInterfaces.AttributeCallbackWrapper))
-								{
-									obj = ((obj != null) ? obj : Activator.CreateInstance(type));
-									BuildPipelineInterfaces.AddToList<IProcessScene>(obj, ref BuildPipelineInterfaces.sceneProcessors);
-								}
-							}
-						}
 						if (flag)
 						{
-							MethodInfo[] methods = type.GetMethods(bindingAttr);
-							for (int k = 0; k < methods.Length; k++)
+							if (BuildPipelineInterfaces.ValidateType<IPreprocessBuild>(current))
 							{
-								MethodInfo methodInfo = methods[k];
-								if (!methodInfo.IsSpecialName)
-								{
-									if (findBuildProcessors && BuildPipelineInterfaces.ValidateMethod(methodInfo, typeof(PostProcessBuildAttribute), expectedArguments))
-									{
-										BuildPipelineInterfaces.AddToList<IPostprocessBuild>(new BuildPipelineInterfaces.AttributeCallbackWrapper(methodInfo), ref BuildPipelineInterfaces.buildPostprocessors);
-									}
-									if (findSceneProcessors && BuildPipelineInterfaces.ValidateMethod(methodInfo, typeof(PostProcessSceneAttribute), Type.EmptyTypes))
-									{
-										BuildPipelineInterfaces.AddToList<IProcessScene>(new BuildPipelineInterfaces.AttributeCallbackWrapper(methodInfo), ref BuildPipelineInterfaces.sceneProcessors);
-									}
-								}
+								BuildPipelineInterfaces.AddToList<IPreprocessBuild>(obj = Activator.CreateInstance(current), ref BuildPipelineInterfaces.buildPreprocessors);
 							}
+							if (BuildPipelineInterfaces.ValidateType<IPostprocessBuild>(current))
+							{
+								BuildPipelineInterfaces.AddToList<IPostprocessBuild>(obj = ((obj != null) ? obj : Activator.CreateInstance(current)), ref BuildPipelineInterfaces.buildPostprocessors);
+							}
+						}
+						if (flag2 && BuildPipelineInterfaces.ValidateType<IProcessScene>(current))
+						{
+							BuildPipelineInterfaces.AddToList<IProcessScene>(obj = ((obj != null) ? obj : Activator.CreateInstance(current)), ref BuildPipelineInterfaces.sceneProcessors);
+						}
+						if (flag3 && BuildPipelineInterfaces.ValidateType<IActiveBuildTargetChanged>(current))
+						{
+							BuildPipelineInterfaces.AddToList<IActiveBuildTargetChanged>((obj != null) ? obj : Activator.CreateInstance(current), ref BuildPipelineInterfaces.buildTargetProcessors);
 						}
 					}
 				}
-			}
-			if (BuildPipelineInterfaces.buildPreprocessors != null)
-			{
-				List<IPreprocessBuild> arg_379_0 = BuildPipelineInterfaces.buildPreprocessors;
-				if (BuildPipelineInterfaces.<>f__mg$cache0 == null)
+				if (flag)
 				{
-					BuildPipelineInterfaces.<>f__mg$cache0 = new Comparison<IPreprocessBuild>(BuildPipelineInterfaces.CompareICallbackOrder);
+					foreach (MethodInfo current2 in EditorAssemblies.GetAllMethodsWithAttribute<PostProcessBuildAttribute>(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic))
+					{
+						if (BuildPipelineInterfaces.ValidateMethod<PostProcessBuildAttribute>(current2, expectedArguments))
+						{
+							BuildPipelineInterfaces.AddToList<IPostprocessBuild>(new BuildPipelineInterfaces.AttributeCallbackWrapper(current2), ref BuildPipelineInterfaces.buildPostprocessors);
+						}
+					}
 				}
-				arg_379_0.Sort(BuildPipelineInterfaces.<>f__mg$cache0);
-			}
-			if (BuildPipelineInterfaces.buildPostprocessors != null)
-			{
-				List<IPostprocessBuild> arg_3AA_0 = BuildPipelineInterfaces.buildPostprocessors;
-				if (BuildPipelineInterfaces.<>f__mg$cache1 == null)
+				if (flag2)
 				{
-					BuildPipelineInterfaces.<>f__mg$cache1 = new Comparison<IPostprocessBuild>(BuildPipelineInterfaces.CompareICallbackOrder);
+					foreach (MethodInfo current3 in EditorAssemblies.GetAllMethodsWithAttribute<PostProcessSceneAttribute>(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic))
+					{
+						if (BuildPipelineInterfaces.ValidateMethod<PostProcessSceneAttribute>(current3, Type.EmptyTypes))
+						{
+							BuildPipelineInterfaces.AddToList<IProcessScene>(new BuildPipelineInterfaces.AttributeCallbackWrapper(current3), ref BuildPipelineInterfaces.sceneProcessors);
+						}
+					}
 				}
-				arg_3AA_0.Sort(BuildPipelineInterfaces.<>f__mg$cache1);
-			}
-			if (BuildPipelineInterfaces.sceneProcessors != null)
-			{
-				List<IProcessScene> arg_3DB_0 = BuildPipelineInterfaces.sceneProcessors;
-				if (BuildPipelineInterfaces.<>f__mg$cache2 == null)
+				if (BuildPipelineInterfaces.buildPreprocessors != null)
 				{
-					BuildPipelineInterfaces.<>f__mg$cache2 = new Comparison<IProcessScene>(BuildPipelineInterfaces.CompareICallbackOrder);
+					List<IPreprocessBuild> arg_263_0 = BuildPipelineInterfaces.buildPreprocessors;
+					if (BuildPipelineInterfaces.<>f__mg$cache0 == null)
+					{
+						BuildPipelineInterfaces.<>f__mg$cache0 = new Comparison<IPreprocessBuild>(BuildPipelineInterfaces.CompareICallbackOrder);
+					}
+					arg_263_0.Sort(BuildPipelineInterfaces.<>f__mg$cache0);
 				}
-				arg_3DB_0.Sort(BuildPipelineInterfaces.<>f__mg$cache2);
+				if (BuildPipelineInterfaces.buildPostprocessors != null)
+				{
+					List<IPostprocessBuild> arg_294_0 = BuildPipelineInterfaces.buildPostprocessors;
+					if (BuildPipelineInterfaces.<>f__mg$cache1 == null)
+					{
+						BuildPipelineInterfaces.<>f__mg$cache1 = new Comparison<IPostprocessBuild>(BuildPipelineInterfaces.CompareICallbackOrder);
+					}
+					arg_294_0.Sort(BuildPipelineInterfaces.<>f__mg$cache1);
+				}
+				if (BuildPipelineInterfaces.buildTargetProcessors != null)
+				{
+					List<IActiveBuildTargetChanged> arg_2C5_0 = BuildPipelineInterfaces.buildTargetProcessors;
+					if (BuildPipelineInterfaces.<>f__mg$cache2 == null)
+					{
+						BuildPipelineInterfaces.<>f__mg$cache2 = new Comparison<IActiveBuildTargetChanged>(BuildPipelineInterfaces.CompareICallbackOrder);
+					}
+					arg_2C5_0.Sort(BuildPipelineInterfaces.<>f__mg$cache2);
+				}
+				if (BuildPipelineInterfaces.sceneProcessors != null)
+				{
+					List<IProcessScene> arg_2F6_0 = BuildPipelineInterfaces.sceneProcessors;
+					if (BuildPipelineInterfaces.<>f__mg$cache3 == null)
+					{
+						BuildPipelineInterfaces.<>f__mg$cache3 = new Comparison<IProcessScene>(BuildPipelineInterfaces.CompareICallbackOrder);
+					}
+					arg_2F6_0.Sort(BuildPipelineInterfaces.<>f__mg$cache3);
+				}
 			}
 		}
 
-		private static bool ValidateMethod(MethodInfo method, Type attribute, Type[] expectedArguments)
+		internal static bool ValidateType<T>(Type t)
 		{
+			return typeof(T).IsAssignableFrom(t) && t != typeof(BuildPipelineInterfaces.AttributeCallbackWrapper);
+		}
+
+		private static bool ValidateMethod<T>(MethodInfo method, Type[] expectedArguments)
+		{
+			Type typeFromHandle = typeof(T);
 			bool result;
-			if (method.IsDefined(attribute, false))
+			if (method.IsDefined(typeFromHandle, false))
 			{
 				if (!method.IsStatic)
 				{
-					string text = attribute.Name.Replace("Attribute", "");
+					string text = typeFromHandle.Name.Replace("Attribute", "");
 					Debug.LogErrorFormat("Method {0} with {1} attribute must be static.", new object[]
 					{
 						method.Name,
@@ -219,7 +228,7 @@ namespace UnityEditor.Build
 				}
 				else if (method.IsGenericMethod || method.IsGenericMethodDefinition)
 				{
-					string text2 = attribute.Name.Replace("Attribute", "");
+					string text2 = typeFromHandle.Name.Replace("Attribute", "");
 					Debug.LogErrorFormat("Method {0} with {1} attribute cannot be generic.", new object[]
 					{
 						method.Name,
@@ -244,7 +253,7 @@ namespace UnityEditor.Build
 					}
 					if (!flag)
 					{
-						string text3 = attribute.Name.Replace("Attribute", "");
+						string text3 = typeFromHandle.Name.Replace("Attribute", "");
 						string text4 = "static void " + method.Name + "(";
 						for (int j = 0; j < expectedArguments.Length; j++)
 						{
@@ -277,7 +286,7 @@ namespace UnityEditor.Build
 		}
 
 		[RequiredByNativeCode]
-		internal static void OnBuildPreProcess(BuildTarget platform, string path, bool strict)
+		internal static void OnBuildPreProcess(BuildReport report)
 		{
 			if (BuildPipelineInterfaces.buildPreprocessors != null)
 			{
@@ -285,12 +294,12 @@ namespace UnityEditor.Build
 				{
 					try
 					{
-						current.OnPreprocessBuild(platform, path);
+						current.OnPreprocessBuild(report);
 					}
 					catch (Exception exception)
 					{
 						Debug.LogException(exception);
-						if (strict)
+						if ((report.summary.options & BuildOptions.StrictMode) != BuildOptions.None || (report.summary.assetBundleOptions & BuildAssetBundleOptions.StrictMode) != BuildAssetBundleOptions.None)
 						{
 							break;
 						}
@@ -300,7 +309,7 @@ namespace UnityEditor.Build
 		}
 
 		[RequiredByNativeCode]
-		internal static void OnSceneProcess(Scene scene, bool strict)
+		internal static void OnSceneProcess(Scene scene, BuildReport report)
 		{
 			if (BuildPipelineInterfaces.sceneProcessors != null)
 			{
@@ -308,12 +317,12 @@ namespace UnityEditor.Build
 				{
 					try
 					{
-						current.OnProcessScene(scene);
+						current.OnProcessScene(scene, report);
 					}
 					catch (Exception exception)
 					{
 						Debug.LogException(exception);
-						if (strict)
+						if ((report.summary.options & BuildOptions.StrictMode) != BuildOptions.None || (report.summary.assetBundleOptions & BuildAssetBundleOptions.StrictMode) != BuildAssetBundleOptions.None)
 						{
 							break;
 						}
@@ -323,7 +332,7 @@ namespace UnityEditor.Build
 		}
 
 		[RequiredByNativeCode]
-		internal static void OnBuildPostProcess(BuildTarget platform, string path, bool strict)
+		internal static void OnBuildPostProcess(BuildReport report)
 		{
 			if (BuildPipelineInterfaces.buildPostprocessors != null)
 			{
@@ -331,15 +340,34 @@ namespace UnityEditor.Build
 				{
 					try
 					{
-						current.OnPostprocessBuild(platform, path);
+						current.OnPostprocessBuild(report);
 					}
 					catch (Exception exception)
 					{
 						Debug.LogException(exception);
-						if (strict)
+						if ((report.summary.options & BuildOptions.StrictMode) != BuildOptions.None || (report.summary.assetBundleOptions & BuildAssetBundleOptions.StrictMode) != BuildAssetBundleOptions.None)
 						{
 							break;
 						}
+					}
+				}
+			}
+		}
+
+		[RequiredByNativeCode]
+		internal static void OnActiveBuildTargetChanged(BuildTarget previousPlatform, BuildTarget newPlatform)
+		{
+			if (BuildPipelineInterfaces.buildTargetProcessors != null)
+			{
+				foreach (IActiveBuildTargetChanged current in BuildPipelineInterfaces.buildTargetProcessors)
+				{
+					try
+					{
+						current.OnActiveBuildTargetChanged(previousPlatform, newPlatform);
+					}
+					catch (Exception exception)
+					{
+						Debug.LogException(exception);
 					}
 				}
 			}
@@ -348,9 +376,11 @@ namespace UnityEditor.Build
 		[RequiredByNativeCode]
 		internal static void CleanupBuildCallbacks()
 		{
+			BuildPipelineInterfaces.buildTargetProcessors = null;
 			BuildPipelineInterfaces.buildPreprocessors = null;
 			BuildPipelineInterfaces.buildPostprocessors = null;
 			BuildPipelineInterfaces.sceneProcessors = null;
+			BuildPipelineInterfaces.previousFlags = BuildPipelineInterfaces.BuildCallbacks.None;
 		}
 	}
 }

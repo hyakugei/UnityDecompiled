@@ -17,13 +17,13 @@ namespace UnityEditor
 
 			public GUIStyle downSwatchOverlay = "Grad Down Swatch Overlay";
 
-			public GUIContent modeText = new GUIContent("Mode");
+			public GUIContent modeText = EditorGUIUtility.TrTextContent("Mode", null, null);
 
-			public GUIContent alphaText = new GUIContent("Alpha");
+			public GUIContent alphaText = EditorGUIUtility.TrTextContent("Alpha", null, null);
 
-			public GUIContent colorText = new GUIContent("Color");
+			public GUIContent colorText = EditorGUIUtility.TrTextContent("Color", null, null);
 
-			public GUIContent locationText = new GUIContent("Location");
+			public GUIContent locationText = EditorGUIUtility.TrTextContent("Location", null, null);
 
 			public GUIContent percentText = new GUIContent("%");
 
@@ -209,7 +209,7 @@ namespace UnityEditor
 				else
 				{
 					EditorGUI.BeginChangeCheck();
-					this.m_SelectedSwatch.m_Value = EditorGUI.ColorField(position2, GradientEditor.s_Styles.colorText, this.m_SelectedSwatch.m_Value, true, false, this.m_HDR, ColorPicker.defaultHDRConfig);
+					this.m_SelectedSwatch.m_Value = EditorGUI.ColorField(position2, GradientEditor.s_Styles.colorText, this.m_SelectedSwatch.m_Value, true, false, this.m_HDR);
 					if (EditorGUI.EndChangeCheck())
 					{
 						this.AssignBack();
@@ -258,7 +258,7 @@ namespace UnityEditor
 						if (current.clickCount == 2)
 						{
 							GUIUtility.keyboardControl = controlID;
-							ColorPicker.Show(GUIView.current, this.m_SelectedSwatch.m_Value, false, this.m_HDR, ColorPicker.defaultHDRConfig);
+							ColorPicker.Show(GUIView.current, this.m_SelectedSwatch.m_Value, false, this.m_HDR);
 							GUIUtility.ExitGUI();
 						}
 					}

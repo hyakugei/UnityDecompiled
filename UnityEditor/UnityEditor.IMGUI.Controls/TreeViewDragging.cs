@@ -69,10 +69,83 @@ namespace UnityEditor.IMGUI.Controls
 
 		public abstract DragAndDropVisualMode DoDrag(TreeViewItem parentItem, TreeViewItem targetItem, bool perform, TreeViewDragging.DropPosition dropPosition);
 
-		public virtual bool DragElement(TreeViewItem targetItem, Rect targetItemRect, bool firstItem)
+		protected float GetDropBetweenHalfHeight(TreeViewItem item, Rect itemRect)
+		{
+			return (!this.m_TreeView.data.CanBeParent(item)) ? (itemRect.height * 0.5f) : this.m_TreeView.gui.halfDropBetweenHeight;
+		}
+
+		protected bool TryGetDropPosition(TreeViewItem item, Rect itemRect, int row, out TreeViewDragging.DropPosition dropPosition)
+		{
+			Vector2 mousePosition = Event.current.mousePosition;
+			bool result;
+			if (itemRect.Contains(mousePosition))
+			{
+				float dropBetweenHalfHeight = this.GetDropBetweenHalfHeight(item, itemRect);
+				if (mousePosition.y >= itemRect.yMax - dropBetweenHalfHeight)
+				{
+					dropPosition = TreeViewDragging.DropPosition.Below;
+				}
+				else if (mousePosition.y <= itemRect.yMin + dropBetweenHalfHeight)
+				{
+					dropPosition = TreeViewDragging.DropPosition.Above;
+				}
+				else
+				{
+					dropPosition = TreeViewDragging.DropPosition.Upon;
+				}
+				result = true;
+			}
+			else
+			{
+				float height = this.m_TreeView.gui.halfDropBetweenHeight;
+				int num = row + 1;
+				if (num < this.m_TreeView.data.rowCount)
+				{
+					Rect rowRect = this.m_TreeView.gui.GetRowRect(num, itemRect.width);
+					bool flag = this.m_TreeView.data.CanBeParent(this.m_TreeView.data.GetItem(num));
+					if (flag)
+					{
+						height = this.m_TreeView.gui.halfDropBetweenHeight;
+					}
+					else
+					{
+						height = rowRect.height * 0.5f;
+					}
+				}
+				Rect rect = itemRect;
+				rect.y = itemRect.yMax;
+				rect.height = height;
+				if (rect.Contains(mousePosition))
+				{
+					dropPosition = TreeViewDragging.DropPosition.Below;
+					result = true;
+				}
+				else
+				{
+					if (row == 0)
+					{
+						Rect rect2 = itemRect;
+						rect2.yMin -= this.m_TreeView.gui.halfDropBetweenHeight;
+						rect2.height = this.m_TreeView.gui.halfDropBetweenHeight;
+						if (rect2.Contains(mousePosition))
+						{
+							dropPosition = TreeViewDragging.DropPosition.Above;
+							result = true;
+							return result;
+						}
+					}
+					dropPosition = TreeViewDragging.DropPosition.Below;
+					result = false;
+				}
+			}
+			return result;
+		}
+
+		public virtual bool DragElement(TreeViewItem targetItem, Rect targetItemRect, int row)
 		{
 			bool flag = Event.current.type == EventType.DragPerform;
 			bool result;
+			TreeViewDragging.DropPosition dropPosition;
 			if (targetItem == null)
 			{
 				if (this.m_DropData != null)
@@ -87,112 +160,87 @@ namespace UnityEditor.IMGUI.Controls
 				}
 				result = false;
 			}
+			else if (!this.TryGetDropPosition(targetItem, targetItemRect, row, out dropPosition))
+			{
+				result = false;
+			}
 			else
 			{
-				Vector2 mousePosition = Event.current.mousePosition;
-				bool flag2 = this.m_TreeView.data.CanBeParent(targetItem);
-				Rect rect = targetItemRect;
-				float num = (!flag2) ? (targetItemRect.height * 0.5f) : this.m_TreeView.gui.halfDropBetweenHeight;
-				if (firstItem)
+				TreeViewItem treeViewItem = null;
+				switch (dropPosition)
 				{
-					rect.yMin -= num;
-				}
-				rect.yMax += num;
-				if (!rect.Contains(mousePosition))
-				{
-					result = false;
-				}
-				else
-				{
-					TreeViewDragging.DropPosition dropPosition;
-					if (mousePosition.y >= targetItemRect.yMax - num)
+				case TreeViewDragging.DropPosition.Upon:
+					treeViewItem = targetItem;
+					break;
+				case TreeViewDragging.DropPosition.Below:
+					if (this.m_TreeView.data.IsExpanded(targetItem) && targetItem.hasChildren)
 					{
-						dropPosition = TreeViewDragging.DropPosition.Below;
-					}
-					else if (firstItem && mousePosition.y <= targetItemRect.yMin + num)
-					{
+						treeViewItem = targetItem;
+						targetItem = targetItem.children[0];
 						dropPosition = TreeViewDragging.DropPosition.Above;
 					}
 					else
 					{
-						dropPosition = ((!flag2) ? TreeViewDragging.DropPosition.Above : TreeViewDragging.DropPosition.Upon);
-					}
-					TreeViewItem treeViewItem = null;
-					switch (dropPosition)
-					{
-					case TreeViewDragging.DropPosition.Upon:
-						treeViewItem = targetItem;
-						break;
-					case TreeViewDragging.DropPosition.Below:
-						if (this.m_TreeView.data.IsExpanded(targetItem) && targetItem.hasChildren)
-						{
-							treeViewItem = targetItem;
-							targetItem = targetItem.children[0];
-							dropPosition = TreeViewDragging.DropPosition.Above;
-						}
-						else
-						{
-							treeViewItem = targetItem.parent;
-						}
-						break;
-					case TreeViewDragging.DropPosition.Above:
 						treeViewItem = targetItem.parent;
-						break;
 					}
-					DragAndDropVisualMode dragAndDropVisualMode = DragAndDropVisualMode.None;
-					if (flag)
+					break;
+				case TreeViewDragging.DropPosition.Above:
+					treeViewItem = targetItem.parent;
+					break;
+				}
+				DragAndDropVisualMode dragAndDropVisualMode = DragAndDropVisualMode.None;
+				if (flag)
+				{
+					if (dropPosition == TreeViewDragging.DropPosition.Upon)
 					{
-						if (dropPosition == TreeViewDragging.DropPosition.Upon)
-						{
-							dragAndDropVisualMode = this.DoDrag(targetItem, targetItem, true, dropPosition);
-						}
-						if (dragAndDropVisualMode == DragAndDropVisualMode.None && treeViewItem != null)
-						{
-							dragAndDropVisualMode = this.DoDrag(treeViewItem, targetItem, true, dropPosition);
-						}
-						if (dragAndDropVisualMode != DragAndDropVisualMode.None)
-						{
-							this.FinalizeDragPerformed(false);
-						}
-						else
-						{
-							this.DragCleanup(true);
-							this.m_TreeView.NotifyListenersThatDragEnded(null, false);
-						}
+						dragAndDropVisualMode = this.DoDrag(targetItem, targetItem, true, dropPosition);
+					}
+					if (dragAndDropVisualMode == DragAndDropVisualMode.None && treeViewItem != null)
+					{
+						dragAndDropVisualMode = this.DoDrag(treeViewItem, targetItem, true, dropPosition);
+					}
+					if (dragAndDropVisualMode != DragAndDropVisualMode.None)
+					{
+						this.FinalizeDragPerformed(false);
 					}
 					else
 					{
-						if (this.m_DropData == null)
-						{
-							this.m_DropData = new TreeViewDragging.DropData();
-						}
-						this.m_DropData.dropTargetControlID = 0;
-						this.m_DropData.rowMarkerControlID = 0;
-						int itemControlID = TreeViewController.GetItemControlID(targetItem);
-						this.HandleAutoExpansion(itemControlID, targetItem, targetItemRect, num, mousePosition);
-						if (dropPosition == TreeViewDragging.DropPosition.Upon)
-						{
-							dragAndDropVisualMode = this.DoDrag(targetItem, targetItem, false, dropPosition);
-						}
+						this.DragCleanup(true);
+						this.m_TreeView.NotifyListenersThatDragEnded(null, false);
+					}
+				}
+				else
+				{
+					if (this.m_DropData == null)
+					{
+						this.m_DropData = new TreeViewDragging.DropData();
+					}
+					this.m_DropData.dropTargetControlID = 0;
+					this.m_DropData.rowMarkerControlID = 0;
+					int itemControlID = TreeViewController.GetItemControlID(targetItem);
+					this.HandleAutoExpansion(itemControlID, targetItem, targetItemRect);
+					if (dropPosition == TreeViewDragging.DropPosition.Upon)
+					{
+						dragAndDropVisualMode = this.DoDrag(targetItem, targetItem, false, dropPosition);
+					}
+					if (dragAndDropVisualMode != DragAndDropVisualMode.None)
+					{
+						this.m_DropData.dropTargetControlID = itemControlID;
+						DragAndDrop.visualMode = dragAndDropVisualMode;
+					}
+					else if (targetItem != null && treeViewItem != null)
+					{
+						dragAndDropVisualMode = this.DoDrag(treeViewItem, targetItem, false, dropPosition);
 						if (dragAndDropVisualMode != DragAndDropVisualMode.None)
 						{
-							this.m_DropData.dropTargetControlID = itemControlID;
+							this.drawRowMarkerAbove = (dropPosition == TreeViewDragging.DropPosition.Above);
+							this.m_DropData.rowMarkerControlID = itemControlID;
 							DragAndDrop.visualMode = dragAndDropVisualMode;
 						}
-						else if (targetItem != null && treeViewItem != null)
-						{
-							dragAndDropVisualMode = this.DoDrag(treeViewItem, targetItem, false, dropPosition);
-							if (dragAndDropVisualMode != DragAndDropVisualMode.None)
-							{
-								this.drawRowMarkerAbove = (dropPosition == TreeViewDragging.DropPosition.Above);
-								this.m_DropData.rowMarkerControlID = itemControlID;
-								DragAndDrop.visualMode = dragAndDropVisualMode;
-							}
-						}
 					}
-					Event.current.Use();
-					result = true;
 				}
+				Event.current.Use();
+				result = true;
 			}
 			return result;
 		}
@@ -218,16 +266,18 @@ namespace UnityEditor.IMGUI.Controls
 			this.m_TreeView.NotifyListenersThatDragEnded(array, draggedItemsFromOwnTreeView);
 		}
 
-		protected virtual void HandleAutoExpansion(int itemControlID, TreeViewItem targetItem, Rect targetItemRect, float betweenHalfHeight, Vector2 currentMousePos)
+		protected virtual void HandleAutoExpansion(int itemControlID, TreeViewItem targetItem, Rect targetItemRect)
 		{
+			Vector2 mousePosition = Event.current.mousePosition;
 			float contentIndent = this.m_TreeView.gui.GetContentIndent(targetItem);
-			Rect rect = new Rect(targetItemRect.x + contentIndent, targetItemRect.y + betweenHalfHeight, targetItemRect.width - contentIndent, targetItemRect.height - betweenHalfHeight * 2f);
-			bool flag = rect.Contains(currentMousePos);
-			if (itemControlID != this.m_DropData.lastControlID || !flag || this.m_DropData.expandItemBeginPosition != currentMousePos)
+			float dropBetweenHalfHeight = this.GetDropBetweenHalfHeight(targetItem, targetItemRect);
+			Rect rect = new Rect(targetItemRect.x + contentIndent, targetItemRect.y + dropBetweenHalfHeight, targetItemRect.width - contentIndent, targetItemRect.height - dropBetweenHalfHeight * 2f);
+			bool flag = rect.Contains(mousePosition);
+			if (itemControlID != this.m_DropData.lastControlID || !flag || this.m_DropData.expandItemBeginPosition != mousePosition)
 			{
 				this.m_DropData.lastControlID = itemControlID;
 				this.m_DropData.expandItemBeginTimer = (double)Time.realtimeSinceStartup;
-				this.m_DropData.expandItemBeginPosition = currentMousePos;
+				this.m_DropData.expandItemBeginPosition = mousePosition;
 			}
 			bool flag2 = (double)Time.realtimeSinceStartup - this.m_DropData.expandItemBeginTimer > 0.7;
 			bool flag3 = flag && flag2;

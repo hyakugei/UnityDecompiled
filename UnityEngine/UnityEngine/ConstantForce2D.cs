@@ -1,6 +1,5 @@
 using System;
 using System.Runtime.CompilerServices;
-using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
@@ -12,12 +11,12 @@ namespace UnityEngine
 			get
 			{
 				Vector2 result;
-				this.INTERNAL_get_force(out result);
+				this.get_force_Injected(out result);
 				return result;
 			}
 			set
 			{
-				this.INTERNAL_set_force(ref value);
+				this.set_force_Injected(ref value);
 			}
 		}
 
@@ -26,39 +25,33 @@ namespace UnityEngine
 			get
 			{
 				Vector2 result;
-				this.INTERNAL_get_relativeForce(out result);
+				this.get_relativeForce_Injected(out result);
 				return result;
 			}
 			set
 			{
-				this.INTERNAL_set_relativeForce(ref value);
+				this.set_relativeForce_Injected(ref value);
 			}
 		}
 
 		public extern float torque
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void INTERNAL_get_force(out Vector2 value);
+		private extern void get_force_Injected(out Vector2 ret);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void INTERNAL_set_force(ref Vector2 value);
+		private extern void set_force_Injected(ref Vector2 value);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void INTERNAL_get_relativeForce(out Vector2 value);
+		private extern void get_relativeForce_Injected(out Vector2 ret);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void INTERNAL_set_relativeForce(ref Vector2 value);
+		private extern void set_relativeForce_Injected(ref Vector2 value);
 	}
 }

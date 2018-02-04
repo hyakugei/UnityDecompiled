@@ -1,7 +1,6 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using UnityEngine.Scripting;
 
 namespace UnityEngine.Networking
 {
@@ -10,7 +9,7 @@ namespace UnityEngine.Networking
 	{
 		public DownloadHandlerScript()
 		{
-			base.InternalCreateScript();
+			this.InternalCreateScript();
 		}
 
 		public DownloadHandlerScript(byte[] preallocatedBuffer)
@@ -19,12 +18,23 @@ namespace UnityEngine.Networking
 			{
 				throw new ArgumentException("Cannot create a preallocated-buffer DownloadHandlerScript backed by a null or zero-length array");
 			}
-			base.InternalCreateScript();
-			this.InternalSetPreallocatedBuffer(preallocatedBuffer);
+			this.InternalCreateScript(preallocatedBuffer);
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void InternalSetPreallocatedBuffer(byte[] buffer);
+		private static extern IntPtr Create(DownloadHandlerScript obj);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern IntPtr CreatePreallocated(DownloadHandlerScript obj, byte[] preallocatedBuffer);
+
+		private void InternalCreateScript()
+		{
+			this.m_Ptr = DownloadHandlerScript.Create(this);
+		}
+
+		private void InternalCreateScript(byte[] preallocatedBuffer)
+		{
+			this.m_Ptr = DownloadHandlerScript.CreatePreallocated(this, preallocatedBuffer);
+		}
 	}
 }

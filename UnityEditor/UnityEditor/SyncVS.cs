@@ -4,7 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
+using UnityEditor.Build;
 using UnityEditor.Utils;
 using UnityEditor.VisualStudioIntegration;
 using UnityEditorInternal;
@@ -21,7 +21,7 @@ namespace UnityEditor
 			{
 				get
 				{
-					string externalScriptEditor = InternalEditorUtility.GetExternalScriptEditor();
+					string externalScriptEditor = ScriptEditorUtility.GetExternalScriptEditor();
 					int result;
 					if (SyncVS.InstalledVisualStudios.ContainsKey(UnityEditor.VisualStudioVersion.VisualStudio2008) && externalScriptEditor != string.Empty && SyncVS.PathsAreEquivalent(SyncVS.InstalledVisualStudios[UnityEditor.VisualStudioVersion.VisualStudio2008].Last<VisualStudioPath>().Path, externalScriptEditor))
 					{
@@ -99,12 +99,25 @@ namespace UnityEditor
 			}
 		}
 
+		private class BuildTargetChangedHandler : IActiveBuildTargetChanged, IOrderedCallback
+		{
+			public int callbackOrder
+			{
+				get
+				{
+					return 0;
+				}
+			}
+
+			public void OnActiveBuildTargetChanged(BuildTarget oldTarget, BuildTarget newTarget)
+			{
+				SyncVS.SyncVisualStudioProjectIfItAlreadyExists();
+			}
+		}
+
 		private static bool s_AlreadySyncedThisDomainReload;
 
 		private static readonly SolutionSynchronizer Synchronizer;
-
-		[CompilerGenerated]
-		private static Action <>f__mg$cache0;
 
 		internal static Dictionary<VisualStudioVersion, VisualStudioPath[]> InstalledVisualStudios
 		{
@@ -115,12 +128,6 @@ namespace UnityEditor
 		static SyncVS()
 		{
 			SyncVS.Synchronizer = new SolutionSynchronizer(Directory.GetParent(Application.dataPath).FullName, new SyncVS.SolutionSynchronizationSettings());
-			Delegate arg_41_0 = EditorUserBuildSettings.activeBuildTargetChanged;
-			if (SyncVS.<>f__mg$cache0 == null)
-			{
-				SyncVS.<>f__mg$cache0 = new Action(SyncVS.SyncVisualStudioProjectIfItAlreadyExists);
-			}
-			EditorUserBuildSettings.activeBuildTargetChanged = (Action)Delegate.Combine(arg_41_0, SyncVS.<>f__mg$cache0);
 			try
 			{
 				SyncVS.InstalledVisualStudios = (SyncVS.GetInstalledVisualStudios() as Dictionary<VisualStudioVersion, VisualStudioPath[]>);
@@ -291,15 +298,17 @@ namespace UnityEditor
 						disposable.Dispose();
 					}
 				}
-				string[] array = VisualStudioUtil.FindVisualStudioDevEnvPaths(15, "Microsoft.VisualStudio.Workload.ManagedGame");
-				if (array != null && array.Length > 0)
+				string[] requiredWorkloads = new string[]
 				{
-					VisualStudioPath[] array2 = new VisualStudioPath[array.Length / 2];
-					for (int i = 0; i < array.Length / 2; i++)
-					{
-						array2[i] = new VisualStudioPath(array[i * 2], array[i * 2 + 1]);
-					}
-					dictionary[VisualStudioVersion.VisualStudio2017] = array2;
+					"Microsoft.VisualStudio.Workload.ManagedGame"
+				};
+				string[] rawDevEnvPaths = VisualStudioUtil.FindVisualStudioDevEnvPaths(15, requiredWorkloads);
+				VisualStudioPath[] array = (from vs in VisualStudioUtil.ParseRawDevEnvPaths(rawDevEnvPaths)
+				where !requiredWorkloads.Except(vs.Workloads).Any<string>()
+				select new VisualStudioPath(vs.DevEnvPath, vs.Edition)).ToArray<VisualStudioPath>();
+				if (array.Length != 0)
+				{
+					dictionary[VisualStudioVersion.VisualStudio2017] = array;
 				}
 			}
 			return dictionary;

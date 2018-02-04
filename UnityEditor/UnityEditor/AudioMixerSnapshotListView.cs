@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using UnityEditor.Audio;
 using UnityEditorInternal;
 using UnityEngine;
+using UnityEngine.Audio;
 
 namespace UnityEditor
 {
@@ -13,11 +14,11 @@ namespace UnityEditor
 		{
 			public GUIContent starIcon = new GUIContent(EditorGUIUtility.FindTexture("Favorite"), "Start snapshot");
 
-			public GUIContent header = new GUIContent("Snapshots", "A snapshot is a set of values for all parameters in the mixer. When using the mixer you modify parameters in the selected snapshot. Blend between multiple snapshots at runtime.");
+			public GUIContent header = EditorGUIUtility.TrTextContent("Snapshots", "A snapshot is a set of values for all parameters in the mixer. When using the mixer you modify parameters in the selected snapshot. Blend between multiple snapshots at runtime.", null);
 
 			public GUIContent addButton = new GUIContent("+");
 
-			public Texture2D snapshotsIcon = EditorGUIUtility.FindTexture("AudioMixerSnapshot Icon");
+			public Texture2D snapshotsIcon = EditorGUIUtility.FindTexture(typeof(AudioMixerSnapshot));
 		}
 
 		internal class SnapshotMenu
@@ -49,39 +50,39 @@ namespace UnityEditor
 					snapshot = snapshot,
 					list = list
 				};
-				GenericMenu arg_47_0 = genericMenu;
-				GUIContent arg_47_1 = new GUIContent("Set as start Snapshot");
-				bool arg_47_2 = false;
+				GenericMenu arg_49_0 = genericMenu;
+				GUIContent arg_49_1 = EditorGUIUtility.TrTextContent("Set as start Snapshot", null, null);
+				bool arg_49_2 = false;
 				if (AudioMixerSnapshotListView.SnapshotMenu.<>f__mg$cache0 == null)
 				{
 					AudioMixerSnapshotListView.SnapshotMenu.<>f__mg$cache0 = new GenericMenu.MenuFunction2(AudioMixerSnapshotListView.SnapshotMenu.SetAsStartupSnapshot);
 				}
-				arg_47_0.AddItem(arg_47_1, arg_47_2, AudioMixerSnapshotListView.SnapshotMenu.<>f__mg$cache0, userData);
+				arg_49_0.AddItem(arg_49_1, arg_49_2, AudioMixerSnapshotListView.SnapshotMenu.<>f__mg$cache0, userData);
 				genericMenu.AddSeparator("");
-				GenericMenu arg_81_0 = genericMenu;
-				GUIContent arg_81_1 = new GUIContent("Rename");
-				bool arg_81_2 = false;
+				GenericMenu arg_85_0 = genericMenu;
+				GUIContent arg_85_1 = EditorGUIUtility.TrTextContent("Rename", null, null);
+				bool arg_85_2 = false;
 				if (AudioMixerSnapshotListView.SnapshotMenu.<>f__mg$cache1 == null)
 				{
 					AudioMixerSnapshotListView.SnapshotMenu.<>f__mg$cache1 = new GenericMenu.MenuFunction2(AudioMixerSnapshotListView.SnapshotMenu.Rename);
 				}
-				arg_81_0.AddItem(arg_81_1, arg_81_2, AudioMixerSnapshotListView.SnapshotMenu.<>f__mg$cache1, userData);
-				GenericMenu arg_B0_0 = genericMenu;
-				GUIContent arg_B0_1 = new GUIContent("Duplicate");
-				bool arg_B0_2 = false;
+				arg_85_0.AddItem(arg_85_1, arg_85_2, AudioMixerSnapshotListView.SnapshotMenu.<>f__mg$cache1, userData);
+				GenericMenu arg_B6_0 = genericMenu;
+				GUIContent arg_B6_1 = EditorGUIUtility.TrTextContent("Duplicate", null, null);
+				bool arg_B6_2 = false;
 				if (AudioMixerSnapshotListView.SnapshotMenu.<>f__mg$cache2 == null)
 				{
 					AudioMixerSnapshotListView.SnapshotMenu.<>f__mg$cache2 = new GenericMenu.MenuFunction2(AudioMixerSnapshotListView.SnapshotMenu.Duplicate);
 				}
-				arg_B0_0.AddItem(arg_B0_1, arg_B0_2, AudioMixerSnapshotListView.SnapshotMenu.<>f__mg$cache2, userData);
-				GenericMenu arg_DF_0 = genericMenu;
-				GUIContent arg_DF_1 = new GUIContent("Delete");
-				bool arg_DF_2 = false;
+				arg_B6_0.AddItem(arg_B6_1, arg_B6_2, AudioMixerSnapshotListView.SnapshotMenu.<>f__mg$cache2, userData);
+				GenericMenu arg_E7_0 = genericMenu;
+				GUIContent arg_E7_1 = EditorGUIUtility.TrTextContent("Delete", null, null);
+				bool arg_E7_2 = false;
 				if (AudioMixerSnapshotListView.SnapshotMenu.<>f__mg$cache3 == null)
 				{
 					AudioMixerSnapshotListView.SnapshotMenu.<>f__mg$cache3 = new GenericMenu.MenuFunction2(AudioMixerSnapshotListView.SnapshotMenu.Delete);
 				}
-				arg_DF_0.AddItem(arg_DF_1, arg_DF_2, AudioMixerSnapshotListView.SnapshotMenu.<>f__mg$cache3, userData);
+				arg_E7_0.AddItem(arg_E7_1, arg_E7_2, AudioMixerSnapshotListView.SnapshotMenu.<>f__mg$cache3, userData);
 				genericMenu.DropDown(buttonRect);
 			}
 
@@ -338,6 +339,7 @@ namespace UnityEditor
 
 		private void SetAsStartupSnapshot(AudioMixerSnapshotController snapshot)
 		{
+			Undo.RecordObject(this.m_Controller, "Set start snapshot");
 			this.m_Controller.startSnapshot = snapshot;
 		}
 

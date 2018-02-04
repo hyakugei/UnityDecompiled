@@ -17,8 +17,6 @@ namespace UnityEditor
 		[SerializeField]
 		private Vector2 m_FullWindowSize = new Vector2(80f, 60f);
 
-		private Rect m_StartRect;
-
 		[SerializeField]
 		private Rect m_TargetRect;
 
@@ -31,8 +29,6 @@ namespace UnityEditor
 		private bool m_TabVisible;
 
 		private float m_TargetAlpha = 1f;
-
-		private bool m_DidResizeOnLastLayout;
 
 		private DropInfo.Type m_Type = (DropInfo.Type)(-1);
 
@@ -145,7 +141,7 @@ namespace UnityEditor
 			this.m_Window.position = screenPosition;
 		}
 
-		private void OnGUI()
+		protected override void OldOnGUI()
 		{
 			if (PaneDragTab.s_PaneStyle == null)
 			{

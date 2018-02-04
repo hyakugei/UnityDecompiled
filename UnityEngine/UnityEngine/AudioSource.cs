@@ -8,8 +8,12 @@ using UnityEngine.Scripting;
 namespace UnityEngine
 {
 	[RequireComponent(typeof(Transform))]
-	public sealed class AudioSource : Behaviour
+	public sealed class AudioSource : AudioBehaviour
 	{
+		internal AudioSourceExtension spatializerExtension = null;
+
+		internal AudioSourceExtension ambisonicExtension = null;
+
 		[EditorBrowsable(EditorBrowsableState.Never), Obsolete("AudioSource.panLevel has been deprecated. Use AudioSource.spatialBlend instead (UnityUpgradable) -> spatialBlend", true)]
 		public float panLevel
 		{
@@ -180,7 +184,7 @@ namespace UnityEngine
 			set;
 		}
 
-		public extern bool spatialize
+		internal extern bool spatializeInternal
 		{
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
@@ -188,6 +192,29 @@ namespace UnityEngine
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
+		}
+
+		public bool spatialize
+		{
+			get
+			{
+				return this.spatializeInternal;
+			}
+			set
+			{
+				if (this.spatializeInternal != value)
+				{
+					this.spatializeInternal = value;
+					if (value)
+					{
+						AudioSourceExtension audioSourceExtension = AudioExtensionManager.AddSpatializerExtension(this);
+						if (audioSourceExtension != null && this.isPlaying)
+						{
+							AudioExtensionManager.GetReadyToPlay(audioSourceExtension);
+						}
+					}
+				}
+			}
 		}
 
 		public extern bool spatializePostEffects
@@ -392,15 +419,35 @@ namespace UnityEngine
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern void INTERNAL_CALL_UnPause(AudioSource self);
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern void PlayOneShot(AudioClip clip, [UnityEngine.Internal.DefaultValue("1.0F")] float volumeScale);
-
 		[ExcludeFromDocs]
 		public void PlayOneShot(AudioClip clip)
 		{
 			float volumeScale = 1f;
 			this.PlayOneShot(clip, volumeScale);
+		}
+
+		public void PlayOneShot(AudioClip clip, [UnityEngine.Internal.DefaultValue("1.0F")] float volumeScale)
+		{
+			if (clip != null && clip.ambisonic)
+			{
+				AudioSourceExtension audioSourceExtension = AudioExtensionManager.AddAmbisonicDecoderExtension(this);
+				if (audioSourceExtension != null)
+				{
+					AudioExtensionManager.GetReadyToPlay(audioSourceExtension);
+				}
+			}
+			this.PlayOneShotHelper(clip, volumeScale);
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void PlayOneShotHelper(AudioClip clip, [UnityEngine.Internal.DefaultValue("1.0F")] float volumeScale);
+
+		[ExcludeFromDocs]
+		private void PlayOneShotHelper(AudioClip clip)
+		{
+			float volumeScale = 1f;
+			this.PlayOneShotHelper(clip, volumeScale);
 		}
 
 		[ExcludeFromDocs]
@@ -466,10 +513,102 @@ namespace UnityEngine
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern int GetNumExtensionProperties();
+
+		internal int GetNumExtensionPropertiesForThisExtension(PropertyName extensionName)
+		{
+			return AudioSource.INTERNAL_CALL_GetNumExtensionPropertiesForThisExtension(this, ref extensionName);
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern int INTERNAL_CALL_GetNumExtensionPropertiesForThisExtension(AudioSource self, ref PropertyName extensionName);
+
+		internal PropertyName ReadExtensionName(int sourceIndex)
+		{
+			PropertyName result;
+			AudioSource.INTERNAL_CALL_ReadExtensionName(this, sourceIndex, out result);
+			return result;
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void INTERNAL_CALL_ReadExtensionName(AudioSource self, int sourceIndex, out PropertyName value);
+
+		internal PropertyName ReadExtensionPropertyName(int sourceIndex)
+		{
+			PropertyName result;
+			AudioSource.INTERNAL_CALL_ReadExtensionPropertyName(this, sourceIndex, out result);
+			return result;
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void INTERNAL_CALL_ReadExtensionPropertyName(AudioSource self, int sourceIndex, out PropertyName value);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern float ReadExtensionPropertyValue(int sourceIndex);
+
+		internal bool ReadExtensionProperty(PropertyName extensionName, PropertyName propertyName, ref float propertyValue)
+		{
+			return AudioSource.INTERNAL_CALL_ReadExtensionProperty(this, ref extensionName, ref propertyName, ref propertyValue);
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern bool INTERNAL_CALL_ReadExtensionProperty(AudioSource self, ref PropertyName extensionName, ref PropertyName propertyName, ref float propertyValue);
+
+		internal void WriteExtensionProperty(PropertyName pluginName, PropertyName extensionName, PropertyName propertyName, float propertyValue)
+		{
+			AudioSource.INTERNAL_CALL_WriteExtensionProperty(this, ref pluginName, ref extensionName, ref propertyName, propertyValue);
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void INTERNAL_CALL_WriteExtensionProperty(AudioSource self, ref PropertyName pluginName, ref PropertyName extensionName, ref PropertyName propertyName, float propertyValue);
+
+		internal void ClearExtensionProperties(PropertyName extensionName)
+		{
+			AudioSource.INTERNAL_CALL_ClearExtensionProperties(this, ref extensionName);
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void INTERNAL_CALL_ClearExtensionProperties(AudioSource self, ref PropertyName extensionName);
+
+		internal AudioSourceExtension AddSpatializerExtension(Type extensionType)
+		{
+			if (this.spatializerExtension == null)
+			{
+				this.spatializerExtension = (ScriptableObject.CreateInstance(extensionType) as AudioSourceExtension);
+			}
+			return this.spatializerExtension;
+		}
+
+		internal AudioSourceExtension AddAmbisonicExtension(Type extensionType)
+		{
+			if (this.ambisonicExtension == null)
+			{
+				this.ambisonicExtension = (ScriptableObject.CreateInstance(extensionType) as AudioSourceExtension);
+			}
+			return this.ambisonicExtension;
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern bool SetSpatializerFloat(int index, float value);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern bool GetSpatializerFloat(int index, out float value);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public extern bool SetAmbisonicDecoderFloat(int index, float value);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public extern bool GetAmbisonicDecoderFloat(int index, out float value);
 	}
 }

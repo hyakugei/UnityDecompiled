@@ -6,11 +6,9 @@ namespace UnityEditor
 {
 	internal class GUIClipInspectView : BaseInspectView
 	{
-		private List<IMGUIClipInstruction> m_ClipList = new List<IMGUIClipInstruction>();
-
-		private IMGUIClipInstruction m_Instruction;
-
 		private Vector2 m_StacktraceScrollPos = default(Vector2);
+
+		private List<IMGUIClipInstruction> m_ClipList = new List<IMGUIClipInstruction>();
 
 		public GUIClipInspectView(GUIViewDebuggerWindow guiViewDebuggerWindow) : base(guiViewDebuggerWindow)
 		{
@@ -20,6 +18,19 @@ namespace UnityEditor
 		{
 			this.m_ClipList.Clear();
 			GUIViewDebuggerHelper.GetClipInstructions(this.m_ClipList);
+		}
+
+		public override void ShowOverlay()
+		{
+			if (!this.isInstructionSelected)
+			{
+				base.debuggerWindow.ClearInstructionHighlighter();
+			}
+			else
+			{
+				IMGUIClipInstruction iMGUIClipInstruction = this.m_ClipList[base.listViewState.row];
+				base.debuggerWindow.HighlightInstruction(base.debuggerWindow.inspected, iMGUIClipInstruction.unclippedScreenRect, GUIStyle.none);
+			}
 		}
 
 		protected override int GetInstructionCount()
@@ -34,19 +45,14 @@ namespace UnityEditor
 			GUIContent content = GUIContent.Temp(instructionListName);
 			Rect position = el.position;
 			position.xMin += (float)(iMGUIClipInstruction.level * 12);
-			GUIViewDebuggerWindow.s_Styles.listItemBackground.Draw(el.position, false, false, this.m_ListViewState.row == el.row, false);
-			GUIViewDebuggerWindow.s_Styles.listItem.Draw(position, content, id, this.m_ListViewState.row == el.row);
-		}
-
-		internal override void OnDoubleClickInstruction(int index)
-		{
-			throw new NotImplementedException();
+			GUIViewDebuggerWindow.Styles.listItemBackground.Draw(el.position, false, false, base.listViewState.row == el.row, false);
+			GUIViewDebuggerWindow.Styles.listItem.Draw(position, content, id, base.listViewState.row == el.row);
 		}
 
 		protected override void DrawInspectedStacktrace()
 		{
-			IMGUIClipInstruction iMGUIClipInstruction = this.m_ClipList[this.m_ListViewState.row];
-			this.m_StacktraceScrollPos = EditorGUILayout.BeginScrollView(this.m_StacktraceScrollPos, GUIViewDebuggerWindow.s_Styles.stacktraceBackground, new GUILayoutOption[]
+			IMGUIClipInstruction iMGUIClipInstruction = this.m_ClipList[base.listViewState.row];
+			this.m_StacktraceScrollPos = EditorGUILayout.BeginScrollView(this.m_StacktraceScrollPos, GUIViewDebuggerWindow.Styles.stacktraceBackground, new GUILayoutOption[]
 			{
 				GUILayout.ExpandHeight(false)
 			});
@@ -54,32 +60,13 @@ namespace UnityEditor
 			EditorGUILayout.EndScrollView();
 		}
 
-		internal override void DoDrawSelectedInstructionDetails(int index)
+		internal override void DoDrawSelectedInstructionDetails(int selectedInstructionIndex)
 		{
-			IMGUIClipInstruction iMGUIClipInstruction = this.m_ClipList[index];
-			GUILayout.Label("RenderOffset:", new GUILayoutOption[0]);
-			GUILayout.Label(iMGUIClipInstruction.renderOffset.ToString(), new GUILayoutOption[0]);
-			GUILayout.Label("ResetOffset:", new GUILayoutOption[0]);
-			GUILayout.Label(iMGUIClipInstruction.resetOffset.ToString(), new GUILayoutOption[0]);
-			GUILayout.Label("screenRect:", new GUILayoutOption[0]);
-			GUILayout.Label(iMGUIClipInstruction.screenRect.ToString(), new GUILayoutOption[0]);
-			GUILayout.Label("scrollOffset:", new GUILayoutOption[0]);
-			GUILayout.Label(iMGUIClipInstruction.scrollOffset.ToString(), new GUILayoutOption[0]);
-		}
-
-		internal override void OnSelectedInstructionChanged(int index)
-		{
-			this.m_ListViewState.row = index;
-			this.ShowOverlay();
-		}
-
-		public override void ShowOverlay()
-		{
-			if (this.HasSelectedinstruction())
-			{
-				IMGUIClipInstruction iMGUIClipInstruction = this.m_ClipList[this.m_ListViewState.row];
-				this.m_GuiViewDebuggerWindow.HighlightInstruction(this.m_GuiViewDebuggerWindow.m_Inspected, iMGUIClipInstruction.unclippedScreenRect, GUIStyle.none);
-			}
+			IMGUIClipInstruction iMGUIClipInstruction = this.m_ClipList[selectedInstructionIndex];
+			base.DoSelectableInstructionDataField("RenderOffset", iMGUIClipInstruction.renderOffset.ToString());
+			base.DoSelectableInstructionDataField("ResetOffset", iMGUIClipInstruction.resetOffset.ToString());
+			base.DoSelectableInstructionDataField("screenRect", iMGUIClipInstruction.screenRect.ToString());
+			base.DoSelectableInstructionDataField("scrollOffset", iMGUIClipInstruction.scrollOffset.ToString());
 		}
 
 		internal override string GetInstructionListName(int index)
@@ -98,6 +85,17 @@ namespace UnityEditor
 				result = methodName;
 			}
 			return result;
+		}
+
+		internal override void OnDoubleClickInstruction(int index)
+		{
+			throw new NotImplementedException();
+		}
+
+		internal override void OnSelectedInstructionChanged(int index)
+		{
+			base.listViewState.row = index;
+			this.ShowOverlay();
 		}
 
 		private int GetInterestingFrameIndex(StackFrame[] stacktrace)

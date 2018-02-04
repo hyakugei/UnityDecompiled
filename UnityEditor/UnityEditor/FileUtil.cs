@@ -4,55 +4,111 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using UnityEngine;
-using UnityEngine.Scripting;
 
 namespace UnityEditor
 {
-	public sealed class FileUtil
+	public class FileUtil
 	{
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern bool DeleteFileOrDirectory(string path);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern void CopyFileOrDirectory(string from, string to);
+		private static extern bool PathExists(string path);
 
-		[GeneratedByOldBindingsGenerator]
+		public static void CopyFileOrDirectory(string source, string dest)
+		{
+			FileUtil.CheckForValidSourceAndDestinationArgumentsAndRaiseAnExceptionWhenNullOrEmpty(source, dest);
+			if (FileUtil.PathExists(dest))
+			{
+				throw new IOException(string.Format("Failed to Copy File / Directory from '{0}' to '{1}': destination path already exists.", source, dest));
+			}
+			if (!FileUtil.CopyFileOrDirectoryInternal(source, dest))
+			{
+				throw new IOException(string.Format("Failed to Copy File / Directory from '{0}' to '{1}'.", source, dest));
+			}
+		}
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern void CopyFileOrDirectoryFollowSymlinks(string from, string to);
+		private static extern bool CopyFileOrDirectoryInternal(string source, string dest);
 
-		[GeneratedByOldBindingsGenerator]
+		public static void CopyFileOrDirectoryFollowSymlinks(string source, string dest)
+		{
+			FileUtil.CheckForValidSourceAndDestinationArgumentsAndRaiseAnExceptionWhenNullOrEmpty(source, dest);
+			if (FileUtil.PathExists(dest))
+			{
+				throw new IOException(string.Format("Failed to Copy File / Directory from '{0}' to '{1}': destination path already exists.", source, dest));
+			}
+			if (!FileUtil.CopyFileOrDirectoryFollowSymlinksInternal(source, dest))
+			{
+				throw new IOException(string.Format("Failed to Copy File / Directory from '{0}' to '{1}'.", source, dest));
+			}
+		}
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern void MoveFileOrDirectory(string from, string to);
+		private static extern bool CopyFileOrDirectoryFollowSymlinksInternal(string source, string dest);
 
-		[GeneratedByOldBindingsGenerator]
+		public static void MoveFileOrDirectory(string source, string dest)
+		{
+			FileUtil.CheckForValidSourceAndDestinationArgumentsAndRaiseAnExceptionWhenNullOrEmpty(source, dest);
+			if (FileUtil.PathExists(dest))
+			{
+				throw new IOException(string.Format("Failed to Copy File / Directory from '{0}' to '{1}': destination path already exists.", source, dest));
+			}
+			if (!FileUtil.MoveFileOrDirectoryInternal(source, dest))
+			{
+				throw new IOException(string.Format("Failed to Move File / Directory from '{0}' to '{1}'.", source, dest));
+			}
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern bool MoveFileOrDirectoryInternal(string source, string dest);
+
+		private static void CheckForValidSourceAndDestinationArgumentsAndRaiseAnExceptionWhenNullOrEmpty(string source, string dest)
+		{
+			if (source == null)
+			{
+				throw new ArgumentNullException("source");
+			}
+			if (dest == null)
+			{
+				throw new ArgumentNullException("dest");
+			}
+			if (source == string.Empty)
+			{
+				throw new ArgumentException("source", "The source path cannot be empty.");
+			}
+			if (dest == string.Empty)
+			{
+				throw new ArgumentException("dest", "The destination path cannot be empty.");
+			}
+		}
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern string GetUniqueTempPathInProject();
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern string GetActualPathName(string path);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern string GetProjectRelativePath(string path);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern string GetLastPathNameComponent(string path);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern string DeleteLastPathNameComponent(string path);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern string GetPathExtension(string path);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern string GetPathWithoutExtension(string path);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern string ResolveSymlinks(string path);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern bool IsSymlink(string path);
 
 		public static void ReplaceFile(string src, string dst)
 		{
@@ -181,17 +237,19 @@ namespace UnityEditor
 
 		internal static void CopyDirectoryFiltered(string source, string target, bool overwrite, Func<string, bool> includeCallback, bool recursive)
 		{
-			if (!Directory.Exists(target))
-			{
-				Directory.CreateDirectory(target);
-				overwrite = false;
-			}
+			bool flag = !Directory.Exists(target);
 			string[] files = Directory.GetFiles(source);
 			for (int i = 0; i < files.Length; i++)
 			{
 				string text = files[i];
 				if (includeCallback(text))
 				{
+					if (flag)
+					{
+						Directory.CreateDirectory(target);
+						overwrite = false;
+						flag = false;
+					}
 					string fileName = Path.GetFileName(text);
 					string to = Path.Combine(target, fileName);
 					FileUtil.UnityFileCopy(text, to, overwrite);

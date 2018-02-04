@@ -90,16 +90,8 @@ namespace UnityEditor
 		public static void ScreenGameViewContent()
 		{
 			string uniquePathForName = ScreenShots.GetUniquePathForName("ContentExample");
-			Application.CaptureScreenshot(uniquePathForName);
+			ScreenCapture.CaptureScreenshot(uniquePathForName);
 			Debug.Log(string.Format("Saved screenshot at {0}", uniquePathForName));
-		}
-
-		[MenuItem("Window/Screenshot/Toggle DeveloperBuild", false, 1000, true)]
-		public static void ToggleFakeNonDeveloperBuild()
-		{
-			Unsupported.fakeNonDeveloperBuild = !Unsupported.fakeNonDeveloperBuild;
-			InternalEditorUtility.RequestScriptReload();
-			InternalEditorUtility.RepaintAllViews();
 		}
 
 		private static GUIView GetMouseOverView()

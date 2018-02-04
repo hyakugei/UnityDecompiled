@@ -19,6 +19,8 @@ namespace UnityEditor.Collaboration
 
 		private int m_Refresh;
 
+		private int m_Seat;
+
 		private string m_Tip;
 
 		public bool ready
@@ -82,6 +84,14 @@ namespace UnityEditor.Collaboration
 			get
 			{
 				return this.m_Refresh != 0;
+			}
+		}
+
+		public bool seat
+		{
+			get
+			{
+				return this.m_Seat != 0;
 			}
 		}
 

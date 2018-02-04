@@ -1,13 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using UnityEditor.Experimental.AssetImporters;
 using UnityEditorInternal;
 using UnityEngine;
 
 namespace UnityEditor
 {
 	[CustomEditor(typeof(MonoImporter))]
-	internal class MonoScriptImporterInspector : AssetImporterInspector
+	internal class MonoScriptImporterInspector : AssetImporterEditor
 	{
 		private const int m_RowHeight = 16;
 
@@ -17,31 +18,41 @@ namespace UnityEditor
 
 		internal override void OnHeaderControlsGUI()
 		{
-			TextAsset textAsset = this.assetEditor.target as TextAsset;
+			TextAsset textAsset = base.assetTarget as TextAsset;
 			GUILayout.FlexibleSpace();
-			if (GUILayout.Button("Open...", EditorStyles.miniButton, new GUILayoutOption[0]))
+			using (new EditorGUI.DisabledScope(textAsset == null))
 			{
-				AssetDatabase.OpenAsset(textAsset);
-				GUIUtility.ExitGUI();
-			}
-			if (textAsset as MonoScript)
-			{
-				if (GUILayout.Button("Execution Order...", EditorStyles.miniButton, new GUILayoutOption[0]))
+				if (GUILayout.Button("Open...", EditorStyles.miniButton, new GUILayoutOption[0]))
 				{
-					EditorApplication.ExecuteMenuItem("Edit/Project Settings/Script Execution Order");
+					AssetDatabase.OpenAsset(textAsset);
 					GUIUtility.ExitGUI();
+				}
+				if (textAsset as MonoScript)
+				{
+					if (GUILayout.Button("Execution Order...", EditorStyles.miniButton, new GUILayoutOption[0]))
+					{
+						EditorApplication.ExecuteMenuItem("Edit/Project Settings/Script Execution Order");
+						GUIUtility.ExitGUI();
+					}
 				}
 			}
 		}
 
 		internal override void OnHeaderIconGUI(Rect iconRect)
 		{
-			if (this.m_Icon == null)
+			if (base.assetTargets != null)
 			{
-				this.m_TargetObject = new SerializedObject(this.assetEditor.targets);
-				this.m_Icon = this.m_TargetObject.FindProperty("m_Icon");
+				if (this.m_Icon == null)
+				{
+					this.m_TargetObject = new SerializedObject(base.assetTargets);
+					this.m_Icon = this.m_TargetObject.FindProperty("m_Icon");
+				}
+				EditorGUI.ObjectIconDropDown(iconRect, base.assetTargets, true, null, this.m_Icon);
 			}
-			EditorGUI.ObjectIconDropDown(iconRect, this.assetEditor.targets, true, null, this.m_Icon);
+			else
+			{
+				base.OnHeaderIconGUI(iconRect);
+			}
 		}
 
 		[MenuItem("CONTEXT/MonoImporter/Reset")]

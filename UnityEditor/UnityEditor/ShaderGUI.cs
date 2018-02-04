@@ -25,6 +25,10 @@ namespace UnityEditor
 			materialEditor.DefaultPreviewSettingsGUI();
 		}
 
+		public virtual void OnClosed(Material material)
+		{
+		}
+
 		public virtual void AssignNewShaderToMaterial(Material material, Shader oldShader, Shader newShader)
 		{
 			material.shader = newShader;

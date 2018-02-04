@@ -25,6 +25,9 @@ namespace UnityEditorInternal
 		DrawProcedural,
 		ComputeDispatch,
 		PluginEvent,
-		InstancedMesh
+		InstancedMesh,
+		BeginRenderpass,
+		NextSubpass,
+		EndSubpass
 	}
 }

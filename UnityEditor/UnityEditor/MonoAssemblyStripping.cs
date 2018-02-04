@@ -34,17 +34,17 @@ namespace UnityEditor
 
 		public static void MonoCilStrip(BuildTarget buildTarget, string managedLibrariesDirectory, string[] fileNames)
 		{
-			string buildToolsDirectory = BuildPipeline.GetBuildToolsDirectory(buildTarget);
-			string str = Path.Combine(buildToolsDirectory, "mono-cil-strip.exe");
+			string profileDirectory = MonoInstallationFinder.GetProfileDirectory(BuildPipeline.CompatibilityProfileToClassLibFolder(ApiCompatibilityLevel.NET_4_6), "MonoBleedingEdge");
+			string str = Path.Combine(profileDirectory, "mono-cil-strip.exe");
 			for (int i = 0; i < fileNames.Length; i++)
 			{
 				string text = fileNames[i];
-				Process process = MonoProcessUtility.PrepareMonoProcess(managedLibrariesDirectory);
+				Process process = MonoProcessUtility.PrepareMonoProcessBleedingEdge(managedLibrariesDirectory);
 				string text2 = text + ".out";
 				process.StartInfo.Arguments = "\"" + str + "\"";
-				ProcessStartInfo expr_5D = process.StartInfo;
-				string arguments = expr_5D.Arguments;
-				expr_5D.Arguments = string.Concat(new string[]
+				ProcessStartInfo expr_67 = process.StartInfo;
+				string arguments = expr_67.Arguments;
+				expr_67.Arguments = string.Concat(new string[]
 				{
 					arguments,
 					" \"",
@@ -59,53 +59,15 @@ namespace UnityEditor
 			}
 		}
 
-		public static string GenerateBlackList(string librariesFolder, RuntimeClassRegistry usedClasses, string[] allAssemblies)
+		public static string GenerateLinkXmlToPreserveDerivedTypes(string librariesFolder, RuntimeClassRegistry usedClasses)
 		{
-			string text = "tmplink.xml";
-			usedClasses.SynchronizeClasses();
-			using (TextWriter textWriter = new StreamWriter(Path.Combine(librariesFolder, text)))
-			{
-				textWriter.WriteLine("<linker>");
-				textWriter.WriteLine("<assembly fullname=\"UnityEngine\">");
-				foreach (string current in usedClasses.GetAllManagedClassesAsString())
-				{
-					textWriter.WriteLine(string.Format("<type fullname=\"UnityEngine.{0}\" preserve=\"{1}\"/>", current, usedClasses.GetRetentionLevel(current)));
-				}
-				textWriter.WriteLine("</assembly>");
-				DefaultAssemblyResolver defaultAssemblyResolver = new DefaultAssemblyResolver();
-				defaultAssemblyResolver.AddSearchDirectory(librariesFolder);
-				for (int i = 0; i < allAssemblies.Length; i++)
-				{
-					string path = allAssemblies[i];
-					AssemblyDefinition assemblyDefinition = defaultAssemblyResolver.Resolve(Path.GetFileNameWithoutExtension(path), new ReaderParameters
-					{
-						AssemblyResolver = defaultAssemblyResolver
-					});
-					textWriter.WriteLine("<assembly fullname=\"{0}\">", assemblyDefinition.Name.Name);
-					if (assemblyDefinition.Name.Name.StartsWith("UnityEngine."))
-					{
-						foreach (string current2 in usedClasses.GetAllManagedClassesAsString())
-						{
-							textWriter.WriteLine(string.Format("<type fullname=\"UnityEngine.{0}\" preserve=\"{1}\"/>", current2, usedClasses.GetRetentionLevel(current2)));
-						}
-					}
-					MonoAssemblyStripping.GenerateBlackListTypeXML(textWriter, assemblyDefinition.MainModule.Types, usedClasses.GetAllManagedBaseClassesAsString());
-					textWriter.WriteLine("</assembly>");
-				}
-				textWriter.WriteLine("</linker>");
-			}
-			return text;
-		}
-
-		public static string GenerateLinkXmlToPreserveDerivedTypes(string stagingArea, string librariesFolder, RuntimeClassRegistry usedClasses)
-		{
-			string fullPath = Path.GetFullPath(Path.Combine(stagingArea, "preserved_derived_types.xml"));
-			using (TextWriter textWriter = new StreamWriter(fullPath))
+			string tempFileName = Path.GetTempFileName();
+			using (TextWriter textWriter = new StreamWriter(tempFileName))
 			{
 				textWriter.WriteLine("<linker>");
 				foreach (AssemblyDefinition current in MonoAssemblyStripping.CollectAllAssemblies(librariesFolder, usedClasses))
 				{
-					if (!(current.Name.Name == "UnityEngine"))
+					if (!AssemblyHelper.IsUnityEngineModule(current))
 					{
 						HashSet<TypeDefinition> hashSet = new HashSet<TypeDefinition>();
 						MonoAssemblyStripping.CollectBlackListTypes(hashSet, current.MainModule.Types, usedClasses.GetAllManagedBaseClassesAsString());
@@ -122,7 +84,7 @@ namespace UnityEditor
 				}
 				textWriter.WriteLine("</linker>");
 			}
-			return fullPath;
+			return tempFileName;
 		}
 
 		public static IEnumerable<AssemblyDefinition> CollectAllAssemblies(string librariesFolder, RuntimeClassRegistry usedClasses)
@@ -210,16 +172,6 @@ namespace UnityEditor
 			}
 		}
 
-		private static void GenerateBlackListTypeXML(TextWriter w, IList<TypeDefinition> types, List<string> baseTypes)
-		{
-			HashSet<TypeDefinition> hashSet = new HashSet<TypeDefinition>();
-			MonoAssemblyStripping.CollectBlackListTypes(hashSet, types, baseTypes);
-			foreach (TypeDefinition current in hashSet)
-			{
-				w.WriteLine("<type fullname=\"{0}\" preserve=\"all\"/>", current.FullName);
-			}
-		}
-
 		private static bool DoesTypeEnheritFrom(TypeReference type, string typeName)
 		{
 			bool result;
@@ -243,128 +195,6 @@ namespace UnityEditor
 			}
 			result = false;
 			return result;
-		}
-
-		private static string StripperExe()
-		{
-			return "Tools/UnusedBytecodeStripper.exe";
-		}
-
-		public static void MonoLink(BuildTarget buildTarget, string managedLibrariesDirectory, string[] input, string[] allAssemblies, RuntimeClassRegistry usedClasses)
-		{
-			Process process = MonoProcessUtility.PrepareMonoProcess(managedLibrariesDirectory);
-			string buildToolsDirectory = BuildPipeline.GetBuildToolsDirectory(buildTarget);
-			string text = null;
-			string frameWorksFolder = MonoInstallationFinder.GetFrameWorksFolder();
-			string text2 = Path.Combine(frameWorksFolder, MonoAssemblyStripping.StripperExe());
-			string text3 = Path.Combine(Path.GetDirectoryName(text2), "link.xml");
-			string text4 = Path.Combine(managedLibrariesDirectory, "output");
-			Directory.CreateDirectory(text4);
-			process.StartInfo.Arguments = "\"" + text2 + "\" -l none -c link";
-			for (int i = 0; i < input.Length; i++)
-			{
-				string str = input[i];
-				ProcessStartInfo expr_81 = process.StartInfo;
-				expr_81.Arguments = expr_81.Arguments + " -a \"" + str + "\"";
-			}
-			ProcessStartInfo expr_B4 = process.StartInfo;
-			string arguments = expr_B4.Arguments;
-			expr_B4.Arguments = string.Concat(new string[]
-			{
-				arguments,
-				" -out output -x \"",
-				text3,
-				"\" -d \"",
-				managedLibrariesDirectory,
-				"\""
-			});
-			string text5 = Path.Combine(buildToolsDirectory, "link.xml");
-			if (File.Exists(text5))
-			{
-				ProcessStartInfo expr_111 = process.StartInfo;
-				expr_111.Arguments = expr_111.Arguments + " -x \"" + text5 + "\"";
-			}
-			string text6 = Path.Combine(Path.GetDirectoryName(text2), "Core.xml");
-			if (File.Exists(text6))
-			{
-				ProcessStartInfo expr_152 = process.StartInfo;
-				expr_152.Arguments = expr_152.Arguments + " -x \"" + text6 + "\"";
-			}
-			string[] files = Directory.GetFiles(Path.Combine(Directory.GetCurrentDirectory(), "Assets"), "link.xml", SearchOption.AllDirectories);
-			string[] array = files;
-			for (int j = 0; j < array.Length; j++)
-			{
-				string str2 = array[j];
-				ProcessStartInfo expr_1A4 = process.StartInfo;
-				expr_1A4.Arguments = expr_1A4.Arguments + " -x \"" + str2 + "\"";
-			}
-			if (usedClasses != null)
-			{
-				text = MonoAssemblyStripping.GenerateBlackList(managedLibrariesDirectory, usedClasses, allAssemblies);
-				ProcessStartInfo expr_1E9 = process.StartInfo;
-				expr_1E9.Arguments = expr_1E9.Arguments + " -x \"" + text + "\"";
-			}
-			string path = Path.Combine(BuildPipeline.GetPlaybackEngineDirectory(EditorUserBuildSettings.activeBuildTarget, BuildOptions.None), "Whitelists");
-			string[] files2 = Directory.GetFiles(path, "*.xml");
-			for (int k = 0; k < files2.Length; k++)
-			{
-				string str3 = files2[k];
-				ProcessStartInfo expr_240 = process.StartInfo;
-				expr_240.Arguments = expr_240.Arguments + " -x \"" + str3 + "\"";
-			}
-			MonoProcessUtility.RunMonoProcess(process, "assemblies stripper", Path.Combine(text4, "mscorlib.dll"));
-			MonoAssemblyStripping.DeleteAllDllsFrom(managedLibrariesDirectory);
-			MonoAssemblyStripping.CopyAllDlls(managedLibrariesDirectory, text4);
-			string[] files3 = Directory.GetFiles(managedLibrariesDirectory);
-			for (int l = 0; l < files3.Length; l++)
-			{
-				string text7 = files3[l];
-				if (text7.Contains(".mdb"))
-				{
-					string path2 = text7.Replace(".mdb", "");
-					if (!File.Exists(path2))
-					{
-						FileUtil.DeleteFileOrDirectory(text7);
-					}
-				}
-			}
-			if (text != null)
-			{
-				FileUtil.DeleteFileOrDirectory(Path.Combine(managedLibrariesDirectory, text));
-			}
-			FileUtil.DeleteFileOrDirectory(text4);
-		}
-
-		private static void CopyFiles(IEnumerable<string> files, string fromDir, string toDir)
-		{
-			foreach (string current in files)
-			{
-				FileUtil.ReplaceFile(Path.Combine(fromDir, current), Path.Combine(toDir, current));
-			}
-		}
-
-		private static void CopyAllDlls(string fromDir, string toDir)
-		{
-			DirectoryInfo directoryInfo = new DirectoryInfo(toDir);
-			FileInfo[] files = directoryInfo.GetFiles("*.dll");
-			FileInfo[] array = files;
-			for (int i = 0; i < array.Length; i++)
-			{
-				FileInfo fileInfo = array[i];
-				FileUtil.ReplaceFile(Path.Combine(toDir, fileInfo.Name), Path.Combine(fromDir, fileInfo.Name));
-			}
-		}
-
-		private static void DeleteAllDllsFrom(string managedLibrariesDirectory)
-		{
-			DirectoryInfo directoryInfo = new DirectoryInfo(managedLibrariesDirectory);
-			FileInfo[] files = directoryInfo.GetFiles("*.dll");
-			FileInfo[] array = files;
-			for (int i = 0; i < array.Length; i++)
-			{
-				FileInfo fileInfo = array[i];
-				FileUtil.DeleteFileOrDirectory(fileInfo.FullName);
-			}
 		}
 	}
 }

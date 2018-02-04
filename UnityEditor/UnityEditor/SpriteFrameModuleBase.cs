@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using UnityEditor.Experimental.U2D;
 using UnityEditor.U2D.Interface;
 using UnityEditorInternal;
 using UnityEngine;
@@ -7,7 +9,7 @@ using UnityEngine.U2D.Interface;
 
 namespace UnityEditor
 {
-	internal abstract class SpriteFrameModuleBase : ISpriteEditorModule
+	internal abstract class SpriteFrameModuleBase : SpriteEditorModuleBase
 	{
 		protected enum GizmoMode
 		{
@@ -35,25 +37,25 @@ namespace UnityEditor
 
 			public readonly GUIContent[] spriteAlignmentOptions = new GUIContent[]
 			{
-				EditorGUIUtility.TextContent("Center"),
-				EditorGUIUtility.TextContent("Top Left"),
-				EditorGUIUtility.TextContent("Top"),
-				EditorGUIUtility.TextContent("Top Right"),
-				EditorGUIUtility.TextContent("Left"),
-				EditorGUIUtility.TextContent("Right"),
-				EditorGUIUtility.TextContent("Bottom Left"),
-				EditorGUIUtility.TextContent("Bottom"),
-				EditorGUIUtility.TextContent("Bottom Right"),
-				EditorGUIUtility.TextContent("Custom")
+				EditorGUIUtility.TrTextContent("Center", null, null),
+				EditorGUIUtility.TrTextContent("Top Left", null, null),
+				EditorGUIUtility.TrTextContent("Top", null, null),
+				EditorGUIUtility.TrTextContent("Top Right", null, null),
+				EditorGUIUtility.TrTextContent("Left", null, null),
+				EditorGUIUtility.TrTextContent("Right", null, null),
+				EditorGUIUtility.TrTextContent("Bottom Left", null, null),
+				EditorGUIUtility.TrTextContent("Bottom", null, null),
+				EditorGUIUtility.TrTextContent("Bottom Right", null, null),
+				EditorGUIUtility.TrTextContent("Custom", null, null)
 			};
 
-			public readonly GUIContent pivotLabel = EditorGUIUtility.TextContent("Pivot");
+			public readonly GUIContent pivotLabel = EditorGUIUtility.TrTextContent("Pivot", null, null);
 
-			public readonly GUIContent spriteLabel = EditorGUIUtility.TextContent("Sprite");
+			public readonly GUIContent spriteLabel = EditorGUIUtility.TrTextContent("Sprite", null, null);
 
-			public readonly GUIContent customPivotLabel = EditorGUIUtility.TextContent("Custom Pivot");
+			public readonly GUIContent customPivotLabel = EditorGUIUtility.TrTextContent("Custom Pivot", null, null);
 
-			public readonly GUIContent borderLabel = EditorGUIUtility.TextContent("Border");
+			public readonly GUIContent borderLabel = EditorGUIUtility.TrTextContent("Border", null, null);
 
 			public readonly GUIContent lLabel = EditorGUIUtility.TextContent("L");
 
@@ -63,7 +65,7 @@ namespace UnityEditor
 
 			public readonly GUIContent bLabel = EditorGUIUtility.TextContent("B");
 
-			public readonly GUIContent positionLabel = EditorGUIUtility.TextContent("Position");
+			public readonly GUIContent positionLabel = EditorGUIUtility.TrTextContent("Position", null, null);
 
 			public readonly GUIContent xLabel = EditorGUIUtility.TextContent("X");
 
@@ -73,7 +75,7 @@ namespace UnityEditor
 
 			public readonly GUIContent hLabel = EditorGUIUtility.TextContent("H");
 
-			public readonly GUIContent nameLabel = EditorGUIUtility.TextContent("Name");
+			public readonly GUIContent nameLabel = EditorGUIUtility.TrTextContent("Name", null, null);
 
 			public Styles()
 			{
@@ -90,7 +92,13 @@ namespace UnityEditor
 			}
 		}
 
-		protected ISpriteRectCache m_RectsCache;
+		protected SpriteRectModel m_RectsCache;
+
+		protected ITextureDataProvider m_TextureDataProvider;
+
+		protected ISpriteEditorDataProvider m_SpriteDataProvider;
+
+		private string m_ModuleName;
 
 		private static SpriteFrameModuleBase.Styles s_Styles;
 
@@ -106,10 +114,12 @@ namespace UnityEditor
 
 		private SpriteFrameModuleBase.GizmoMode m_GizmoMode;
 
-		public string moduleName
+		public override string moduleName
 		{
-			get;
-			private set;
+			get
+			{
+				return this.m_ModuleName;
+			}
 		}
 
 		protected IEventSystem eventSystem
@@ -119,12 +129,6 @@ namespace UnityEditor
 		}
 
 		protected IUndoSystem undoSystem
-		{
-			get;
-			private set;
-		}
-
-		protected ISpriteEditor spriteEditor
 		{
 			get;
 			private set;
@@ -140,11 +144,11 @@ namespace UnityEditor
 		{
 			get
 			{
-				return this.spriteEditor.selectedSpriteRect;
+				return base.spriteEditor.selectedSpriteRect;
 			}
 			set
 			{
-				this.spriteEditor.selectedSpriteRect = value;
+				base.spriteEditor.selectedSpriteRect = value;
 			}
 		}
 
@@ -158,15 +162,7 @@ namespace UnityEditor
 		{
 			get
 			{
-				return this.assetDatabase.GetAssetPath(this.spriteEditor.selectedTexture);
-			}
-		}
-
-		protected ITexture2D previewTexture
-		{
-			get
-			{
-				return this.spriteEditor.previewTexture;
+				return this.assetDatabase.GetAssetPath(this.m_TextureDataProvider.texture);
 			}
 		}
 
@@ -174,7 +170,7 @@ namespace UnityEditor
 		{
 			get
 			{
-				return this.spriteEditor.selectedSpriteRect != null;
+				return base.spriteEditor.selectedSpriteRect != null;
 			}
 		}
 
@@ -203,7 +199,7 @@ namespace UnityEditor
 			set
 			{
 				this.undoSystem.RegisterCompleteObjectUndo(this.m_RectsCache, "Change Sprite Border");
-				this.spriteEditor.SetDataModified();
+				base.spriteEditor.SetDataModified();
 				this.selected.border = SpriteFrameModuleBase.ClampSpriteBorderToRect(value, this.selected.rect);
 			}
 		}
@@ -217,8 +213,8 @@ namespace UnityEditor
 			set
 			{
 				this.undoSystem.RegisterCompleteObjectUndo(this.m_RectsCache, "Change Sprite rect");
-				this.spriteEditor.SetDataModified();
-				this.selected.rect = SpriteFrameModuleBase.ClampSpriteRect(value, (float)this.previewTexture.width, (float)this.previewTexture.height);
+				base.spriteEditor.SetDataModified();
+				this.selected.rect = SpriteFrameModuleBase.ClampSpriteRect(value, (float)this.textureActualWidth, (float)this.textureActualHeight);
 			}
 		}
 
@@ -231,7 +227,7 @@ namespace UnityEditor
 			set
 			{
 				this.undoSystem.RegisterCompleteObjectUndo(this.m_RectsCache, "Change Sprite Name");
-				this.spriteEditor.SetDataModified();
+				base.spriteEditor.SetDataModified();
 				string name = this.selected.name;
 				string text = InternalEditorUtility.RemoveInvalidCharsFromFileName(value, true);
 				if (string.IsNullOrEmpty(this.selected.originalName) && text != name)
@@ -242,9 +238,9 @@ namespace UnityEditor
 				{
 					text = name;
 				}
-				for (int i = 0; i < this.m_RectsCache.Count; i++)
+				for (int i = 0; i < this.m_RectsCache.spriteRects.Count; i++)
 				{
-					if (this.m_RectsCache.RectAt(i).name == text)
+					if (this.m_RectsCache.spriteRects[i].name == text)
 					{
 						text = this.selected.originalName;
 						break;
@@ -258,8 +254,20 @@ namespace UnityEditor
 		{
 			get
 			{
-				return this.m_RectsCache.Count;
+				return this.m_RectsCache.spriteRects.Count;
 			}
+		}
+
+		public int textureActualWidth
+		{
+			get;
+			private set;
+		}
+
+		public int textureActualHeight
+		{
+			get;
+			private set;
 		}
 
 		public bool containsMultipleSprites
@@ -286,63 +294,123 @@ namespace UnityEditor
 		{
 			get
 			{
-				Rect windowDimension = this.spriteEditor.windowDimension;
-				return new Rect(windowDimension.width - 330f - 8f - 16f, windowDimension.height - 160f - 8f - 16f, 330f, 160f);
+				Rect windowDimension = base.spriteEditor.windowDimension;
+				return new Rect(windowDimension.width - 330f - 8f, windowDimension.height - 160f - 8f, 330f, 160f);
 			}
 		}
 
 		protected SpriteFrameModuleBase(string name, ISpriteEditor sw, IEventSystem es, IUndoSystem us, IAssetDatabase ad)
 		{
-			this.spriteEditor = sw;
+			base.spriteEditor = sw;
 			this.eventSystem = es;
 			this.undoSystem = us;
 			this.assetDatabase = ad;
-			this.moduleName = name;
+			this.m_ModuleName = name;
 		}
 
-		public abstract bool CanBeActivated();
-
-		public virtual void OnModuleActivate()
+		public override void OnModuleActivate()
 		{
-			this.spriteImportMode = SpriteUtility.GetSpriteImportMode(this.assetDatabase, this.spriteEditor.selectedTexture);
+			this.spriteImportMode = SpriteUtility.GetSpriteImportMode(base.spriteEditor.GetDataProvider<ISpriteEditorDataProvider>());
+			this.m_TextureDataProvider = base.spriteEditor.GetDataProvider<ITextureDataProvider>();
+			this.m_SpriteDataProvider = base.spriteEditor.GetDataProvider<ISpriteEditorDataProvider>();
+			int textureActualWidth;
+			int textureActualHeight;
+			this.m_TextureDataProvider.GetTextureActualWidthAndHeight(out textureActualWidth, out textureActualHeight);
+			this.textureActualWidth = textureActualWidth;
+			this.textureActualHeight = textureActualHeight;
+			this.m_RectsCache = ScriptableObject.CreateInstance<SpriteRectModel>();
+			this.m_RectsCache.spriteRects = this.m_SpriteDataProvider.GetSpriteRects().ToList<SpriteRect>();
+			if (base.spriteEditor.selectedSpriteRect != null)
+			{
+				base.spriteEditor.selectedSpriteRect = this.m_RectsCache.spriteRects.FirstOrDefault((SpriteRect x) => x.spriteID == base.spriteEditor.selectedSpriteRect.spriteID);
+			}
 		}
 
-		public abstract void OnModuleDeactivate();
+		public override void OnModuleDeactivate()
+		{
+			if (this.m_RectsCache != null)
+			{
+				this.undoSystem.ClearUndo(this.m_RectsCache);
+				UnityEngine.Object.DestroyImmediate(this.m_RectsCache);
+				this.m_RectsCache = null;
+			}
+		}
+
+		public override bool ApplyRevert(bool apply)
+		{
+			if (apply)
+			{
+				if (this.containsMultipleSprites)
+				{
+					List<string> list = new List<string>();
+					List<string> list2 = new List<string>();
+					for (int i = 0; i < this.m_RectsCache.spriteRects.Count; i++)
+					{
+						SpriteRect spriteRect = this.m_RectsCache.spriteRects[i];
+						if (string.IsNullOrEmpty(spriteRect.name))
+						{
+							spriteRect.name = "Empty";
+						}
+						if (!string.IsNullOrEmpty(spriteRect.originalName))
+						{
+							list.Add(spriteRect.originalName);
+							list2.Add(spriteRect.name);
+						}
+					}
+					SerializedObject serializedObject = new SerializedObject(this.m_SpriteDataProvider.targetObject);
+					if (list.Count > 0)
+					{
+						PatchImportSettingRecycleID.PatchMultiple(serializedObject, 213, list.ToArray(), list2.ToArray());
+					}
+					serializedObject.ApplyModifiedPropertiesWithoutUndo();
+				}
+				this.m_SpriteDataProvider.SetSpriteRects((this.m_RectsCache != null) ? this.m_RectsCache.spriteRects.ToArray() : null);
+				if (this.m_RectsCache != null)
+				{
+					this.undoSystem.ClearUndo(this.m_RectsCache);
+				}
+			}
+			else if (this.m_RectsCache != null)
+			{
+				this.undoSystem.ClearUndo(this.m_RectsCache);
+				this.m_RectsCache.spriteRects = this.m_SpriteDataProvider.GetSpriteRects().ToList<SpriteRect>();
+				base.spriteEditor.spriteRects = this.m_RectsCache.spriteRects;
+				if (base.spriteEditor.selectedSpriteRect != null)
+				{
+					base.spriteEditor.selectedSpriteRect = this.m_RectsCache.spriteRects.FirstOrDefault((SpriteRect x) => x.spriteID == base.spriteEditor.selectedSpriteRect.spriteID);
+				}
+			}
+			return true;
+		}
 
 		public int CurrentSelectedSpriteIndex()
 		{
 			int result;
-			for (int i = 0; i < this.m_RectsCache.Count; i++)
+			if (this.m_RectsCache != null && this.selected != null)
 			{
-				if (this.m_RectsCache.RectAt(i) == this.selected)
-				{
-					result = i;
-					return result;
-				}
+				result = this.m_RectsCache.spriteRects.FindIndex((SpriteRect x) => x.spriteID == this.selected.spriteID);
 			}
-			result = -1;
+			else
+			{
+				result = -1;
+			}
 			return result;
 		}
 
 		public Vector4 GetSpriteBorderAt(int i)
 		{
-			return this.m_RectsCache.RectAt(i).border;
+			return this.m_RectsCache.spriteRects[i].border;
 		}
 
 		public Rect GetSpriteRectAt(int i)
 		{
-			return this.m_RectsCache.RectAt(i).rect;
-		}
-
-		public List<SpriteOutline> GetSpriteOutlineAt(int i)
-		{
-			return this.m_RectsCache.RectAt(i).outline;
+			return this.m_RectsCache.spriteRects[i].rect;
 		}
 
 		public void SetSpritePivotAndAlignment(Vector2 pivot, SpriteAlignment alignment)
 		{
 			this.undoSystem.RegisterCompleteObjectUndo(this.m_RectsCache, "Change Sprite Pivot");
-			this.spriteEditor.SetDataModified();
+			base.spriteEditor.SetDataModified();
 			this.selected.alignment = alignment;
 			this.selected.pivot = SpriteEditorUtility.GetPivotValue(alignment, pivot);
 		}
@@ -536,7 +604,7 @@ namespace UnityEditor
 
 		protected void Repaint()
 		{
-			this.spriteEditor.RequestRepaint();
+			base.spriteEditor.RequestRepaint();
 		}
 
 		protected void HandleGizmoMode()
@@ -780,16 +848,14 @@ namespace UnityEditor
 			}
 		}
 
-		public virtual void DoTextureGUI()
+		public override void DoMainGUI()
 		{
 			this.m_Zoom = Handles.matrix.GetColumn(0).magnitude;
 		}
 
-		public virtual void OnPostGUI()
+		public override void DoPostGUI()
 		{
 			this.DoSelectedFrameInspector();
 		}
-
-		public abstract void DrawToolbarGUI(Rect drawArea);
 	}
 }

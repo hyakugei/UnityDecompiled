@@ -1,6 +1,5 @@
 using System;
 using System.Runtime.CompilerServices;
-using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
@@ -25,10 +24,8 @@ namespace UnityEngine
 		[Obsolete("Deprecated. Use InitState() function or Random.state property instead.")]
 		public static extern int seed
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
@@ -38,18 +35,17 @@ namespace UnityEngine
 			get
 			{
 				Random.State result;
-				Random.INTERNAL_get_state(out result);
+				Random.get_state_Injected(out result);
 				return result;
 			}
 			set
 			{
-				Random.INTERNAL_set_state(ref value);
+				Random.set_state_Injected(ref value);
 			}
 		}
 
 		public static extern float value
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
@@ -59,7 +55,7 @@ namespace UnityEngine
 			get
 			{
 				Vector3 result;
-				Random.INTERNAL_get_insideUnitSphere(out result);
+				Random.get_insideUnitSphere_Injected(out result);
 				return result;
 			}
 		}
@@ -79,7 +75,7 @@ namespace UnityEngine
 			get
 			{
 				Vector3 result;
-				Random.INTERNAL_get_onUnitSphere(out result);
+				Random.get_onUnitSphere_Injected(out result);
 				return result;
 			}
 		}
@@ -89,7 +85,7 @@ namespace UnityEngine
 			get
 			{
 				Quaternion result;
-				Random.INTERNAL_get_rotation(out result);
+				Random.get_rotation_Injected(out result);
 				return result;
 			}
 		}
@@ -99,24 +95,14 @@ namespace UnityEngine
 			get
 			{
 				Quaternion result;
-				Random.INTERNAL_get_rotationUniform(out result);
+				Random.get_rotationUniform_Injected(out result);
 				return result;
 			}
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void InitState(int seed);
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_get_state(out Random.State value);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_set_state(ref Random.State value);
-
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern float Range(float min, float max);
 
@@ -125,29 +111,11 @@ namespace UnityEngine
 			return Random.RandomRangeInt(min, max);
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern int RandomRangeInt(int min, int max);
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_get_insideUnitSphere(out Vector3 value);
-
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern void GetRandomUnitCircle(out Vector2 output);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_get_onUnitSphere(out Vector3 value);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_get_rotation(out Quaternion value);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_get_rotationUniform(out Quaternion value);
 
 		[Obsolete("Use Random.Range instead")]
 		public static float RandomRange(float min, float max)
@@ -190,5 +158,23 @@ namespace UnityEngine
 			result.a = Mathf.Lerp(alphaMin, alphaMax, Random.value);
 			return result;
 		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void get_state_Injected(out Random.State ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void set_state_Injected(ref Random.State value);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void get_insideUnitSphere_Injected(out Vector3 ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void get_onUnitSphere_Injected(out Vector3 ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void get_rotation_Injected(out Quaternion ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void get_rotationUniform_Injected(out Quaternion ret);
 	}
 }

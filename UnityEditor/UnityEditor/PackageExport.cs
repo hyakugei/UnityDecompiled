@@ -33,15 +33,15 @@ namespace UnityEditor
 				PackageExport.Styles.bottomBarBg = "ProjectBrowserBottomBarBg";
 				PackageExport.Styles.topBarBg = new GUIStyle("ProjectBrowserHeaderBgTop");
 				PackageExport.Styles.loadingTextStyle = new GUIStyle(EditorStyles.label);
-				PackageExport.Styles.allText = EditorGUIUtility.TextContent("All");
-				PackageExport.Styles.noneText = EditorGUIUtility.TextContent("None");
-				PackageExport.Styles.includeDependenciesText = EditorGUIUtility.TextContent("Include dependencies");
-				PackageExport.Styles.header = new GUIContent("Items to Export");
+				PackageExport.Styles.allText = EditorGUIUtility.TrTextContent("All", null, null);
+				PackageExport.Styles.noneText = EditorGUIUtility.TrTextContent("None", null, null);
+				PackageExport.Styles.includeDependenciesText = EditorGUIUtility.TrTextContent("Include dependencies", null, null);
+				PackageExport.Styles.header = EditorGUIUtility.TrTextContent("Items to Export", null, null);
 				PackageExport.Styles.topBarBg.fixedHeight = 0f;
-				RectOffset arg_AA_0 = PackageExport.Styles.topBarBg.border;
+				RectOffset arg_B2_0 = PackageExport.Styles.topBarBg.border;
 				int num = 2;
 				PackageExport.Styles.topBarBg.border.bottom = num;
-				arg_AA_0.top = num;
+				arg_B2_0.top = num;
 				PackageExport.Styles.title.fontStyle = FontStyle.Bold;
 				PackageExport.Styles.title.alignment = TextAnchor.MiddleLeft;
 				PackageExport.Styles.loadingTextStyle.alignment = TextAnchor.MiddleCenter;
@@ -52,9 +52,6 @@ namespace UnityEditor
 		private ExportPackageItem[] m_ExportPackageItems;
 
 		[SerializeField]
-		private IncrementalInitialize m_IncrementalInitialize = new IncrementalInitialize();
-
-		[SerializeField]
 		private bool m_IncludeDependencies = true;
 
 		[SerializeField]
@@ -62,6 +59,9 @@ namespace UnityEditor
 
 		[NonSerialized]
 		private PackageExportTreeView m_Tree;
+
+		[NonSerialized]
+		private bool m_DidScheduleUpdate = false;
 
 		public ExportPackageItem[] items
 		{
@@ -104,7 +104,6 @@ namespace UnityEditor
 
 		private void RefreshAssetList()
 		{
-			this.m_IncrementalInitialize.Restart();
 			this.m_ExportPackageItems = null;
 		}
 
@@ -116,12 +115,12 @@ namespace UnityEditor
 		private bool CheckAssetExportList()
 		{
 			bool result;
-			if (this.m_ExportPackageItems == null || this.m_ExportPackageItems.Length == 0)
+			if (this.m_ExportPackageItems.Length == 0)
 			{
 				GUILayout.Space(20f);
 				GUILayout.BeginVertical(EditorStyles.helpBox, new GUILayoutOption[0]);
-				GUILayout.Label("Nothing to import!", EditorStyles.boldLabel, new GUILayoutOption[0]);
-				GUILayout.Label("All assets from this package are already in your project.", "WordWrappedLabel", new GUILayoutOption[0]);
+				GUILayout.Label("Nothing to export!", EditorStyles.boldLabel, new GUILayoutOption[0]);
+				GUILayout.Label("No assets to export were found in your project.", "WordWrappedLabel", new GUILayoutOption[0]);
 				GUILayout.BeginHorizontal(new GUILayoutOption[0]);
 				GUILayout.FlexibleSpace();
 				if (GUILayout.Button("OK", new GUILayoutOption[0]))
@@ -140,33 +139,29 @@ namespace UnityEditor
 			return result;
 		}
 
+		public void OnDestroy()
+		{
+			this.UnscheduleBuildAssetList();
+		}
+
 		public void OnGUI()
 		{
-			this.m_IncrementalInitialize.OnEvent();
-			bool showLoadingScreen = false;
-			IncrementalInitialize.State state = this.m_IncrementalInitialize.state;
-			if (state != IncrementalInitialize.State.PreInitialize)
+			if (!this.HasValidAssetList())
 			{
-				if (state == IncrementalInitialize.State.Initialize)
-				{
-					this.BuildAssetList();
-				}
+				this.ScheduleBuildAssetList();
 			}
-			else
+			else if (this.CheckAssetExportList())
 			{
-				showLoadingScreen = true;
+				return;
 			}
-			if (!this.CheckAssetExportList())
+			using (new EditorGUI.DisabledScope(!this.HasValidAssetList()))
 			{
-				using (new EditorGUI.DisabledScope(!this.HasValidAssetList()))
-				{
-					this.TopArea();
-				}
-				this.TreeViewArea(showLoadingScreen);
-				using (new EditorGUI.DisabledScope(!this.HasValidAssetList()))
-				{
-					this.BottomArea();
-				}
+				this.TopArea();
+			}
+			this.TreeViewArea(!this.HasValidAssetList());
+			using (new EditorGUI.DisabledScope(!this.HasValidAssetList()))
+			{
+				this.BottomArea();
 			}
 		}
 
@@ -207,7 +202,7 @@ namespace UnityEditor
 				this.RefreshAssetList();
 			}
 			GUILayout.FlexibleSpace();
-			if (GUILayout.Button(EditorGUIUtility.TextContent("Export..."), new GUILayoutOption[0]))
+			if (GUILayout.Button(EditorGUIUtility.TrTextContent("Export...", null, null), new GUILayoutOption[0]))
 			{
 				this.Export();
 				GUIUtility.ExitGUI();
@@ -260,11 +255,31 @@ namespace UnityEditor
 			}
 		}
 
+		private void ScheduleBuildAssetList()
+		{
+			if (!this.m_DidScheduleUpdate)
+			{
+				EditorApplication.update = (EditorApplication.CallbackFunction)Delegate.Combine(EditorApplication.update, new EditorApplication.CallbackFunction(this.BuildAssetList));
+				this.m_DidScheduleUpdate = true;
+			}
+		}
+
+		private void UnscheduleBuildAssetList()
+		{
+			if (this.m_DidScheduleUpdate)
+			{
+				this.m_DidScheduleUpdate = false;
+				EditorApplication.update = (EditorApplication.CallbackFunction)Delegate.Remove(EditorApplication.update, new EditorApplication.CallbackFunction(this.BuildAssetList));
+			}
+		}
+
 		private void BuildAssetList()
 		{
+			this.UnscheduleBuildAssetList();
 			this.m_ExportPackageItems = PackageExport.GetAssetItemsForExport(Selection.assetGUIDsDeepSelection, this.m_IncludeDependencies).ToArray<ExportPackageItem>();
 			this.m_Tree = null;
 			this.m_TreeViewState = null;
+			base.Repaint();
 		}
 	}
 }

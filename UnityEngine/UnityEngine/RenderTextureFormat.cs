@@ -26,6 +26,10 @@ namespace UnityEngine
 		RInt,
 		BGRA32,
 		RGB111110Float = 22,
-		RG32
+		RG32,
+		RGBAUShort,
+		RG16,
+		BGRA10101010_XR,
+		BGR101010_XR
 	}
 }

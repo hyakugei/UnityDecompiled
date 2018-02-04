@@ -5,6 +5,7 @@ namespace UnityEditor
 	public enum StatusQueryOptions
 	{
 		ForceUpdate,
-		UseCachedIfPossible
+		UseCachedIfPossible,
+		UseCachedAsync
 	}
 }

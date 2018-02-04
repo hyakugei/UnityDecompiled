@@ -16,9 +16,10 @@ namespace UnityEditor.Animations
 			}
 			else
 			{
-				for (int i = 0; i < parent.stateMachines.Length; i++)
+				ChildAnimatorStateMachine[] childStateMachines = AnimatorStateMachine.StateMachineCache.GetChildStateMachines(parent);
+				for (int i = 0; i < childStateMachines.Length; i++)
 				{
-					if (MecanimUtilities.StateMachineRelativePath(parent.stateMachines[i].stateMachine, toFind, ref hierarchy))
+					if (MecanimUtilities.StateMachineRelativePath(childStateMachines[i].stateMachine, toFind, ref hierarchy))
 					{
 						result = true;
 						return result;

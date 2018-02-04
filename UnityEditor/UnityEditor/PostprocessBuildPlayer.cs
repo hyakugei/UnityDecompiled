@@ -1,15 +1,29 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using UnityEditor.BuildReporting;
+using UnityEditor.Build.Reporting;
+using UnityEditor.DeploymentTargets;
 using UnityEditor.Modules;
 using UnityEditor.Utils;
 using UnityEngine;
+using UnityEngine.Scripting;
 
 namespace UnityEditor
 {
-	internal class PostprocessBuildPlayer
+	internal static class PostprocessBuildPlayer
 	{
+		private class NoTargetsFoundException : Exception
+		{
+			public NoTargetsFoundException()
+			{
+			}
+
+			public NoTargetsFoundException(string message) : base(message)
+			{
+			}
+		}
+
 		internal const string StreamingAssets = "Assets/StreamingAssets";
 
 		public static string subDir32Bit
@@ -26,11 +40,6 @@ namespace UnityEditor
 			{
 				return "x86_64";
 			}
-		}
-
-		internal static string GenerateBundleIdentifier(string companyName, string productName)
-		{
-			return "unity." + companyName + "." + productName;
 		}
 
 		internal static bool InstallPluginsByExtension(string pluginSourceFolder, string extension, string debugExtension, string destPluginFolder, bool copyDirectories)
@@ -88,24 +97,9 @@ namespace UnityEditor
 				FileUtil.CopyDirectoryRecursiveForPostprocess("Assets/StreamingAssets", text, true);
 				if (report != null)
 				{
-					report.AddFilesRecursive(text, "Streaming Assets");
+					report.RecordFilesAddedRecursive(text, CommonRoles.streamingAsset);
 				}
 			}
-		}
-
-		public static string GetScriptLayoutFileFromBuild(BuildOptions options, BuildTargetGroup targetGroup, BuildTarget target, string installPath, string fileName)
-		{
-			IBuildPostprocessor buildPostProcessor = ModuleManager.GetBuildPostProcessor(targetGroup, target);
-			string result;
-			if (buildPostProcessor != null)
-			{
-				result = buildPostProcessor.GetScriptLayoutFileFromBuild(options, installPath, fileName);
-			}
-			else
-			{
-				result = "";
-			}
-			return result;
 		}
 
 		public static string PrepareForBuild(BuildOptions options, BuildTargetGroup targetGroup, BuildTarget target)
@@ -154,45 +148,104 @@ namespace UnityEditor
 			}
 			else
 			{
-				switch (target)
-				{
-				case BuildTarget.PSP2:
-				case BuildTarget.PSM:
-					goto IL_46;
-				case BuildTarget.PS4:
-					IL_31:
-					if (target != BuildTarget.Android && target != BuildTarget.WSAPlayer)
-					{
-						result = false;
-						return result;
-					}
-					goto IL_46;
-				}
-				goto IL_31;
-				IL_46:
-				result = true;
+				result = (target == BuildTarget.Android || target == BuildTarget.WSAPlayer || target == BuildTarget.PSP2);
 			}
 			return result;
 		}
 
-		public static void Launch(BuildTargetGroup targetGroup, BuildTarget target, string path, string productName, BuildOptions options)
+		public static bool SupportsLz4Compression(BuildTargetGroup targetGroup, BuildTarget target)
+		{
+			IBuildPostprocessor buildPostProcessor = ModuleManager.GetBuildPostProcessor(targetGroup, target);
+			return buildPostProcessor != null && buildPostProcessor.SupportsLz4Compression();
+		}
+
+		public static void Launch(BuildTargetGroup targetGroup, BuildTarget buildTarget, string path, string productName, BuildOptions options, BuildReport buildReport)
+		{
+			IBuildPostprocessor buildPostProcessor = ModuleManager.GetBuildPostProcessor(targetGroup, buildTarget);
+			if (buildPostProcessor != null)
+			{
+				BuildLaunchPlayerArgs args;
+				args.target = buildTarget;
+				args.playerPackage = BuildPipeline.GetPlaybackEngineDirectory(buildTarget, options);
+				args.installPath = path;
+				args.productName = productName;
+				args.options = options;
+				args.report = buildReport;
+				buildPostProcessor.LaunchPlayer(args);
+				return;
+			}
+			throw new UnityException(string.Format("Launching for target group {0}, build target {1} is not supported: There is no build post-processor available.", targetGroup, buildTarget));
+		}
+
+		public static void LaunchOnTargets(BuildTargetGroup targetGroup, BuildTarget buildTarget, BuildReport buildReport, List<DeploymentTargetId> launchTargets)
+		{
+			try
+			{
+				if (buildReport == null || !DeploymentTargetManager.IsExtensionSupported(targetGroup, buildReport.summary.platform))
+				{
+					throw new NotSupportedException();
+				}
+				ProgressHandler handler = new ProgressHandler("Deploying Player", delegate(string title, string message, float globalProgress)
+				{
+					if (EditorUtility.DisplayCancelableProgressBar(title, message, globalProgress))
+					{
+						throw new DeploymentOperationAbortedException();
+					}
+				}, 0.1f, 1f);
+				ProgressTaskManager taskManager = new ProgressTaskManager(handler);
+				taskManager.AddTask(delegate
+				{
+					int num = 0;
+					List<DeploymentOperationFailedException> list = new List<DeploymentOperationFailedException>();
+					foreach (DeploymentTargetId current in launchTargets)
+					{
+						try
+						{
+							DeploymentTargetManager.LaunchBuildOnTarget(targetGroup, buildReport, current, taskManager.SpawnProgressHandlerFromCurrentTask());
+							num++;
+						}
+						catch (DeploymentOperationFailedException item)
+						{
+							list.Add(item);
+						}
+					}
+					foreach (DeploymentOperationFailedException current2 in list)
+					{
+						UnityEngine.Debug.LogException(current2);
+					}
+					if (num == 0)
+					{
+						throw new PostprocessBuildPlayer.NoTargetsFoundException("Could not launch build");
+					}
+				});
+				taskManager.Run();
+			}
+			catch (DeploymentOperationFailedException ex)
+			{
+				UnityEngine.Debug.LogException(ex);
+				EditorUtility.DisplayDialog(ex.title, ex.Message, "Ok");
+			}
+			catch (DeploymentOperationAbortedException)
+			{
+				Console.WriteLine("Deployment aborted");
+			}
+			catch (PostprocessBuildPlayer.NoTargetsFoundException)
+			{
+				throw new UnityException(string.Format("Could not find any valid targets to launch on for {0}", buildTarget));
+			}
+		}
+
+		[RequiredByNativeCode]
+		public static void UpdateBootConfig(BuildTargetGroup targetGroup, BuildTarget target, BootConfigData config, BuildOptions options)
 		{
 			IBuildPostprocessor buildPostProcessor = ModuleManager.GetBuildPostProcessor(targetGroup, target);
 			if (buildPostProcessor != null)
 			{
-				BuildLaunchPlayerArgs args;
-				args.target = target;
-				args.playerPackage = BuildPipeline.GetPlaybackEngineDirectory(target, options);
-				args.installPath = path;
-				args.productName = productName;
-				args.options = options;
-				buildPostProcessor.LaunchPlayer(args);
-				return;
+				buildPostProcessor.UpdateBootConfig(target, config, options);
 			}
-			throw new UnityException(string.Format("Launching {0} build target via mono is not supported", target));
 		}
 
-		public static void Postprocess(BuildTargetGroup targetGroup, BuildTarget target, string installPath, string companyName, string productName, int width, int height, string downloadWebplayerUrl, string manualDownloadWebplayerUrl, BuildOptions options, RuntimeClassRegistry usedClassRegistry, BuildReport report)
+		public static void Postprocess(BuildTargetGroup targetGroup, BuildTarget target, string installPath, string companyName, string productName, int width, int height, BuildOptions options, RuntimeClassRegistry usedClassRegistry, BuildReport report)
 		{
 			string stagingArea = "Temp/StagingArea";
 			string stagingAreaData = "Temp/StagingArea/Data";
@@ -219,7 +272,9 @@ namespace UnityEditor
 				args.options = options;
 				args.usedClassRegistry = usedClassRegistry;
 				args.report = report;
-				buildPostProcessor.PostProcess(args);
+				BuildProperties obj;
+				buildPostProcessor.PostProcess(args, out obj);
+				report.AddAppendix(obj);
 				return;
 			}
 			throw new UnityException(string.Format("Build target '{0}' not supported", target));
@@ -242,40 +297,6 @@ namespace UnityEditor
 			string standardOutputAsString = program.GetStandardOutputAsString();
 			program.Dispose();
 			return standardOutputAsString;
-		}
-
-		internal static string GetArchitectureForTarget(BuildTarget target)
-		{
-			string result;
-			if (target != BuildTarget.StandaloneOSXIntel && target != BuildTarget.StandaloneWindows)
-			{
-				switch (target)
-				{
-				case BuildTarget.StandaloneLinux:
-					goto IL_44;
-				case (BuildTarget)18:
-					IL_24:
-					if (target == BuildTarget.StandaloneLinux64)
-					{
-						goto IL_39;
-					}
-					if (target != BuildTarget.StandaloneLinuxUniversal)
-					{
-						result = string.Empty;
-						return result;
-					}
-					goto IL_44;
-				case BuildTarget.StandaloneWindows64:
-					goto IL_39;
-				}
-				goto IL_24;
-				IL_39:
-				result = "x86_64";
-				return result;
-			}
-			IL_44:
-			result = "x86";
-			return result;
 		}
 	}
 }

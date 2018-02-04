@@ -9,6 +9,8 @@ namespace UnityEditorInternal
 
 		public int depthBias;
 
+		public bool depthClip;
+
 		public float slopeScaledDepthBias;
 	}
 }

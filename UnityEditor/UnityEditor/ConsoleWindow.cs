@@ -1,8 +1,11 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.Scripting;
@@ -12,9 +15,13 @@ namespace UnityEditor
 	[EditorWindowTitle(title = "Console", useTypeNameAsIconName = true)]
 	internal class ConsoleWindow : EditorWindow, IHasCustomMenu
 	{
+		internal delegate void EntryDoubleClickedDelegate(LogEntry entry);
+
 		internal class Constants
 		{
-			public static bool ms_Loaded;
+			private static bool ms_Loaded;
+
+			private static int ms_logStyleLineCount;
 
 			public static GUIStyle Box;
 
@@ -34,6 +41,12 @@ namespace UnityEditor
 
 			public static GUIStyle ErrorStyle;
 
+			public static GUIStyle IconLogStyle;
+
+			public static GUIStyle IconWarningStyle;
+
+			public static GUIStyle IconErrorStyle;
+
 			public static GUIStyle EvenBackground;
 
 			public static GUIStyle OddBackground;
@@ -50,33 +63,166 @@ namespace UnityEditor
 
 			public static GUIStyle CountBadge;
 
+			public static GUIStyle LogSmallStyle;
+
+			public static GUIStyle WarningSmallStyle;
+
+			public static GUIStyle ErrorSmallStyle;
+
+			public static GUIStyle IconLogSmallStyle;
+
+			public static GUIStyle IconWarningSmallStyle;
+
+			public static GUIStyle IconErrorSmallStyle;
+
+			public static readonly string ClearLabel = L10n.Tr("Clear");
+
+			public static readonly string ClearOnPlayLabel = L10n.Tr("Clear on Play");
+
+			public static readonly string ErrorPauseLabel = L10n.Tr("Error Pause");
+
+			public static readonly string CollapseLabel = L10n.Tr("Collapse");
+
+			public static readonly string StopForAssertLabel = L10n.Tr("Stop for Assert");
+
+			public static readonly string StopForErrorLabel = L10n.Tr("Stop for Error");
+
+			public static int LogStyleLineCount
+			{
+				get
+				{
+					return ConsoleWindow.Constants.ms_logStyleLineCount;
+				}
+				set
+				{
+					ConsoleWindow.Constants.ms_logStyleLineCount = value;
+					if (ConsoleWindow.Constants.ms_Loaded)
+					{
+						ConsoleWindow.Constants.UpdateLogStyleFixedHeights();
+					}
+				}
+			}
+
 			public static void Init()
 			{
 				if (!ConsoleWindow.Constants.ms_Loaded)
 				{
 					ConsoleWindow.Constants.ms_Loaded = true;
-					ConsoleWindow.Constants.Box = "CN Box";
-					ConsoleWindow.Constants.Button = "Button";
-					ConsoleWindow.Constants.MiniButton = "ToolbarButton";
-					ConsoleWindow.Constants.MiniButtonLeft = "ToolbarButton";
-					ConsoleWindow.Constants.MiniButtonMiddle = "ToolbarButton";
-					ConsoleWindow.Constants.MiniButtonRight = "ToolbarButton";
-					ConsoleWindow.Constants.Toolbar = "Toolbar";
-					ConsoleWindow.Constants.LogStyle = "CN EntryInfo";
-					ConsoleWindow.Constants.WarningStyle = "CN EntryWarn";
-					ConsoleWindow.Constants.ErrorStyle = "CN EntryError";
-					ConsoleWindow.Constants.EvenBackground = "CN EntryBackEven";
-					ConsoleWindow.Constants.OddBackground = "CN EntryBackodd";
-					ConsoleWindow.Constants.MessageStyle = "CN Message";
-					ConsoleWindow.Constants.StatusError = "CN StatusError";
-					ConsoleWindow.Constants.StatusWarn = "CN StatusWarn";
-					ConsoleWindow.Constants.StatusLog = "CN StatusInfo";
-					ConsoleWindow.Constants.CountBadge = "CN CountBadge";
+					ConsoleWindow.Constants.Box = new GUIStyle("CN Box");
+					ConsoleWindow.Constants.Button = new GUIStyle("Button");
+					ConsoleWindow.Constants.MiniButton = new GUIStyle("ToolbarButton");
+					ConsoleWindow.Constants.MiniButtonLeft = new GUIStyle("ToolbarButton");
+					ConsoleWindow.Constants.MiniButtonMiddle = new GUIStyle("ToolbarButton");
+					ConsoleWindow.Constants.MiniButtonRight = new GUIStyle("ToolbarButton");
+					ConsoleWindow.Constants.Toolbar = new GUIStyle("Toolbar");
+					ConsoleWindow.Constants.LogStyle = new GUIStyle("CN EntryInfo");
+					ConsoleWindow.Constants.LogSmallStyle = new GUIStyle("CN EntryInfoSmall");
+					ConsoleWindow.Constants.WarningStyle = new GUIStyle("CN EntryWarn");
+					ConsoleWindow.Constants.WarningSmallStyle = new GUIStyle("CN EntryWarnSmall");
+					ConsoleWindow.Constants.ErrorStyle = new GUIStyle("CN EntryError");
+					ConsoleWindow.Constants.ErrorSmallStyle = new GUIStyle("CN EntryErrorSmall");
+					ConsoleWindow.Constants.IconLogStyle = new GUIStyle("CN EntryInfoIcon");
+					ConsoleWindow.Constants.IconLogSmallStyle = new GUIStyle("CN EntryInfoIconSmall");
+					ConsoleWindow.Constants.IconWarningStyle = new GUIStyle("CN EntryWarnIcon");
+					ConsoleWindow.Constants.IconWarningSmallStyle = new GUIStyle("CN EntryWarnIconSmall");
+					ConsoleWindow.Constants.IconErrorStyle = new GUIStyle("CN EntryErrorIcon");
+					ConsoleWindow.Constants.IconErrorSmallStyle = new GUIStyle("CN EntryErrorIconSmall");
+					ConsoleWindow.Constants.EvenBackground = new GUIStyle("CN EntryBackEven");
+					ConsoleWindow.Constants.OddBackground = new GUIStyle("CN EntryBackodd");
+					ConsoleWindow.Constants.MessageStyle = new GUIStyle("CN Message");
+					ConsoleWindow.Constants.StatusError = new GUIStyle("CN StatusError");
+					ConsoleWindow.Constants.StatusWarn = new GUIStyle("CN StatusWarn");
+					ConsoleWindow.Constants.StatusLog = new GUIStyle("CN StatusInfo");
+					ConsoleWindow.Constants.CountBadge = new GUIStyle("CN CountBadge");
+					ConsoleWindow.Constants.LogStyleLineCount = EditorPrefs.GetInt("ConsoleWindowLogLineCount", 2);
 				}
+			}
+
+			private static void UpdateLogStyleFixedHeights()
+			{
+				ConsoleWindow.Constants.ErrorStyle.fixedHeight = (float)ConsoleWindow.Constants.LogStyleLineCount * ConsoleWindow.Constants.ErrorStyle.lineHeight + (float)ConsoleWindow.Constants.ErrorStyle.border.top;
+				ConsoleWindow.Constants.WarningStyle.fixedHeight = (float)ConsoleWindow.Constants.LogStyleLineCount * ConsoleWindow.Constants.WarningStyle.lineHeight + (float)ConsoleWindow.Constants.WarningStyle.border.top;
+				ConsoleWindow.Constants.LogStyle.fixedHeight = (float)ConsoleWindow.Constants.LogStyleLineCount * ConsoleWindow.Constants.LogStyle.lineHeight + (float)ConsoleWindow.Constants.LogStyle.border.top;
 			}
 		}
 
-		private enum Mode
+		private class ConsoleAttachProfilerUI : AttachProfilerUI
+		{
+			private enum MenuItemIndex
+			{
+				PlayerLogging,
+				FullLog
+			}
+
+			private List<string> additionalMenuItems = null;
+
+			protected void SelectClick(object userData, string[] options, int selected)
+			{
+				if (selected == 0)
+				{
+					bool flag = ScriptableSingleton<PlayerConnectionLogReceiver>.instance.State != PlayerConnectionLogReceiver.ConnectionState.Disconnected;
+					ScriptableSingleton<PlayerConnectionLogReceiver>.instance.State = ((!flag) ? PlayerConnectionLogReceiver.ConnectionState.CleanLog : PlayerConnectionLogReceiver.ConnectionState.Disconnected);
+				}
+				else if (selected == 1)
+				{
+					bool flag2 = ScriptableSingleton<PlayerConnectionLogReceiver>.instance.State == PlayerConnectionLogReceiver.ConnectionState.CleanLog;
+					ScriptableSingleton<PlayerConnectionLogReceiver>.instance.State = ((!flag2) ? PlayerConnectionLogReceiver.ConnectionState.CleanLog : PlayerConnectionLogReceiver.ConnectionState.FullLog);
+				}
+				else if (selected >= this.additionalMenuItems.Count)
+				{
+					base.SelectProfilerClick(userData, options, selected - this.additionalMenuItems.Count);
+				}
+			}
+
+			protected override void OnGUIMenu(Rect connectRect, List<ProfilerChoise> profilers)
+			{
+				if (this.additionalMenuItems == null)
+				{
+					this.additionalMenuItems = new List<string>();
+					this.additionalMenuItems.Add("Player Logging");
+					if (Unsupported.IsDeveloperMode())
+					{
+						this.additionalMenuItems.Add("Full Log (Developer Mode Only)");
+					}
+					this.additionalMenuItems.Add("");
+				}
+				IEnumerable<string> source = this.additionalMenuItems.Concat(from p in profilers
+				select p.Name);
+				List<bool> list = new List<bool>();
+				list.Add(true);
+				List<int> list2 = new List<int>();
+				bool flag = ScriptableSingleton<PlayerConnectionLogReceiver>.instance.State != PlayerConnectionLogReceiver.ConnectionState.Disconnected;
+				if (flag)
+				{
+					list2.Add(0);
+					if (Unsupported.IsDeveloperMode())
+					{
+						if (ScriptableSingleton<PlayerConnectionLogReceiver>.instance.State == PlayerConnectionLogReceiver.ConnectionState.FullLog)
+						{
+							list2.Add(1);
+						}
+						list.Add(true);
+					}
+					list.Add(true);
+					list.AddRange(from p in profilers
+					select p.Enabled);
+				}
+				else
+				{
+					list.AddRange(new bool[source.Count<string>() - 1]);
+				}
+				int num = profilers.FindIndex((ProfilerChoise p) => p.IsSelected());
+				if (num != -1)
+				{
+					list2.Add(num + this.additionalMenuItems.Count);
+				}
+				bool[] array = new bool[list.Count];
+				array[this.additionalMenuItems.Count - 1] = true;
+				EditorUtility.DisplayCustomMenuWithSeparators(connectRect, source.ToArray<string>(), list.ToArray(), array, list2.ToArray(), new EditorUtility.SelectMenuItemFunction(this.SelectClick), profilers);
+			}
+		}
+
+		internal enum Mode
 		{
 			Error = 1,
 			Assert,
@@ -98,7 +244,8 @@ namespace UnityEditor
 			DontExtractStacktrace = 262144,
 			ShouldClearOnPlay = 524288,
 			GraphCompileError = 1048576,
-			ScriptingAssertion = 2097152
+			ScriptingAssertion = 2097152,
+			VisualScriptingError = 4194304
 		}
 
 		private enum ConsoleFlags
@@ -112,7 +259,8 @@ namespace UnityEditor
 			Autoscroll = 64,
 			LogLevelLog = 128,
 			LogLevelWarning = 256,
-			LogLevelError = 512
+			LogLevelError = 512,
+			ShowTimestamp = 1024
 		}
 
 		public struct StackTraceLogTypeData
@@ -122,7 +270,11 @@ namespace UnityEditor
 			public StackTraceLogType stackTraceLogType;
 		}
 
-		private const int m_RowHeight = 32;
+		private int m_LineHeight;
+
+		private int m_BorderHeight;
+
+		private bool m_HasUpdatedGuiStyles;
 
 		private ListViewState m_ListView;
 
@@ -166,6 +318,8 @@ namespace UnityEditor
 
 		private int ms_LVHeight = 0;
 
+		private ConsoleWindow.ConsoleAttachProfilerUI m_AttachProfilerUI = new ConsoleWindow.ConsoleAttachProfilerUI();
+
 		private static ConsoleWindow ms_ConsoleWindow = null;
 
 		[CompilerGenerated]
@@ -174,10 +328,44 @@ namespace UnityEditor
 		[CompilerGenerated]
 		private static GenericMenu.MenuFunction <>f__mg$cache1;
 
+		private static event ConsoleWindow.EntryDoubleClickedDelegate entryWithManagedCallbackDoubleClicked
+		{
+			add
+			{
+				ConsoleWindow.EntryDoubleClickedDelegate entryDoubleClickedDelegate = ConsoleWindow.entryWithManagedCallbackDoubleClicked;
+				ConsoleWindow.EntryDoubleClickedDelegate entryDoubleClickedDelegate2;
+				do
+				{
+					entryDoubleClickedDelegate2 = entryDoubleClickedDelegate;
+					entryDoubleClickedDelegate = Interlocked.CompareExchange<ConsoleWindow.EntryDoubleClickedDelegate>(ref ConsoleWindow.entryWithManagedCallbackDoubleClicked, (ConsoleWindow.EntryDoubleClickedDelegate)Delegate.Combine(entryDoubleClickedDelegate2, value), entryDoubleClickedDelegate);
+				}
+				while (entryDoubleClickedDelegate != entryDoubleClickedDelegate2);
+			}
+			remove
+			{
+				ConsoleWindow.EntryDoubleClickedDelegate entryDoubleClickedDelegate = ConsoleWindow.entryWithManagedCallbackDoubleClicked;
+				ConsoleWindow.EntryDoubleClickedDelegate entryDoubleClickedDelegate2;
+				do
+				{
+					entryDoubleClickedDelegate2 = entryDoubleClickedDelegate;
+					entryDoubleClickedDelegate = Interlocked.CompareExchange<ConsoleWindow.EntryDoubleClickedDelegate>(ref ConsoleWindow.entryWithManagedCallbackDoubleClicked, (ConsoleWindow.EntryDoubleClickedDelegate)Delegate.Remove(entryDoubleClickedDelegate2, value), entryDoubleClickedDelegate);
+				}
+				while (entryDoubleClickedDelegate != entryDoubleClickedDelegate2);
+			}
+		}
+
+		private int RowHeight
+		{
+			get
+			{
+				return ConsoleWindow.Constants.LogStyleLineCount * this.m_LineHeight + this.m_BorderHeight;
+			}
+		}
+
 		public ConsoleWindow()
 		{
 			base.position = new Rect(200f, 200f, 800f, 400f);
-			this.m_ListView = new ListViewState(0, 32);
+			this.m_ListView = new ListViewState(0, 0);
 		}
 
 		private static void ShowConsoleWindowImmediate()
@@ -236,7 +424,8 @@ namespace UnityEditor
 		{
 			base.titleContent = base.GetLocalizedTitleContent();
 			ConsoleWindow.ms_ConsoleWindow = this;
-			this.m_DevBuild = Unsupported.IsDeveloperBuild();
+			this.m_DevBuild = Unsupported.IsDeveloperMode();
+			ConsoleWindow.Constants.LogStyleLineCount = EditorPrefs.GetInt("ConsoleWindowLogLineCount", 2);
 		}
 
 		private void OnDisable()
@@ -284,16 +473,67 @@ namespace UnityEditor
 			return result;
 		}
 
-		internal static GUIStyle GetStyleForErrorMode(int mode)
+		internal static GUIStyle GetStyleForErrorMode(int mode, bool isIcon, bool isSmall)
 		{
 			GUIStyle result;
 			if (ConsoleWindow.HasMode(mode, (ConsoleWindow.Mode)3148115))
 			{
-				result = ConsoleWindow.Constants.ErrorStyle;
+				if (isIcon)
+				{
+					if (isSmall)
+					{
+						result = ConsoleWindow.Constants.IconErrorSmallStyle;
+					}
+					else
+					{
+						result = ConsoleWindow.Constants.IconErrorStyle;
+					}
+				}
+				else if (isSmall)
+				{
+					result = ConsoleWindow.Constants.ErrorSmallStyle;
+				}
+				else
+				{
+					result = ConsoleWindow.Constants.ErrorStyle;
+				}
 			}
 			else if (ConsoleWindow.HasMode(mode, (ConsoleWindow.Mode)4736))
 			{
-				result = ConsoleWindow.Constants.WarningStyle;
+				if (isIcon)
+				{
+					if (isSmall)
+					{
+						result = ConsoleWindow.Constants.IconWarningSmallStyle;
+					}
+					else
+					{
+						result = ConsoleWindow.Constants.IconWarningStyle;
+					}
+				}
+				else if (isSmall)
+				{
+					result = ConsoleWindow.Constants.WarningSmallStyle;
+				}
+				else
+				{
+					result = ConsoleWindow.Constants.WarningStyle;
+				}
+			}
+			else if (isIcon)
+			{
+				if (isSmall)
+				{
+					result = ConsoleWindow.Constants.IconLogSmallStyle;
+				}
+				else
+				{
+					result = ConsoleWindow.Constants.IconLogStyle;
+				}
+			}
+			else if (isSmall)
+			{
+				result = ConsoleWindow.Constants.LogSmallStyle;
 			}
 			else
 			{
@@ -403,12 +643,27 @@ namespace UnityEditor
 			}
 		}
 
+		private void UpdateListView()
+		{
+			this.m_HasUpdatedGuiStyles = true;
+			int rowHeight = this.RowHeight;
+			this.m_ListView.rowHeight = rowHeight;
+			this.m_ListView.row = -1;
+			this.m_ListView.scrollPos.y = (float)(LogEntries.GetCount() * rowHeight);
+		}
+
 		private void OnGUI()
 		{
 			Event current = Event.current;
 			ConsoleWindow.LoadIcons();
+			if (!this.m_HasUpdatedGuiStyles)
+			{
+				this.m_LineHeight = Mathf.RoundToInt(ConsoleWindow.Constants.ErrorStyle.lineHeight);
+				this.m_BorderHeight = ConsoleWindow.Constants.ErrorStyle.border.top + ConsoleWindow.Constants.ErrorStyle.border.bottom;
+				this.UpdateListView();
+			}
 			GUILayout.BeginHorizontal(ConsoleWindow.Constants.Toolbar, new GUILayoutOption[0]);
-			if (GUILayout.Button("Clear", ConsoleWindow.Constants.MiniButton, new GUILayoutOption[0]))
+			if (GUILayout.Button(ConsoleWindow.Constants.ClearLabel, ConsoleWindow.Constants.MiniButton, new GUILayoutOption[0]))
 			{
 				LogEntries.Clear();
 				GUIUtility.keyboardControl = 0;
@@ -418,42 +673,49 @@ namespace UnityEditor
 			{
 				if (this.m_ListView.scrollPos.y >= (float)(this.m_ListView.rowHeight * this.m_ListView.totalRows - this.ms_LVHeight))
 				{
-					this.m_ListView.scrollPos.y = (float)(count * 32 - this.ms_LVHeight);
+					this.m_ListView.scrollPos.y = (float)(count * this.RowHeight - this.ms_LVHeight);
 				}
 			}
 			EditorGUILayout.Space();
 			bool flag = ConsoleWindow.HasFlag(ConsoleWindow.ConsoleFlags.Collapse);
-			ConsoleWindow.SetFlag(ConsoleWindow.ConsoleFlags.Collapse, GUILayout.Toggle(flag, "Collapse", ConsoleWindow.Constants.MiniButtonLeft, new GUILayoutOption[0]));
+			ConsoleWindow.SetFlag(ConsoleWindow.ConsoleFlags.Collapse, GUILayout.Toggle(flag, ConsoleWindow.Constants.CollapseLabel, ConsoleWindow.Constants.MiniButtonLeft, new GUILayoutOption[0]));
 			bool flag2 = flag != ConsoleWindow.HasFlag(ConsoleWindow.ConsoleFlags.Collapse);
 			if (flag2)
 			{
 				this.m_ListView.row = -1;
-				this.m_ListView.scrollPos.y = (float)(LogEntries.GetCount() * 32);
+				this.m_ListView.scrollPos.y = (float)(LogEntries.GetCount() * this.RowHeight);
 			}
-			ConsoleWindow.SetFlag(ConsoleWindow.ConsoleFlags.ClearOnPlay, GUILayout.Toggle(ConsoleWindow.HasFlag(ConsoleWindow.ConsoleFlags.ClearOnPlay), "Clear on Play", ConsoleWindow.Constants.MiniButtonMiddle, new GUILayoutOption[0]));
-			ConsoleWindow.SetFlag(ConsoleWindow.ConsoleFlags.ErrorPause, GUILayout.Toggle(ConsoleWindow.HasFlag(ConsoleWindow.ConsoleFlags.ErrorPause), "Error Pause", ConsoleWindow.Constants.MiniButtonRight, new GUILayoutOption[0]));
+			ConsoleWindow.SetFlag(ConsoleWindow.ConsoleFlags.ClearOnPlay, GUILayout.Toggle(ConsoleWindow.HasFlag(ConsoleWindow.ConsoleFlags.ClearOnPlay), ConsoleWindow.Constants.ClearOnPlayLabel, ConsoleWindow.Constants.MiniButtonMiddle, new GUILayoutOption[0]));
+			ConsoleWindow.SetFlag(ConsoleWindow.ConsoleFlags.ErrorPause, GUILayout.Toggle(ConsoleWindow.HasFlag(ConsoleWindow.ConsoleFlags.ErrorPause), ConsoleWindow.Constants.ErrorPauseLabel, ConsoleWindow.Constants.MiniButtonRight, new GUILayoutOption[0]));
+			this.m_AttachProfilerUI.OnGUILayout(this);
 			EditorGUILayout.Space();
 			if (this.m_DevBuild)
 			{
 				GUILayout.FlexibleSpace();
-				ConsoleWindow.SetFlag(ConsoleWindow.ConsoleFlags.StopForAssert, GUILayout.Toggle(ConsoleWindow.HasFlag(ConsoleWindow.ConsoleFlags.StopForAssert), "Stop for Assert", ConsoleWindow.Constants.MiniButtonLeft, new GUILayoutOption[0]));
-				ConsoleWindow.SetFlag(ConsoleWindow.ConsoleFlags.StopForError, GUILayout.Toggle(ConsoleWindow.HasFlag(ConsoleWindow.ConsoleFlags.StopForError), "Stop for Error", ConsoleWindow.Constants.MiniButtonRight, new GUILayoutOption[0]));
+				ConsoleWindow.SetFlag(ConsoleWindow.ConsoleFlags.StopForAssert, GUILayout.Toggle(ConsoleWindow.HasFlag(ConsoleWindow.ConsoleFlags.StopForAssert), ConsoleWindow.Constants.StopForAssertLabel, ConsoleWindow.Constants.MiniButtonLeft, new GUILayoutOption[0]));
+				ConsoleWindow.SetFlag(ConsoleWindow.ConsoleFlags.StopForError, GUILayout.Toggle(ConsoleWindow.HasFlag(ConsoleWindow.ConsoleFlags.StopForError), ConsoleWindow.Constants.StopForErrorLabel, ConsoleWindow.Constants.MiniButtonRight, new GUILayoutOption[0]));
 			}
 			GUILayout.FlexibleSpace();
 			int num = 0;
 			int num2 = 0;
 			int num3 = 0;
 			LogEntries.GetCountsByType(ref num, ref num2, ref num3);
+			EditorGUI.BeginChangeCheck();
 			bool val = GUILayout.Toggle(ConsoleWindow.HasFlag(ConsoleWindow.ConsoleFlags.LogLevelLog), new GUIContent((num3 > 999) ? "999+" : num3.ToString(), (num3 <= 0) ? ConsoleWindow.iconInfoMono : ConsoleWindow.iconInfoSmall), ConsoleWindow.Constants.MiniButtonRight, new GUILayoutOption[0]);
 			bool val2 = GUILayout.Toggle(ConsoleWindow.HasFlag(ConsoleWindow.ConsoleFlags.LogLevelWarning), new GUIContent((num2 > 999) ? "999+" : num2.ToString(), (num2 <= 0) ? ConsoleWindow.iconWarnMono : ConsoleWindow.iconWarnSmall), ConsoleWindow.Constants.MiniButtonMiddle, new GUILayoutOption[0]);
 			bool val3 = GUILayout.Toggle(ConsoleWindow.HasFlag(ConsoleWindow.ConsoleFlags.LogLevelError), new GUIContent((num > 999) ? "999+" : num.ToString(), (num <= 0) ? ConsoleWindow.iconErrorMono : ConsoleWindow.iconErrorSmall), ConsoleWindow.Constants.MiniButtonLeft, new GUILayoutOption[0]);
+			if (EditorGUI.EndChangeCheck())
+			{
+				this.SetActiveEntry(null);
+			}
 			ConsoleWindow.SetFlag(ConsoleWindow.ConsoleFlags.LogLevelLog, val);
 			ConsoleWindow.SetFlag(ConsoleWindow.ConsoleFlags.LogLevelWarning, val2);
 			ConsoleWindow.SetFlag(ConsoleWindow.ConsoleFlags.LogLevelError, val3);
 			GUILayout.EndHorizontal();
 			this.m_ListView.totalRows = LogEntries.StartGettingEntries();
 			SplitterGUILayout.BeginVerticalSplit(this.spl, new GUILayoutOption[0]);
-			EditorGUIUtility.SetIconSize(new Vector2(32f, 32f));
+			int rowHeight = this.RowHeight;
+			EditorGUIUtility.SetIconSize(new Vector2((float)rowHeight, (float)rowHeight));
 			GUIContent gUIContent = new GUIContent();
 			int controlID = GUIUtility.GetControlID(FocusType.Native);
 			try
@@ -478,12 +740,14 @@ namespace UnityEditor
 						{
 							int mode = 0;
 							string text = null;
-							LogEntries.GetFirstTwoLinesEntryTextAndModeInternal(listViewElement.row, ref mode, ref text);
+							LogEntries.GetLinesAndModeFromEntryInternal(listViewElement.row, ConsoleWindow.Constants.LogStyleLineCount, ref mode, ref text);
 							GUIStyle gUIStyle = (listViewElement.row % 2 != 0) ? ConsoleWindow.Constants.EvenBackground : ConsoleWindow.Constants.OddBackground;
 							gUIStyle.Draw(listViewElement.position, false, false, this.m_ListView.row == listViewElement.row, false);
+							GUIStyle styleForErrorMode = ConsoleWindow.GetStyleForErrorMode(mode, true, ConsoleWindow.Constants.LogStyleLineCount == 1);
+							styleForErrorMode.Draw(listViewElement.position, false, false, this.m_ListView.row == listViewElement.row, false);
 							gUIContent.text = text;
-							GUIStyle styleForErrorMode = ConsoleWindow.GetStyleForErrorMode(mode);
-							styleForErrorMode.Draw(listViewElement.position, gUIContent, controlID, this.m_ListView.row == listViewElement.row);
+							GUIStyle styleForErrorMode2 = ConsoleWindow.GetStyleForErrorMode(mode, false, ConsoleWindow.Constants.LogStyleLineCount == 1);
+							styleForErrorMode2.Draw(listViewElement.position, gUIContent, controlID, this.m_ListView.row == listViewElement.row);
 							if (flag4)
 							{
 								Rect position = listViewElement.position;
@@ -606,22 +870,41 @@ namespace UnityEditor
 		{
 			if (Application.platform == RuntimePlatform.OSXEditor)
 			{
-				GUIContent arg_34_1 = new GUIContent("Open Player Log");
-				bool arg_34_2 = false;
+				GUIContent arg_36_1 = EditorGUIUtility.TrTextContent("Open Player Log", null, null);
+				bool arg_36_2 = false;
 				if (ConsoleWindow.<>f__mg$cache0 == null)
 				{
 					ConsoleWindow.<>f__mg$cache0 = new GenericMenu.MenuFunction(InternalEditorUtility.OpenPlayerConsole);
 				}
-				menu.AddItem(arg_34_1, arg_34_2, ConsoleWindow.<>f__mg$cache0);
+				menu.AddItem(arg_36_1, arg_36_2, ConsoleWindow.<>f__mg$cache0);
 			}
-			GUIContent arg_62_1 = new GUIContent("Open Editor Log");
-			bool arg_62_2 = false;
+			GUIContent arg_66_1 = EditorGUIUtility.TrTextContent("Open Editor Log", null, null);
+			bool arg_66_2 = false;
 			if (ConsoleWindow.<>f__mg$cache1 == null)
 			{
 				ConsoleWindow.<>f__mg$cache1 = new GenericMenu.MenuFunction(InternalEditorUtility.OpenEditorConsole);
 			}
-			menu.AddItem(arg_62_1, arg_62_2, ConsoleWindow.<>f__mg$cache1);
+			menu.AddItem(arg_66_1, arg_66_2, ConsoleWindow.<>f__mg$cache1);
+			menu.AddItem(EditorGUIUtility.TrTextContent("Show Timestamp", null, null), ConsoleWindow.HasFlag(ConsoleWindow.ConsoleFlags.ShowTimestamp), new GenericMenu.MenuFunction(this.SetTimestamp));
+			for (int i = 1; i <= 10; i++)
+			{
+				string arg = (i != 1) ? "Lines" : "Line";
+				menu.AddItem(new GUIContent(string.Format("Log Entry/{0} {1}", i, arg)), i == ConsoleWindow.Constants.LogStyleLineCount, new GenericMenu.MenuFunction2(this.SetLogLineCount), i);
+			}
 			this.AddStackTraceLoggingMenu(menu);
+		}
+
+		private void SetTimestamp()
+		{
+			ConsoleWindow.SetFlag(ConsoleWindow.ConsoleFlags.ShowTimestamp, !ConsoleWindow.HasFlag(ConsoleWindow.ConsoleFlags.ShowTimestamp));
+		}
+
+		private void SetLogLineCount(object obj)
+		{
+			int num = (int)obj;
+			EditorPrefs.SetInt("ConsoleWindowLogLineCount", num);
+			ConsoleWindow.Constants.LogStyleLineCount = num;
+			this.UpdateListView();
 		}
 
 		private void AddStackTraceLoggingMenu(GenericMenu menu)
@@ -641,13 +924,13 @@ namespace UnityEditor
 							ConsoleWindow.StackTraceLogTypeData stackTraceLogTypeData;
 							stackTraceLogTypeData.logType = logType;
 							stackTraceLogTypeData.stackTraceLogType = stackTraceLogType;
-							menu.AddItem(new GUIContent(string.Concat(new object[]
+							menu.AddItem(EditorGUIUtility.TrTextContent(string.Concat(new object[]
 							{
 								"Stack Trace Logging/",
 								logType,
 								"/",
 								stackTraceLogType
-							})), PlayerSettings.GetStackTraceLogType(logType) == stackTraceLogType, new GenericMenu.MenuFunction2(this.ToggleLogStackTraces), stackTraceLogTypeData);
+							}), null, null), PlayerSettings.GetStackTraceLogType(logType) == stackTraceLogType, new GenericMenu.MenuFunction2(this.ToggleLogStackTraces), stackTraceLogTypeData);
 						}
 					}
 					finally
@@ -696,7 +979,7 @@ namespace UnityEditor
 				while (enumerator4.MoveNext())
 				{
 					StackTraceLogType stackTraceLogType2 = (StackTraceLogType)enumerator4.Current;
-					menu.AddItem(new GUIContent("Stack Trace Logging/All/" + stackTraceLogType2), num == (int)stackTraceLogType2, new GenericMenu.MenuFunction2(this.ToggleLogStackTracesForAll), stackTraceLogType2);
+					menu.AddItem(EditorGUIUtility.TrTextContent("Stack Trace Logging/All/" + stackTraceLogType2, null, null), num == (int)stackTraceLogType2, new GenericMenu.MenuFunction2(this.ToggleLogStackTracesForAll), stackTraceLogType2);
 				}
 			}
 			finally
@@ -706,6 +989,14 @@ namespace UnityEditor
 				{
 					disposable4.Dispose();
 				}
+			}
+		}
+
+		private static void SendEntryDoubleClicked(LogEntry entry)
+		{
+			if (ConsoleWindow.entryWithManagedCallbackDoubleClicked != null)
+			{
+				ConsoleWindow.entryWithManagedCallbackDoubleClicked(entry);
 			}
 		}
 	}

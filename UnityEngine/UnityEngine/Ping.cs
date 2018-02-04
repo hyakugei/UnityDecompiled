@@ -1,6 +1,5 @@
 using System;
 using System.Runtime.CompilerServices;
-using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
@@ -8,38 +7,51 @@ namespace UnityEngine
 	{
 		internal IntPtr m_Ptr;
 
-		public extern bool isDone
+		public bool isDone
 		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
+			get
+			{
+				return !(this.m_Ptr == IntPtr.Zero) && this.Internal_IsDone();
+			}
 		}
 
 		public extern int time
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
 
 		public extern string ip
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
 		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern Ping(string address);
-
-		[GeneratedByOldBindingsGenerator, ThreadAndSerializationSafe]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern void DestroyPing();
+		public Ping(string address)
+		{
+			this.m_Ptr = Ping.Internal_Create(address);
+		}
 
 		~Ping()
 		{
 			this.DestroyPing();
 		}
+
+		[ThreadAndSerializationSafe]
+		public void DestroyPing()
+		{
+			this.m_Ptr = IntPtr.Zero;
+			Ping.Internal_Destroy(this.m_Ptr);
+		}
+
+		[ThreadAndSerializationSafe]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void Internal_Destroy(IntPtr ptr);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern IntPtr Internal_Create(string address);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern bool Internal_IsDone();
 	}
 }

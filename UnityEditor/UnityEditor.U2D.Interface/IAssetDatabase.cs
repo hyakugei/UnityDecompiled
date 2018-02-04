@@ -7,6 +7,6 @@ namespace UnityEditor.U2D.Interface
 	{
 		string GetAssetPath(UnityEngine.Object o);
 
-		ITextureImporter GetAssetImporterFromPath(string path);
+		AssetImporter GetAssetImporterFromPath(string path);
 	}
 }

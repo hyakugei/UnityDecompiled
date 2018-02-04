@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine.Scripting;
 using UnityEngine.Serialization;
@@ -160,10 +161,19 @@ namespace UnityEngine.Events
 			this.m_Calls.Clear();
 		}
 
-		protected void Invoke(object[] parameters)
+		internal List<BaseInvokableCall> PrepareInvoke()
 		{
 			this.RebuildPersistentCallsIfNeeded();
-			this.m_Calls.Invoke(parameters);
+			return this.m_Calls.PrepareInvoke();
+		}
+
+		protected void Invoke(object[] parameters)
+		{
+			List<BaseInvokableCall> list = this.PrepareInvoke();
+			for (int i = 0; i < list.Count; i++)
+			{
+				list[i].Invoke(parameters);
+			}
 		}
 
 		public override string ToString()

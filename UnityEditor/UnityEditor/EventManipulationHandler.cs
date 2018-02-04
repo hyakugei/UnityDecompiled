@@ -38,6 +38,10 @@ namespace UnityEditor
 
 		private Vector2 m_InstantTooltipPoint = Vector2.zero;
 
+		private readonly GUIContent m_DeleteAnimationEventText = EditorGUIUtility.TrTextContent("Delete Animation Event", null, null);
+
+		private readonly GUIContent m_DeleteAnimationEventsText = EditorGUIUtility.TrTextContent("Delete Animation Events", null, null);
+
 		private bool[] m_EventsSelected;
 
 		private AnimationWindowEvent[] m_Events;
@@ -111,8 +115,8 @@ namespace UnityEditor
 				{
 					int num9 = this.m_EventsSelected.Count((bool selected) => selected);
 					GenericMenu genericMenu = new GenericMenu();
-					genericMenu.AddItem(new GUIContent("Add Animation Event"), false, new GenericMenu.MenuFunction2(this.EventLineContextMenuAdd), new EventManipulationHandler.EventModificationContextMenuObject(clipInfo, events[num6].time, num6, this.m_EventsSelected));
-					genericMenu.AddItem(new GUIContent((num9 <= 1) ? "Delete Animation Event" : "Delete Animation Events"), false, new GenericMenu.MenuFunction2(this.EventLineContextMenuDelete), new EventManipulationHandler.EventModificationContextMenuObject(clipInfo, events[num6].time, num6, this.m_EventsSelected));
+					genericMenu.AddItem(EditorGUIUtility.TrTextContent("Add Animation Event", null, null), false, new GenericMenu.MenuFunction2(this.EventLineContextMenuAdd), new EventManipulationHandler.EventModificationContextMenuObject(clipInfo, events[num6].time, num6, this.m_EventsSelected));
+					genericMenu.AddItem((num9 <= 1) ? this.m_DeleteAnimationEventText : this.m_DeleteAnimationEventsText, false, new GenericMenu.MenuFunction2(this.EventLineContextMenuDelete), new EventManipulationHandler.EventModificationContextMenuObject(clipInfo, events[num6].time, num6, this.m_EventsSelected));
 					genericMenu.ShowAsContext();
 					this.m_InstantTooltipText = null;
 					break;
@@ -166,10 +170,10 @@ namespace UnityEditor
 				int num10 = this.m_EventsSelected.Count((bool selected) => selected);
 				float time = Mathf.Max(this.m_Timeline.PixelToTime(Event.current.mousePosition.x, rect), 0f);
 				GenericMenu genericMenu2 = new GenericMenu();
-				genericMenu2.AddItem(new GUIContent("Add Animation Event"), false, new GenericMenu.MenuFunction2(this.EventLineContextMenuAdd), new EventManipulationHandler.EventModificationContextMenuObject(clipInfo, time, -1, this.m_EventsSelected));
+				genericMenu2.AddItem(EditorGUIUtility.TrTextContent("Add Animation Event", null, null), false, new GenericMenu.MenuFunction2(this.EventLineContextMenuAdd), new EventManipulationHandler.EventModificationContextMenuObject(clipInfo, time, -1, this.m_EventsSelected));
 				if (num10 > 0)
 				{
-					genericMenu2.AddItem(new GUIContent((num10 <= 1) ? "Delete Animation Event" : "Delete Animation Events"), false, new GenericMenu.MenuFunction2(this.EventLineContextMenuDelete), new EventManipulationHandler.EventModificationContextMenuObject(clipInfo, time, -1, this.m_EventsSelected));
+					genericMenu2.AddItem((num10 <= 1) ? this.m_DeleteAnimationEventText : this.m_DeleteAnimationEventsText, false, new GenericMenu.MenuFunction2(this.EventLineContextMenuDelete), new EventManipulationHandler.EventModificationContextMenuObject(clipInfo, time, -1, this.m_EventsSelected));
 				}
 				genericMenu2.ShowAsContext();
 				this.m_InstantTooltipText = null;

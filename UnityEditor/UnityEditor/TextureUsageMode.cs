@@ -5,11 +5,14 @@ namespace UnityEditor
 	internal enum TextureUsageMode
 	{
 		Default,
-		LightmapDoubleLDR,
-		LightmapRGBM,
+		BakedLightmapDoubleLDR,
+		BakedLightmapRGBM,
 		NormalmapDXT5nm,
 		NormalmapPlain,
 		RGBMEncoded,
-		AlwaysPadded
+		AlwaysPadded,
+		DoubleLDR,
+		BakedLightmapFullHDR,
+		RealtimeLightmapRGBM
 	}
 }

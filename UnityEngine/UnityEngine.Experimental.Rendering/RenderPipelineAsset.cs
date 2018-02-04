@@ -26,7 +26,62 @@ namespace UnityEngine.Experimental.Rendering
 			return renderPipeline;
 		}
 
+		public virtual int GetTerrainBrushPassIndex()
+		{
+			return 2500;
+		}
+
+		public virtual Material GetDefaultMaterial()
+		{
+			return null;
+		}
+
+		public virtual Material GetDefaultParticleMaterial()
+		{
+			return null;
+		}
+
+		public virtual Material GetDefaultLineMaterial()
+		{
+			return null;
+		}
+
+		public virtual Material GetDefaultTerrainMaterial()
+		{
+			return null;
+		}
+
+		public virtual Material GetDefaultUIMaterial()
+		{
+			return null;
+		}
+
+		public virtual Material GetDefaultUIOverdrawMaterial()
+		{
+			return null;
+		}
+
+		public virtual Material GetDefaultUIETC1SupportedMaterial()
+		{
+			return null;
+		}
+
+		public virtual Material GetDefault2DMaterial()
+		{
+			return null;
+		}
+
+		public virtual Shader GetDefaultShader()
+		{
+			return null;
+		}
+
 		protected abstract IRenderPipeline InternalCreatePipeline();
+
+		protected IEnumerable<IRenderPipeline> CreatedInstances()
+		{
+			return this.m_CreatedPipelines;
+		}
 
 		private void OnValidate()
 		{

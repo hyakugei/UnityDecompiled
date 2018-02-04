@@ -1,9 +1,14 @@
 using System;
+using UnityEditorInternal;
 using UnityEngine;
 
 namespace UnityEditor
 {
-	internal sealed class TagManager : UnityEngine.Object
+	[NativeClass(null)]
+	internal sealed class TagManager : ProjectSettingsBase
 	{
+		private TagManager()
+		{
+		}
 	}
 }

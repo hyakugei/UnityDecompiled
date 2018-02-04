@@ -64,29 +64,37 @@ namespace UnityEditor.Modules
 			internal virtual void Reset(PluginImporterInspector inspector)
 			{
 				string platformData = inspector.importer.GetPlatformData(this.platformName, this.key);
+				this.ParseStringValue(inspector, platformData, false);
+			}
+
+			protected void ParseStringValue(PluginImporterInspector inspector, string valueString, bool muteWarnings = false)
+			{
 				try
 				{
-					this.value = TypeDescriptor.GetConverter(this.type).ConvertFromString(platformData);
+					this.value = TypeDescriptor.GetConverter(this.type).ConvertFromString(valueString);
 				}
 				catch
 				{
 					this.value = this.defaultValue;
-					if (!string.IsNullOrEmpty(platformData))
+					if (!muteWarnings && !string.IsNullOrEmpty(valueString))
 					{
-						Debug.LogWarning(string.Concat(new object[]
+						if (inspector.importer.GetCompatibleWithPlatform(this.platformName))
 						{
-							"Failed to parse value ('",
-							platformData,
-							"') for ",
-							this.key,
-							", platform: ",
-							this.platformName,
-							", type: ",
-							this.type,
-							". Default value will be set '",
-							this.defaultValue,
-							"'"
-						}));
+							Debug.LogWarning(string.Concat(new object[]
+							{
+								"Failed to parse value ('",
+								valueString,
+								"') for ",
+								this.key,
+								", platform: ",
+								this.platformName,
+								", type: ",
+								this.type,
+								". Default value will be set '",
+								this.defaultValue,
+								"'"
+							}));
+						}
 					}
 				}
 			}
@@ -193,32 +201,37 @@ namespace UnityEditor.Modules
 
 		public virtual string CalculateFinalPluginPath(string platformName, PluginImporter imp)
 		{
-			return Path.GetFileName(imp.assetPath);
+			string platformData = imp.GetPlatformData(platformName, "CPU");
+			string result;
+			if (!string.IsNullOrEmpty(platformData) && string.Compare(platformData, "AnyCPU", true) != 0 && string.Compare(platformData, "None", true) != 0)
+			{
+				result = Path.Combine(platformData, Path.GetFileName(imp.assetPath));
+			}
+			else
+			{
+				result = Path.GetFileName(imp.assetPath);
+			}
+			return result;
 		}
 
 		protected Dictionary<string, List<PluginImporter>> GetCompatiblePlugins(string buildTargetName)
 		{
-			PluginImporter[] array = (from imp in PluginImporter.GetAllImporters()
-			where (imp.GetCompatibleWithPlatform(buildTargetName) || imp.GetCompatibleWithAnyPlatform()) && !string.IsNullOrEmpty(imp.assetPath)
-			select imp).ToArray<PluginImporter>();
+			IEnumerable<PluginImporter> enumerable = from imp in PluginImporter.GetAllImporters()
+			where imp.GetCompatibleWithPlatformOrAnyPlatformBuildTarget(buildTargetName)
+			select imp;
 			Dictionary<string, List<PluginImporter>> dictionary = new Dictionary<string, List<PluginImporter>>();
-			PluginImporter[] array2 = array;
-			for (int i = 0; i < array2.Length; i++)
+			foreach (PluginImporter current in enumerable)
 			{
-				PluginImporter pluginImporter = array2[i];
-				if (!string.IsNullOrEmpty(pluginImporter.assetPath))
+				string text = this.CalculateFinalPluginPath(buildTargetName, current);
+				if (!string.IsNullOrEmpty(text))
 				{
-					string text = this.CalculateFinalPluginPath(buildTargetName, pluginImporter);
-					if (!string.IsNullOrEmpty(text))
+					List<PluginImporter> list = null;
+					if (!dictionary.TryGetValue(text, out list))
 					{
-						List<PluginImporter> list = null;
-						if (!dictionary.TryGetValue(text, out list))
-						{
-							list = new List<PluginImporter>();
-							dictionary[text] = list;
-						}
-						list.Add(pluginImporter);
+						list = new List<PluginImporter>();
+						dictionary[text] = list;
 					}
+					list.Add(current);
 				}
 			}
 			return dictionary;

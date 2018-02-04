@@ -1,27 +1,39 @@
 using System;
 using System.IO;
 using System.Text;
-using UnityEngine.Internal;
+using UnityEngine.Bindings;
 
 namespace UnityEngine
 {
-	internal sealed class WWWTranscoder
+	[VisibleToOtherModules(new string[]
 	{
-		private static byte[] ucHexChars = WWW.DefaultEncoding.GetBytes("0123456789ABCDEF");
+		"UnityEngine.UnityWebRequestWWWModule"
+	})]
+	internal class WWWTranscoder
+	{
+		private static byte[] ucHexChars = WWWForm.DefaultEncoding.GetBytes("0123456789ABCDEF");
 
-		private static byte[] lcHexChars = WWW.DefaultEncoding.GetBytes("0123456789abcdef");
+		private static byte[] lcHexChars = WWWForm.DefaultEncoding.GetBytes("0123456789abcdef");
 
 		private static byte urlEscapeChar = 37;
 
-		private static byte urlSpace = 43;
+		private static byte[] urlSpace = new byte[]
+		{
+			43
+		};
 
-		private static byte[] urlForbidden = WWW.DefaultEncoding.GetBytes("@&;:<>=?\"'/\\!#%+$,{}|^[]`");
+		private static byte[] dataSpace = WWWForm.DefaultEncoding.GetBytes("%20");
+
+		private static byte[] urlForbidden = WWWForm.DefaultEncoding.GetBytes("@&;:<>=?\"'/\\!#%+$,{}|^[]`");
 
 		private static byte qpEscapeChar = 61;
 
-		private static byte qpSpace = 95;
+		private static byte[] qpSpace = new byte[]
+		{
+			95
+		};
 
-		private static byte[] qpForbidden = WWW.DefaultEncoding.GetBytes("&;=?\"'%+_");
+		private static byte[] qpForbidden = WWWForm.DefaultEncoding.GetBytes("&;=?\"'%+_");
 
 		private static byte Hex2Byte(byte[] b, int offset)
 		{
@@ -63,17 +75,15 @@ namespace UnityEngine
 			};
 		}
 
-		[ExcludeFromDocs]
 		public static string URLEncode(string toEncode)
 		{
-			Encoding uTF = Encoding.UTF8;
-			return WWWTranscoder.URLEncode(toEncode, uTF);
+			return WWWTranscoder.URLEncode(toEncode, Encoding.UTF8);
 		}
 
-		public static string URLEncode(string toEncode, [DefaultValue("Encoding.UTF8")] Encoding e)
+		public static string URLEncode(string toEncode, Encoding e)
 		{
 			byte[] array = WWWTranscoder.Encode(e.GetBytes(toEncode), WWWTranscoder.urlEscapeChar, WWWTranscoder.urlSpace, WWWTranscoder.urlForbidden, false);
-			return WWW.DefaultEncoding.GetString(array, 0, array.Length);
+			return WWWForm.DefaultEncoding.GetString(array, 0, array.Length);
 		}
 
 		public static byte[] URLEncode(byte[] toEncode)
@@ -81,17 +91,31 @@ namespace UnityEngine
 			return WWWTranscoder.Encode(toEncode, WWWTranscoder.urlEscapeChar, WWWTranscoder.urlSpace, WWWTranscoder.urlForbidden, false);
 		}
 
-		[ExcludeFromDocs]
-		public static string QPEncode(string toEncode)
+		public static string DataEncode(string toEncode)
 		{
-			Encoding uTF = Encoding.UTF8;
-			return WWWTranscoder.QPEncode(toEncode, uTF);
+			return WWWTranscoder.DataEncode(toEncode, Encoding.UTF8);
 		}
 
-		public static string QPEncode(string toEncode, [DefaultValue("Encoding.UTF8")] Encoding e)
+		public static string DataEncode(string toEncode, Encoding e)
+		{
+			byte[] array = WWWTranscoder.Encode(e.GetBytes(toEncode), WWWTranscoder.urlEscapeChar, WWWTranscoder.dataSpace, WWWTranscoder.urlForbidden, false);
+			return WWWForm.DefaultEncoding.GetString(array, 0, array.Length);
+		}
+
+		public static byte[] DataEncode(byte[] toEncode)
+		{
+			return WWWTranscoder.Encode(toEncode, WWWTranscoder.urlEscapeChar, WWWTranscoder.dataSpace, WWWTranscoder.urlForbidden, false);
+		}
+
+		public static string QPEncode(string toEncode)
+		{
+			return WWWTranscoder.QPEncode(toEncode, Encoding.UTF8);
+		}
+
+		public static string QPEncode(string toEncode, Encoding e)
 		{
 			byte[] array = WWWTranscoder.Encode(e.GetBytes(toEncode), WWWTranscoder.qpEscapeChar, WWWTranscoder.qpSpace, WWWTranscoder.qpForbidden, true);
-			return WWW.DefaultEncoding.GetString(array, 0, array.Length);
+			return WWWForm.DefaultEncoding.GetString(array, 0, array.Length);
 		}
 
 		public static byte[] QPEncode(byte[] toEncode)
@@ -99,7 +123,7 @@ namespace UnityEngine
 			return WWWTranscoder.Encode(toEncode, WWWTranscoder.qpEscapeChar, WWWTranscoder.qpSpace, WWWTranscoder.qpForbidden, true);
 		}
 
-		public static byte[] Encode(byte[] input, byte escapeChar, byte space, byte[] forbidden, bool uppercase)
+		public static byte[] Encode(byte[] input, byte escapeChar, byte[] space, byte[] forbidden, bool uppercase)
 		{
 			byte[] result;
 			using (MemoryStream memoryStream = new MemoryStream(input.Length * 2))
@@ -108,7 +132,7 @@ namespace UnityEngine
 				{
 					if (input[i] == 32)
 					{
-						memoryStream.WriteByte(space);
+						memoryStream.Write(space, 0, space.Length);
 					}
 					else if (input[i] < 32 || input[i] > 126 || WWWTranscoder.ByteArrayContains(forbidden, input[i]))
 					{
@@ -141,16 +165,14 @@ namespace UnityEngine
 			return result;
 		}
 
-		[ExcludeFromDocs]
 		public static string URLDecode(string toEncode)
 		{
-			Encoding uTF = Encoding.UTF8;
-			return WWWTranscoder.URLDecode(toEncode, uTF);
+			return WWWTranscoder.URLDecode(toEncode, Encoding.UTF8);
 		}
 
-		public static string URLDecode(string toEncode, [DefaultValue("Encoding.UTF8")] Encoding e)
+		public static string URLDecode(string toEncode, Encoding e)
 		{
-			byte[] array = WWWTranscoder.Decode(WWW.DefaultEncoding.GetBytes(toEncode), WWWTranscoder.urlEscapeChar, WWWTranscoder.urlSpace);
+			byte[] array = WWWTranscoder.Decode(WWWForm.DefaultEncoding.GetBytes(toEncode), WWWTranscoder.urlEscapeChar, WWWTranscoder.urlSpace);
 			return e.GetString(array, 0, array.Length);
 		}
 
@@ -159,16 +181,30 @@ namespace UnityEngine
 			return WWWTranscoder.Decode(toEncode, WWWTranscoder.urlEscapeChar, WWWTranscoder.urlSpace);
 		}
 
-		[ExcludeFromDocs]
-		public static string QPDecode(string toEncode)
+		public static string DataDecode(string toDecode)
 		{
-			Encoding uTF = Encoding.UTF8;
-			return WWWTranscoder.QPDecode(toEncode, uTF);
+			return WWWTranscoder.DataDecode(toDecode, Encoding.UTF8);
 		}
 
-		public static string QPDecode(string toEncode, [DefaultValue("Encoding.UTF8")] Encoding e)
+		public static string DataDecode(string toDecode, Encoding e)
 		{
-			byte[] array = WWWTranscoder.Decode(WWW.DefaultEncoding.GetBytes(toEncode), WWWTranscoder.qpEscapeChar, WWWTranscoder.qpSpace);
+			byte[] array = WWWTranscoder.Decode(WWWForm.DefaultEncoding.GetBytes(toDecode), WWWTranscoder.urlEscapeChar, WWWTranscoder.dataSpace);
+			return e.GetString(array, 0, array.Length);
+		}
+
+		public static byte[] DataDecode(byte[] toDecode)
+		{
+			return WWWTranscoder.Decode(toDecode, WWWTranscoder.urlEscapeChar, WWWTranscoder.dataSpace);
+		}
+
+		public static string QPDecode(string toEncode)
+		{
+			return WWWTranscoder.QPDecode(toEncode, Encoding.UTF8);
+		}
+
+		public static string QPDecode(string toEncode, Encoding e)
+		{
+			byte[] array = WWWTranscoder.Decode(WWWForm.DefaultEncoding.GetBytes(toEncode), WWWTranscoder.qpEscapeChar, WWWTranscoder.qpSpace);
 			return e.GetString(array, 0, array.Length);
 		}
 
@@ -177,15 +213,38 @@ namespace UnityEngine
 			return WWWTranscoder.Decode(toEncode, WWWTranscoder.qpEscapeChar, WWWTranscoder.qpSpace);
 		}
 
-		public static byte[] Decode(byte[] input, byte escapeChar, byte space)
+		private static bool ByteSubArrayEquals(byte[] array, int index, byte[] comperand)
+		{
+			bool result;
+			if (array.Length - index < comperand.Length)
+			{
+				result = false;
+			}
+			else
+			{
+				for (int i = 0; i < comperand.Length; i++)
+				{
+					if (array[index + i] != comperand[i])
+					{
+						result = false;
+						return result;
+					}
+				}
+				result = true;
+			}
+			return result;
+		}
+
+		public static byte[] Decode(byte[] input, byte escapeChar, byte[] space)
 		{
 			byte[] result;
 			using (MemoryStream memoryStream = new MemoryStream(input.Length))
 			{
 				for (int i = 0; i < input.Length; i++)
 				{
-					if (input[i] == space)
+					if (WWWTranscoder.ByteSubArrayEquals(input, i, space))
 					{
+						i += space.Length - 1;
 						memoryStream.WriteByte(32);
 					}
 					else if (input[i] == escapeChar && i + 2 < input.Length)
@@ -203,14 +262,12 @@ namespace UnityEngine
 			return result;
 		}
 
-		[ExcludeFromDocs]
 		public static bool SevenBitClean(string s)
 		{
-			Encoding uTF = Encoding.UTF8;
-			return WWWTranscoder.SevenBitClean(s, uTF);
+			return WWWTranscoder.SevenBitClean(s, Encoding.UTF8);
 		}
 
-		public static bool SevenBitClean(string s, [DefaultValue("Encoding.UTF8")] Encoding e)
+		public static bool SevenBitClean(string s, Encoding e)
 		{
 			return WWWTranscoder.SevenBitClean(e.GetBytes(s));
 		}

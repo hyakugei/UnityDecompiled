@@ -554,6 +554,7 @@ namespace UnityEngine.UI
 				this.m_VerticalScrollbar.onValueChanged.AddListener(new UnityAction<float>(this.SetVerticalNormalizedPosition));
 			}
 			CanvasUpdateRegistry.RegisterCanvasElementForLayoutRebuild(this);
+			this.SetDirty();
 		}
 
 		protected override void OnDisable()
@@ -711,7 +712,6 @@ namespace UnityEngine.UI
 			if (this.m_Content)
 			{
 				this.EnsureLayoutHasRebuilt();
-				this.UpdateScrollbarVisibility();
 				this.UpdateBounds();
 				float unscaledDeltaTime = Time.unscaledDeltaTime;
 				Vector2 vector = this.CalculateOffset(Vector2.zero);
@@ -746,15 +746,12 @@ namespace UnityEngine.UI
 							this.m_Velocity[i] = 0f;
 						}
 					}
-					if (this.m_Velocity != Vector2.zero)
+					if (this.m_MovementType == ScrollRect.MovementType.Clamped)
 					{
-						if (this.m_MovementType == ScrollRect.MovementType.Clamped)
-						{
-							vector = this.CalculateOffset(vector2 - this.m_Content.anchoredPosition);
-							vector2 += vector;
-						}
-						this.SetContentAnchoredPosition(vector2);
+						vector = this.CalculateOffset(vector2 - this.m_Content.anchoredPosition);
+						vector2 += vector;
 					}
+					this.SetContentAnchoredPosition(vector2);
 				}
 				if (this.m_Dragging && this.m_Inertia)
 				{
@@ -764,9 +761,11 @@ namespace UnityEngine.UI
 				if (this.m_ViewBounds != this.m_PrevViewBounds || this.m_ContentBounds != this.m_PrevContentBounds || this.m_Content.anchoredPosition != this.m_PrevPosition)
 				{
 					this.UpdateScrollbars(vector);
+					UISystemProfilerApi.AddMarker("ScrollRect.value", this);
 					this.m_OnValueChanged.Invoke(this.normalizedPosition);
 					this.UpdatePrevData();
 				}
+				this.UpdateScrollbarVisibility();
 			}
 		}
 
@@ -969,7 +968,7 @@ namespace UnityEngine.UI
 				this.m_ContentBounds.center = center;
 				if (this.movementType == ScrollRect.MovementType.Clamped)
 				{
-					Vector3 zero = Vector3.zero;
+					Vector2 zero = Vector2.zero;
 					if (this.m_ViewBounds.max.x > this.m_ContentBounds.max.x)
 					{
 						zero.x = Math.Min(this.m_ViewBounds.min.x - this.m_ContentBounds.min.x, this.m_ViewBounds.max.x - this.m_ContentBounds.max.x);
@@ -986,16 +985,18 @@ namespace UnityEngine.UI
 					{
 						zero.y = Math.Min(this.m_ViewBounds.min.y - this.m_ContentBounds.min.y, this.m_ViewBounds.max.y - this.m_ContentBounds.max.y);
 					}
-					if (zero != Vector3.zero)
+					if (zero.sqrMagnitude > 1.401298E-45f)
 					{
-						this.m_Content.Translate(zero);
-						this.m_ContentBounds = this.GetBounds();
-						size = this.m_ContentBounds.size;
-						center = this.m_ContentBounds.center;
-						pivot = this.m_Content.pivot;
+						center = this.m_Content.anchoredPosition + zero;
+						if (!this.m_Horizontal)
+						{
+							center.x = this.m_Content.anchoredPosition.x;
+						}
+						if (!this.m_Vertical)
+						{
+							center.y = this.m_Content.anchoredPosition.y;
+						}
 						ScrollRect.AdjustBounds(ref this.m_ViewBounds, ref pivot, ref size, ref center);
-						this.m_ContentBounds.size = size;
-						this.m_ContentBounds.center = center;
 					}
 				}
 			}

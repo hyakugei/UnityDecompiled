@@ -1,6 +1,5 @@
 using System;
 using System.Runtime.CompilerServices;
-using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
@@ -11,12 +10,12 @@ namespace UnityEngine
 			get
 			{
 				Vector2 result;
-				this.INTERNAL_get_anchor(out result);
+				this.get_anchor_Injected(out result);
 				return result;
 			}
 			set
 			{
-				this.INTERNAL_set_anchor(ref value);
+				this.set_anchor_Injected(ref value);
 			}
 		}
 
@@ -25,69 +24,57 @@ namespace UnityEngine
 			get
 			{
 				Vector2 result;
-				this.INTERNAL_get_target(out result);
+				this.get_target_Injected(out result);
 				return result;
 			}
 			set
 			{
-				this.INTERNAL_set_target(ref value);
+				this.set_target_Injected(ref value);
 			}
 		}
 
 		public extern bool autoConfigureTarget
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern float maxForce
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern float dampingRatio
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern float frequency
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void INTERNAL_get_anchor(out Vector2 value);
+		private extern void get_anchor_Injected(out Vector2 ret);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void INTERNAL_set_anchor(ref Vector2 value);
+		private extern void set_anchor_Injected(ref Vector2 value);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void INTERNAL_get_target(out Vector2 value);
+		private extern void get_target_Injected(out Vector2 ret);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void INTERNAL_set_target(ref Vector2 value);
+		private extern void set_target_Injected(ref Vector2 value);
 	}
 }

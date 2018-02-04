@@ -14,6 +14,8 @@ namespace UnityEditor.Collaboration
 
 		private ulong m_TimeStamp;
 
+		private string m_Hash;
+
 		public string userID
 		{
 			get
@@ -43,6 +45,14 @@ namespace UnityEditor.Collaboration
 			get
 			{
 				return this.m_TimeStamp;
+			}
+		}
+
+		public string hash
+		{
+			get
+			{
+				return this.m_Hash;
 			}
 		}
 

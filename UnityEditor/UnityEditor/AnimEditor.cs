@@ -50,16 +50,25 @@ namespace UnityEditor
 		private bool m_TriggerFraming;
 
 		[NonSerialized]
-		private bool m_StylesInitialized;
-
-		[NonSerialized]
 		private bool m_Initialized;
 
-		internal static PrefColor kEulerXColor = new PrefColor("Testing/EulerX", 1f, 0f, 1f, 1f);
+		internal static PrefColor kEulerXColor = new PrefColor("Animation/EulerX", 1f, 0f, 1f, 1f);
 
-		internal static PrefColor kEulerYColor = new PrefColor("Testing/EulerY", 1f, 1f, 0f, 1f);
+		internal static PrefColor kEulerYColor = new PrefColor("Animation/EulerY", 1f, 1f, 0f, 1f);
 
-		internal static PrefColor kEulerZColor = new PrefColor("Testing/EulerZ", 0f, 1f, 1f, 1f);
+		internal static PrefColor kEulerZColor = new PrefColor("Animation/EulerZ", 0f, 1f, 1f, 1f);
+
+		private static Color s_SelectionRangeColorLight = new Color32(255, 255, 255, 90);
+
+		private static Color s_SelectionRangeColorDark = new Color32(200, 200, 200, 40);
+
+		private static Color s_OutOfRangeColorLight = new Color32(160, 160, 160, 127);
+
+		private static Color s_OutOfRangeColorDark = new Color32(40, 40, 40, 127);
+
+		private static Color s_InRangeColorLight = new Color32(211, 211, 211, 255);
+
+		private static Color s_InRangeColorDark = new Color32(75, 75, 75, 255);
 
 		internal static PrefKey kAnimationPlayToggle = new PrefKey("Animation/Play Animation", " ");
 
@@ -75,7 +84,9 @@ namespace UnityEditor
 
 		internal static PrefKey kAnimationLastKey = new PrefKey("Animation/Last Keyframe", "#.");
 
-		internal static PrefKey kAnimationRecordKeyframe = new PrefKey("Animation/Record Keyframe", "k");
+		internal static PrefKey kAnimationRecordKeyframeSelected = new PrefKey("Animation/Key Selected", "k");
+
+		internal static PrefKey kAnimationRecordKeyframeModified = new PrefKey("Animation/Key Modified", "#k");
 
 		internal static PrefKey kAnimationShowCurvesToggle = new PrefKey("Animation/Show Curves", "c");
 
@@ -115,6 +126,30 @@ namespace UnityEditor
 			}
 		}
 
+		private static Color selectionRangeColor
+		{
+			get
+			{
+				return (!EditorGUIUtility.isProSkin) ? AnimEditor.s_SelectionRangeColorLight : AnimEditor.s_SelectionRangeColorDark;
+			}
+		}
+
+		private static Color outOfRangeColor
+		{
+			get
+			{
+				return (!EditorGUIUtility.isProSkin) ? AnimEditor.s_OutOfRangeColorLight : AnimEditor.s_OutOfRangeColorDark;
+			}
+		}
+
+		private static Color inRangeColor
+		{
+			get
+			{
+				return (!EditorGUIUtility.isProSkin) ? AnimEditor.s_InRangeColorLight : AnimEditor.s_InRangeColorDark;
+			}
+		}
+
 		public AnimationWindowState state
 		{
 			get
@@ -123,23 +158,15 @@ namespace UnityEditor
 			}
 		}
 
-		public AnimationWindowSelection selection
+		public AnimationWindowSelectionItem selection
 		{
 			get
 			{
 				return this.m_State.selection;
 			}
-		}
-
-		public AnimationWindowSelectionItem selectedItem
-		{
-			get
-			{
-				return this.m_State.selectedItem;
-			}
 			set
 			{
-				this.m_State.selectedItem = value;
+				this.m_State.selection = value;
 			}
 		}
 
@@ -268,7 +295,12 @@ namespace UnityEditor
 				}
 				else
 				{
-					if (this.triggerFraming && Event.current.type == EventType.Repaint)
+					Event current = Event.current;
+					if (current.type == EventType.MouseDown && contentLayoutRect.Contains(current.mousePosition))
+					{
+						this.m_Events.ClearSelection();
+					}
+					if (this.triggerFraming && current.type == EventType.Repaint)
 					{
 						this.m_DopeSheet.FrameClip();
 						this.m_CurveEditor.FrameClip(true, true);
@@ -354,6 +386,7 @@ namespace UnityEditor
 			CurveEditor expr_E9 = this.m_CurveEditor;
 			expr_E9.curvesUpdated = (CurveEditor.CallbackFunction)Delegate.Combine(expr_E9.curvesUpdated, new CurveEditor.CallbackFunction(this.SaveChangedCurvesFromCurveEditor));
 			this.m_CurveEditor.OnEnable();
+			EditorApplication.globalEventHandler = (EditorApplication.CallbackFunction)Delegate.Combine(EditorApplication.globalEventHandler, new EditorApplication.CallbackFunction(this.HandleGlobalHotkeys));
 		}
 
 		public void OnDisable()
@@ -370,6 +403,7 @@ namespace UnityEditor
 				this.m_DopeSheet.OnDisable();
 			}
 			this.m_State.OnDisable();
+			EditorApplication.globalEventHandler = (EditorApplication.CallbackFunction)Delegate.Remove(EditorApplication.globalEventHandler, new EditorApplication.CallbackFunction(this.HandleGlobalHotkeys));
 		}
 
 		public void OnDestroy()
@@ -383,7 +417,6 @@ namespace UnityEditor
 
 		public void OnSelectionChanged()
 		{
-			this.m_State.OnSelectionChanged();
 			this.triggerFraming = true;
 			this.Repaint();
 		}
@@ -444,9 +477,9 @@ namespace UnityEditor
 					if (AnimationWindowUtility.InitializeGameobjectForAnimation(this.m_State.activeGameObject))
 					{
 						Component closestAnimationPlayerComponentInParents = AnimationWindowUtility.GetClosestAnimationPlayerComponentInParents(this.m_State.activeGameObject.transform);
-						this.m_State.selection.UpdateClip(this.m_State.selectedItem, AnimationUtility.GetAnimationClips(closestAnimationPlayerComponentInParents.gameObject)[0]);
-						GUIUtility.ExitGUI();
+						this.m_State.activeAnimationClip = AnimationUtility.GetAnimationClips(closestAnimationPlayerComponentInParents.gameObject)[0];
 					}
+					GUIUtility.ExitGUI();
 				}
 			}
 			else
@@ -466,7 +499,7 @@ namespace UnityEditor
 		{
 			eventsRect.width -= 15f;
 			GUI.Label(eventsRect, GUIContent.none, AnimationWindowStyles.eventBackground);
-			using (new EditorGUI.DisabledScope(this.m_State.selectedItem == null || !this.m_State.selectedItem.animationIsEditable))
+			using (new EditorGUI.DisabledScope(!this.selection.animationIsEditable))
 			{
 				this.m_Events.EventLineGUI(eventsRect, this.m_State);
 			}
@@ -514,8 +547,7 @@ namespace UnityEditor
 
 		private void FrameRateInputFieldOnGUI()
 		{
-			AnimationWindowSelectionItem selectedItem = this.m_State.selectedItem;
-			using (new EditorGUI.DisabledScope(selectedItem == null || !selectedItem.animationIsEditable))
+			using (new EditorGUI.DisabledScope(!this.selection.animationIsEditable))
 			{
 				GUILayout.Label(AnimationWindowStyles.samples, AnimationWindowStyles.toolbarLabel, new GUILayoutOption[0]);
 				EditorGUI.BeginChangeCheck();
@@ -548,20 +580,18 @@ namespace UnityEditor
 			if (!this.m_State.showCurveEditor)
 			{
 				Rect position2 = new Rect(position.xMin, position.yMin, position.width - 15f, position.height - 15f);
-				Rect position3 = new Rect(position2.xMin, position2.yMin, position2.width, 16f);
 				this.m_DopeSheet.BeginViewGUI();
 				GUI.Label(position, GUIContent.none, AnimationWindowStyles.dopeSheetBackground);
 				if (!this.m_State.disabled)
 				{
 					this.m_DopeSheet.TimeRuler(position2, this.m_State.frameRate, false, true, 0.12f, this.m_State.timeFormat);
-					this.m_DopeSheet.DrawMasterDopelineBackground(position3);
 				}
 				this.m_DopeSheet.OnGUI(position2, this.m_State.hierarchyState.scrollPos * -1f);
 				this.m_DopeSheet.EndViewGUI();
-				Rect position4 = new Rect(rect.xMax, rect.yMin, 15f, position2.height);
+				Rect position3 = new Rect(rect.xMax, rect.yMin, 15f, position2.height);
 				float height = this.m_Hierarchy.GetTotalRect().height;
 				float bottomValue = Mathf.Max(height, this.m_Hierarchy.GetContentSize().y);
-				this.m_State.hierarchyState.scrollPos.y = GUI.VerticalScrollbar(position4, this.m_State.hierarchyState.scrollPos.y, height, 0f, bottomValue);
+				this.m_State.hierarchyState.scrollPos.y = GUI.VerticalScrollbar(position3, this.m_State.hierarchyState.scrollPos.y, height, 0f, bottomValue);
 				if (this.m_DopeSheet.spritePreviewLoading)
 				{
 					this.Repaint();
@@ -600,38 +630,34 @@ namespace UnityEditor
 
 		private void TimeRulerOnGUI(Rect timeRulerRect)
 		{
-			Rect position = new Rect(timeRulerRect.xMin, timeRulerRect.yMin, timeRulerRect.width - 15f, timeRulerRect.height);
+			Rect rect = new Rect(timeRulerRect.xMin, timeRulerRect.yMin, timeRulerRect.width - 15f, timeRulerRect.height);
 			GUI.Box(timeRulerRect, GUIContent.none, EditorStyles.toolbarButton);
-			this.m_State.timeArea.TimeRuler(position, this.m_State.frameRate, true, false, 1f, this.m_State.timeFormat);
 			if (!this.m_State.disabled)
 			{
-				GUI.BeginGroup(position);
-				Rect rect = new Rect(0f, 0f, position.width, position.height);
-				this.RenderClipOverlay(rect);
+				this.RenderInRangeOverlay(rect);
 				this.RenderSelectionOverlay(rect);
-				GUI.EndGroup();
+			}
+			this.m_State.timeArea.TimeRuler(rect, this.m_State.frameRate, true, false, 1f, this.m_State.timeFormat);
+			if (!this.m_State.disabled)
+			{
+				this.RenderOutOfRangeOverlay(rect);
 			}
 		}
 
 		private void AddEventButtonOnGUI()
 		{
-			AnimationWindowSelectionItem selectedItem = this.m_State.selectedItem;
-			if (selectedItem != null)
+			using (new EditorGUI.DisabledScope(!this.selection.animationIsEditable))
 			{
-				using (new EditorGUI.DisabledScope(!selectedItem.animationIsEditable))
+				if (GUILayout.Button(AnimationWindowStyles.addEventContent, EditorStyles.toolbarButton, new GUILayoutOption[0]))
 				{
-					if (GUILayout.Button(AnimationWindowStyles.addEventContent, EditorStyles.toolbarButton, new GUILayoutOption[0]))
-					{
-						this.m_Events.AddEvent(this.m_State.currentTime - selectedItem.timeOffset, selectedItem.rootGameObject, selectedItem.animationClip);
-					}
+					this.m_Events.AddEvent(this.m_State.currentTime, this.selection.rootGameObject, this.selection.animationClip);
 				}
 			}
 		}
 
 		private void AddKeyframeButtonOnGUI()
 		{
-			bool flag = this.m_State.selection.Find((AnimationWindowSelectionItem selectedItem) => selectedItem.animationIsEditable);
-			using (new EditorGUI.DisabledScope(!flag))
+			using (new EditorGUI.DisabledScope(!this.selection.animationIsEditable))
 			{
 				if (GUILayout.Button(AnimationWindowStyles.addKeyframeContent, EditorStyles.toolbarButton, new GUILayoutOption[0]))
 				{
@@ -646,6 +672,10 @@ namespace UnityEditor
 
 		private void PlayControlsOnGUI()
 		{
+			using (new EditorGUI.DisabledScope(!this.controlInterface.canPreview))
+			{
+				this.PreviewButtonOnGUI();
+			}
 			using (new EditorGUI.DisabledScope(!this.controlInterface.canRecord))
 			{
 				this.RecordButtonOnGUI();
@@ -693,7 +723,7 @@ namespace UnityEditor
 				if (!GUILayout.Toggle(true, AnimationWindowStyles.sequencerLinkContent, EditorStyles.toolbarButton, new GUILayoutOption[0]))
 				{
 					this.m_State.linkedWithSequencer = false;
-					this.m_State.selection.Clear();
+					this.m_State.selection = null;
 					GUIUtility.ExitGUI();
 				}
 			}
@@ -751,13 +781,44 @@ namespace UnityEditor
 					}
 					Event.current.Use();
 				}
-				if (AnimEditor.kAnimationRecordKeyframe.activated)
+				if (AnimEditor.kAnimationRecordKeyframeSelected.activated)
 				{
 					this.SaveCurveEditorKeySelection();
-					AnimationKeyTime time = AnimationKeyTime.Time(this.m_State.currentTime, this.m_State.frameRate);
-					AnimationWindowUtility.AddSelectedKeyframes(this.m_State, time);
+					AnimationWindowUtility.AddSelectedKeyframes(this.m_State, this.controlInterface.time);
 					this.UpdateSelectedKeysToCurveEditor();
 					Event.current.Use();
+				}
+				if (AnimEditor.kAnimationRecordKeyframeModified.activated)
+				{
+					this.SaveCurveEditorKeySelection();
+					this.controlInterface.ProcessCandidates();
+					this.UpdateSelectedKeysToCurveEditor();
+					Event.current.Use();
+				}
+			}
+		}
+
+		public void HandleGlobalHotkeys()
+		{
+			if (this.m_State.previewing)
+			{
+				if (GUI.enabled && !this.m_State.disabled)
+				{
+					if (AnimEditor.kAnimationRecordKeyframeSelected.activated)
+					{
+						this.SaveCurveEditorKeySelection();
+						AnimationWindowUtility.AddSelectedKeyframes(this.m_State, this.controlInterface.time);
+						this.controlInterface.ClearCandidates();
+						this.UpdateSelectedKeysToCurveEditor();
+						Event.current.Use();
+					}
+					if (AnimEditor.kAnimationRecordKeyframeModified.activated)
+					{
+						this.SaveCurveEditorKeySelection();
+						this.controlInterface.ProcessCandidates();
+						this.UpdateSelectedKeysToCurveEditor();
+						Event.current.Use();
+					}
 				}
 			}
 		}
@@ -780,9 +841,33 @@ namespace UnityEditor
 			}
 		}
 
+		private void PreviewButtonOnGUI()
+		{
+			EditorGUI.BeginChangeCheck();
+			bool flag = GUILayout.Toggle(this.controlInterface.previewing, AnimationWindowStyles.previewContent, EditorStyles.toolbarButton, new GUILayoutOption[0]);
+			if (EditorGUI.EndChangeCheck())
+			{
+				if (flag)
+				{
+					this.m_State.StartPreview();
+				}
+				else
+				{
+					this.m_State.StopPreview();
+				}
+			}
+		}
+
 		private void RecordButtonOnGUI()
 		{
 			EditorGUI.BeginChangeCheck();
+			Color color = GUI.color;
+			if (this.controlInterface.recording)
+			{
+				Color recordedPropertyColor = AnimationMode.recordedPropertyColor;
+				recordedPropertyColor.a *= GUI.color.a;
+				GUI.color = recordedPropertyColor;
+			}
 			bool flag = GUILayout.Toggle(this.controlInterface.recording, AnimationWindowStyles.recordContent, EditorStyles.toolbarButton, new GUILayoutOption[0]);
 			if (EditorGUI.EndChangeCheck())
 			{
@@ -793,8 +878,10 @@ namespace UnityEditor
 				else
 				{
 					this.m_State.StopRecording();
+					InspectorWindow.RepaintAllInspectors();
 				}
 			}
+			GUI.color = color;
 		}
 
 		private void SwitchBetweenCurvesAndDopesheet()
@@ -840,23 +927,51 @@ namespace UnityEditor
 						num = num3 - 7f;
 						num2 = num3 + 7f;
 					}
-					AnimationWindowUtility.DrawRangeOfSelection(rect, num, num2);
+					AnimationWindowUtility.DrawSelectionOverlay(rect, AnimEditor.selectionRangeColor, num, num2);
 				}
 			}
 		}
 
-		private void RenderClipOverlay(Rect rect)
+		private void RenderInRangeOverlay(Rect rect)
 		{
+			Color color = AnimEditor.inRangeColor;
+			if (this.controlInterface.recording)
+			{
+				color *= AnimationMode.recordedPropertyColor;
+			}
+			else if (this.controlInterface.previewing)
+			{
+				color *= AnimationMode.animatedPropertyColor;
+			}
+			else
+			{
+				color = Color.clear;
+			}
 			Vector2 timeRange = this.m_State.timeRange;
-			AnimationWindowUtility.DrawRangeOfClip(rect, this.m_State.TimeToPixel(timeRange.x) + rect.xMin, this.m_State.TimeToPixel(timeRange.y) + rect.xMin);
+			AnimationWindowUtility.DrawInRangeOverlay(rect, color, this.m_State.TimeToPixel(timeRange.x) + rect.xMin, this.m_State.TimeToPixel(timeRange.y) + rect.xMin);
+		}
+
+		private void RenderOutOfRangeOverlay(Rect rect)
+		{
+			Color color = AnimEditor.outOfRangeColor;
+			if (this.controlInterface.recording)
+			{
+				color *= AnimationMode.recordedPropertyColor;
+			}
+			else if (this.controlInterface.previewing)
+			{
+				color *= AnimationMode.animatedPropertyColor;
+			}
+			Vector2 timeRange = this.m_State.timeRange;
+			AnimationWindowUtility.DrawOutOfRangeOverlay(rect, color, this.m_State.TimeToPixel(timeRange.x) + rect.xMin, this.m_State.TimeToPixel(timeRange.y) + rect.xMin);
 		}
 
 		private void SynchronizeLayout()
 		{
 			this.m_HorizontalSplitter.realSizes[1] = (int)Mathf.Min(this.m_Position.width - (float)this.m_HorizontalSplitter.realSizes[0], (float)this.m_HorizontalSplitter.realSizes[1]);
-			if (this.selectedItem != null && this.selectedItem.animationClip != null)
+			if (this.selection.animationClip != null)
 			{
-				this.m_State.frameRate = this.selectedItem.animationClip.frameRate;
+				this.m_State.frameRate = this.selection.animationClip.frameRate;
 			}
 			else
 			{
@@ -883,14 +998,14 @@ namespace UnityEditor
 						if (dictionary.TryGetValue(curveWrapper.animationClip, out value))
 						{
 							value.bindings.Add(curveWrapper.binding);
-							value.curves.Add(curveWrapper.curve);
+							value.curves.Add((curveWrapper.curve.length <= 0) ? null : curveWrapper.curve);
 						}
 						else
 						{
 							value.bindings = new List<EditorCurveBinding>();
 							value.curves = new List<AnimationCurve>();
 							value.bindings.Add(curveWrapper.binding);
-							value.curves.Add(curveWrapper.curve);
+							value.curves.Add((curveWrapper.curve.length <= 0) ? null : curveWrapper.curve);
 							dictionary.Add(curveWrapper.animationClip, value);
 						}
 					}
@@ -904,7 +1019,7 @@ namespace UnityEditor
 					Undo.RegisterCompleteObjectUndo(current.Key, "Edit Curve");
 					AnimationUtility.SetEditorCurves(current.Key, current.Value.bindings.ToArray(), current.Value.curves.ToArray());
 				}
-				this.m_State.StartRecording();
+				this.m_State.ResampleAnimation();
 			}
 		}
 
@@ -939,8 +1054,27 @@ namespace UnityEditor
 
 		private void SaveCurveEditorKeySelection()
 		{
-			this.UpdateSelectedKeysToCurveEditor();
+			if (this.m_State.showCurveEditor)
+			{
+				this.UpdateSelectedKeysFromCurveEditor();
+			}
+			else
+			{
+				this.UpdateSelectedKeysToCurveEditor();
+			}
 			this.m_CurveEditor.SaveKeySelection("Edit Curve");
+		}
+
+		public void BeginKeyModification()
+		{
+			this.SaveCurveEditorKeySelection();
+			this.m_State.SaveKeySelection("Edit Curve");
+			this.m_State.ClearKeySelections();
+		}
+
+		public void EndKeyModification()
+		{
+			this.UpdateSelectedKeysToCurveEditor();
 		}
 
 		private void HandleCopyPaste()
@@ -1090,8 +1224,6 @@ namespace UnityEditor
 			expr_2E.onStartLiveEdit = (Action)Delegate.Combine(expr_2E.onStartLiveEdit, new Action(this.OnStartLiveEdit));
 			AnimationWindowState expr_55 = this.m_State;
 			expr_55.onEndLiveEdit = (Action)Delegate.Combine(expr_55.onEndLiveEdit, new Action(this.OnEndLiveEdit));
-			AnimationWindowSelection expr_81 = this.m_State.selection;
-			expr_81.onSelectionChanged = (Action)Delegate.Combine(expr_81.onSelectionChanged, new Action(this.OnSelectionChanged));
 		}
 	}
 }

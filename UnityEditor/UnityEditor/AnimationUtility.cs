@@ -1,6 +1,7 @@
 using System;
 using System.Runtime.CompilerServices;
 using UnityEngine;
+using UnityEngine.Bindings;
 using UnityEngine.Internal;
 using UnityEngine.Scripting;
 
@@ -15,8 +16,6 @@ namespace UnityEditor
 			ClipModified
 		}
 
-		public delegate void OnCurveWasModified(AnimationClip clip, EditorCurveBinding binding, AnimationUtility.CurveModifiedType deleted);
-
 		public enum TangentMode
 		{
 			Free,
@@ -26,62 +25,17 @@ namespace UnityEditor
 			ClampedAuto
 		}
 
+		internal enum PolynomialValid
+		{
+			Valid,
+			InvalidPreWrapMode,
+			InvalidPostWrapMode,
+			TooManySegments
+		}
+
+		public delegate void OnCurveWasModified(AnimationClip clip, EditorCurveBinding binding, AnimationUtility.CurveModifiedType type);
+
 		public static AnimationUtility.OnCurveWasModified onCurveWasModified;
-
-		private static int kBrokenMask = 1;
-
-		private static int kLeftTangentMask = 30;
-
-		private static int kRightTangentMask = 480;
-
-		[Obsolete("GetAnimationClips(Animation) is deprecated. Use GetAnimationClips(GameObject) instead.")]
-		public static AnimationClip[] GetAnimationClips(Animation component)
-		{
-			return AnimationUtility.GetAnimationClips(component.gameObject);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern AnimationClip[] GetAnimationClips(GameObject gameObject);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern void SetAnimationClips(Animation animation, AnimationClip[] clips);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern EditorCurveBinding[] GetAnimatableBindings(GameObject targetObject, GameObject root);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern EditorCurveBinding[] GetScriptableObjectAnimatableBindings(ScriptableObject scriptableObject);
-
-		public static bool GetFloatValue(GameObject root, EditorCurveBinding binding, out float data)
-		{
-			return AnimationUtility.INTERNAL_CALL_GetFloatValue(root, ref binding, out data);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern bool INTERNAL_CALL_GetFloatValue(GameObject root, ref EditorCurveBinding binding, out float data);
-
-		public static Type GetEditorCurveValueType(GameObject root, EditorCurveBinding binding)
-		{
-			return AnimationUtility.INTERNAL_CALL_GetEditorCurveValueType(root, ref binding);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern Type INTERNAL_CALL_GetEditorCurveValueType(GameObject root, ref EditorCurveBinding binding);
-
-		internal static Type GetScriptableObjectEditorCurveValueType(ScriptableObject scriptableObject, EditorCurveBinding binding)
-		{
-			return AnimationUtility.INTERNAL_CALL_GetScriptableObjectEditorCurveValueType(scriptableObject, ref binding);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern Type INTERNAL_CALL_GetScriptableObjectEditorCurveValueType(ScriptableObject scriptableObject, ref EditorCurveBinding binding);
 
 		public static bool GetObjectReferenceValue(GameObject root, EditorCurveBinding binding, out UnityEngine.Object targetObject)
 		{
@@ -92,66 +46,18 @@ namespace UnityEditor
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern bool INTERNAL_CALL_GetObjectReferenceValue(GameObject root, ref EditorCurveBinding binding, out UnityEngine.Object targetObject);
 
-		public static UnityEngine.Object GetAnimatedObject(GameObject root, EditorCurveBinding binding)
-		{
-			return AnimationUtility.INTERNAL_CALL_GetAnimatedObject(root, ref binding);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern UnityEngine.Object INTERNAL_CALL_GetAnimatedObject(GameObject root, ref EditorCurveBinding binding);
-
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern Type PropertyModificationToEditorCurveBinding(PropertyModification modification, GameObject gameObject, out EditorCurveBinding binding);
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern EditorCurveBinding[] GetCurveBindings(AnimationClip clip);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern EditorCurveBinding[] GetObjectReferenceCurveBindings(AnimationClip clip);
-
-		public static ObjectReferenceKeyframe[] GetObjectReferenceCurve(AnimationClip clip, EditorCurveBinding binding)
+		[RequiredByNativeCode]
+		private static void Internal_CallOnCurveWasModified(AnimationClip clip, EditorCurveBinding binding, AnimationUtility.CurveModifiedType type)
 		{
-			return AnimationUtility.INTERNAL_CALL_GetObjectReferenceCurve(clip, ref binding);
+			if (AnimationUtility.onCurveWasModified != null)
+			{
+				AnimationUtility.onCurveWasModified(clip, binding, type);
+			}
 		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern ObjectReferenceKeyframe[] INTERNAL_CALL_GetObjectReferenceCurve(AnimationClip clip, ref EditorCurveBinding binding);
-
-		private static void Internal_SetObjectReferenceCurve(AnimationClip clip, EditorCurveBinding binding, ObjectReferenceKeyframe[] keyframes)
-		{
-			AnimationUtility.INTERNAL_CALL_Internal_SetObjectReferenceCurve(clip, ref binding, keyframes);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_Internal_SetObjectReferenceCurve(AnimationClip clip, ref EditorCurveBinding binding, ObjectReferenceKeyframe[] keyframes);
-
-		public static AnimationCurve GetEditorCurve(AnimationClip clip, EditorCurveBinding binding)
-		{
-			return AnimationUtility.INTERNAL_CALL_GetEditorCurve(clip, ref binding);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern AnimationCurve INTERNAL_CALL_GetEditorCurve(AnimationClip clip, ref EditorCurveBinding binding);
-
-		private static void Internal_SetEditorCurve(AnimationClip clip, EditorCurveBinding binding, AnimationCurve curve, bool syncEditorCurve)
-		{
-			AnimationUtility.INTERNAL_CALL_Internal_SetEditorCurve(clip, ref binding, curve, syncEditorCurve);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_Internal_SetEditorCurve(AnimationClip clip, ref EditorCurveBinding binding, AnimationCurve curve, bool syncEditorCurve);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void Internal_SyncEditorCurves(AnimationClip clip);
 
 		[RequiredByNativeCode]
 		private static void Internal_CallAnimationClipAwake(AnimationClip clip)
@@ -162,13 +68,93 @@ namespace UnityEditor
 			}
 		}
 
-		public static void SetEditorCurve(AnimationClip clip, EditorCurveBinding binding, AnimationCurve curve)
+		[Obsolete("GetAnimationClips(Animation) is deprecated. Use GetAnimationClips(GameObject) instead.")]
+		public static AnimationClip[] GetAnimationClips(Animation component)
 		{
-			AnimationUtility.Internal_SetEditorCurve(clip, binding, curve, true);
-			if (AnimationUtility.onCurveWasModified != null)
-			{
-				AnimationUtility.onCurveWasModified(clip, binding, (curve == null) ? AnimationUtility.CurveModifiedType.CurveDeleted : AnimationUtility.CurveModifiedType.CurveModified);
-			}
+			return AnimationUtility.GetAnimationClips(component.gameObject);
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern AnimationClip[] GetAnimationClips([NotNull] GameObject gameObject);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern void SetAnimationClips([NotNull] Animation animation, AnimationClip[] clips);
+
+		public static EditorCurveBinding[] GetAnimatableBindings(GameObject targetObject, GameObject root)
+		{
+			return AnimationUtility.Internal_GetGameObjectAnimatableBindings(targetObject, root);
+		}
+
+		internal static EditorCurveBinding[] GetAnimatableBindings(ScriptableObject scriptableObject)
+		{
+			return AnimationUtility.Internal_GetScriptableObjectAnimatableBindings(scriptableObject);
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern EditorCurveBinding[] Internal_GetGameObjectAnimatableBindings([NotNull] GameObject targetObject, [NotNull] GameObject root);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern EditorCurveBinding[] Internal_GetScriptableObjectAnimatableBindings([NotNull] ScriptableObject scriptableObject);
+
+		public static Type GetEditorCurveValueType(GameObject root, EditorCurveBinding binding)
+		{
+			return AnimationUtility.Internal_GetGameObjectEditorCurveValueType(root, binding);
+		}
+
+		internal static Type GetEditorCurveValueType(ScriptableObject scriptableObject, EditorCurveBinding binding)
+		{
+			return AnimationUtility.Internal_GetScriptableObjectEditorCurveValueType(scriptableObject, binding);
+		}
+
+		private static Type Internal_GetGameObjectEditorCurveValueType([NotNull] GameObject root, EditorCurveBinding binding)
+		{
+			return AnimationUtility.Internal_GetGameObjectEditorCurveValueType_Injected(root, ref binding);
+		}
+
+		private static Type Internal_GetScriptableObjectEditorCurveValueType([NotNull] ScriptableObject scriptableObject, EditorCurveBinding binding)
+		{
+			return AnimationUtility.Internal_GetScriptableObjectEditorCurveValueType_Injected(scriptableObject, ref binding);
+		}
+
+		public static bool GetFloatValue([NotNull] GameObject root, EditorCurveBinding binding, out float data)
+		{
+			return AnimationUtility.GetFloatValue_Injected(root, ref binding, out data);
+		}
+
+		public static UnityEngine.Object GetAnimatedObject([NotNull] GameObject root, EditorCurveBinding binding)
+		{
+			return AnimationUtility.GetAnimatedObject_Injected(root, ref binding);
+		}
+
+		internal static PropertyModification EditorCurveBindingToPropertyModification(EditorCurveBinding binding, [NotNull] GameObject gameObject)
+		{
+			return AnimationUtility.EditorCurveBindingToPropertyModification_Injected(ref binding, gameObject);
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern EditorCurveBinding[] GetCurveBindings([NotNull] AnimationClip clip);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern EditorCurveBinding[] GetObjectReferenceCurveBindings([NotNull] AnimationClip clip);
+
+		public static ObjectReferenceKeyframe[] GetObjectReferenceCurve([NotNull] AnimationClip clip, EditorCurveBinding binding)
+		{
+			return AnimationUtility.GetObjectReferenceCurve_Injected(clip, ref binding);
+		}
+
+		public static void SetObjectReferenceCurve([NotNull] AnimationClip clip, EditorCurveBinding binding, ObjectReferenceKeyframe[] keyframes)
+		{
+			AnimationUtility.SetObjectReferenceCurve_Injected(clip, ref binding, keyframes);
+		}
+
+		public static AnimationCurve GetEditorCurve([NotNull] AnimationClip clip, EditorCurveBinding binding)
+		{
+			return AnimationUtility.GetEditorCurve_Injected(clip, ref binding);
+		}
+
+		public static void SetEditorCurve([NotNull] AnimationClip clip, EditorCurveBinding binding, AnimationCurve curve)
+		{
+			AnimationUtility.SetEditorCurve_Injected(clip, ref binding, curve);
 		}
 
 		internal static void SetEditorCurves(AnimationClip clip, EditorCurveBinding[] bindings, AnimationCurve[] curves)
@@ -200,230 +186,96 @@ namespace UnityEditor
 			AnimationUtility.Internal_SyncEditorCurves(clip);
 		}
 
-		public static void SetObjectReferenceCurve(AnimationClip clip, EditorCurveBinding binding, ObjectReferenceKeyframe[] keyframes)
+		private static void Internal_SetEditorCurve(AnimationClip clip, EditorCurveBinding binding, AnimationCurve curve, bool syncEditorCurve)
 		{
-			AnimationUtility.Internal_SetObjectReferenceCurve(clip, binding, keyframes);
-			if (AnimationUtility.onCurveWasModified != null)
-			{
-				AnimationUtility.onCurveWasModified(clip, binding, (keyframes == null) ? AnimationUtility.CurveModifiedType.CurveDeleted : AnimationUtility.CurveModifiedType.CurveModified);
-			}
+			AnimationUtility.Internal_SetEditorCurve_Injected(clip, ref binding, curve, syncEditorCurve);
 		}
 
-		private static float Internal_CalculateLinearTangent(AnimationCurve curve, int index, int toIndex)
-		{
-			float num = curve[index].time - curve[toIndex].time;
-			float result;
-			if (Mathf.Approximately(num, 0f))
-			{
-				result = 0f;
-			}
-			else
-			{
-				result = (curve[index].value - curve[toIndex].value) / num;
-			}
-			return result;
-		}
-
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void Internal_CalculateAutoTangent(AnimationCurve curve, int index);
+		private static extern void Internal_SyncEditorCurves(AnimationClip clip);
 
-		private static void Internal_UpdateTangents(AnimationCurve curve, int index)
-		{
-			if (index >= 0 && index < curve.length)
-			{
-				Keyframe key = curve[index];
-				if (AnimationUtility.GetKeyLeftTangentMode(key) == AnimationUtility.TangentMode.Linear && index >= 1)
-				{
-					key.inTangent = AnimationUtility.Internal_CalculateLinearTangent(curve, index, index - 1);
-					curve.MoveKey(index, key);
-				}
-				if (AnimationUtility.GetKeyRightTangentMode(key) == AnimationUtility.TangentMode.Linear && index + 1 < curve.length)
-				{
-					key.outTangent = AnimationUtility.Internal_CalculateLinearTangent(curve, index, index + 1);
-					curve.MoveKey(index, key);
-				}
-				if (AnimationUtility.GetKeyLeftTangentMode(key) == AnimationUtility.TangentMode.ClampedAuto || AnimationUtility.GetKeyRightTangentMode(key) == AnimationUtility.TangentMode.ClampedAuto)
-				{
-					AnimationUtility.Internal_CalculateAutoTangent(curve, index);
-				}
-				if (AnimationUtility.GetKeyLeftTangentMode(key) == AnimationUtility.TangentMode.Auto || AnimationUtility.GetKeyRightTangentMode(key) == AnimationUtility.TangentMode.Auto)
-				{
-					curve.SmoothTangents(index, 0f);
-				}
-				if (AnimationUtility.GetKeyLeftTangentMode(key) == AnimationUtility.TangentMode.Free && AnimationUtility.GetKeyRightTangentMode(key) == AnimationUtility.TangentMode.Free && !AnimationUtility.GetKeyBroken(key))
-				{
-					key.outTangent = key.inTangent;
-					curve.MoveKey(index, key);
-				}
-				if (AnimationUtility.GetKeyLeftTangentMode(key) == AnimationUtility.TangentMode.Constant)
-				{
-					key.inTangent = float.PositiveInfinity;
-					curve.MoveKey(index, key);
-				}
-				if (AnimationUtility.GetKeyRightTangentMode(key) == AnimationUtility.TangentMode.Constant)
-				{
-					key.outTangent = float.PositiveInfinity;
-					curve.MoveKey(index, key);
-				}
-			}
-		}
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void UpdateTangentsFromModeSurrounding([NotNull] AnimationCurve curve, int index);
 
-		internal static void UpdateTangentsFromModeSurrounding(AnimationCurve curve, int index)
-		{
-			AnimationUtility.Internal_UpdateTangents(curve, index - 2);
-			AnimationUtility.Internal_UpdateTangents(curve, index - 1);
-			AnimationUtility.Internal_UpdateTangents(curve, index);
-			AnimationUtility.Internal_UpdateTangents(curve, index + 1);
-			AnimationUtility.Internal_UpdateTangents(curve, index + 2);
-		}
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void UpdateTangentsFromMode([NotNull] AnimationCurve curve);
 
-		internal static void UpdateTangentsFromMode(AnimationCurve curve)
-		{
-			for (int i = 0; i < curve.length; i++)
-			{
-				AnimationUtility.Internal_UpdateTangents(curve, i);
-			}
-		}
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern AnimationUtility.TangentMode GetKeyLeftTangentMode([NotNull] AnimationCurve curve, int index);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern AnimationUtility.TangentMode GetKeyRightTangentMode([NotNull] AnimationCurve curve, int index);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern bool GetKeyBroken([NotNull] AnimationCurve curve, int index);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern void SetKeyLeftTangentMode([NotNull] AnimationCurve curve, int index, AnimationUtility.TangentMode tangentMode);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern void SetKeyRightTangentMode([NotNull] AnimationCurve curve, int index, AnimationUtility.TangentMode tangentMode);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern void SetKeyBroken([NotNull] AnimationCurve curve, int index, bool broken);
 
 		internal static AnimationUtility.TangentMode GetKeyLeftTangentMode(Keyframe key)
 		{
-			return (AnimationUtility.TangentMode)((key.tangentMode & AnimationUtility.kLeftTangentMask) >> 1);
+			return AnimationUtility.Internal_GetKeyLeftTangentMode(key);
 		}
 
 		internal static AnimationUtility.TangentMode GetKeyRightTangentMode(Keyframe key)
 		{
-			return (AnimationUtility.TangentMode)((key.tangentMode & AnimationUtility.kRightTangentMask) >> 5);
+			return AnimationUtility.Internal_GetKeyRightTangentMode(key);
 		}
 
 		internal static bool GetKeyBroken(Keyframe key)
 		{
-			return (key.tangentMode & AnimationUtility.kBrokenMask) != 0;
+			return AnimationUtility.Internal_GetKeyBroken(key);
+		}
+
+		private static AnimationUtility.TangentMode Internal_GetKeyLeftTangentMode(Keyframe key)
+		{
+			return AnimationUtility.Internal_GetKeyLeftTangentMode_Injected(ref key);
+		}
+
+		private static AnimationUtility.TangentMode Internal_GetKeyRightTangentMode(Keyframe key)
+		{
+			return AnimationUtility.Internal_GetKeyRightTangentMode_Injected(ref key);
+		}
+
+		private static bool Internal_GetKeyBroken(Keyframe key)
+		{
+			return AnimationUtility.Internal_GetKeyBroken_Injected(ref key);
 		}
 
 		internal static void SetKeyLeftTangentMode(ref Keyframe key, AnimationUtility.TangentMode tangentMode)
 		{
-			key.tangentMode &= ~AnimationUtility.kLeftTangentMask;
-			key.tangentMode |= (int)((int)tangentMode << 1);
+			AnimationUtility.Internal_SetKeyLeftTangentMode(ref key, tangentMode);
 		}
 
 		internal static void SetKeyRightTangentMode(ref Keyframe key, AnimationUtility.TangentMode tangentMode)
 		{
-			key.tangentMode &= ~AnimationUtility.kRightTangentMask;
-			key.tangentMode |= (int)((int)tangentMode << 5);
+			AnimationUtility.Internal_SetKeyRightTangentMode(ref key, tangentMode);
 		}
 
 		internal static void SetKeyBroken(ref Keyframe key, bool broken)
 		{
-			if (broken)
-			{
-				key.tangentMode |= AnimationUtility.kBrokenMask;
-			}
-			else
-			{
-				key.tangentMode &= ~AnimationUtility.kBrokenMask;
-			}
+			AnimationUtility.Internal_SetKeyBroken(ref key, broken);
 		}
 
-		public static void SetKeyBroken(AnimationCurve curve, int index, bool broken)
-		{
-			if (curve == null)
-			{
-				throw new ArgumentNullException("curve");
-			}
-			if (index < 0 || index >= curve.length)
-			{
-				throw new ArgumentOutOfRangeException("index", string.Format("Index ({0}) must be in the range of 0 to {1}.", index, curve.length - 1));
-			}
-			Keyframe key = curve[index];
-			AnimationUtility.SetKeyBroken(ref key, broken);
-			curve.MoveKey(index, key);
-			AnimationUtility.UpdateTangentsFromModeSurrounding(curve, index);
-		}
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void Internal_SetKeyLeftTangentMode(ref Keyframe key, AnimationUtility.TangentMode tangentMode);
 
-		public static void SetKeyLeftTangentMode(AnimationCurve curve, int index, AnimationUtility.TangentMode tangentMode)
-		{
-			if (curve == null)
-			{
-				throw new ArgumentNullException("curve");
-			}
-			if (index < 0 || index >= curve.length)
-			{
-				throw new ArgumentOutOfRangeException("index", string.Format("Index ({0}) must be in the range of 0 to {1}.", index, curve.length - 1));
-			}
-			Keyframe key = curve[index];
-			if (tangentMode != AnimationUtility.TangentMode.Free)
-			{
-				AnimationUtility.SetKeyBroken(ref key, true);
-			}
-			AnimationUtility.SetKeyLeftTangentMode(ref key, tangentMode);
-			curve.MoveKey(index, key);
-			AnimationUtility.UpdateTangentsFromModeSurrounding(curve, index);
-		}
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void Internal_SetKeyRightTangentMode(ref Keyframe key, AnimationUtility.TangentMode tangentMode);
 
-		public static void SetKeyRightTangentMode(AnimationCurve curve, int index, AnimationUtility.TangentMode tangentMode)
-		{
-			if (curve == null)
-			{
-				throw new ArgumentNullException("curve");
-			}
-			if (index < 0 || index >= curve.length)
-			{
-				throw new ArgumentOutOfRangeException("index", string.Format("Index ({0}) must be in the range of 0 to {1}.", index, curve.length - 1));
-			}
-			Keyframe key = curve[index];
-			if (tangentMode != AnimationUtility.TangentMode.Free)
-			{
-				AnimationUtility.SetKeyBroken(ref key, true);
-			}
-			AnimationUtility.SetKeyRightTangentMode(ref key, tangentMode);
-			curve.MoveKey(index, key);
-			AnimationUtility.UpdateTangentsFromModeSurrounding(curve, index);
-		}
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void Internal_SetKeyBroken(ref Keyframe key, bool broken);
 
-		public static bool GetKeyBroken(AnimationCurve curve, int index)
-		{
-			if (curve == null)
-			{
-				throw new ArgumentNullException("curve");
-			}
-			if (index < 0 || index >= curve.length)
-			{
-				throw new ArgumentOutOfRangeException("index", string.Format("Index ({0}) must be in the range of 0 to {1}.", index, curve.length - 1));
-			}
-			Keyframe key = curve[index];
-			return AnimationUtility.GetKeyBroken(key);
-		}
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern int AddInbetweenKey(AnimationCurve curve, float time);
 
-		public static AnimationUtility.TangentMode GetKeyLeftTangentMode(AnimationCurve curve, int index)
-		{
-			if (curve == null)
-			{
-				throw new ArgumentNullException("curve");
-			}
-			if (index < 0 || index >= curve.length)
-			{
-				throw new ArgumentOutOfRangeException("index", string.Format("Index ({0}) must be in the range of 0 to {1}.", index, curve.length - 1));
-			}
-			Keyframe key = curve[index];
-			return AnimationUtility.GetKeyLeftTangentMode(key);
-		}
-
-		public static AnimationUtility.TangentMode GetKeyRightTangentMode(AnimationCurve curve, int index)
-		{
-			if (curve == null)
-			{
-				throw new ArgumentNullException("curve");
-			}
-			if (index < 0 || index >= curve.length)
-			{
-				throw new ArgumentOutOfRangeException("index", string.Format("Index ({0}) must be in the range of 0 to {1}.", index, curve.length - 1));
-			}
-			Keyframe key = curve[index];
-			return AnimationUtility.GetKeyRightTangentMode(key);
-		}
-
-		[Obsolete("GetAllCurves is deprecated. Use GetCurveBindings and GetObjectReferenceCurveBindings instead."), ExcludeFromDocs]
+		[Obsolete("GetAllCurves is deprecated. Use GetCurveBindings and GetObjectReferenceCurveBindings instead.")]
 		public static AnimationClipCurveData[] GetAllCurves(AnimationClip clip)
 		{
 			bool includeCurveData = true;
@@ -464,128 +316,141 @@ namespace UnityEditor
 			return AnimationUtility.GetEditorCurve(clip, EditorCurveBinding.FloatCurve(relativePath, type, propertyName));
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern AnimationEvent[] GetAnimationEvents(AnimationClip clip);
+		public static extern AnimationEvent[] GetAnimationEvents([NotNull] AnimationClip clip);
 
-		public static void SetAnimationEvents(AnimationClip clip, AnimationEvent[] events)
-		{
-			if (clip == null)
-			{
-				throw new ArgumentNullException("clip");
-			}
-			if (events == null)
-			{
-				throw new ArgumentNullException("events");
-			}
-			AnimationUtility.Internal_SetAnimationEvents(clip, events);
-			if (AnimationUtility.onCurveWasModified != null)
-			{
-				AnimationUtility.onCurveWasModified(clip, default(EditorCurveBinding), AnimationUtility.CurveModifiedType.ClipModified);
-			}
-		}
-
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void Internal_SetAnimationEvents(AnimationClip clip, AnimationEvent[] events);
+		public static extern void SetAnimationEvents([NotNull] AnimationClip clip, [NotNull] AnimationEvent[] events);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern string CalculateTransformPath(Transform targetTransform, Transform root);
+		public static extern string CalculateTransformPath([NotNull] Transform targetTransform, Transform root);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern AnimationClipSettings GetAnimationClipSettings(AnimationClip clip);
+		public static extern AnimationClipSettings GetAnimationClipSettings([NotNull] AnimationClip clip);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern void SetAnimationClipSettings(AnimationClip clip, AnimationClipSettings srcClipInfo);
+		public static extern void SetAnimationClipSettings([NotNull] AnimationClip clip, AnimationClipSettings srcClipInfo);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern void SetAnimationClipSettingsNoDirty(AnimationClip clip, AnimationClipSettings srcClipInfo);
+		internal static extern void SetAnimationClipSettingsNoDirty([NotNull] AnimationClip clip, AnimationClipSettings srcClipInfo);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void SetAdditiveReferencePose(AnimationClip clip, AnimationClip referenceClip, float time);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern bool IsValidPolynomialCurve(AnimationCurve curve);
+		internal static extern bool IsValidOptimizedPolynomialCurve(AnimationCurve curve);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void ConstrainToPolynomialCurve(AnimationCurve curve);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern bool CurveSupportsProcedural(AnimationCurve curve);
+		internal static extern int GetMaxNumPolynomialSegmentsSupported();
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern AnimationClipStats GetAnimationClipStats(AnimationClip clip);
+		internal static extern AnimationUtility.PolynomialValid IsValidPolynomialCurve(AnimationCurve curve);
 
-		[GeneratedByOldBindingsGenerator]
+		internal static AnimationClipStats GetAnimationClipStats(AnimationClip clip)
+		{
+			AnimationClipStats result;
+			AnimationUtility.GetAnimationClipStats_Injected(clip, out result);
+			return result;
+		}
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern bool GetGenerateMotionCurves(AnimationClip clip);
+		public static extern bool GetGenerateMotionCurves(AnimationClip clip);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern void SetGenerateMotionCurves(AnimationClip clip, bool value);
+		public static extern void SetGenerateMotionCurves(AnimationClip clip, bool value);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern bool HasGenericRootTransform(AnimationClip clip);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern bool HasMotionFloatCurves(AnimationClip clip);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern bool HasMotionCurves(AnimationClip clip);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern bool HasRootCurves(AnimationClip clip);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern bool AmbiguousBinding(string path, int classID, Transform root);
 
 		internal static Vector3 GetClosestEuler(Quaternion q, Vector3 eulerHint, RotationOrder rotationOrder)
 		{
 			Vector3 result;
-			AnimationUtility.INTERNAL_CALL_GetClosestEuler(ref q, ref eulerHint, rotationOrder, out result);
+			AnimationUtility.GetClosestEuler_Injected(ref q, ref eulerHint, rotationOrder, out result);
 			return result;
 		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_GetClosestEuler(ref Quaternion q, ref Vector3 eulerHint, RotationOrder rotationOrder, out Vector3 value);
-
-		[Obsolete("Use AnimationMode.InAnimationMode instead")]
+		[Obsolete("Use AnimationMode.InAnimationMode instead.")]
 		public static bool InAnimationMode()
 		{
 			return AnimationMode.InAnimationMode();
 		}
 
-		[Obsolete("Use AnimationMode.StartAnimationmode instead")]
+		[Obsolete("Use AnimationMode.StartAnimationmode instead.")]
 		public static void StartAnimationMode(UnityEngine.Object[] objects)
 		{
 			Debug.LogWarning("AnimationUtility.StartAnimationMode is deprecated. Use AnimationMode.StartAnimationMode with the new APIs. The objects passed to this function will no longer be reverted automatically. See AnimationMode.AddPropertyModification");
 			AnimationMode.StartAnimationMode();
 		}
 
-		[Obsolete("Use AnimationMode.StopAnimationMode instead")]
+		[Obsolete("Use AnimationMode.StopAnimationMode instead.")]
 		public static void StopAnimationMode()
 		{
 			AnimationMode.StopAnimationMode();
 		}
 
-		[Obsolete("SetAnimationType is no longer supported", true)]
+		[Obsolete("SetAnimationType is no longer supported.")]
 		public static void SetAnimationType(AnimationClip clip, ModelImporterAnimationType type)
 		{
 		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern Type Internal_GetGameObjectEditorCurveValueType_Injected(GameObject root, ref EditorCurveBinding binding);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern Type Internal_GetScriptableObjectEditorCurveValueType_Injected(ScriptableObject scriptableObject, ref EditorCurveBinding binding);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern bool GetFloatValue_Injected(GameObject root, ref EditorCurveBinding binding, out float data);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern UnityEngine.Object GetAnimatedObject_Injected(GameObject root, ref EditorCurveBinding binding);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern PropertyModification EditorCurveBindingToPropertyModification_Injected(ref EditorCurveBinding binding, GameObject gameObject);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern ObjectReferenceKeyframe[] GetObjectReferenceCurve_Injected(AnimationClip clip, ref EditorCurveBinding binding);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void SetObjectReferenceCurve_Injected(AnimationClip clip, ref EditorCurveBinding binding, ObjectReferenceKeyframe[] keyframes);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern AnimationCurve GetEditorCurve_Injected(AnimationClip clip, ref EditorCurveBinding binding);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void SetEditorCurve_Injected(AnimationClip clip, ref EditorCurveBinding binding, AnimationCurve curve);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void Internal_SetEditorCurve_Injected(AnimationClip clip, ref EditorCurveBinding binding, AnimationCurve curve, bool syncEditorCurve);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern AnimationUtility.TangentMode Internal_GetKeyLeftTangentMode_Injected(ref Keyframe key);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern AnimationUtility.TangentMode Internal_GetKeyRightTangentMode_Injected(ref Keyframe key);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern bool Internal_GetKeyBroken_Injected(ref Keyframe key);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void GetAnimationClipStats_Injected(AnimationClip clip, out AnimationClipStats ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void GetClosestEuler_Injected(ref Quaternion q, ref Vector3 eulerHint, RotationOrder rotationOrder, out Vector3 ret);
 	}
 }

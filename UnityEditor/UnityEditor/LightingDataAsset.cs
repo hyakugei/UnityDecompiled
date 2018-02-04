@@ -5,6 +5,7 @@ using UnityEngine.Scripting;
 
 namespace UnityEditor
 {
+	[ExcludeFromPreset]
 	public sealed class LightingDataAsset : UnityEngine.Object
 	{
 		internal extern bool isValid
@@ -19,6 +20,10 @@ namespace UnityEditor
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
+		}
+
+		private LightingDataAsset()
+		{
 		}
 	}
 }

@@ -564,7 +564,7 @@ namespace UnityEditor
 			}
 		}
 
-		private ZoomableArea.Styles styles
+		protected ZoomableArea.Styles styles
 		{
 			get
 			{

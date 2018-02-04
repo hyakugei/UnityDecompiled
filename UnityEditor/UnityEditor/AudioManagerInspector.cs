@@ -1,35 +1,38 @@
 using System;
 using System.Collections.Generic;
+using UnityEditorInternal;
 using UnityEngine;
 
 namespace UnityEditor
 {
 	[CustomEditor(typeof(AudioManager))]
-	internal class AudioManagerInspector : Editor
+	internal class AudioManagerInspector : ProjectSettingsBaseEditor
 	{
 		private class Styles
 		{
-			public static GUIContent Volume = EditorGUIUtility.TextContent("Global Volume|Initial volume multiplier (AudioListener.volume)");
+			public static GUIContent Volume = EditorGUIUtility.TrTextContent("Global Volume", "Initial volume multiplier (AudioListener.volume)", null);
 
-			public static GUIContent RolloffScale = EditorGUIUtility.TextContent("Volume Rolloff Scale|Global volume rolloff multiplier (applies only to logarithmic volume curves).");
+			public static GUIContent RolloffScale = EditorGUIUtility.TrTextContent("Volume Rolloff Scale", "Global volume rolloff multiplier (applies only to logarithmic volume curves).", null);
 
-			public static GUIContent DopplerFactor = EditorGUIUtility.TextContent("Doppler Factor|Global Doppler speed multiplier for sounds in motion.");
+			public static GUIContent DopplerFactor = EditorGUIUtility.TrTextContent("Doppler Factor", "Global Doppler speed multiplier for sounds in motion.", null);
 
-			public static GUIContent DefaultSpeakerMode = EditorGUIUtility.TextContent("Default Speaker Mode|Speaker mode at start of the game. This may be changed at runtime using the AudioSettings.Reset function.");
+			public static GUIContent DefaultSpeakerMode = EditorGUIUtility.TrTextContent("Default Speaker Mode", "Speaker mode at start of the game. This may be changed at runtime using the AudioSettings.Reset function.", null);
 
-			public static GUIContent SampleRate = EditorGUIUtility.TextContent("System Sample Rate|Sample rate at which the output device of the audio system runs. Individual sounds may run at different sample rates and will be slowed down/sped up accordingly to match the output rate.");
+			public static GUIContent SampleRate = EditorGUIUtility.TrTextContent("System Sample Rate", "Sample rate at which the output device of the audio system runs. Individual sounds may run at different sample rates and will be slowed down/sped up accordingly to match the output rate.", null);
 
-			public static GUIContent DSPBufferSize = EditorGUIUtility.TextContent("DSP Buffer Size|Length of mixing buffer. This determines the output latency of the game.");
+			public static GUIContent DSPBufferSize = EditorGUIUtility.TrTextContent("DSP Buffer Size", "Length of mixing buffer. This determines the output latency of the game.", null);
 
-			public static GUIContent VirtualVoiceCount = EditorGUIUtility.TextContent("Max Virtual Voices|Maximum number of sounds managed by the system. Even though at most RealVoiceCount of the loudest sounds will be physically playing, the remaining sounds will still be updating their play position.");
+			public static GUIContent VirtualVoiceCount = EditorGUIUtility.TrTextContent("Max Virtual Voices", "Maximum number of sounds managed by the system. Even though at most RealVoiceCount of the loudest sounds will be physically playing, the remaining sounds will still be updating their play position.", null);
 
-			public static GUIContent RealVoiceCount = EditorGUIUtility.TextContent("Max Real Voices|Maximum number of actual simultanously playing sounds.");
+			public static GUIContent RealVoiceCount = EditorGUIUtility.TrTextContent("Max Real Voices", "Maximum number of actual simultanously playing sounds.", null);
 
-			public static GUIContent SpatializerPlugin = EditorGUIUtility.TextContent("Spatializer Plugin|Native audio plugin performing spatialized filtering of 3D sources.");
+			public static GUIContent SpatializerPlugin = EditorGUIUtility.TrTextContent("Spatializer Plugin", "Native audio plugin performing spatialized filtering of 3D sources.", null);
 
-			public static GUIContent DisableAudio = EditorGUIUtility.TextContent("Disable Unity Audio|Prevent allocating the output device in the runtime. Use this if you want to use other sound systems than the built-in one.");
+			public static GUIContent AmbisonicDecoderPlugin = EditorGUIUtility.TrTextContent("Ambisonic Decoder Plugin", "Native audio plugin performing ambisonic-to-binaural filtering of sources.", null);
 
-			public static GUIContent VirtualizeEffects = EditorGUIUtility.TextContent("Virtualize Effects|When enabled dynamically turn off effects and spatializers on AudioSources that are culled in order to save CPU.");
+			public static GUIContent DisableAudio = EditorGUIUtility.TrTextContent("Disable Unity Audio", "Prevent allocating the output device in the runtime. Use this if you want to use other sound systems than the built-in one.", null);
+
+			public static GUIContent VirtualizeEffects = EditorGUIUtility.TrTextContent("Virtualize Effects", "When enabled dynamically turn off effects and spatializers on AudioSources that are culled in order to save CPU.", null);
 		}
 
 		private SerializedProperty m_Volume;
@@ -50,6 +53,8 @@ namespace UnityEditor
 
 		private SerializedProperty m_SpatializerPlugin;
 
+		private SerializedProperty m_AmbisonicDecoderPlugin;
+
 		private SerializedProperty m_DisableAudio;
 
 		private SerializedProperty m_VirtualizeEffects;
@@ -65,6 +70,7 @@ namespace UnityEditor
 			this.m_VirtualVoiceCount = base.serializedObject.FindProperty("m_VirtualVoiceCount");
 			this.m_RealVoiceCount = base.serializedObject.FindProperty("m_RealVoiceCount");
 			this.m_SpatializerPlugin = base.serializedObject.FindProperty("m_SpatializerPlugin");
+			this.m_AmbisonicDecoderPlugin = base.serializedObject.FindProperty("m_AmbisonicDecoderPlugin");
 			this.m_DisableAudio = base.serializedObject.FindProperty("m_DisableAudio");
 			this.m_VirtualizeEffects = base.serializedObject.FindProperty("m_VirtualizeEffects");
 		}
@@ -95,7 +101,7 @@ namespace UnityEditor
 			EditorGUILayout.PropertyField(this.m_DSPBufferSize, AudioManagerInspector.Styles.DSPBufferSize, new GUILayoutOption[0]);
 			EditorGUILayout.PropertyField(this.m_VirtualVoiceCount, AudioManagerInspector.Styles.VirtualVoiceCount, new GUILayoutOption[0]);
 			EditorGUILayout.PropertyField(this.m_RealVoiceCount, AudioManagerInspector.Styles.RealVoiceCount, new GUILayoutOption[0]);
-			List<string> list = new List<string>(AudioUtil.GetSpatializerPluginNames());
+			List<string> list = new List<string>(AudioSettings.GetSpatializerPluginNames());
 			list.Insert(0, "None");
 			string[] array = list.ToArray();
 			List<GUIContent> list2 = new List<GUIContent>();
@@ -104,6 +110,16 @@ namespace UnityEditor
 			{
 				string text = array2[i];
 				list2.Add(new GUIContent(text));
+			}
+			List<string> list3 = new List<string>(AudioUtil.GetAmbisonicDecoderPluginNames());
+			list3.Insert(0, "None");
+			string[] array3 = list3.ToArray();
+			List<GUIContent> list4 = new List<GUIContent>();
+			string[] array4 = array3;
+			for (int j = 0; j < array4.Length; j++)
+			{
+				string text2 = array4[j];
+				list4.Add(new GUIContent(text2));
 			}
 			EditorGUI.BeginChangeCheck();
 			int num = this.FindPluginStringIndex(array, this.m_SpatializerPlugin.stringValue);
@@ -117,6 +133,20 @@ namespace UnityEditor
 				else
 				{
 					this.m_SpatializerPlugin.stringValue = array[num];
+				}
+			}
+			EditorGUI.BeginChangeCheck();
+			num = this.FindPluginStringIndex(array3, this.m_AmbisonicDecoderPlugin.stringValue);
+			num = EditorGUILayout.Popup(AudioManagerInspector.Styles.AmbisonicDecoderPlugin, num, list4.ToArray(), new GUILayoutOption[0]);
+			if (EditorGUI.EndChangeCheck())
+			{
+				if (num == 0)
+				{
+					this.m_AmbisonicDecoderPlugin.stringValue = "";
+				}
+				else
+				{
+					this.m_AmbisonicDecoderPlugin.stringValue = array3[num];
 				}
 			}
 			EditorGUI.BeginChangeCheck();

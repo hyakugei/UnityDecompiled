@@ -1,10 +1,10 @@
 using System;
 using System.Runtime.CompilerServices;
-using UnityEngine.Scripting;
+using System.Runtime.InteropServices;
 
 namespace UnityEngine
 {
-	public sealed class HumanPoseHandler : IDisposable
+	public class HumanPoseHandler : IDisposable
 	{
 		internal IntPtr m_Ptr;
 
@@ -27,51 +27,49 @@ namespace UnityEngine
 			{
 				throw new ArgumentException("HumanPoseHandler avatar is not human");
 			}
-			this.Internal_HumanPoseHandler(avatar, root);
+			this.m_Ptr = HumanPoseHandler.Internal_Create(avatar, root);
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern void Dispose();
+		private static extern IntPtr Internal_Create(Avatar avatar, Transform root);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void Internal_HumanPoseHandler(Avatar avatar, Transform root);
+		private static extern void Internal_Destroy(IntPtr ptr);
 
-		private bool Internal_GetHumanPose(ref Vector3 bodyPosition, ref Quaternion bodyRotation, float[] muscles)
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void GetHumanPose(out Vector3 bodyPosition, out Quaternion bodyRotation, [Out] float[] muscles);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void SetHumanPose(ref Vector3 bodyPosition, ref Quaternion bodyRotation, float[] muscles);
+
+		public void Dispose()
 		{
-			return HumanPoseHandler.INTERNAL_CALL_Internal_GetHumanPose(this, ref bodyPosition, ref bodyRotation, muscles);
+			if (this.m_Ptr != IntPtr.Zero)
+			{
+				HumanPoseHandler.Internal_Destroy(this.m_Ptr);
+				this.m_Ptr = IntPtr.Zero;
+			}
+			GC.SuppressFinalize(this);
 		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern bool INTERNAL_CALL_Internal_GetHumanPose(HumanPoseHandler self, ref Vector3 bodyPosition, ref Quaternion bodyRotation, float[] muscles);
 
 		public void GetHumanPose(ref HumanPose humanPose)
 		{
-			humanPose.Init();
-			if (!this.Internal_GetHumanPose(ref humanPose.bodyPosition, ref humanPose.bodyRotation, humanPose.muscles))
+			if (this.m_Ptr == IntPtr.Zero)
 			{
-				Debug.LogWarning("HumanPoseHandler is not initialized properly");
+				throw new NullReferenceException("HumanPoseHandler is not initialized properly");
 			}
+			humanPose.Init();
+			this.GetHumanPose(out humanPose.bodyPosition, out humanPose.bodyRotation, humanPose.muscles);
 		}
-
-		private bool Internal_SetHumanPose(ref Vector3 bodyPosition, ref Quaternion bodyRotation, float[] muscles)
-		{
-			return HumanPoseHandler.INTERNAL_CALL_Internal_SetHumanPose(this, ref bodyPosition, ref bodyRotation, muscles);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern bool INTERNAL_CALL_Internal_SetHumanPose(HumanPoseHandler self, ref Vector3 bodyPosition, ref Quaternion bodyRotation, float[] muscles);
 
 		public void SetHumanPose(ref HumanPose humanPose)
 		{
-			humanPose.Init();
-			if (!this.Internal_SetHumanPose(ref humanPose.bodyPosition, ref humanPose.bodyRotation, humanPose.muscles))
+			if (this.m_Ptr == IntPtr.Zero)
 			{
-				Debug.LogWarning("HumanPoseHandler is not initialized properly");
+				throw new NullReferenceException("HumanPoseHandler is not initialized properly");
 			}
+			humanPose.Init();
+			this.SetHumanPose(ref humanPose.bodyPosition, ref humanPose.bodyRotation, humanPose.muscles);
 		}
 	}
 }

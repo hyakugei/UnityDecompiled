@@ -262,7 +262,7 @@ namespace UnityEditorInternal
 
 		public static int GetLastColumnIndex()
 		{
-			return (!Unsupported.IsDeveloperBuild()) ? 15 : 22;
+			return (!Unsupported.IsDeveloperMode()) ? 15 : 22;
 		}
 	}
 }

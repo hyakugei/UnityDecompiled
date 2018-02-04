@@ -149,12 +149,42 @@ namespace UnityEditor
 
 		public static void CompressTexture(Texture2D texture, TextureFormat format, TextureCompressionQuality quality)
 		{
+			if (texture == null)
+			{
+				throw new ArgumentNullException("texture can not be null");
+			}
 			EditorUtility.CompressTexture(texture, format, (int)quality);
 		}
 
 		private static void CompressTexture(Texture2D texture, TextureFormat format)
 		{
+			if (texture == null)
+			{
+				throw new ArgumentNullException("texture can not be null");
+			}
 			EditorUtility.CompressTexture(texture, format, TextureCompressionQuality.Normal);
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern void CompressCubemapTexture(Cubemap texture, TextureFormat format, int quality);
+
+		public static void CompressCubemapTexture(Cubemap texture, TextureFormat format, TextureCompressionQuality quality)
+		{
+			if (texture == null)
+			{
+				throw new ArgumentNullException("texture can not be null");
+			}
+			EditorUtility.CompressCubemapTexture(texture, format, (int)quality);
+		}
+
+		private static void CompressCubemapTexture(Cubemap texture, TextureFormat format)
+		{
+			if (texture == null)
+			{
+				throw new ArgumentNullException("texture can not be null");
+			}
+			EditorUtility.CompressCubemapTexture(texture, format, TextureCompressionQuality.Normal);
 		}
 
 		[GeneratedByOldBindingsGenerator]
@@ -289,10 +319,10 @@ namespace UnityEditor
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern void UnloadUnusedAssetsImmediateInternal(bool includeMonoReferencesAsRoots);
 
-		[Obsolete("Use BuildPipeline.BuildAssetBundle instead")]
+		[Obsolete("Use BuildPipeline.BuildAssetBundle instead", true)]
 		public static bool BuildResourceFile(UnityEngine.Object[] selection, string pathName)
 		{
-			return BuildPipeline.BuildAssetBundle(null, selection, pathName, BuildAssetBundleOptions.CompleteAssets);
+			return false;
 		}
 
 		internal static void Internal_DisplayPopupMenu(Rect position, string menuItemPath, UnityEngine.Object context, int contextUserData)
@@ -472,9 +502,30 @@ namespace UnityEditor
 			GUIUtility.hotControl = 0;
 		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern void FocusProjectWindow();
+		[RequiredByNativeCode]
+		public static void FocusProjectWindow()
+		{
+			ProjectBrowser projectBrowser = null;
+			HostView hostView = GUIView.focusedView as HostView;
+			if (hostView != null && hostView.actualView is ProjectBrowser)
+			{
+				projectBrowser = (hostView.actualView as ProjectBrowser);
+			}
+			if (projectBrowser == null)
+			{
+				UnityEngine.Object[] array = Resources.FindObjectsOfTypeAll(typeof(ProjectBrowser));
+				if (array.Length > 0)
+				{
+					projectBrowser = (array[0] as ProjectBrowser);
+				}
+			}
+			if (projectBrowser != null)
+			{
+				projectBrowser.Focus();
+				Event e = EditorGUIUtility.CommandEvent("FocusProjectWindow");
+				projectBrowser.SendEvent(e);
+			}
+		}
 
 		public static string FormatBytes(int bytes)
 		{
@@ -616,7 +667,15 @@ namespace UnityEditor
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern void SetCameraAnimateMaterials(Camera camera, bool animate);
+		public static extern void SetCameraAnimateMaterials(Camera camera, bool animate);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern void SetCameraAnimateMaterialsTime(Camera camera, float time);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern void UpdateGlobalShaderProperties(float time);
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -624,7 +683,15 @@ namespace UnityEditor
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern bool IsAutoRefreshEnabled();
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern string GetActiveNativePlatformSupportModuleName();
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void LaunchBugReporter();
 
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -633,5 +700,39 @@ namespace UnityEditor
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern bool EventHasDragMoveModifierPressed(Event evt);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void SaveProjectAsTemplate(string targetPath, string name, string displayName, string description, string defaultScene, string version);
+
+		internal static bool IsUnityAssembly(UnityEngine.Object target)
+		{
+			bool result;
+			if (target == null)
+			{
+				result = false;
+			}
+			else
+			{
+				Type type = target.GetType();
+				result = EditorUtility.IsUnityAssembly(type);
+			}
+			return result;
+		}
+
+		internal static bool IsUnityAssembly(Type type)
+		{
+			bool result;
+			if (type == null)
+			{
+				result = false;
+			}
+			else
+			{
+				string name = type.Assembly.GetName().Name;
+				result = (name.StartsWith("UnityEditor") || name.StartsWith("UnityEngine"));
+			}
+			return result;
+		}
 	}
 }

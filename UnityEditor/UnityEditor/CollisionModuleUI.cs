@@ -20,6 +20,13 @@ namespace UnityEditor
 			Mode2D
 		}
 
+		private enum ForceModes
+		{
+			None,
+			Constant,
+			SizeBased
+		}
+
 		private enum PlaneVizType
 		{
 			Grid,
@@ -28,55 +35,81 @@ namespace UnityEditor
 
 		private class Texts
 		{
-			public GUIContent lifetimeLoss = EditorGUIUtility.TextContent("Lifetime Loss|When particle collides, it will lose this fraction of its Start Lifetime");
+			public GUIContent lifetimeLoss = EditorGUIUtility.TrTextContent("Lifetime Loss", "When particle collides, it will lose this fraction of its Start Lifetime", null);
 
-			public GUIContent planes = EditorGUIUtility.TextContent("Planes|Planes are defined by assigning a reference to a transform. This transform can be any transform in the scene and can be animated. Multiple planes can be used. Note: the Y-axis is used as the plane normal.");
+			public GUIContent planes = EditorGUIUtility.TrTextContent("Planes", "Planes are defined by assigning a reference to a transform. This transform can be any transform in the scene and can be animated. Multiple planes can be used. Note: the Y-axis is used as the plane normal.", null);
 
-			public GUIContent createPlane = EditorGUIUtility.TextContent("|Create an empty GameObject and assign it as a plane.");
+			public GUIContent createPlane = EditorGUIUtility.TrTextContent("", "Create an empty GameObject and assign it as a plane.", null);
 
-			public GUIContent minKillSpeed = EditorGUIUtility.TextContent("Min Kill Speed|When particles collide and their speed is lower than this value, they are killed.");
+			public GUIContent minKillSpeed = EditorGUIUtility.TrTextContent("Min Kill Speed", "When particles collide and their speed is lower than this value, they are killed.", null);
 
-			public GUIContent maxKillSpeed = EditorGUIUtility.TextContent("Max Kill Speed|When particles collide and their speed is higher than this value, they are killed.");
+			public GUIContent maxKillSpeed = EditorGUIUtility.TrTextContent("Max Kill Speed", "When particles collide and their speed is higher than this value, they are killed.", null);
 
-			public GUIContent dampen = EditorGUIUtility.TextContent("Dampen|When particle collides, it will lose this fraction of its speed. Unless this is set to 0.0, particle will become slower after collision.");
+			public GUIContent dampen = EditorGUIUtility.TrTextContent("Dampen", "When particle collides, it will lose this fraction of its speed. Unless this is set to 0.0, particle will become slower after collision.", null);
 
-			public GUIContent bounce = EditorGUIUtility.TextContent("Bounce|When particle collides, the bounce is scaled with this value. The bounce is the upwards motion in the plane normal direction.");
+			public GUIContent bounce = EditorGUIUtility.TrTextContent("Bounce", "When particle collides, the bounce is scaled with this value. The bounce is the upwards motion in the plane normal direction.", null);
 
-			public GUIContent radiusScale = EditorGUIUtility.TextContent("Radius Scale|Scale particle bounds by this amount to get more precise collisions.");
+			public GUIContent radiusScale = EditorGUIUtility.TrTextContent("Radius Scale", "Scale particle bounds by this amount to get more precise collisions.", null);
 
-			public GUIContent visualization = EditorGUIUtility.TextContent("Visualization|Only used for visualizing the planes: Wireframe or Solid.");
+			public GUIContent visualization = EditorGUIUtility.TrTextContent("Visualization", "Only used for visualizing the planes: Wireframe or Solid.", null);
 
-			public GUIContent scalePlane = EditorGUIUtility.TextContent("Scale Plane|Resizes the visualization planes.");
+			public GUIContent scalePlane = EditorGUIUtility.TrTextContent("Scale Plane", "Resizes the visualization planes.", null);
 
-			public GUIContent visualizeBounds = EditorGUIUtility.TextContent("Visualize Bounds|Render the collision bounds of the particles.");
+			public GUIContent visualizeBounds = EditorGUIUtility.TrTextContent("Visualize Bounds", "Render the collision bounds of the particles.", null);
 
-			public GUIContent collidesWith = EditorGUIUtility.TextContent("Collides With|Collides the particles with colliders included in the layermask.");
+			public GUIContent collidesWith = EditorGUIUtility.TrTextContent("Collides With", "Collides the particles with colliders included in the layermask.", null);
 
-			public GUIContent collidesWithDynamic = EditorGUIUtility.TextContent("Enable Dynamic Colliders|Should particles collide with dynamic objects?");
+			public GUIContent collidesWithDynamic = EditorGUIUtility.TrTextContent("Enable Dynamic Colliders", "Should particles collide with dynamic objects?", null);
 
-			public GUIContent interiorCollisions = EditorGUIUtility.TextContent("Interior Collisions|Should particles collide with the insides of objects?");
+			public GUIContent maxCollisionShapes = EditorGUIUtility.TrTextContent("Max Collision Shapes", "How many collision shapes can be considered for particle collisions. Excess shapes will be ignored. Terrains take priority.", null);
 
-			public GUIContent maxCollisionShapes = EditorGUIUtility.TextContent("Max Collision Shapes|How many collision shapes can be considered for particle collisions. Excess shapes will be ignored. Terrains take priority.");
+			public GUIContent quality = EditorGUIUtility.TrTextContent("Collision Quality", "Quality of world collisions. Medium and low quality are approximate and may leak particles.", null);
 
-			public GUIContent quality = EditorGUIUtility.TextContent("Collision Quality|Quality of world collisions. Medium and low quality are approximate and may leak particles.");
+			public GUIContent voxelSize = EditorGUIUtility.TrTextContent("Voxel Size", "Size of voxels in the collision cache. Smaller values improve accuracy, but require higher memory usage and are less efficient.", null);
 
-			public string[] qualitySettings = new string[]
+			public GUIContent collisionMessages = EditorGUIUtility.TrTextContent("Send Collision Messages", "Send collision callback messages.", null);
+
+			public GUIContent collisionType = EditorGUIUtility.TrTextContent("Type", "Collide with a list of Planes, or the Physics World.", null);
+
+			public GUIContent collisionMode = EditorGUIUtility.TrTextContent("Mode", "Use 3D Physics or 2D Physics.", null);
+
+			public GUIContent colliderForce = EditorGUIUtility.TrTextContent("Collider Force", "Control the strength of particle forces on colliders.", null);
+
+			public GUIContent multiplyColliderForceByCollisionAngle = EditorGUIUtility.TrTextContent("Multiply by Collision Angle", "Should the force be proportional to the angle of the particle collision?  A particle collision directly along the collision normal produces all the specified force whilst collisions away from the collision normal produce less force.", null);
+
+			public GUIContent multiplyColliderForceByParticleSpeed = EditorGUIUtility.TrTextContent("Multiply by Particle Speed", "Should the force be proportional to the particle speed?", null);
+
+			public GUIContent multiplyColliderForceByParticleSize = EditorGUIUtility.TrTextContent("Multiply by Particle Size", "Should the force be proportional to the particle size?", null);
+
+			public GUIContent[] collisionTypes = new GUIContent[]
 			{
-				"High",
-				"Medium (Static Colliders)",
-				"Low (Static Colliders)"
+				EditorGUIUtility.TrTextContent("Planes", null, null),
+				EditorGUIUtility.TrTextContent("World", null, null)
 			};
 
-			public GUIContent voxelSize = EditorGUIUtility.TextContent("Voxel Size|Size of voxels in the collision cache. Smaller values improve accuracy, but require higher memory usage and are less efficient.");
+			public GUIContent[] collisionModes = new GUIContent[]
+			{
+				EditorGUIUtility.TrTextContent("3D", null, null),
+				EditorGUIUtility.TrTextContent("2D", null, null)
+			};
 
-			public GUIContent collisionMessages = EditorGUIUtility.TextContent("Send Collision Messages|Send collision callback messages.");
+			public GUIContent[] qualitySettings = new GUIContent[]
+			{
+				EditorGUIUtility.TrTextContent("High", null, null),
+				EditorGUIUtility.TrTextContent("Medium (Static Colliders)", null, null),
+				EditorGUIUtility.TrTextContent("Low (Static Colliders)", null, null)
+			};
 
-			public GUIContent collisionMode = EditorGUIUtility.TextContent("Collision Mode|Use 3D Physics or 2D Physics.");
+			public GUIContent[] planeVizTypes = new GUIContent[]
+			{
+				EditorGUIUtility.TrTextContent("Grid", null, null),
+				EditorGUIUtility.TrTextContent("Solid", null, null)
+			};
 
 			public GUIContent[] toolContents = new GUIContent[]
 			{
-				EditorGUIUtility.IconContent("MoveTool", "|Move plane editing mode."),
-				EditorGUIUtility.IconContent("RotateTool", "|Rotate plane editing mode.")
+				EditorGUIUtility.TrIconContent("MoveTool", "Move plane editing mode."),
+				EditorGUIUtility.TrIconContent("RotateTool", "Rotate plane editing mode.")
 			};
 
 			public EditMode.SceneViewEditMode[] sceneViewEditModes = new EditMode.SceneViewEditMode[]
@@ -87,12 +120,6 @@ namespace UnityEditor
 		}
 
 		private const int k_MaxNumPlanes = 6;
-
-		private string[] m_PlaneVizTypeNames = new string[]
-		{
-			"Grid",
-			"Solid"
-		};
 
 		private SerializedProperty m_Type;
 
@@ -114,8 +141,6 @@ namespace UnityEditor
 
 		private SerializedProperty m_CollidesWithDynamic;
 
-		private SerializedProperty m_InteriorCollisions;
-
 		private SerializedProperty m_MaxCollisionShapes;
 
 		private SerializedProperty m_Quality;
@@ -125,6 +150,14 @@ namespace UnityEditor
 		private SerializedProperty m_CollisionMessages;
 
 		private SerializedProperty m_CollisionMode;
+
+		private SerializedProperty m_ColliderForce;
+
+		private SerializedProperty m_MultiplyColliderForceByCollisionAngle;
+
+		private SerializedProperty m_MultiplyColliderForceByParticleSpeed;
+
+		private SerializedProperty m_MultiplyColliderForceByParticleSize;
 
 		private SerializedProperty[] m_ShownPlanes;
 
@@ -138,7 +171,7 @@ namespace UnityEditor
 
 		private static Transform s_SelectedTransform;
 
-		private static CollisionModuleUI.Texts s_Texts = new CollisionModuleUI.Texts();
+		private static CollisionModuleUI.Texts s_Texts;
 
 		[CompilerGenerated]
 		private static Handles.CapFunction <>f__mg$cache0;
@@ -168,6 +201,10 @@ namespace UnityEditor
 		{
 			if (this.m_Type == null)
 			{
+				if (CollisionModuleUI.s_Texts == null)
+				{
+					CollisionModuleUI.s_Texts = new CollisionModuleUI.Texts();
+				}
 				this.m_Type = base.GetProperty("type");
 				List<SerializedProperty> list = new List<SerializedProperty>();
 				for (int i = 0; i < this.m_Planes.Length; i++)
@@ -193,12 +230,15 @@ namespace UnityEditor
 				CollisionModuleUI.s_VisualizeBounds = EditorPrefs.GetBool("VisualizeBounds", false);
 				this.m_CollidesWith = base.GetProperty("collidesWith");
 				this.m_CollidesWithDynamic = base.GetProperty("collidesWithDynamic");
-				this.m_InteriorCollisions = base.GetProperty("interiorCollisions");
 				this.m_MaxCollisionShapes = base.GetProperty("maxCollisionShapes");
 				this.m_Quality = base.GetProperty("quality");
 				this.m_VoxelSize = base.GetProperty("voxelSize");
 				this.m_CollisionMessages = base.GetProperty("collisionMessages");
 				this.m_CollisionMode = base.GetProperty("collisionMode");
+				this.m_ColliderForce = base.GetProperty("colliderForce");
+				this.m_MultiplyColliderForceByCollisionAngle = base.GetProperty("multiplyColliderForceByCollisionAngle");
+				this.m_MultiplyColliderForceByParticleSpeed = base.GetProperty("multiplyColliderForceByParticleSpeed");
+				this.m_MultiplyColliderForceByParticleSize = base.GetProperty("multiplyColliderForceByParticleSize");
 				this.SyncVisualization();
 			}
 		}
@@ -226,35 +266,35 @@ namespace UnityEditor
 		private Bounds GetBounds()
 		{
 			Bounds result = default(Bounds);
+			bool flag = false;
 			ParticleSystem[] particleSystems = this.m_ParticleSystemUI.m_ParticleSystems;
 			for (int i = 0; i < particleSystems.Length; i++)
 			{
 				ParticleSystem particleSystem = particleSystems[i];
 				ParticleSystemRenderer component = particleSystem.GetComponent<ParticleSystemRenderer>();
+				if (!flag)
+				{
+					result = component.bounds;
+				}
 				result.Encapsulate(component.bounds);
+				flag = true;
 			}
 			return result;
 		}
 
 		public override void OnInspectorGUI(InitialModuleUI initial)
 		{
-			string[] options = new string[]
-			{
-				"Planes",
-				"World"
-			};
 			EditorGUI.BeginChangeCheck();
-			CollisionModuleUI.CollisionTypes collisionTypes = (CollisionModuleUI.CollisionTypes)ModuleUI.GUIPopup("", this.m_Type, options, new GUILayoutOption[0]);
+			CollisionModuleUI.CollisionTypes collisionTypes = (CollisionModuleUI.CollisionTypes)ModuleUI.GUIPopup(CollisionModuleUI.s_Texts.collisionType, this.m_Type, CollisionModuleUI.s_Texts.collisionTypes, new GUILayoutOption[0]);
 			if (EditorGUI.EndChangeCheck())
 			{
 				this.SyncVisualization();
 			}
-			CollisionModuleUI.CollisionModes collisionModes = CollisionModuleUI.CollisionModes.Mode3D;
 			if (collisionTypes == CollisionModuleUI.CollisionTypes.Plane)
 			{
 				this.DoListOfPlanesGUI();
 				EditorGUI.BeginChangeCheck();
-				CollisionModuleUI.m_PlaneVisualizationType = (CollisionModuleUI.PlaneVizType)ModuleUI.GUIPopup(CollisionModuleUI.s_Texts.visualization, (int)CollisionModuleUI.m_PlaneVisualizationType, this.m_PlaneVizTypeNames, new GUILayoutOption[0]);
+				CollisionModuleUI.m_PlaneVisualizationType = (CollisionModuleUI.PlaneVizType)ModuleUI.GUIPopup(CollisionModuleUI.s_Texts.visualization, (int)CollisionModuleUI.m_PlaneVisualizationType, CollisionModuleUI.s_Texts.planeVizTypes, new GUILayoutOption[0]);
 				if (EditorGUI.EndChangeCheck())
 				{
 					EditorPrefs.SetInt("PlaneColisionVizType", (int)CollisionModuleUI.m_PlaneVisualizationType);
@@ -266,21 +306,11 @@ namespace UnityEditor
 					CollisionModuleUI.m_ScaleGrid = Mathf.Max(0f, CollisionModuleUI.m_ScaleGrid);
 					EditorPrefs.SetFloat("ScalePlaneColision", CollisionModuleUI.m_ScaleGrid);
 				}
-				ModuleUI.GUIButtonGroup(CollisionModuleUI.s_Texts.sceneViewEditModes, CollisionModuleUI.s_Texts.toolContents, this.GetBounds(), this.m_ParticleSystemUI.m_ParticleEffectUI.m_Owner.customEditor);
+				ModuleUI.GUIButtonGroup(CollisionModuleUI.s_Texts.sceneViewEditModes, CollisionModuleUI.s_Texts.toolContents, new Func<Bounds>(this.GetBounds), this.m_ParticleSystemUI.m_ParticleEffectUI.m_Owner.customEditor);
 			}
 			else
 			{
-				collisionModes = (CollisionModuleUI.CollisionModes)ModuleUI.GUIPopup(CollisionModuleUI.s_Texts.collisionMode, this.m_CollisionMode, new string[]
-				{
-					"3D",
-					"2D"
-				}, new GUILayoutOption[0]);
-			}
-			EditorGUI.BeginChangeCheck();
-			CollisionModuleUI.s_VisualizeBounds = ModuleUI.GUIToggle(CollisionModuleUI.s_Texts.visualizeBounds, CollisionModuleUI.s_VisualizeBounds, new GUILayoutOption[0]);
-			if (EditorGUI.EndChangeCheck())
-			{
-				EditorPrefs.SetBool("VisualizeBounds", CollisionModuleUI.s_VisualizeBounds);
+				ModuleUI.GUIPopup(CollisionModuleUI.s_Texts.collisionMode, this.m_CollisionMode, CollisionModuleUI.s_Texts.collisionModes, new GUILayoutOption[0]);
 			}
 			ModuleUI.GUIMinMaxCurve(CollisionModuleUI.s_Texts.dampen, this.m_Dampen, new GUILayoutOption[0]);
 			ModuleUI.GUIMinMaxCurve(CollisionModuleUI.s_Texts.bounce, this.m_Bounce, new GUILayoutOption[0]);
@@ -290,13 +320,10 @@ namespace UnityEditor
 			ModuleUI.GUIFloat(CollisionModuleUI.s_Texts.radiusScale, this.m_RadiusScale, new GUILayoutOption[0]);
 			if (collisionTypes == CollisionModuleUI.CollisionTypes.World)
 			{
-				ModuleUI.GUILayerMask(CollisionModuleUI.s_Texts.collidesWith, this.m_CollidesWith, new GUILayoutOption[0]);
-				if (collisionModes == CollisionModuleUI.CollisionModes.Mode3D)
-				{
-					ModuleUI.GUIToggle(CollisionModuleUI.s_Texts.interiorCollisions, this.m_InteriorCollisions, new GUILayoutOption[0]);
-				}
-				ModuleUI.GUIInt(CollisionModuleUI.s_Texts.maxCollisionShapes, this.m_MaxCollisionShapes, new GUILayoutOption[0]);
 				ModuleUI.GUIPopup(CollisionModuleUI.s_Texts.quality, this.m_Quality, CollisionModuleUI.s_Texts.qualitySettings, new GUILayoutOption[0]);
+				EditorGUI.indentLevel++;
+				ModuleUI.GUILayerMask(CollisionModuleUI.s_Texts.collidesWith, this.m_CollidesWith, new GUILayoutOption[0]);
+				ModuleUI.GUIInt(CollisionModuleUI.s_Texts.maxCollisionShapes, this.m_MaxCollisionShapes, new GUILayoutOption[0]);
 				if (this.m_Quality.intValue == 0)
 				{
 					ModuleUI.GUIToggle(CollisionModuleUI.s_Texts.collidesWithDynamic, this.m_CollidesWithDynamic, new GUILayoutOption[0]);
@@ -305,8 +332,21 @@ namespace UnityEditor
 				{
 					ModuleUI.GUIFloat(CollisionModuleUI.s_Texts.voxelSize, this.m_VoxelSize, new GUILayoutOption[0]);
 				}
+				EditorGUI.indentLevel--;
+				ModuleUI.GUIFloat(CollisionModuleUI.s_Texts.colliderForce, this.m_ColliderForce, new GUILayoutOption[0]);
+				EditorGUI.indentLevel++;
+				ModuleUI.GUIToggle(CollisionModuleUI.s_Texts.multiplyColliderForceByCollisionAngle, this.m_MultiplyColliderForceByCollisionAngle, new GUILayoutOption[0]);
+				ModuleUI.GUIToggle(CollisionModuleUI.s_Texts.multiplyColliderForceByParticleSpeed, this.m_MultiplyColliderForceByParticleSpeed, new GUILayoutOption[0]);
+				ModuleUI.GUIToggle(CollisionModuleUI.s_Texts.multiplyColliderForceByParticleSize, this.m_MultiplyColliderForceByParticleSize, new GUILayoutOption[0]);
+				EditorGUI.indentLevel--;
 			}
 			ModuleUI.GUIToggle(CollisionModuleUI.s_Texts.collisionMessages, this.m_CollisionMessages, new GUILayoutOption[0]);
+			EditorGUI.BeginChangeCheck();
+			CollisionModuleUI.s_VisualizeBounds = ModuleUI.GUIToggle(CollisionModuleUI.s_Texts.visualizeBounds, CollisionModuleUI.s_VisualizeBounds, new GUILayoutOption[0]);
+			if (EditorGUI.EndChangeCheck())
+			{
+				EditorPrefs.SetBool("VisualizeBounds", CollisionModuleUI.s_VisualizeBounds);
+			}
 		}
 
 		protected override void OnModuleEnable()
@@ -474,11 +514,6 @@ namespace UnityEditor
 			if (this.m_ScenePlanes.Count != 0)
 			{
 				Event current = Event.current;
-				EventType eventType = current.type;
-				if (current.type == EventType.Ignore && current.rawType == EventType.MouseUp)
-				{
-					eventType = current.rawType;
-				}
 				Color color = Handles.color;
 				Color color2 = new Color(1f, 1f, 1f, 0.5f);
 				for (int i = 0; i < this.m_ScenePlanes.Count; i++)
@@ -524,21 +559,24 @@ namespace UnityEditor
 							}
 							else
 							{
-								int keyboardControl = GUIUtility.keyboardControl;
 								float num = HandleUtility.GetHandleSize(position) * 0.6f;
-								Vector3 arg_1FA_0 = position;
-								Quaternion arg_1FA_1 = Quaternion.identity;
-								float arg_1FA_2 = num;
-								Vector3 arg_1FA_3 = Vector3.zero;
+								EventType eventType = current.type;
+								if (current.type == EventType.Ignore && current.rawType == EventType.MouseUp)
+								{
+									eventType = current.rawType;
+								}
+								Vector3 arg_1F3_0 = position;
+								Quaternion arg_1F3_1 = Quaternion.identity;
+								float arg_1F3_2 = num;
+								Vector3 arg_1F3_3 = Vector3.zero;
 								if (CollisionModuleUI.<>f__mg$cache0 == null)
 								{
 									CollisionModuleUI.<>f__mg$cache0 = new Handles.CapFunction(Handles.RectangleHandleCap);
 								}
-								Handles.FreeMoveHandle(arg_1FA_0, arg_1FA_1, arg_1FA_2, arg_1FA_3, CollisionModuleUI.<>f__mg$cache0);
-								if (eventType == EventType.MouseDown && current.type == EventType.Used && keyboardControl != GUIUtility.keyboardControl)
+								Handles.FreeMoveHandle(arg_1F3_0, arg_1F3_1, arg_1F3_2, arg_1F3_3, CollisionModuleUI.<>f__mg$cache0);
+								if (eventType == EventType.MouseDown && current.type == EventType.Used)
 								{
 									CollisionModuleUI.s_SelectedTransform = transform;
-									eventType = EventType.Used;
 									GUIUtility.hotControl = 0;
 								}
 							}
@@ -584,20 +622,23 @@ namespace UnityEditor
 				for (int i = 0; i < particleSystems.Length; i++)
 				{
 					ParticleSystem particleSystem = particleSystems[i];
-					ParticleSystem.Particle[] array5 = new ParticleSystem.Particle[particleSystem.particleCount];
-					int particles = particleSystem.GetParticles(array5);
-					Matrix4x4 lhs = Matrix4x4.identity;
-					if (particleSystem.main.simulationSpace == ParticleSystemSimulationSpace.Local)
+					if (particleSystem.collision.enabled)
 					{
-						lhs = particleSystem.GetLocalToWorldMatrix();
-					}
-					for (int j = 0; j < particles; j++)
-					{
-						ParticleSystem.Particle particle = array5[j];
-						Vector3 currentSize3D = particle.GetCurrentSize3D(particleSystem);
-						float num = Math.Max(currentSize3D.x, Math.Max(currentSize3D.y, currentSize3D.z)) * 0.5f * particleSystem.collision.radiusScale;
-						Handles.matrix = lhs * Matrix4x4.TRS(particle.position, Quaternion.identity, new Vector3(num, num, num));
-						Handles.DrawPolyLine(array4);
+						ParticleSystem.Particle[] array5 = new ParticleSystem.Particle[particleSystem.particleCount];
+						int particles = particleSystem.GetParticles(array5);
+						Matrix4x4 lhs = Matrix4x4.identity;
+						if (particleSystem.main.simulationSpace == ParticleSystemSimulationSpace.Local)
+						{
+							lhs = particleSystem.GetLocalToWorldMatrix();
+						}
+						for (int j = 0; j < particles; j++)
+						{
+							ParticleSystem.Particle particle = array5[j];
+							Vector3 currentSize3D = particle.GetCurrentSize3D(particleSystem);
+							float num = Math.Max(currentSize3D.x, Math.Max(currentSize3D.y, currentSize3D.z)) * 0.5f * particleSystem.collision.radiusScale;
+							Handles.matrix = lhs * Matrix4x4.TRS(particle.position, Quaternion.identity, new Vector3(num, num, num));
+							Handles.DrawPolyLine(array4);
+						}
 					}
 				}
 				Handles.color = color;
@@ -666,7 +707,7 @@ namespace UnityEditor
 
 		public override void UpdateCullingSupportedString(ref string text)
 		{
-			text += "\n\tCollision is enabled.";
+			text += "\nCollision module is enabled.";
 		}
 	}
 }

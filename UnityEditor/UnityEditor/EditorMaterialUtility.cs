@@ -18,5 +18,9 @@ namespace UnityEditor
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void SetShaderDefaults(Shader shader, string[] name, Texture[] textures);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern void SetShaderNonModifiableDefaults(Shader shader, string[] name, Texture[] textures);
 	}
 }

@@ -5,45 +5,41 @@ using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
-	[RequiredByNativeCode]
+	[NativeClass(null), RequiredByNativeCode]
 	[StructLayout(LayoutKind.Sequential)]
 	public class ScriptableObject : Object
 	{
 		public ScriptableObject()
 		{
-			ScriptableObject.Internal_CreateScriptableObject(this);
+			ScriptableObject.CreateScriptableObject(this);
 		}
-
-		[GeneratedByOldBindingsGenerator, ThreadAndSerializationSafe]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void Internal_CreateScriptableObject([Writable] ScriptableObject self);
 
 		[Obsolete("Use EditorUtility.SetDirty instead")]
-		public void SetDirty()
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public extern void SetDirty();
+
+		public static ScriptableObject CreateInstance(string className)
 		{
-			ScriptableObject.INTERNAL_CALL_SetDirty(this);
+			return ScriptableObject.CreateScriptableObjectInstanceFromName(className);
 		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_SetDirty(ScriptableObject self);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern ScriptableObject CreateInstance(string className);
 
 		public static ScriptableObject CreateInstance(Type type)
 		{
-			return ScriptableObject.CreateInstanceFromType(type);
+			return ScriptableObject.CreateScriptableObjectInstanceFromType(type);
 		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern ScriptableObject CreateInstanceFromType(Type type);
 
 		public static T CreateInstance<T>() where T : ScriptableObject
 		{
 			return (T)((object)ScriptableObject.CreateInstance(typeof(T)));
 		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void CreateScriptableObject([Writable] ScriptableObject self);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern ScriptableObject CreateScriptableObjectInstanceFromName(string className);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern ScriptableObject CreateScriptableObjectInstanceFromType(Type type);
 	}
 }

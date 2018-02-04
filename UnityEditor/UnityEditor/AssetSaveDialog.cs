@@ -9,19 +9,19 @@ namespace UnityEditor
 	{
 		private class Styles
 		{
-			public GUIStyle selected = "ServerUpdateChangesetOn";
+			public GUIStyle selected = "OL SelectedRow";
 
 			public GUIStyle box = "OL Box";
 
 			public GUIStyle button = "LargeButton";
 
-			public GUIContent saveSelected = EditorGUIUtility.TextContent("Save Selected");
+			public GUIContent saveSelected = EditorGUIUtility.TrTextContent("Save Selected", null, null);
 
-			public GUIContent saveAll = EditorGUIUtility.TextContent("Save All");
+			public GUIContent saveAll = EditorGUIUtility.TrTextContent("Save All", null, null);
 
-			public GUIContent dontSave = EditorGUIUtility.TextContent("Don't Save");
+			public GUIContent dontSave = EditorGUIUtility.TrTextContent("Don't Save", null, null);
 
-			public GUIContent close = EditorGUIUtility.TextContent("Close");
+			public GUIContent close = EditorGUIUtility.TrTextContent("Close", null, null);
 
 			public float buttonWidth;
 
@@ -87,7 +87,7 @@ namespace UnityEditor
 					}
 				}
 				AssetSaveDialog windowDontShow = EditorWindow.GetWindowDontShow<AssetSaveDialog>();
-				windowDontShow.titleContent = EditorGUIUtility.TextContent("Save Assets");
+				windowDontShow.titleContent = EditorGUIUtility.TrTextContent("Save Assets", null, null);
 				windowDontShow.SetAssets(array);
 				windowDontShow.ShowUtility();
 				windowDontShow.ShowModal();

@@ -3,9 +3,11 @@ using System.IO;
 using System.Linq;
 using UnityEditor.IMGUI.Controls;
 using UnityEngine;
+using UnityEngine.Scripting;
 
 namespace UnityEditor
 {
+	[UsedByNativeCode]
 	internal class PackageImport : EditorWindow
 	{
 		internal class Constants
@@ -95,6 +97,7 @@ namespace UnityEditor
 			base.minSize = new Vector2(350f, 350f);
 		}
 
+		[UsedByNativeCode]
 		public static void ShowImportPackage(string packagePath, ImportPackageItem[] items, string packageIconPath, bool allowReInstall)
 		{
 			if (PackageImport.ValidateInput(items))
@@ -248,14 +251,14 @@ namespace UnityEditor
 			GUILayout.Space(8f);
 			GUILayout.BeginHorizontal(new GUILayoutOption[0]);
 			GUILayout.Space(10f);
-			if (GUILayout.Button(EditorGUIUtility.TextContent("All"), new GUILayoutOption[]
+			if (GUILayout.Button(EditorGUIUtility.TrTextContent("All", null, null), new GUILayoutOption[]
 			{
 				GUILayout.Width(50f)
 			}))
 			{
 				this.m_Tree.SetAllEnabled(PackageImportTreeView.EnabledState.All);
 			}
-			if (GUILayout.Button(EditorGUIUtility.TextContent("None"), new GUILayoutOption[]
+			if (GUILayout.Button(EditorGUIUtility.TrTextContent("None", null, null), new GUILayoutOption[]
 			{
 				GUILayout.Width(50f)
 			}))
@@ -264,13 +267,13 @@ namespace UnityEditor
 			}
 			this.ReInstallToggle();
 			GUILayout.FlexibleSpace();
-			if (GUILayout.Button(EditorGUIUtility.TextContent("Cancel"), new GUILayoutOption[0]))
+			if (GUILayout.Button(EditorGUIUtility.TrTextContent("Cancel", null, null), new GUILayoutOption[0]))
 			{
 				PopupWindowWithoutFocus.Hide();
 				base.Close();
 				GUIUtility.ExitGUI();
 			}
-			if (GUILayout.Button(EditorGUIUtility.TextContent("Import"), new GUILayoutOption[0]))
+			if (GUILayout.Button(EditorGUIUtility.TrTextContent("Import", null, null), new GUILayoutOption[0]))
 			{
 				bool flag = true;
 				if (this.doReInstall)

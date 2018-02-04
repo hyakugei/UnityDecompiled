@@ -124,52 +124,76 @@ namespace UnityEditor.Scripting.Compilers
 			return text;
 		}
 
-		public static IEnumerable<Version> GetInstalledSDKVersions()
+		public static IEnumerable<UWPSDK> GetInstalledSDKs()
 		{
 			string windowsKit = UWPReferences.GetWindowsKit10();
-			IEnumerable<Version> result;
+			IEnumerable<UWPSDK> result;
 			if (string.IsNullOrEmpty(windowsKit))
 			{
-				result = new Version[0];
+				result = Enumerable.Empty<UWPSDK>();
 			}
 			else
 			{
-				string[] files = Directory.GetFiles(UWPReferences.CombinePaths(new string[]
+				string path = UWPReferences.CombinePaths(new string[]
 				{
 					windowsKit,
 					"Platforms",
 					"UAP"
-				}), "*", SearchOption.AllDirectories);
-				IEnumerable<string> enumerable = from f in files
-				where string.Equals("Platform.xml", Path.GetFileName(f), StringComparison.OrdinalIgnoreCase)
-				select f;
-				List<Version> list = new List<Version>();
-				foreach (string current in enumerable)
+				});
+				if (!Directory.Exists(path))
 				{
-					XDocument xDocument;
-					try
+					result = Enumerable.Empty<UWPSDK>();
+				}
+				else
+				{
+					List<UWPSDK> list = new List<UWPSDK>();
+					string[] files = Directory.GetFiles(path, "*", SearchOption.AllDirectories);
+					IEnumerable<string> enumerable = from f in files
+					where string.Equals("Platform.xml", Path.GetFileName(f), StringComparison.OrdinalIgnoreCase)
+					select f;
+					foreach (string current in enumerable)
 					{
-						xDocument = XDocument.Load(current);
-					}
-					catch
-					{
-						continue;
-					}
-					foreach (XNode current2 in xDocument.Nodes())
-					{
-						XElement xElement = current2 as XElement;
-						if (xElement != null)
+						XDocument xDocument;
+						try
 						{
-							Version item;
-							if (UWPReferences.FindVersionInNode(xElement, out item))
+							xDocument = XDocument.Load(current);
+						}
+						catch
+						{
+							continue;
+						}
+						foreach (XElement current2 in xDocument.Elements("ApplicationPlatform"))
+						{
+							Version version;
+							if (UWPReferences.FindVersionInNode(current2, out version))
 							{
-								list.Add(item);
+								string s = (from e in current2.Elements("MinimumVisualStudioVersion")
+								select e.Value).FirstOrDefault<string>();
+								list.Add(new UWPSDK(version, UWPReferences.TryParseVersion(s)));
 							}
 						}
 					}
+					result = list;
 				}
-				result = list;
 			}
+			return result;
+		}
+
+		private static Version TryParseVersion(string s)
+		{
+			Version result;
+			if (!string.IsNullOrEmpty(s))
+			{
+				try
+				{
+					result = new Version(s);
+					return result;
+				}
+				catch
+				{
+				}
+			}
+			result = null;
 			return result;
 		}
 
@@ -180,14 +204,11 @@ namespace UnityEditor.Scripting.Compilers
 			{
 				if (string.Equals(xAttribute.Name.LocalName, "version", StringComparison.OrdinalIgnoreCase))
 				{
-					try
+					version = UWPReferences.TryParseVersion(xAttribute.Value);
+					if (version != null)
 					{
-						version = new Version(xAttribute.Value);
 						result = true;
 						return result;
-					}
-					catch
-					{
 					}
 				}
 			}
@@ -205,14 +226,23 @@ namespace UnityEditor.Scripting.Compilers
 				version,
 				"Platform.xml"
 			});
-			XDocument xDocument = XDocument.Load(text);
-			XElement xElement = xDocument.Element("ApplicationPlatform");
-			if (xElement.Attribute("name").Value != "UAP")
+			string[] result;
+			if (!File.Exists(text))
 			{
-				throw new Exception(string.Format("Invalid platform manifest at \"{0}\".", text));
+				result = new string[0];
 			}
-			XElement containedApiContractsElement = xElement.Element("ContainedApiContracts");
-			return UWPReferences.GetReferences(folder, version, containedApiContractsElement);
+			else
+			{
+				XDocument xDocument = XDocument.Load(text);
+				XElement xElement = xDocument.Element("ApplicationPlatform");
+				if (xElement.Attribute("name").Value != "UAP")
+				{
+					throw new Exception(string.Format("Invalid platform manifest at \"{0}\".", text));
+				}
+				XElement containedApiContractsElement = xElement.Element("ContainedApiContracts");
+				result = UWPReferences.GetReferences(folder, version, containedApiContractsElement);
+			}
+			return result;
 		}
 
 		private static string CombinePaths(params string[] paths)

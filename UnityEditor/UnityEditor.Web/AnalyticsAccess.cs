@@ -7,9 +7,17 @@ namespace UnityEditor.Web
 	[InitializeOnLoad]
 	internal class AnalyticsAccess : CloudServiceAccess
 	{
+		[Serializable]
+		public struct AnalyticsServiceState
+		{
+			public bool analytics;
+		}
+
 		private const string kServiceName = "Analytics";
 
 		private const string kServiceDisplayName = "Analytics";
+
+		private const string kServicePackageName = "com.unity.analytics";
 
 		private const string kServiceUrl = "https://public-cdn.cloud.unity3d.com/editor/production/cloud/analytics";
 
@@ -29,6 +37,11 @@ namespace UnityEditor.Web
 			return "Analytics";
 		}
 
+		public override string GetPackageName()
+		{
+			return "com.unity.analytics";
+		}
+
 		public override bool IsServiceEnabled()
 		{
 			return AnalyticsSettings.enabled;
@@ -36,7 +49,14 @@ namespace UnityEditor.Web
 
 		public override void EnableService(bool enabled)
 		{
-			AnalyticsSettings.enabled = enabled;
+			if (AnalyticsSettings.enabled != enabled)
+			{
+				AnalyticsSettings.SetEnabledServiceWindow(enabled);
+				EditorAnalytics.SendEventServiceInfo(new AnalyticsAccess.AnalyticsServiceState
+				{
+					analytics = enabled
+				});
+			}
 		}
 
 		public bool IsTestModeEnabled()

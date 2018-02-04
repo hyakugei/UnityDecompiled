@@ -20,7 +20,7 @@ namespace UnityEditor.EventSystems
 		protected virtual void OnEnable()
 		{
 			this.m_DelegatesProperty = base.serializedObject.FindProperty("m_Delegates");
-			this.m_AddButonContent = new GUIContent("Add New Event Type");
+			this.m_AddButonContent = EditorGUIUtility.TrTextContent("Add New Event Type", null, null);
 			this.m_EventIDName = new GUIContent("");
 			this.m_IconToolbarMinus = new GUIContent(EditorGUIUtility.IconContent("Toolbar Minus"));
 			this.m_IconToolbarMinus.tooltip = "Remove all events in this list.";

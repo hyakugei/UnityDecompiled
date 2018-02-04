@@ -32,16 +32,30 @@ namespace UnityEditor.Modules
 			8192
 		};
 
-		private static readonly GUIContent maxSize = EditorGUIUtility.TextContent("Max Size|Textures larger than this will be scaled down.");
+		private static readonly GUIContent maxSize = EditorGUIUtility.TrTextContent("Max Size", "Textures larger than this will be scaled down.", null);
 
-		private static readonly GUIContent kTextureCompression = EditorGUIUtility.TextContent("Compression|How will this texture be compressed?");
+		private static readonly string[] kResizeAlgorithmStrings = new string[]
+		{
+			"Mitchell",
+			"Bilinear"
+		};
+
+		private static readonly int[] kResizeAlgorithmValues = new int[]
+		{
+			0,
+			1
+		};
+
+		private static readonly GUIContent resizeAlgorithm = EditorGUIUtility.TrTextContent("Resize Algorithm", "Select algorithm to apply for textures when scaled down.", null);
+
+		private static readonly GUIContent kTextureCompression = EditorGUIUtility.TrTextContent("Compression", "How will this texture be compressed?", null);
 
 		private static readonly GUIContent[] kTextureCompressionOptions = new GUIContent[]
 		{
-			EditorGUIUtility.TextContent("None|Texture is not compressed."),
-			EditorGUIUtility.TextContent("Low Quality|Texture compressed with low quality but high performance, high compression format."),
-			EditorGUIUtility.TextContent("Normal Quality|Texture is compressed with a standard format."),
-			EditorGUIUtility.TextContent("High Quality|Texture compressed with a high quality format.")
+			EditorGUIUtility.TrTextContent("None", "Texture is not compressed.", null),
+			EditorGUIUtility.TrTextContent("Low Quality", "Texture compressed with low quality but high performance, high compression format.", null),
+			EditorGUIUtility.TrTextContent("Normal Quality", "Texture is compressed with a standard format.", null),
+			EditorGUIUtility.TrTextContent("High Quality", "Texture compressed with a high quality format.", null)
 		};
 
 		private static readonly int[] kTextureCompressionValues = new int[]
@@ -62,6 +76,14 @@ namespace UnityEditor.Modules
 			if (EditorGUI.EndChangeCheck())
 			{
 				platformSettings.SetMaxTextureSizeForAll(maxTextureSizeForAll);
+			}
+			EditorGUI.BeginChangeCheck();
+			EditorGUI.showMixedValue = (platformSettings.overriddenIsDifferent || platformSettings.resizeAlgorithmIsDifferent);
+			int resizeAlgorithmForAll = EditorGUILayout.IntPopup(DefaultTextureImportSettingsExtension.resizeAlgorithm.text, (int)platformSettings.resizeAlgorithm, DefaultTextureImportSettingsExtension.kResizeAlgorithmStrings, DefaultTextureImportSettingsExtension.kResizeAlgorithmValues, new GUILayoutOption[0]);
+			EditorGUI.showMixedValue = false;
+			if (EditorGUI.EndChangeCheck())
+			{
+				platformSettings.SetResizeAlgorithmForAll((TextureResizeAlgorithm)resizeAlgorithmForAll);
 			}
 			using (new EditorGUI.DisabledScope(platformSettings.overridden && !platformSettings.isDefault))
 			{
@@ -100,7 +122,7 @@ namespace UnityEditor.Modules
 				}
 				else if (!platformSettings.overridden)
 				{
-					num2 = (int)TextureImporter.FormatFromTextureParameters(settings, platformSettings.platformTextureSettings, textureImporter.DoesSourceTextureHaveAlpha(), textureImporter.IsSourceTextureHDR(), platformSettings.m_Target);
+					num2 = (int)TextureImporter.FormatFromTextureParameters(settings, platformSettings.platformTextureSettings, textureImporterInspector.assetTarget && textureImporter.DoesSourceTextureHaveAlpha(), textureImporterInspector.assetTarget && textureImporter.IsSourceTextureHDR(), platformSettings.m_Target);
 					array3 = new int[]
 					{
 						num2
@@ -122,11 +144,6 @@ namespace UnityEditor.Modules
 						array3 = TextureImportPlatformSettings.kTextureFormatsValueApplePVR;
 						array4 = TextureImporterInspector.s_TextureFormatStringsApplePVR;
 					}
-					else if (platformSettings.m_Target == BuildTarget.SamsungTV)
-					{
-						array3 = TextureImportPlatformSettings.kTextureFormatsValueSTV;
-						array4 = TextureImporterInspector.s_TextureFormatStringsSTV;
-					}
 					else
 					{
 						array3 = TextureImportPlatformSettings.kTextureFormatsValueAndroid;
@@ -143,10 +160,15 @@ namespace UnityEditor.Modules
 					array3 = TextureImportPlatformSettings.kTextureFormatsValueWebGL;
 					array4 = TextureImporterInspector.s_TextureFormatStringsWebGL;
 				}
-				else if (platformSettings.m_Target == BuildTarget.WiiU)
+				else if (platformSettings.m_Target == BuildTarget.PSP2)
 				{
-					array3 = TextureImportPlatformSettings.kTextureFormatsValueWiiU;
-					array4 = TextureImporterInspector.s_TextureFormatStringsWiiU;
+					array3 = TextureImportPlatformSettings.kTextureFormatsValuePSP2;
+					array4 = TextureImporterInspector.s_TextureFormatStringsPSP2;
+				}
+				else if (platformSettings.m_Target == BuildTarget.Switch)
+				{
+					array3 = TextureImportPlatformSettings.kTextureFormatsValueSwitch;
+					array4 = TextureImporterInspector.s_TextureFormatStringsSwitch;
 				}
 				else
 				{
@@ -180,7 +202,7 @@ namespace UnityEditor.Modules
 					platformSettings.SetTextureFormatForAll((TextureImporterFormat)array[0]);
 				}
 			}
-			if ((platformSettings.isDefault && platformSettings.textureCompression != TextureImporterCompression.Uncompressed) || (platformSettings.allAreOverridden && TextureImporterInspector.IsCompressedDXTTextureFormat((TextureImporterFormat)num)))
+			if (platformSettings.isDefault && platformSettings.textureCompression != TextureImporterCompression.Uncompressed)
 			{
 				EditorGUI.BeginChangeCheck();
 				EditorGUI.showMixedValue = (platformSettings.overriddenIsDifferent || platformSettings.crunchedCompressionIsDifferent);
@@ -191,21 +213,22 @@ namespace UnityEditor.Modules
 					platformSettings.SetCrunchedCompressionForAll(crunchedCompressionForAll);
 				}
 			}
-			if ((platformSettings.crunchedCompression && !platformSettings.crunchedCompressionIsDifferent && (platformSettings.textureCompression != TextureImporterCompression.Uncompressed || num == 10 || num == 12)) || (!platformSettings.textureFormatIsDifferent && ArrayUtility.Contains<TextureImporterFormat>(TextureImporterInspector.kFormatsWithCompressionSettings, (TextureImporterFormat)num)))
+			bool flag2 = false || num == 28 || num == 29 || num == 64 || num == 65;
+			if ((platformSettings.isDefault && platformSettings.textureCompression != TextureImporterCompression.Uncompressed && platformSettings.crunchedCompression) || (!platformSettings.isDefault && flag2) || (!platformSettings.textureFormatIsDifferent && ArrayUtility.Contains<TextureImporterFormat>(TextureImporterInspector.kFormatsWithCompressionSettings, (TextureImporterFormat)num)))
 			{
 				EditorGUI.BeginChangeCheck();
 				EditorGUI.showMixedValue = (platformSettings.overriddenIsDifferent || platformSettings.compressionQualityIsDifferent);
-				int compressionQualityForAll = this.EditCompressionQuality(platformSettings.m_Target, platformSettings.compressionQuality);
+				int compressionQualityForAll = this.EditCompressionQuality(platformSettings.m_Target, platformSettings.compressionQuality, flag2);
 				EditorGUI.showMixedValue = false;
 				if (EditorGUI.EndChangeCheck())
 				{
 					platformSettings.SetCompressionQualityForAll(compressionQualityForAll);
 				}
 			}
-			bool flag2 = TextureImporter.IsETC1SupportedByBuildTarget(BuildPipeline.GetBuildTargetByName(platformSettings.name));
-			bool flag3 = textureImporterInspector.spriteImportMode != SpriteImportMode.None;
-			bool flag4 = TextureImporter.IsTextureFormatETC1Compression((TextureFormat)num);
-			if (flag2 && flag3 && flag4)
+			bool flag3 = TextureImporter.IsETC1SupportedByBuildTarget(BuildPipeline.GetBuildTargetByName(platformSettings.name));
+			bool flag4 = textureImporterInspector.spriteImportMode != SpriteImportMode.None;
+			bool flag5 = TextureImporter.IsTextureFormatETC1Compression((TextureFormat)num);
+			if (flag3 && flag4 && flag5)
 			{
 				EditorGUI.BeginChangeCheck();
 				EditorGUI.showMixedValue = (platformSettings.overriddenIsDifferent || platformSettings.allowsAlphaSplitIsDifferent);
@@ -217,9 +240,9 @@ namespace UnityEditor.Modules
 			}
 		}
 
-		private int EditCompressionQuality(BuildTarget target, int compression)
+		private int EditCompressionQuality(BuildTarget target, int compression, bool isCrunchedFormat)
 		{
-			bool flag = target == BuildTarget.iOS || target == BuildTarget.tvOS || target == BuildTarget.Android || target == BuildTarget.Tizen || target == BuildTarget.SamsungTV;
+			bool flag = !isCrunchedFormat && (target == BuildTarget.iOS || target == BuildTarget.tvOS || target == BuildTarget.Android || target == BuildTarget.Tizen);
 			int result;
 			if (flag)
 			{

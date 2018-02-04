@@ -5,7 +5,7 @@ using UnityEngine.Scripting;
 
 namespace UnityEngine.Video
 {
-	[RequireComponent(typeof(Transform))]
+	[RequireComponent(typeof(Transform)), UsedByNativeCode]
 	public sealed class VideoPlayer : Behaviour
 	{
 		public delegate void EventHandler(VideoPlayer source);
@@ -13,6 +13,8 @@ namespace UnityEngine.Video
 		public delegate void ErrorEventHandler(VideoPlayer source, string message);
 
 		public delegate void FrameReadyEventHandler(VideoPlayer source, long frameIdx);
+
+		public delegate void TimeEventHandler(VideoPlayer source, double seconds);
 
 		public event VideoPlayer.EventHandler prepareCompleted
 		{
@@ -170,6 +172,32 @@ namespace UnityEngine.Video
 			}
 		}
 
+		public event VideoPlayer.TimeEventHandler clockResyncOccurred
+		{
+			add
+			{
+				VideoPlayer.TimeEventHandler timeEventHandler = this.clockResyncOccurred;
+				VideoPlayer.TimeEventHandler timeEventHandler2;
+				do
+				{
+					timeEventHandler2 = timeEventHandler;
+					timeEventHandler = Interlocked.CompareExchange<VideoPlayer.TimeEventHandler>(ref this.clockResyncOccurred, (VideoPlayer.TimeEventHandler)Delegate.Combine(timeEventHandler2, value), timeEventHandler);
+				}
+				while (timeEventHandler != timeEventHandler2);
+			}
+			remove
+			{
+				VideoPlayer.TimeEventHandler timeEventHandler = this.clockResyncOccurred;
+				VideoPlayer.TimeEventHandler timeEventHandler2;
+				do
+				{
+					timeEventHandler2 = timeEventHandler;
+					timeEventHandler = Interlocked.CompareExchange<VideoPlayer.TimeEventHandler>(ref this.clockResyncOccurred, (VideoPlayer.TimeEventHandler)Delegate.Remove(timeEventHandler2, value), timeEventHandler);
+				}
+				while (timeEventHandler != timeEventHandler2);
+			}
+		}
+
 		public event VideoPlayer.FrameReadyEventHandler frameReady
 		{
 			add
@@ -296,6 +324,16 @@ namespace UnityEngine.Video
 			set;
 		}
 
+		public extern Video3DLayout targetCamera3DLayout
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
 		public extern Texture texture
 		{
 			[GeneratedByOldBindingsGenerator]
@@ -406,6 +444,26 @@ namespace UnityEngine.Video
 		}
 
 		public extern VideoTimeSource timeSource
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public extern VideoTimeReference timeReference
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public extern double externalReferenceTime
 		{
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
@@ -677,6 +735,15 @@ namespace UnityEngine.Video
 			if (source.seekCompleted != null)
 			{
 				source.seekCompleted(source);
+			}
+		}
+
+		[RequiredByNativeCode]
+		private static void InvokeClockResyncOccurredCallback_Internal(VideoPlayer source, double seconds)
+		{
+			if (source.clockResyncOccurred != null)
+			{
+				source.clockResyncOccurred(source, seconds);
 			}
 		}
 	}

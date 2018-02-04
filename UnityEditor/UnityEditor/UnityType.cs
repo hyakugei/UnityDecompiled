@@ -22,6 +22,8 @@ namespace UnityEditor
 
 			public string classNamespace;
 
+			public string module;
+
 			public int persistentTypeID;
 
 			public uint flags;
@@ -35,9 +37,9 @@ namespace UnityEditor
 
 		private static ReadOnlyCollection<UnityType> ms_typesReadOnly;
 
-		private static Dictionary<int, UnityType> ms_idToTypeInfo;
+		private static Dictionary<int, UnityType> ms_idToType;
 
-		private static Dictionary<string, UnityType> ms_nameToTypeInfo;
+		private static Dictionary<string, UnityType> ms_nameToType;
 
 		public string name
 		{
@@ -46,6 +48,12 @@ namespace UnityEditor
 		}
 
 		public string nativeNamespace
+		{
+			get;
+			private set;
+		}
+
+		public string module
 		{
 			get;
 			private set;
@@ -93,14 +101,6 @@ namespace UnityEditor
 			}
 		}
 
-		public bool isDeprecated
-		{
-			get
-			{
-				return (this.flags & UnityTypeFlags.Deprecated) != (UnityTypeFlags)0;
-			}
-		}
-
 		public string qualifiedName
 		{
 			get
@@ -117,12 +117,20 @@ namespace UnityEditor
 			}
 		}
 
+		public static uint TypeCount
+		{
+			get
+			{
+				return (uint)UnityType.ms_types.Length;
+			}
+		}
+
 		static UnityType()
 		{
 			UnityType.UnityTypeTransport[] array = UnityType.Internal_GetAllTypes();
 			UnityType.ms_types = new UnityType[array.Length];
-			UnityType.ms_idToTypeInfo = new Dictionary<int, UnityType>();
-			UnityType.ms_nameToTypeInfo = new Dictionary<string, UnityType>();
+			UnityType.ms_idToType = new Dictionary<int, UnityType>();
+			UnityType.ms_nameToType = new Dictionary<string, UnityType>();
 			for (int i = 0; i < array.Length; i++)
 			{
 				UnityType baseClass = null;
@@ -136,18 +144,18 @@ namespace UnityEditor
 					descendantCount = array[i].descendantCount,
 					name = array[i].className,
 					nativeNamespace = array[i].classNamespace,
+					module = array[i].module,
 					persistentTypeID = array[i].persistentTypeID,
 					baseClass = baseClass,
 					flags = (UnityTypeFlags)array[i].flags
 				};
 				UnityType.ms_types[i] = unityType;
 				UnityType.ms_typesReadOnly = new ReadOnlyCollection<UnityType>(UnityType.ms_types);
-				UnityType.ms_idToTypeInfo[unityType.persistentTypeID] = unityType;
-				UnityType.ms_nameToTypeInfo[unityType.name] = unityType;
+				UnityType.ms_idToType[unityType.persistentTypeID] = unityType;
+				UnityType.ms_nameToType[unityType.name] = unityType;
 			}
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		private static extern UnityType.UnityTypeTransport[] Internal_GetAllTypes();
 
@@ -156,17 +164,22 @@ namespace UnityEditor
 			return this.runtimeTypeIndex - baseClass.runtimeTypeIndex < baseClass.descendantCount;
 		}
 
-		public static UnityType FindTypeByPersistentTypeID(int id)
+		public static UnityType FindTypeByPersistentTypeID(int persistentTypeId)
 		{
 			UnityType result = null;
-			UnityType.ms_idToTypeInfo.TryGetValue(id, out result);
+			UnityType.ms_idToType.TryGetValue(persistentTypeId, out result);
 			return result;
+		}
+
+		public static UnityType GetTypeByRuntimeTypeIndex(uint index)
+		{
+			return UnityType.ms_types[(int)((UIntPtr)index)];
 		}
 
 		public static UnityType FindTypeByName(string name)
 		{
 			UnityType result = null;
-			UnityType.ms_nameToTypeInfo.TryGetValue(name, out result);
+			UnityType.ms_nameToType.TryGetValue(name, out result);
 			return result;
 		}
 

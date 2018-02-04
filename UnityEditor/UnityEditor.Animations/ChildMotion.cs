@@ -1,8 +1,10 @@
 using System;
 using UnityEngine;
+using UnityEngine.Bindings;
 
 namespace UnityEditor.Animations
 {
+	[NativeType("Editor/Src/Animation/BlendTree.h")]
 	public struct ChildMotion
 	{
 		private Motion m_Motion;

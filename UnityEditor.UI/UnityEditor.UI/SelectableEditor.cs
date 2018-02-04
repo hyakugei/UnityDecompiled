@@ -30,7 +30,7 @@ namespace UnityEditor.UI
 
 		private SerializedProperty m_NavigationProperty;
 
-		private GUIContent m_VisualizeNavigation = new GUIContent("Visualize", "Show navigation flows between selectable UI elements.");
+		private GUIContent m_VisualizeNavigation = EditorGUIUtility.TrTextContent("Visualize", "Show navigation flows between selectable UI elements.", null);
 
 		private AnimBool m_ShowColorTint = new AnimBool();
 

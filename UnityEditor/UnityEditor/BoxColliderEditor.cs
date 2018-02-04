@@ -7,13 +7,15 @@ namespace UnityEditor
 	[CanEditMultipleObjects, CustomEditor(typeof(BoxCollider))]
 	internal class BoxColliderEditor : PrimitiveCollider3DEditor
 	{
-		private static readonly int s_HandleControlIDHint = typeof(BoxColliderEditor).Name.GetHashCode();
-
 		private SerializedProperty m_Center;
 
 		private SerializedProperty m_Size;
 
-		private readonly BoxBoundsHandle m_BoundsHandle = new BoxBoundsHandle(BoxColliderEditor.s_HandleControlIDHint);
+		private readonly BoxBoundsHandle m_BoundsHandle = new BoxBoundsHandle();
+
+		protected GUIContent centerContent = EditorGUIUtility.TrTextContent("Center", "The position of the Collider in the object’s local space.", null);
+
+		protected GUIContent sizeContent = EditorGUIUtility.TrTextContent("Size", "The size of the Collider in the X, Y, Z directions.", null);
 
 		protected override PrimitiveBoundsHandle boundsHandle
 		{
@@ -34,10 +36,10 @@ namespace UnityEditor
 		{
 			base.serializedObject.Update();
 			base.InspectorEditButtonGUI();
-			EditorGUILayout.PropertyField(this.m_IsTrigger, new GUILayoutOption[0]);
-			EditorGUILayout.PropertyField(this.m_Material, new GUILayoutOption[0]);
-			EditorGUILayout.PropertyField(this.m_Center, new GUILayoutOption[0]);
-			EditorGUILayout.PropertyField(this.m_Size, new GUILayoutOption[0]);
+			EditorGUILayout.PropertyField(this.m_IsTrigger, this.triggerContent, new GUILayoutOption[0]);
+			EditorGUILayout.PropertyField(this.m_Material, this.materialContent, new GUILayoutOption[0]);
+			EditorGUILayout.PropertyField(this.m_Center, this.centerContent, new GUILayoutOption[0]);
+			EditorGUILayout.PropertyField(this.m_Size, this.sizeContent, new GUILayoutOption[0]);
 			base.serializedObject.ApplyModifiedProperties();
 		}
 

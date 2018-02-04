@@ -1,10 +1,9 @@
 using System;
 using System.Runtime.CompilerServices;
-using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
-	public sealed class UnityEventQueueSystem
+	public class UnityEventQueueSystem
 	{
 		public static string GenerateEventIdForPayload(string eventPayloadName)
 		{
@@ -31,15 +30,7 @@ namespace UnityEngine
 			});
 		}
 
-		public static IntPtr GetGlobalEventQueue()
-		{
-			IntPtr result;
-			UnityEventQueueSystem.INTERNAL_CALL_GetGlobalEventQueue(out result);
-			return result;
-		}
-
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_GetGlobalEventQueue(out IntPtr value);
+		public static extern IntPtr GetGlobalEventQueue();
 	}
 }

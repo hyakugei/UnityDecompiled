@@ -1,13 +1,16 @@
 using System;
-using System.Runtime.InteropServices;
+using UnityEngine.Bindings;
+using UnityEngine.Scripting;
 
 namespace UnityEditor.Collaboration
 {
-	[StructLayout(LayoutKind.Sequential)]
-	internal class Revision
+	[UsedByNativeCode]
+	internal struct Revision
 	{
+		[NativeName("m_CommitterName")]
 		private string m_AuthorName;
 
+		[NativeName("m_CommitterEmail")]
 		private string m_Author;
 
 		private string m_Comment;
@@ -17,6 +20,12 @@ namespace UnityEditor.Collaboration
 		private string m_Reference;
 
 		private ulong m_TimeStamp;
+
+		private bool m_IsObtained;
+
+		private ChangeAction[] m_Entries;
+
+		private CloudBuildStatus[] m_BuildStatuses;
 
 		public string authorName
 		{
@@ -66,8 +75,28 @@ namespace UnityEditor.Collaboration
 			}
 		}
 
-		private Revision()
+		public bool isObtained
 		{
+			get
+			{
+				return this.m_IsObtained;
+			}
+		}
+
+		public ChangeAction[] entries
+		{
+			get
+			{
+				return this.m_Entries;
+			}
+		}
+
+		public CloudBuildStatus[] buildStatuses
+		{
+			get
+			{
+				return this.m_BuildStatuses;
+			}
 		}
 	}
 }

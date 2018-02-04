@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEditor.IMGUI.Controls;
+using UnityEditor.Utils;
 using UnityEditorInternal;
 using UnityEngine;
 
@@ -80,10 +81,10 @@ namespace UnityEditor
 				static Constants()
 				{
 					PackageImportTreeView.PackageImportTreeViewGUI.Constants.folderIcon = EditorGUIUtility.FindTexture(EditorResourcesUtility.folderIconName);
-					PackageImportTreeView.PackageImportTreeViewGUI.Constants.badgeNew = EditorGUIUtility.IconContent("AS Badge New", "|This is a new Asset");
-					PackageImportTreeView.PackageImportTreeViewGUI.Constants.badgeDelete = EditorGUIUtility.IconContent("AS Badge Delete", "|These files will be deleted!");
-					PackageImportTreeView.PackageImportTreeViewGUI.Constants.badgeWarn = EditorGUIUtility.IconContent("console.warnicon", "|Warning: File exists in project, but with different GUID. Will override existing asset which may be undesired.");
-					PackageImportTreeView.PackageImportTreeViewGUI.Constants.badgeChange = EditorGUIUtility.IconContent("playLoopOff", "|This file is new or has changed.");
+					PackageImportTreeView.PackageImportTreeViewGUI.Constants.badgeNew = EditorGUIUtility.TrIconContent("PackageBadgeNew", "This is a new Asset");
+					PackageImportTreeView.PackageImportTreeViewGUI.Constants.badgeDelete = EditorGUIUtility.TrIconContent("PackageBadgeDelete", "These files will be deleted!");
+					PackageImportTreeView.PackageImportTreeViewGUI.Constants.badgeWarn = EditorGUIUtility.TrIconContent("console.warnicon", "Warning: File exists in project, but with different GUID. Will override existing asset which may be undesired.");
+					PackageImportTreeView.PackageImportTreeViewGUI.Constants.badgeChange = EditorGUIUtility.TrIconContent("playLoopOff", "This file is new or has changed.");
 					PackageImportTreeView.PackageImportTreeViewGUI.Constants.paddinglessStyle = new GUIStyle();
 					PackageImportTreeView.PackageImportTreeViewGUI.Constants.paddinglessStyle.padding = new RectOffset(0, 0, 0, 0);
 				}
@@ -243,6 +244,7 @@ namespace UnityEditor
 				EditorGUIUtility.SetIconSize(new Vector2(this.k_IconWidth, this.k_IconWidth));
 				GUIStyle lineStyle = TreeViewGUI.Styles.lineStyle;
 				lineStyle.padding.left = 0;
+				contentRect.height += 5f;
 				if (Event.current.type == EventType.Repaint)
 				{
 					lineStyle.Draw(contentRect, GUIContent.Temp(item.displayName, this.GetIconForItem(item)), false, false, selected, focused);
@@ -316,13 +318,13 @@ namespace UnityEditor
 					ImportPackageItem importPackageItem = packageItems[i];
 					if (!PackageImport.HasInvalidCharInFilePath(importPackageItem.destinationAssetPath))
 					{
-						string fileName = Path.GetFileName(importPackageItem.destinationAssetPath);
-						string directoryName = Path.GetDirectoryName(importPackageItem.destinationAssetPath);
-						TreeViewItem treeViewItem = this.EnsureFolderPath(directoryName, dictionary, flag);
+						string displayName = Path.GetFileName(importPackageItem.destinationAssetPath).ConvertSeparatorsToUnity();
+						string folderPath = Path.GetDirectoryName(importPackageItem.destinationAssetPath).ConvertSeparatorsToUnity();
+						TreeViewItem treeViewItem = this.EnsureFolderPath(folderPath, dictionary, flag);
 						if (treeViewItem != null)
 						{
 							int hashCode = importPackageItem.destinationAssetPath.GetHashCode();
-							PackageImportTreeView.PackageImportTreeViewItem packageImportTreeViewItem = new PackageImportTreeView.PackageImportTreeViewItem(importPackageItem, hashCode, treeViewItem.depth + 1, treeViewItem, fileName);
+							PackageImportTreeView.PackageImportTreeViewItem packageImportTreeViewItem = new PackageImportTreeView.PackageImportTreeViewItem(importPackageItem, hashCode, treeViewItem.depth + 1, treeViewItem, displayName);
 							treeViewItem.AddChild(packageImportTreeViewItem);
 							if (flag)
 							{

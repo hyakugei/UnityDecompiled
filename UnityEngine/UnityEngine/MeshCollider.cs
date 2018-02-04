@@ -4,6 +4,7 @@ using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
+	[RequiredByNativeCode]
 	public sealed class MeshCollider : Collider
 	{
 		public extern Mesh sharedMesh
@@ -26,7 +27,7 @@ namespace UnityEngine
 			set;
 		}
 
-		public extern bool inflateMesh
+		public extern MeshColliderCookingOptions cookingOptions
 		{
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
@@ -34,6 +35,23 @@ namespace UnityEngine
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
+		}
+
+		public bool inflateMesh
+		{
+			get
+			{
+				return (this.cookingOptions & MeshColliderCookingOptions.InflateConvexMesh) != MeshColliderCookingOptions.None;
+			}
+			set
+			{
+				MeshColliderCookingOptions meshColliderCookingOptions = this.cookingOptions & ~MeshColliderCookingOptions.InflateConvexMesh;
+				if (value)
+				{
+					meshColliderCookingOptions |= MeshColliderCookingOptions.InflateConvexMesh;
+				}
+				this.cookingOptions = meshColliderCookingOptions;
+			}
 		}
 
 		public extern float skinWidth

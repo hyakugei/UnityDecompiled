@@ -60,7 +60,7 @@ namespace UnityEngine.Events
 			this.m_NeedsUpdate = true;
 		}
 
-		public void Invoke(object[] parameters)
+		public List<BaseInvokableCall> PrepareInvoke()
 		{
 			if (this.m_NeedsUpdate)
 			{
@@ -69,10 +69,7 @@ namespace UnityEngine.Events
 				this.m_ExecutingCalls.AddRange(this.m_RuntimeCalls);
 				this.m_NeedsUpdate = false;
 			}
-			for (int i = 0; i < this.m_ExecutingCalls.Count; i++)
-			{
-				this.m_ExecutingCalls[i].Invoke(parameters);
-			}
+			return this.m_ExecutingCalls;
 		}
 	}
 }

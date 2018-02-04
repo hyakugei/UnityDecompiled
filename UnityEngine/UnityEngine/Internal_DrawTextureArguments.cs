@@ -1,7 +1,12 @@
 using System;
+using UnityEngine.Bindings;
 
 namespace UnityEngine
 {
+	[VisibleToOtherModules(new string[]
+	{
+		"UnityEngine.IMGUIModule"
+	})]
 	internal struct Internal_DrawTextureArguments
 	{
 		public Rect screenRect;
@@ -17,6 +22,10 @@ namespace UnityEngine
 		public int bottomBorder;
 
 		public Color32 color;
+
+		public Vector4 borderWidths;
+
+		public Vector4 cornerRadiuses;
 
 		public int pass;
 

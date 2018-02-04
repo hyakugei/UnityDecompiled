@@ -23,10 +23,10 @@ namespace UnityEditor.UI
 
 			public Styles()
 			{
-				this.matchContent = new GUIContent("Match");
-				this.widthContent = new GUIContent("Width");
-				this.heightContent = new GUIContent("Height");
-				this.uiScaleModeContent = new GUIContent("UI Scale Mode");
+				this.matchContent = EditorGUIUtility.TrTextContent("Match", null, null);
+				this.widthContent = EditorGUIUtility.TrTextContent("Width", null, null);
+				this.heightContent = EditorGUIUtility.TrTextContent("Height", null, null);
+				this.uiScaleModeContent = EditorGUIUtility.TrTextContent("UI Scale Mode", null, null);
 				this.leftAlignedLabel = new GUIStyle(EditorStyles.label);
 				this.rightAlignedLabel = new GUIStyle(EditorStyles.label);
 				this.rightAlignedLabel.alignment = TextAnchor.MiddleRight;

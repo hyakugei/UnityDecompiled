@@ -6,11 +6,21 @@ namespace UnityEditor.Collaboration
 {
 	internal class CollabTesting
 	{
-		private static IEnumerator<bool> _enumerator = null;
+		[Flags]
+		public enum AsyncState
+		{
+			NotWaiting = 0,
+			WaitForJobComplete = 1,
+			WaitForChannelMessageHandled = 2
+		}
+
+		private static IEnumerator<CollabTesting.AsyncState> _enumerator = null;
 
 		private static Action _runAfter = null;
 
-		public static Func<IEnumerable<bool>> Tick
+		private static CollabTesting.AsyncState _nextState = CollabTesting.AsyncState.NotWaiting;
+
+		public static Func<IEnumerable<CollabTesting.AsyncState>> Tick
 		{
 			set
 			{
@@ -34,9 +44,26 @@ namespace UnityEditor.Collaboration
 			}
 		}
 
-		public static void OnCompleteJob()
+		public static void OnJobsCompleted()
 		{
-			CollabTesting.Execute();
+			CollabTesting.OnAsyncSignalReceived(CollabTesting.AsyncState.WaitForJobComplete);
+		}
+
+		public static void OnChannelMessageHandled()
+		{
+			CollabTesting.OnAsyncSignalReceived(CollabTesting.AsyncState.WaitForChannelMessageHandled);
+		}
+
+		private static void OnAsyncSignalReceived(CollabTesting.AsyncState stateToRemove)
+		{
+			if ((CollabTesting._nextState & stateToRemove) != CollabTesting.AsyncState.NotWaiting)
+			{
+				CollabTesting._nextState &= ~stateToRemove;
+				if (CollabTesting._nextState == CollabTesting.AsyncState.NotWaiting)
+				{
+					CollabTesting.Execute();
+				}
+			}
 		}
 
 		public static void Execute()
@@ -50,6 +77,10 @@ namespace UnityEditor.Collaboration
 						if (!CollabTesting._enumerator.MoveNext())
 						{
 							CollabTesting.End();
+						}
+						else
+						{
+							CollabTesting._nextState = CollabTesting._enumerator.Current;
 						}
 					}
 					catch (Exception)

@@ -45,9 +45,9 @@ namespace UnityEditor.UI
 		protected override void OnEnable()
 		{
 			base.OnEnable();
-			this.m_SpriteContent = new GUIContent("Source Image");
-			this.m_SpriteTypeContent = new GUIContent("Image Type");
-			this.m_ClockwiseContent = new GUIContent("Clockwise");
+			this.m_SpriteContent = EditorGUIUtility.TrTextContent("Source Image", null, null);
+			this.m_SpriteTypeContent = EditorGUIUtility.TrTextContent("Image Type", null, null);
+			this.m_ClockwiseContent = EditorGUIUtility.TrTextContent("Clockwise", null, null);
 			this.m_Sprite = base.serializedObject.FindProperty("m_Sprite");
 			this.m_Type = base.serializedObject.FindProperty("m_Type");
 			this.m_FillCenter = base.serializedObject.FindProperty("m_FillCenter");
@@ -168,7 +168,7 @@ namespace UnityEditor.UI
 			{
 				if (image.sprite != null && !image.hasBorder && (image.sprite.texture.wrapMode != TextureWrapMode.Repeat || image.sprite.packed))
 				{
-					EditorGUILayout.HelpBox("It looks like you want to tile a sprite with no border. It would be more efficient to convert the Sprite to an Advanced texture, clear the Packing tag and set the Wrap mode to Repeat.", MessageType.Warning);
+					EditorGUILayout.HelpBox("It looks like you want to tile a sprite with no border. It would be more efficient to modify the Sprite properties, clear the Packing tag and set the Wrap mode to Repeat.", MessageType.Warning);
 				}
 			}
 			EditorGUILayout.EndFadeGroup();

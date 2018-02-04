@@ -10,32 +10,32 @@ namespace UnityEditor
 		{
 			public GUIContent[] ModeToggles = new GUIContent[]
 			{
-				new GUIContent("Object"),
-				new GUIContent("Bake"),
-				new GUIContent("Visualization")
+				EditorGUIUtility.TrTextContent("Object", null, null),
+				EditorGUIUtility.TrTextContent("Bake", null, null),
+				EditorGUIUtility.TrTextContent("Visualization", null, null)
 			};
 
 			public GUIStyle labelStyle = EditorStyles.wordWrappedMiniLabel;
 
-			public GUIContent emptyAreaSelection = new GUIContent("Select a Mesh Renderer or an Occlusion Area from the scene.");
+			public GUIContent emptyAreaSelection = EditorGUIUtility.TrTextContent("Select a Mesh Renderer or an Occlusion Area from the scene.", null, null);
 
-			public GUIContent emptyCameraSelection = new GUIContent("Select a Camera from the scene.");
+			public GUIContent emptyCameraSelection = EditorGUIUtility.TrTextContent("Select a Camera from the scene.", null, null);
 
-			public GUIContent visualizationNote = new GUIContent("The visualization may not correspond to current bake settings and Occlusion Area placements if they have been changed since last bake.");
+			public GUIContent visualizationNote = EditorGUIUtility.TrTextContent("The visualization may not correspond to current bake settings and Occlusion Area placements if they have been changed since last bake.", null, null);
 
-			public GUIContent seeVisualizationInScene = new GUIContent("See the occlusion culling visualization in the Scene View based on the selected Camera.");
+			public GUIContent seeVisualizationInScene = EditorGUIUtility.TrTextContent("See the occlusion culling visualization in the Scene View based on the selected Camera.", null, null);
 
-			public GUIContent noOcclusionData = new GUIContent("No occlusion data has been baked.");
+			public GUIContent noOcclusionData = EditorGUIUtility.TrTextContent("No occlusion data has been baked.", null, null);
 
-			public GUIContent smallestHole = EditorGUIUtility.TextContent("Smallest Hole|Smallest hole in the geometry through which the camera is supposed to see. The single float value of the parameter represents the diameter of the imaginary smallest hole, i.e. the maximum extent of a 3D object that fits through the hole.");
+			public GUIContent smallestHole = EditorGUIUtility.TrTextContent("Smallest Hole", "Smallest hole in the geometry through which the camera is supposed to see. The single float value of the parameter represents the diameter of the imaginary smallest hole, i.e. the maximum extent of a 3D object that fits through the hole.", null);
 
-			public GUIContent backfaceThreshold = EditorGUIUtility.TextContent("Backface Threshold|The backface threshold is a size optimization that reduces unnecessary details by testing backfaces. A value of 100 is robust and never removes any backfaces. A value of 5 aggressively reduces the data based on locations with visible backfaces. The idea is that typically valid camera positions cannot see many backfaces.  For example geometry under terrain and inside solid objects can be removed.");
+			public GUIContent backfaceThreshold = EditorGUIUtility.TrTextContent("Backface Threshold", "The backface threshold is a size optimization that reduces unnecessary details by testing backfaces. A value of 100 is robust and never removes any backfaces. A value of 5 aggressively reduces the data based on locations with visible backfaces. The idea is that typically valid camera positions cannot see many backfaces.  For example geometry under terrain and inside solid objects can be removed.", null);
 
-			public GUIContent farClipPlane = EditorGUIUtility.TextContent("Far Clip Plane|Far Clip Plane used during baking. This should match the largest far clip plane used by any camera in the scene. A value of 0.0 sets the far plane to Infinity.");
+			public GUIContent farClipPlane = EditorGUIUtility.TrTextContent("Far Clip Plane", "Far Clip Plane used during baking. This should match the largest far clip plane used by any camera in the scene. A value of 0.0 sets the far plane to Infinity.", null);
 
-			public GUIContent smallestOccluder = EditorGUIUtility.TextContent("Smallest Occluder|The size of the smallest object that will be used to hide other objects when doing occlusion culling. For example, if a value of 4 is chosen, then all the objects that are higher or wider than 4 meters will block visibility and the objects that are smaller than that will not. This value is a tradeoff between occlusion accuracy and storage size.");
+			public GUIContent smallestOccluder = EditorGUIUtility.TrTextContent("Smallest Occluder", "The size of the smallest object that will be used to hide other objects when doing occlusion culling. For example, if a value of 4 is chosen, then all the objects that are higher or wider than 4 meters will block visibility and the objects that are smaller than that will not. This value is a tradeoff between occlusion accuracy and storage size.", null);
 
-			public GUIContent defaultParameterText = EditorGUIUtility.TextContent("Default Parameters|The default parameters guarantee that any given scene computes fast and the occlusion culling results are good. As the parameters are always scene specific, better results will be achieved when fine tuning the parameters on a scene to scene basis. All the parameters are dependent on the unit scale of the scene and it is imperative that the unit scale parameter is set correctly before setting the default values.");
+			public GUIContent defaultParameterText = EditorGUIUtility.TrTextContent("Default Parameters", "The default parameters guarantee that any given scene computes fast and the occlusion culling results are good. As the parameters are always scene specific, better results will be achieved when fine tuning the parameters on a scene to scene basis. All the parameters are dependent on the unit scale of the scene and it is imperative that the unit scale parameter is set correctly before setting the default values.", null);
 		}
 
 		private enum Mode
@@ -52,8 +52,6 @@ namespace UnityEditor
 		private string m_Warning;
 
 		private static OcclusionCullingWindow ms_OcclusionCullingWindow;
-
-		private UnityEngine.Object[] m_Objects;
 
 		private Vector2 m_ScrollPosition = Vector2.zero;
 
@@ -302,19 +300,26 @@ namespace UnityEditor
 
 		private void ModeToggle()
 		{
-			this.m_Mode = (OcclusionCullingWindow.Mode)GUILayout.Toolbar((int)this.m_Mode, OcclusionCullingWindow.s_Styles.ModeToggles, "LargeButton", new GUILayoutOption[0]);
-			if (GUI.changed)
+			EditorGUILayout.BeginHorizontal(new GUILayoutOption[0]);
+			GUILayout.FlexibleSpace();
+			using (EditorGUI.ChangeCheckScope changeCheckScope = new EditorGUI.ChangeCheckScope())
 			{
-				if (this.m_Mode == OcclusionCullingWindow.Mode.Visualization && StaticOcclusionCulling.umbraDataSize > 0)
+				this.m_Mode = (OcclusionCullingWindow.Mode)GUILayout.Toolbar((int)this.m_Mode, OcclusionCullingWindow.s_Styles.ModeToggles, "LargeButton", GUI.ToolbarButtonSize.FitToContents, new GUILayoutOption[0]);
+				if (changeCheckScope.changed)
 				{
-					StaticOcclusionCullingVisualization.showPreVisualization = false;
+					if (this.m_Mode == OcclusionCullingWindow.Mode.Visualization && StaticOcclusionCulling.umbraDataSize > 0)
+					{
+						StaticOcclusionCullingVisualization.showPreVisualization = false;
+					}
+					else
+					{
+						StaticOcclusionCullingVisualization.showPreVisualization = true;
+					}
+					SceneView.RepaintAll();
 				}
-				else
-				{
-					StaticOcclusionCullingVisualization.showPreVisualization = true;
-				}
-				SceneView.RepaintAll();
 			}
+			GUILayout.FlexibleSpace();
+			EditorGUILayout.EndHorizontal();
 		}
 
 		private void OnGUI()
@@ -370,7 +375,7 @@ namespace UnityEditor
 		{
 			if (OcclusionCullingWindow.s_IsVisible)
 			{
-				SceneViewOverlay.Window(new GUIContent("Occlusion Culling"), new SceneViewOverlay.WindowFunction(this.DisplayControls), 100, SceneViewOverlay.WindowDisplayOption.OneWindowPerTarget);
+				SceneViewOverlay.Window(EditorGUIUtility.TrTextContent("Occlusion Culling", null, null), new SceneViewOverlay.WindowFunction(this.DisplayControls), 200, SceneViewOverlay.WindowDisplayOption.OneWindowPerTarget);
 			}
 		}
 

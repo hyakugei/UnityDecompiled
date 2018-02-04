@@ -1,49 +1,70 @@
 using System;
+using UnityEngine;
 
 namespace UnityEditor
 {
 	[CanEditMultipleObjects, CustomEditor(typeof(ModelImporter))]
 	internal class ModelImporterEditor : AssetImporterTabbedEditor
 	{
-		internal override bool showImportedObject
+		public override bool showImportedObject
 		{
 			get
 			{
-				return base.activeEditor is ModelImporterModelEditor;
+				return base.activeTab is ModelImporterModelEditor;
 			}
 		}
 
-		protected override bool useAssetDrawPreview
+		public override void OnEnable()
 		{
-			get
+			if (base.tabs == null)
 			{
-				return false;
-			}
-		}
-
-		internal override void OnEnable()
-		{
-			if (this.m_SubEditorTypes == null)
-			{
-				this.m_SubEditorTypes = new Type[]
+				base.tabs = new BaseAssetImporterTabUI[]
 				{
-					typeof(ModelImporterModelEditor),
-					typeof(ModelImporterRigEditor),
-					typeof(ModelImporterClipEditor)
+					new ModelImporterModelEditor(this),
+					new ModelImporterRigEditor(this),
+					new ModelImporterClipEditor(this),
+					new ModelImporterMaterialEditor(this)
 				};
-				this.m_SubEditorNames = new string[]
+				this.m_TabNames = new string[]
 				{
 					"Model",
 					"Rig",
-					"Animations"
+					"Animation",
+					"Materials"
 				};
 			}
 			base.OnEnable();
 		}
 
+		public override void OnDisable()
+		{
+			BaseAssetImporterTabUI[] tabs = base.tabs;
+			for (int i = 0; i < tabs.Length; i++)
+			{
+				BaseAssetImporterTabUI baseAssetImporterTabUI = tabs[i];
+				baseAssetImporterTabUI.OnDisable();
+			}
+			base.OnDisable();
+		}
+
 		public override bool HasPreviewGUI()
 		{
 			return base.HasPreviewGUI() && base.targets.Length < 2;
+		}
+
+		public override GUIContent GetPreviewTitle()
+		{
+			ModelImporterClipEditor modelImporterClipEditor = base.activeTab as ModelImporterClipEditor;
+			GUIContent result;
+			if (modelImporterClipEditor != null)
+			{
+				result = new GUIContent(modelImporterClipEditor.selectedClipName);
+			}
+			else
+			{
+				result = base.GetPreviewTitle();
+			}
+			return result;
 		}
 	}
 }

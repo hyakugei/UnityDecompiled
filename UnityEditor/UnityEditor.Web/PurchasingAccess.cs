@@ -13,9 +13,16 @@ namespace UnityEditor.Web
 	[InitializeOnLoad]
 	internal class PurchasingAccess : CloudServiceAccess
 	{
+		public struct PurchasingServiceState
+		{
+			public bool iap;
+		}
+
 		private const string kServiceName = "Purchasing";
 
 		private const string kServiceDisplayName = "In App Purchasing";
+
+		private const string kServicePackageName = "com.unity.purchasing";
 
 		private const string kServiceUrl = "https://public-cdn.cloud.unity3d.com/editor/production/cloud/purchasing";
 
@@ -44,6 +51,11 @@ namespace UnityEditor.Web
 			return "In App Purchasing";
 		}
 
+		public override string GetPackageName()
+		{
+			return "com.unity.purchasing";
+		}
+
 		public override bool IsServiceEnabled()
 		{
 			return PurchasingSettings.enabled;
@@ -51,7 +63,14 @@ namespace UnityEditor.Web
 
 		public override void EnableService(bool enabled)
 		{
-			PurchasingSettings.enabled = enabled;
+			if (PurchasingSettings.enabled != enabled)
+			{
+				PurchasingSettings.SetEnabledServiceWindow(enabled);
+				EditorAnalytics.SendEventServiceInfo(new PurchasingAccess.PurchasingServiceState
+				{
+					iap = enabled
+				});
+			}
 		}
 
 		public void InstallUnityPackage()

@@ -10,42 +10,42 @@ namespace UnityEditor
 		{
 			public GUIContent[] muscleBodyGroup = new GUIContent[]
 			{
-				EditorGUIUtility.TextContent("Body"),
-				EditorGUIUtility.TextContent("Head"),
-				EditorGUIUtility.TextContent("Left Arm"),
-				EditorGUIUtility.TextContent("Left Fingers"),
-				EditorGUIUtility.TextContent("Right Arm"),
-				EditorGUIUtility.TextContent("Right Fingers"),
-				EditorGUIUtility.TextContent("Left Leg"),
-				EditorGUIUtility.TextContent("Right Leg")
+				EditorGUIUtility.TrTextContent("Body", null, null),
+				EditorGUIUtility.TrTextContent("Head", null, null),
+				EditorGUIUtility.TrTextContent("Left Arm", null, null),
+				EditorGUIUtility.TrTextContent("Left Fingers", null, null),
+				EditorGUIUtility.TrTextContent("Right Arm", null, null),
+				EditorGUIUtility.TrTextContent("Right Fingers", null, null),
+				EditorGUIUtility.TrTextContent("Left Leg", null, null),
+				EditorGUIUtility.TrTextContent("Right Leg", null, null)
 			};
 
 			public GUIContent[] muscleTypeGroup = new GUIContent[]
 			{
-				EditorGUIUtility.TextContent("Open Close"),
-				EditorGUIUtility.TextContent("Left Right"),
-				EditorGUIUtility.TextContent("Roll Left Right"),
-				EditorGUIUtility.TextContent("In Out"),
-				EditorGUIUtility.TextContent("Roll In Out"),
-				EditorGUIUtility.TextContent("Finger Open Close"),
-				EditorGUIUtility.TextContent("Finger In Out")
+				EditorGUIUtility.TrTextContent("Open Close", null, null),
+				EditorGUIUtility.TrTextContent("Left Right", null, null),
+				EditorGUIUtility.TrTextContent("Roll Left Right", null, null),
+				EditorGUIUtility.TrTextContent("In Out", null, null),
+				EditorGUIUtility.TrTextContent("Roll In Out", null, null),
+				EditorGUIUtility.TrTextContent("Finger Open Close", null, null),
+				EditorGUIUtility.TrTextContent("Finger In Out", null, null)
 			};
 
-			public GUIContent armTwist = EditorGUIUtility.TextContent("Upper Arm Twist");
+			public GUIContent armTwist = EditorGUIUtility.TrTextContent("Upper Arm Twist", null, null);
 
-			public GUIContent foreArmTwist = EditorGUIUtility.TextContent("Lower Arm Twist");
+			public GUIContent foreArmTwist = EditorGUIUtility.TrTextContent("Lower Arm Twist", null, null);
 
-			public GUIContent upperLegTwist = EditorGUIUtility.TextContent("Upper Leg Twist");
+			public GUIContent upperLegTwist = EditorGUIUtility.TrTextContent("Upper Leg Twist", null, null);
 
-			public GUIContent legTwist = EditorGUIUtility.TextContent("Lower Leg Twist");
+			public GUIContent legTwist = EditorGUIUtility.TrTextContent("Lower Leg Twist", null, null);
 
-			public GUIContent armStretch = EditorGUIUtility.TextContent("Arm Stretch");
+			public GUIContent armStretch = EditorGUIUtility.TrTextContent("Arm Stretch", null, null);
 
-			public GUIContent legStretch = EditorGUIUtility.TextContent("Leg Stretch");
+			public GUIContent legStretch = EditorGUIUtility.TrTextContent("Leg Stretch", null, null);
 
-			public GUIContent feetSpacing = EditorGUIUtility.TextContent("Feet Spacing");
+			public GUIContent feetSpacing = EditorGUIUtility.TrTextContent("Feet Spacing", null, null);
 
-			public GUIContent hasTranslationDoF = EditorGUIUtility.TextContent("Translation DoF");
+			public GUIContent hasTranslationDoF = EditorGUIUtility.TrTextContent("Translation DoF", null, null);
 
 			public GUIStyle box = new GUIStyle("OL box noexpand");
 
@@ -55,9 +55,9 @@ namespace UnityEditor
 
 			public GUIStyle toolbarDropDown = "TE ToolbarDropDown";
 
-			public GUIContent muscle = EditorGUIUtility.TextContent("Muscles");
+			public GUIContent muscle = EditorGUIUtility.TrTextContent("Muscles", null, null);
 
-			public GUIContent resetMuscle = EditorGUIUtility.TextContent("Reset");
+			public GUIContent resetMuscle = EditorGUIUtility.TrTextContent("Reset", null, null);
 
 			public Styles()
 			{
@@ -698,6 +698,27 @@ namespace UnityEditor
 			int num = HumanTrait.BoneFromMuscle(muscleId);
 			if (num != -1)
 			{
+				if (!this.m_Modified[num].boolValue)
+				{
+					int num2 = HumanTrait.MuscleFromBone(num, 0);
+					int num3 = HumanTrait.MuscleFromBone(num, 1);
+					int num4 = HumanTrait.MuscleFromBone(num, 2);
+					if (num2 != -1 && num2 != muscleId)
+					{
+						this.m_MuscleMin[num2].floatValue = HumanTrait.GetMuscleDefaultMin(num2);
+						this.m_MuscleMax[num2].floatValue = HumanTrait.GetMuscleDefaultMax(num2);
+					}
+					if (num3 != -1 && num3 != muscleId)
+					{
+						this.m_MuscleMin[num3].floatValue = HumanTrait.GetMuscleDefaultMin(num3);
+						this.m_MuscleMax[num3].floatValue = HumanTrait.GetMuscleDefaultMax(num3);
+					}
+					if (num4 != -1 && num4 != muscleId)
+					{
+						this.m_MuscleMin[num4].floatValue = HumanTrait.GetMuscleDefaultMin(num4);
+						this.m_MuscleMax[num4].floatValue = HumanTrait.GetMuscleDefaultMax(num4);
+					}
+				}
 				this.m_Modified[num].boolValue = true;
 			}
 			this.m_FocusedMuscle = muscleId;

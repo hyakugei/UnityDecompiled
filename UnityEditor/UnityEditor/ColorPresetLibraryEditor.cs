@@ -34,8 +34,8 @@ namespace UnityEditor
 
 		private void OnEditButtonClicked(string libraryPath)
 		{
-			ColorPicker.Show(GUIView.current, Color.white);
-			ColorPicker.get.currentPresetLibrary = libraryPath;
+			ColorPicker.Show(GUIView.current, Color.white, true, false);
+			ColorPicker.instance.currentPresetLibrary = libraryPath;
 		}
 	}
 }

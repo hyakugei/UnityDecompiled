@@ -4,6 +4,7 @@ using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
+	[NativeClass("UI::CanvasGroup")]
 	public sealed class CanvasGroup : Component, ICanvasRaycastFilter
 	{
 		public extern float alpha

@@ -12,9 +12,9 @@ namespace UnityEditor
 	{
 		protected class Styles
 		{
-			public static readonly GUIContent s_ColliderEditDisableHelp = EditorGUIUtility.TextContent("Collider cannot be edited because it is driven by SpriteRenderer's tiling properties.");
+			public static readonly GUIContent s_ColliderEditDisableHelp = EditorGUIUtility.TrTextContent("Collider cannot be edited because it is driven by SpriteRenderer's tiling properties.", null, null);
 
-			public static readonly GUIContent s_AutoTilingLabel = EditorGUIUtility.TextContent("Auto Tiling | When enabled, the collider's shape will update automaticaly based on the SpriteRenderer's tiling properties");
+			public static readonly GUIContent s_AutoTilingLabel = EditorGUIUtility.TrTextContent("Auto Tiling ", " When enabled, the collider's shape will update automaticaly based on the SpriteRenderer's tiling properties", null);
 		}
 
 		private SerializedProperty m_Density;

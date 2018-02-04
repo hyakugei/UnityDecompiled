@@ -1,7 +1,9 @@
 using System;
+using UnityEngine.Bindings;
 
 namespace UnityEditor
 {
+	[NativeType(CodegenOptions.Custom, "MonoEditorCurveBinding")]
 	public struct EditorCurveBinding
 	{
 		public string path;
@@ -11,6 +13,8 @@ namespace UnityEditor
 		public string propertyName;
 
 		private int m_isPPtrCurve;
+
+		private int m_isDiscreteCurve;
 
 		private int m_isPhantom;
 
@@ -23,6 +27,14 @@ namespace UnityEditor
 			get
 			{
 				return this.m_isPPtrCurve != 0;
+			}
+		}
+
+		public bool isDiscreteCurve
+		{
+			get
+			{
+				return this.m_isDiscreteCurve != 0;
 			}
 		}
 
@@ -63,7 +75,7 @@ namespace UnityEditor
 					return result;
 				}
 			}
-			result = (lhs.path == rhs.path && lhs.type == rhs.type && lhs.propertyName == rhs.propertyName && lhs.m_isPPtrCurve == rhs.m_isPPtrCurve);
+			result = (lhs.m_isPPtrCurve == rhs.m_isPPtrCurve && lhs.m_isDiscreteCurve == rhs.m_isDiscreteCurve && lhs.path == rhs.path && lhs.type == rhs.type && lhs.propertyName == rhs.propertyName);
 			return result;
 		}
 
@@ -100,6 +112,7 @@ namespace UnityEditor
 				type = inType,
 				propertyName = inPropertyName,
 				m_isPPtrCurve = 0,
+				m_isDiscreteCurve = 0,
 				m_isPhantom = 0
 			};
 		}
@@ -112,6 +125,7 @@ namespace UnityEditor
 				type = inType,
 				propertyName = inPropertyName,
 				m_isPPtrCurve = 1,
+				m_isDiscreteCurve = 1,
 				m_isPhantom = 0
 			};
 		}

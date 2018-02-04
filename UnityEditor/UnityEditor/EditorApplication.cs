@@ -1,6 +1,9 @@
 using System;
 using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading;
 using UnityEditor.SceneManagement;
+using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
@@ -18,6 +21,10 @@ namespace UnityEditor
 
 		public delegate void SerializedPropertyCallbackFunction(GenericMenu menu, SerializedProperty property);
 
+		internal static UnityAction projectWasLoaded;
+
+		internal static UnityAction editorApplicationQuit;
+
 		public static EditorApplication.ProjectWindowItemCallback projectWindowItemOnGUI;
 
 		public static EditorApplication.HierarchyWindowItemCallback hierarchyWindowItemOnGUI;
@@ -26,8 +33,10 @@ namespace UnityEditor
 
 		public static EditorApplication.CallbackFunction delayCall;
 
+		[Obsolete("Use EditorApplication.hierarchyChanged")]
 		public static EditorApplication.CallbackFunction hierarchyWindowChanged;
 
+		[Obsolete("Use EditorApplication.projectChanged")]
 		public static EditorApplication.CallbackFunction projectWindowChanged;
 
 		public static EditorApplication.CallbackFunction searchChanged;
@@ -38,6 +47,7 @@ namespace UnityEditor
 
 		public static EditorApplication.CallbackFunction modifierKeysChanged;
 
+		[Obsolete("Use EditorApplication.playModeStateChanged and/or EditorApplication.pauseStateChanged")]
 		public static EditorApplication.CallbackFunction playmodeStateChanged;
 
 		internal static EditorApplication.CallbackFunction globalEventHandler;
@@ -50,15 +60,167 @@ namespace UnityEditor
 
 		private static float s_DelayedCallbackTime = 0f;
 
-		internal static UnityAction projectWasLoaded;
-
-		internal static UnityAction editorApplicationQuit;
-
 		[CompilerGenerated]
 		private static EditorApplication.CallbackFunction <>f__mg$cache0;
 
 		[CompilerGenerated]
 		private static EditorApplication.CallbackFunction <>f__mg$cache1;
+
+		public static event Func<bool> wantsToQuit
+		{
+			add
+			{
+				Func<bool> func = EditorApplication.wantsToQuit;
+				Func<bool> func2;
+				do
+				{
+					func2 = func;
+					func = Interlocked.CompareExchange<Func<bool>>(ref EditorApplication.wantsToQuit, (Func<bool>)Delegate.Combine(func2, value), func);
+				}
+				while (func != func2);
+			}
+			remove
+			{
+				Func<bool> func = EditorApplication.wantsToQuit;
+				Func<bool> func2;
+				do
+				{
+					func2 = func;
+					func = Interlocked.CompareExchange<Func<bool>>(ref EditorApplication.wantsToQuit, (Func<bool>)Delegate.Remove(func2, value), func);
+				}
+				while (func != func2);
+			}
+		}
+
+		public static event Action quitting
+		{
+			add
+			{
+				Action action = EditorApplication.quitting;
+				Action action2;
+				do
+				{
+					action2 = action;
+					action = Interlocked.CompareExchange<Action>(ref EditorApplication.quitting, (Action)Delegate.Combine(action2, value), action);
+				}
+				while (action != action2);
+			}
+			remove
+			{
+				Action action = EditorApplication.quitting;
+				Action action2;
+				do
+				{
+					action2 = action;
+					action = Interlocked.CompareExchange<Action>(ref EditorApplication.quitting, (Action)Delegate.Remove(action2, value), action);
+				}
+				while (action != action2);
+			}
+		}
+
+		public static event Action hierarchyChanged
+		{
+			add
+			{
+				Action action = EditorApplication.hierarchyChanged;
+				Action action2;
+				do
+				{
+					action2 = action;
+					action = Interlocked.CompareExchange<Action>(ref EditorApplication.hierarchyChanged, (Action)Delegate.Combine(action2, value), action);
+				}
+				while (action != action2);
+			}
+			remove
+			{
+				Action action = EditorApplication.hierarchyChanged;
+				Action action2;
+				do
+				{
+					action2 = action;
+					action = Interlocked.CompareExchange<Action>(ref EditorApplication.hierarchyChanged, (Action)Delegate.Remove(action2, value), action);
+				}
+				while (action != action2);
+			}
+		}
+
+		public static event Action projectChanged
+		{
+			add
+			{
+				Action action = EditorApplication.projectChanged;
+				Action action2;
+				do
+				{
+					action2 = action;
+					action = Interlocked.CompareExchange<Action>(ref EditorApplication.projectChanged, (Action)Delegate.Combine(action2, value), action);
+				}
+				while (action != action2);
+			}
+			remove
+			{
+				Action action = EditorApplication.projectChanged;
+				Action action2;
+				do
+				{
+					action2 = action;
+					action = Interlocked.CompareExchange<Action>(ref EditorApplication.projectChanged, (Action)Delegate.Remove(action2, value), action);
+				}
+				while (action != action2);
+			}
+		}
+
+		public static event Action<PauseState> pauseStateChanged
+		{
+			add
+			{
+				Action<PauseState> action = EditorApplication.pauseStateChanged;
+				Action<PauseState> action2;
+				do
+				{
+					action2 = action;
+					action = Interlocked.CompareExchange<Action<PauseState>>(ref EditorApplication.pauseStateChanged, (Action<PauseState>)Delegate.Combine(action2, value), action);
+				}
+				while (action != action2);
+			}
+			remove
+			{
+				Action<PauseState> action = EditorApplication.pauseStateChanged;
+				Action<PauseState> action2;
+				do
+				{
+					action2 = action;
+					action = Interlocked.CompareExchange<Action<PauseState>>(ref EditorApplication.pauseStateChanged, (Action<PauseState>)Delegate.Remove(action2, value), action);
+				}
+				while (action != action2);
+			}
+		}
+
+		public static event Action<PlayModeStateChange> playModeStateChanged
+		{
+			add
+			{
+				Action<PlayModeStateChange> action = EditorApplication.playModeStateChanged;
+				Action<PlayModeStateChange> action2;
+				do
+				{
+					action2 = action;
+					action = Interlocked.CompareExchange<Action<PlayModeStateChange>>(ref EditorApplication.playModeStateChanged, (Action<PlayModeStateChange>)Delegate.Combine(action2, value), action);
+				}
+				while (action != action2);
+			}
+			remove
+			{
+				Action<PlayModeStateChange> action = EditorApplication.playModeStateChanged;
+				Action<PlayModeStateChange> action2;
+				do
+				{
+					action2 = action;
+					action = Interlocked.CompareExchange<Action<PlayModeStateChange>>(ref EditorApplication.playModeStateChanged, (Action<PlayModeStateChange>)Delegate.Remove(action2, value), action);
+				}
+				while (action != action2);
+			}
+		}
 
 		public static extern bool isPlaying
 		{
@@ -102,6 +264,20 @@ namespace UnityEditor
 		}
 
 		public static extern bool isRemoteConnected
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+		}
+
+		public static extern ScriptingRuntimeVersion scriptingRuntimeVersion
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+		}
+
+		internal static extern bool useLibmonoBackendForIl2cpp
 		{
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
@@ -262,9 +438,88 @@ namespace UnityEditor
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern void SetSceneRepaintDirty();
 
+		public static void QueuePlayerLoopUpdate()
+		{
+			EditorApplication.SetSceneRepaintDirty();
+		}
+
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern void UpdateSceneIfNeeded();
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern void Beep();
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void CloseAndRelaunch(string[] arguments);
+
+		private static void Internal_ProjectWasLoaded()
+		{
+			if (EditorApplication.projectWasLoaded != null)
+			{
+				EditorApplication.projectWasLoaded();
+			}
+		}
+
+		[RequiredByNativeCode]
+		private static bool Internal_EditorApplicationWantsToQuit()
+		{
+			bool result;
+			if (EditorApplication.wantsToQuit == null)
+			{
+				result = true;
+			}
+			else
+			{
+				Delegate[] invocationList = EditorApplication.wantsToQuit.GetInvocationList();
+				for (int i = 0; i < invocationList.Length; i++)
+				{
+					Func<bool> func = (Func<bool>)invocationList[i];
+					try
+					{
+						if (!func())
+						{
+							result = false;
+							return result;
+						}
+					}
+					catch (Exception ex)
+					{
+						Debug.LogWarningFormat("EditorApplication.wantsToQuit: Exception raised during quit event." + Environment.NewLine + "Check the exception error's callstack to find out which event handler threw the exception.", new object[0]);
+						Debug.LogException(ex);
+						if (InternalEditorUtility.isHumanControllingUs)
+						{
+							string stackTrace = ex.StackTrace;
+							StringBuilder stringBuilder = new StringBuilder("An exception was thrown here:");
+							stringBuilder.AppendLine(Environment.NewLine);
+							stringBuilder.AppendLine(stackTrace.Substring(0, stackTrace.IndexOf(Environment.NewLine)));
+							bool flag = !EditorUtility.DisplayDialog("Error while quitting", stringBuilder.ToString(), "Ignore", "Cancel Quit");
+							if (flag)
+							{
+								result = false;
+								return result;
+							}
+						}
+					}
+				}
+				result = true;
+			}
+			return result;
+		}
+
+		private static void Internal_EditorApplicationQuit()
+		{
+			if (EditorApplication.quitting != null)
+			{
+				EditorApplication.quitting();
+			}
+			if (EditorApplication.editorApplicationQuit != null)
+			{
+				EditorApplication.editorApplicationQuit();
+			}
+		}
 
 		public static void RepaintProjectWindow()
 		{
@@ -325,23 +580,37 @@ namespace UnityEditor
 			EditorGUIUtility.Internal_SwitchSkin();
 		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern void RequestRepaintAllViews();
+		internal static void RequestRepaintAllViews()
+		{
+			UnityEngine.Object[] array = Resources.FindObjectsOfTypeAll(typeof(GUIView));
+			for (int i = 0; i < array.Length; i++)
+			{
+				GUIView gUIView = (GUIView)array[i];
+				gUIView.Repaint();
+			}
+		}
 
-		private static void Internal_CallHierarchyWindowHasChanged()
+		private static void Internal_CallHierarchyHasChanged()
 		{
 			if (EditorApplication.hierarchyWindowChanged != null)
 			{
 				EditorApplication.hierarchyWindowChanged();
 			}
+			if (EditorApplication.hierarchyChanged != null)
+			{
+				EditorApplication.hierarchyChanged();
+			}
 		}
 
-		private static void Internal_CallProjectWindowHasChanged()
+		private static void Internal_CallProjectHasChanged()
 		{
 			if (EditorApplication.projectWindowChanged != null)
 			{
 				EditorApplication.projectWindowChanged();
+			}
+			if (EditorApplication.projectChanged != null)
+			{
+				EditorApplication.projectChanged();
 			}
 		}
 
@@ -395,11 +664,27 @@ namespace UnityEditor
 			}
 		}
 
-		private static void Internal_PlaymodeStateChanged()
+		private static void Internal_PauseStateChanged(PauseState state)
 		{
 			if (EditorApplication.playmodeStateChanged != null)
 			{
 				EditorApplication.playmodeStateChanged();
+			}
+			if (EditorApplication.pauseStateChanged != null)
+			{
+				EditorApplication.pauseStateChanged(state);
+			}
+		}
+
+		private static void Internal_PlayModeStateChanged(PlayModeStateChange state)
+		{
+			if (EditorApplication.playmodeStateChanged != null)
+			{
+				EditorApplication.playmodeStateChanged();
+			}
+			if (EditorApplication.playModeStateChanged != null)
+			{
+				EditorApplication.playModeStateChanged(state);
 			}
 		}
 
@@ -428,30 +713,6 @@ namespace UnityEditor
 			}
 			WindowLayout.MaximizeKeyHandler();
 			Event.current = null;
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern void Beep();
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern void ReportUNetWeaver(string filename, string msg, bool isError);
-
-		private static void Internal_ProjectWasLoaded()
-		{
-			if (EditorApplication.projectWasLoaded != null)
-			{
-				EditorApplication.projectWasLoaded();
-			}
-		}
-
-		private static void Internal_EditorApplicationQuit()
-		{
-			if (EditorApplication.editorApplicationQuit != null)
-			{
-				EditorApplication.editorApplicationQuit();
-			}
 		}
 
 		[Obsolete("Use EditorSceneManager.NewScene (NewSceneSetup.DefaultGameObjects)")]

@@ -5,65 +5,85 @@ using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
-	[RequireComponent(typeof(Transform))]
+	[RequireComponent(typeof(Transform)), RequireComponent(typeof(Transform))]
 	public sealed class ParticleSystemRenderer : Renderer
 	{
-		public extern ParticleSystemRenderMode renderMode
+		public extern ParticleSystemRenderSpace alignment
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public extern ParticleSystemRenderMode renderMode
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public extern ParticleSystemSortMode sortMode
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern float lengthScale
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern float velocityScale
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern float cameraVelocityScale
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern float normalDirection
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
-		public extern ParticleSystemRenderSpace alignment
+		public extern float sortingFudge
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public extern float minParticleSize
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public extern float maxParticleSize
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
@@ -73,51 +93,43 @@ namespace UnityEngine
 			get
 			{
 				Vector3 result;
-				this.INTERNAL_get_pivot(out result);
+				this.get_pivot_Injected(out result);
 				return result;
 			}
 			set
 			{
-				this.INTERNAL_set_pivot(ref value);
+				this.set_pivot_Injected(ref value);
 			}
 		}
 
-		public extern ParticleSystemSortMode sortMode
+		public extern SpriteMaskInteraction maskInteraction
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
-		public extern float sortingFudge
+		public extern Material trailMaterial
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
-		public extern float minParticleSize
+		public extern bool enableGPUInstancing
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
-		public extern float maxParticleSize
+		internal extern bool editorEnabled
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
@@ -140,16 +152,6 @@ namespace UnityEngine
 			}
 		}
 
-		public extern Material trailMaterial
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
 		public extern int activeVertexStreamsCount
 		{
 			[GeneratedByOldBindingsGenerator]
@@ -157,82 +159,38 @@ namespace UnityEngine
 			get;
 		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void INTERNAL_get_pivot(out Vector3 value);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void INTERNAL_set_pivot(ref Vector3 value);
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern int Internal_GetMeshCount();
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern int GetMeshes(Mesh[] meshes);
-
-		public void SetMeshes(Mesh[] meshes)
+		internal extern bool supportsMeshInstancing
 		{
-			this.SetMeshes(meshes, meshes.Length);
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
 		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public extern void SetMeshes(Mesh[] meshes, int size);
-
-		public void SetActiveVertexStreams(List<ParticleSystemVertexStream> streams)
-		{
-			if (streams == null)
-			{
-				throw new ArgumentNullException("streams");
-			}
-			this.SetActiveVertexStreamsInternal(streams);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern void SetActiveVertexStreamsInternal(object streams);
-
-		public void GetActiveVertexStreams(List<ParticleSystemVertexStream> streams)
-		{
-			if (streams == null)
-			{
-				throw new ArgumentNullException("streams");
-			}
-			this.GetActiveVertexStreamsInternal(streams);
-		}
-
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern void GetActiveVertexStreamsInternal(object streams);
-
-		[Obsolete("EnableVertexStreams is deprecated. Use SetActiveVertexStreams instead.")]
+		[Obsolete("EnableVertexStreams is deprecated.Use SetActiveVertexStreams instead.", false)]
 		public void EnableVertexStreams(ParticleSystemVertexStreams streams)
 		{
 			this.Internal_SetVertexStreams(streams, true);
 		}
 
-		[Obsolete("DisableVertexStreams is deprecated. Use SetActiveVertexStreams instead.")]
+		[Obsolete("DisableVertexStreams is deprecated.Use SetActiveVertexStreams instead.", false)]
 		public void DisableVertexStreams(ParticleSystemVertexStreams streams)
 		{
 			this.Internal_SetVertexStreams(streams, false);
 		}
 
-		[Obsolete("AreVertexStreamsEnabled is deprecated. Use GetActiveVertexStreams instead.")]
+		[Obsolete("AreVertexStreamsEnabled is deprecated.Use GetActiveVertexStreams instead.", false)]
 		public bool AreVertexStreamsEnabled(ParticleSystemVertexStreams streams)
 		{
 			return this.Internal_GetEnabledVertexStreams(streams) == streams;
 		}
 
-		[Obsolete("GetEnabledVertexStreams is deprecated. Use GetActiveVertexStreams instead.")]
+		[Obsolete("GetEnabledVertexStreams is deprecated.Use GetActiveVertexStreams instead.", false)]
 		public ParticleSystemVertexStreams GetEnabledVertexStreams(ParticleSystemVertexStreams streams)
 		{
 			return this.Internal_GetEnabledVertexStreams(streams);
 		}
 
-		[Obsolete("Internal_SetVertexStreams is deprecated. Use SetActiveVertexStreams instead.")]
+		[Obsolete("Internal_SetVertexStreams is deprecated.Use SetActiveVertexStreams instead.", false)]
 		internal void Internal_SetVertexStreams(ParticleSystemVertexStreams streams, bool enabled)
 		{
 			List<ParticleSystemVertexStream> list = new List<ParticleSystemVertexStream>(this.activeVertexStreamsCount);
@@ -410,7 +368,7 @@ namespace UnityEngine
 			this.SetActiveVertexStreams(list);
 		}
 
-		[Obsolete("Internal_GetVertexStreams is deprecated. Use GetActiveVertexStreams instead.")]
+		[Obsolete("Internal_GetVertexStreams is deprecated.Use GetActiveVertexStreams instead.", false)]
 		internal ParticleSystemVertexStreams Internal_GetEnabledVertexStreams(ParticleSystemVertexStreams streams)
 		{
 			List<ParticleSystemVertexStream> list = new List<ParticleSystemVertexStream>(this.activeVertexStreamsCount);
@@ -474,5 +432,54 @@ namespace UnityEngine
 			}
 			return particleSystemVertexStreams & streams;
 		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern int Internal_GetMeshCount();
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public extern int GetMeshes(Mesh[] meshes);
+
+		public void SetMeshes(Mesh[] meshes)
+		{
+			this.SetMeshes(meshes, meshes.Length);
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public extern void SetMeshes(Mesh[] meshes, int size);
+
+		public void SetActiveVertexStreams(List<ParticleSystemVertexStream> streams)
+		{
+			if (streams == null)
+			{
+				throw new ArgumentNullException("streams");
+			}
+			this.SetActiveVertexStreamsInternal(streams);
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern void SetActiveVertexStreamsInternal(object streams);
+
+		public void GetActiveVertexStreams(List<ParticleSystemVertexStream> streams)
+		{
+			if (streams == null)
+			{
+				throw new ArgumentNullException("streams");
+			}
+			this.GetActiveVertexStreamsInternal(streams);
+		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern void GetActiveVertexStreamsInternal(object streams);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void get_pivot_Injected(out Vector3 ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void set_pivot_Injected(ref Vector3 value);
 	}
 }

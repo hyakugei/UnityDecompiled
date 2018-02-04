@@ -5,6 +5,7 @@ using UnityEngine.Scripting;
 
 namespace UnityEditor.VersionControl
 {
+	[UsedByNativeCode]
 	internal sealed class CustomCommand
 	{
 		private IntPtr m_thisDummy;

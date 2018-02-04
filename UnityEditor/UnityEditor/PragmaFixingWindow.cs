@@ -9,7 +9,7 @@ namespace UnityEditor
 	{
 		private class Styles
 		{
-			public GUIStyle selected = "ServerUpdateChangesetOn";
+			public GUIStyle selected = "OL SelectedRow";
 
 			public GUIStyle box = "OL Box";
 
@@ -24,7 +24,7 @@ namespace UnityEditor
 
 		public PragmaFixingWindow()
 		{
-			base.titleContent = new GUIContent("Unity - #pragma fixing");
+			base.titleContent = EditorGUIUtility.TrTextContent("Unity - #pragma fixing", null, null);
 		}
 
 		public static void ShowWindow(string[] paths)

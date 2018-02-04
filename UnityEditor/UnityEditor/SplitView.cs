@@ -56,10 +56,6 @@ namespace UnityEditor
 
 		private SplitterState splitState = null;
 
-		private static float[] s_StartDragPos;
-
-		private static float[] s_DragPos;
-
 		internal const float kGrabDist = 5f;
 
 		private Rect RectFromEdge(Rect rect, SplitView.ViewEdge edge, float thickness, float offset)
@@ -804,7 +800,7 @@ namespace UnityEditor
 						{
 							text = dockArea.m_Panes[dockArea.m_Selected].GetType().ToString();
 						}
-						if (Unsupported.IsDeveloperBuild())
+						if (Unsupported.IsDeveloperMode())
 						{
 							Debug.LogError(string.Concat(new object[]
 							{

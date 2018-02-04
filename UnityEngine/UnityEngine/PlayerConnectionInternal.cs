@@ -15,6 +15,11 @@ namespace UnityEngine
 			PlayerConnectionInternal.SendMessage(messageId.ToString("N"), data, playerId);
 		}
 
+		void IPlayerEditorConnectionNative.Poll()
+		{
+			PlayerConnectionInternal.PollInternal();
+		}
+
 		void IPlayerEditorConnectionNative.RegisterInternal(Guid messageId)
 		{
 			PlayerConnectionInternal.RegisterInternal(messageId.ToString("N"));
@@ -33,6 +38,11 @@ namespace UnityEngine
 		bool IPlayerEditorConnectionNative.IsConnected()
 		{
 			return PlayerConnectionInternal.IsConnected();
+		}
+
+		void IPlayerEditorConnectionNative.DisconnectAll()
+		{
+			PlayerConnectionInternal.DisconnectAll();
 		}
 
 		[GeneratedByOldBindingsGenerator]
@@ -54,5 +64,13 @@ namespace UnityEngine
 		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void SendMessage(string messageId, byte[] data, int playerId);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern void PollInternal();
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		public static extern void DisconnectAll();
 	}
 }

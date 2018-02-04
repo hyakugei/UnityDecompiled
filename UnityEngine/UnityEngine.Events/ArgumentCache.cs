@@ -117,6 +117,11 @@ namespace UnityEngine.Events
 				{
 					this.m_ObjectArgumentAssemblyTypeName = this.m_ObjectArgumentAssemblyTypeName.Substring(0, num);
 				}
+				num2 = this.m_ObjectArgumentAssemblyTypeName.IndexOf(", UnityEngine.");
+				if (num2 != -1 && this.m_ObjectArgumentAssemblyTypeName.EndsWith("Module"))
+				{
+					this.m_ObjectArgumentAssemblyTypeName = this.m_ObjectArgumentAssemblyTypeName.Substring(0, num2) + ", UnityEngine";
+				}
 			}
 		}
 

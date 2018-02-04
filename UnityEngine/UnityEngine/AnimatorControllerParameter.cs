@@ -1,10 +1,13 @@
 using System;
+using System.Runtime.InteropServices;
+using UnityEngine.Bindings;
 using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
-	[UsedByNativeCode]
-	public sealed class AnimatorControllerParameter
+	[NativeType(CodegenOptions.Custom, "MonoAnimatorControllerParameter"), UsedByNativeCode]
+	[StructLayout(LayoutKind.Sequential)]
+	public class AnimatorControllerParameter
 	{
 		internal string m_Name = "";
 

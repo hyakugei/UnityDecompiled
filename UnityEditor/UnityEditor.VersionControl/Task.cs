@@ -5,6 +5,7 @@ using UnityEngine.Scripting;
 
 namespace UnityEditor.VersionControl
 {
+	[UsedByNativeCode]
 	public sealed class Task
 	{
 		private IntPtr m_thisDummy;

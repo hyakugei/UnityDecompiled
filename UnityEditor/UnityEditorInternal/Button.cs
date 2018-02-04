@@ -33,7 +33,7 @@ namespace UnityEditorInternal
 				}
 				break;
 			case EventType.MouseMove:
-				if ((HandleUtility.nearestControl == id && current.button == 0) || (GUIUtility.keyboardControl == id && current.button == 2))
+				if (HandleUtility.nearestControl == id && current.button == 0)
 				{
 					HandleUtility.Repaint();
 				}
@@ -41,9 +41,9 @@ namespace UnityEditorInternal
 			case EventType.Repaint:
 			{
 				Color color = Handles.color;
-				if (HandleUtility.nearestControl == id && GUI.enabled)
+				if (HandleUtility.nearestControl == id && GUI.enabled && GUIUtility.hotControl == 0)
 				{
-					Handles.color = Handles.selectedColor;
+					Handles.color = Handles.preselectionColor;
 				}
 				capFunc(id, position, direction, size);
 				Handles.color = color;
@@ -86,7 +86,7 @@ namespace UnityEditorInternal
 				}
 				break;
 			case EventType.MouseMove:
-				if ((HandleUtility.nearestControl == id && current.button == 0) || (GUIUtility.keyboardControl == id && current.button == 2))
+				if (HandleUtility.nearestControl == id && current.button == 0)
 				{
 					HandleUtility.Repaint();
 				}
@@ -94,9 +94,9 @@ namespace UnityEditorInternal
 			case EventType.Repaint:
 			{
 				Color color = Handles.color;
-				if (HandleUtility.nearestControl == id && GUI.enabled)
+				if (HandleUtility.nearestControl == id && GUI.enabled && GUIUtility.hotControl == 0)
 				{
-					Handles.color = Handles.selectedColor;
+					Handles.color = Handles.preselectionColor;
 				}
 				capFunction(id, position, direction, size, EventType.Repaint);
 				Handles.color = color;

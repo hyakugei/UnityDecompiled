@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.Animations;
 
 namespace UnityEditor
 {
@@ -20,12 +21,21 @@ namespace UnityEditor
 		{
 			TransformManipulator.BeginManipulationHandling(false);
 			EditorGUI.BeginChangeCheck();
-			Vector3 a = Handles.PositionHandle(handlePosition, Tools.handleRotation);
-			if (EditorGUI.EndChangeCheck() && !isStatic)
+			Quaternion rotation = Tools.handleRotation;
+			AimConstraint component = Selection.activeTransform.GetComponent<AimConstraint>();
+			if (component != null && component.constraintActive)
 			{
-				Vector3 positionDelta = a - TransformManipulator.mouseDownHandlePosition;
+				rotation = TransformManipulator.mouseDownHandleRotation;
+			}
+			Vector3 vector = Handles.PositionHandle(handlePosition, rotation);
+			if (EditorGUI.EndChangeCheck() && !isStatic && TransformManipulator.HandleHasMoved(vector))
+			{
 				ManipulationToolUtility.SetMinDragDifferenceForPos(handlePosition);
-				TransformManipulator.SetPositionDelta(positionDelta);
+				if (Tools.vertexDragging)
+				{
+					ManipulationToolUtility.DisableMinDragDifference();
+				}
+				TransformManipulator.SetPositionDelta(vector, TransformManipulator.mouseDownHandlePosition);
 			}
 			TransformManipulator.EndManipulationHandling();
 		}

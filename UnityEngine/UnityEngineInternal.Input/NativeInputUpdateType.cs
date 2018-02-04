@@ -2,11 +2,12 @@ using System;
 
 namespace UnityEngineInternal.Input
 {
+	[Flags]
 	public enum NativeInputUpdateType
 	{
-		BeginFixed,
-		EndFixed,
-		BeginDynamic,
-		EndDynamic
+		Dynamic = 1,
+		Fixed = 2,
+		BeforeRender = 4,
+		Editor = 8
 	}
 }

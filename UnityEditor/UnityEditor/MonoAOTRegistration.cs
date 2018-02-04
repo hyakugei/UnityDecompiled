@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEditor.Utils;
 using UnityEditorInternal;
 using UnityEngine;
@@ -72,8 +73,12 @@ namespace UnityEditor
 		public static void WriteCPlusPlusFileForStaticAOTModuleRegistration(BuildTarget buildTarget, string file, CrossCompileOptions crossCompileOptions, bool advancedLic, string targetDevice, bool stripping, RuntimeClassRegistry usedClassRegistry, AssemblyReferenceChecker checker, string stagingAreaDataManaged, IIl2CppPlatformProvider platformProvider)
 		{
 			string text = Path.Combine(stagingAreaDataManaged, "ICallSummary.txt");
+			IEnumerable<string> source = Directory.GetFiles(stagingAreaDataManaged, "UnityEngine.*Module.dll").Concat(new string[]
+			{
+				Path.Combine(stagingAreaDataManaged, "UnityEngine.dll")
+			});
 			string exe = Path.Combine(MonoInstallationFinder.GetFrameWorksFolder(), "Tools/InternalCallRegistrationWriter/InternalCallRegistrationWriter.exe");
-			string args = string.Format("-assembly=\"{0}\" -summary=\"{1}\"", Path.Combine(stagingAreaDataManaged, "UnityEngine.dll"), text);
+			string args = string.Format("-assembly=\"{0}\" -summary=\"{1}\"", source.Aggregate((string dllArg, string next) => dllArg + ";" + next), text);
 			Runner.RunManagedProgram(exe, args);
 			HashSet<UnityType> hashSet;
 			HashSet<string> nativeModules;
@@ -196,23 +201,17 @@ namespace UnityEditor
 				}
 				textWriter.WriteLine("}");
 				textWriter.WriteLine("");
-				AssemblyDefinition assemblyDefinition2 = null;
-				for (int k = 0; k < assemblyFileNames.Length; k++)
-				{
-					if (assemblyFileNames[k] == "UnityEngine.dll")
-					{
-						assemblyDefinition2 = assemblyDefinitions[k];
-					}
-				}
 				if (buildTarget == BuildTarget.iOS)
 				{
-					AssemblyDefinition[] assemblies = new AssemblyDefinition[]
+					List<AssemblyDefinition> list = new List<AssemblyDefinition>();
+					for (int k = 0; k < assemblyDefinitions.Length; k++)
 					{
-						assemblyDefinition2
-					};
-					MonoAOTRegistration.GenerateRegisterInternalCalls(assemblies, textWriter);
-					MonoAOTRegistration.ResolveDefinedNativeClassesFromMono(assemblies, usedClassRegistry);
-					MonoAOTRegistration.ResolveReferencedUnityEngineClassesFromMono(assemblyDefinitions, assemblyDefinition2, usedClassRegistry);
+						if (AssemblyHelper.IsUnityEngineModule(assemblyDefinitions[k]))
+						{
+							list.Add(assemblyDefinitions[k]);
+						}
+					}
+					MonoAOTRegistration.GenerateRegisterInternalCalls(list.ToArray(), textWriter);
 					MonoAOTRegistration.GenerateRegisterModules(hashSet, nativeModules, textWriter, stripping);
 					if (stripping && usedClassRegistry != null)
 					{
@@ -224,47 +223,6 @@ namespace UnityEditor
 					}
 				}
 				textWriter.Close();
-			}
-		}
-
-		public static void ResolveReferencedUnityEngineClassesFromMono(AssemblyDefinition[] assemblies, AssemblyDefinition unityEngine, RuntimeClassRegistry res)
-		{
-			if (res != null)
-			{
-				for (int i = 0; i < assemblies.Length; i++)
-				{
-					AssemblyDefinition assemblyDefinition = assemblies[i];
-					if (assemblyDefinition != unityEngine)
-					{
-						foreach (TypeReference current in assemblyDefinition.MainModule.GetTypeReferences())
-						{
-							if (current.Namespace.StartsWith("UnityEngine"))
-							{
-								string name = current.Name;
-								res.AddMonoClass(name);
-							}
-						}
-					}
-				}
-			}
-		}
-
-		public static void ResolveDefinedNativeClassesFromMono(AssemblyDefinition[] assemblies, RuntimeClassRegistry res)
-		{
-			if (res != null)
-			{
-				for (int i = 0; i < assemblies.Length; i++)
-				{
-					AssemblyDefinition assemblyDefinition = assemblies[i];
-					foreach (TypeDefinition current in assemblyDefinition.MainModule.Types)
-					{
-						if (current.Fields.Count > 0 || current.Methods.Count > 0 || current.Properties.Count > 0)
-						{
-							string name = current.Name;
-							res.AddMonoClass(name);
-						}
-					}
-				}
 			}
 		}
 
@@ -296,8 +254,8 @@ namespace UnityEditor
 
 		public static void GenerateRegisterClassesForStripping(HashSet<UnityType> nativeClassesAndBaseClasses, TextWriter output)
 		{
-			output.WriteLine("template <typename T> void RegisterClass();");
-			output.WriteLine("template <typename T> void RegisterStrippedTypeInfo(int, const char*, const char*);");
+			output.WriteLine("template <typename T> void RegisterClass(const char*);");
+			output.WriteLine("template <typename T> void RegisterStrippedType(int, const char*, const char*);");
 			output.WriteLine();
 			foreach (UnityType current in UnityType.GetTypes())
 			{
@@ -324,7 +282,7 @@ namespace UnityEditor
 				if (current2.baseClass != null && !current2.isEditorOnly && nativeClassesAndBaseClasses.Contains(current2))
 				{
 					output.WriteLine("\t// {0}. {1}", num++, current2.qualifiedName);
-					output.WriteLine("\tRegisterClass<{0}>();\n", current2.qualifiedName);
+					output.WriteLine("\tRegisterClass<{0}>(\"{1}\");\n", current2.qualifiedName, current2.module);
 				}
 			}
 			output.WriteLine();

@@ -1,57 +1,71 @@
 using System;
-using System.Runtime.CompilerServices;
-using UnityEngine.Scripting;
+using UnityEngine.XR;
 
 namespace UnityEngine.VR
 {
+	[Obsolete("VRDevice has been moved and renamed.  Use UnityEngine.XR.XRDevice instead (UnityUpgradable) -> UnityEngine.XR.XRDevice", true)]
 	public static class VRDevice
 	{
-		public static extern bool isPresent
+		public static bool isPresent
 		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
+			get
+			{
+				throw new NotSupportedException("VRDevice has been moved and renamed.  Use UnityEngine.XR.XRDevice instead.");
+			}
 		}
 
-		[Obsolete("family is deprecated.  Use VRSettings.loadedDeviceName instead.")]
-		public static extern string family
+		public static UnityEngine.XR.UserPresenceState userPresence
 		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
+			get
+			{
+				throw new NotSupportedException("VRDevice has been moved and renamed.  Use UnityEngine.XR.XRDevice instead.");
+			}
 		}
 
-		public static extern string model
+		[Obsolete("family is deprecated.  Use XRSettings.loadedDeviceName instead.", true)]
+		public static string family
 		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
+			get
+			{
+				throw new NotSupportedException("VRDevice has been moved and renamed.  Use UnityEngine.XR.XRDevice instead.");
+			}
 		}
 
-		public static extern float refreshRate
+		public static string model
 		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
+			get
+			{
+				throw new NotSupportedException("VRDevice has been moved and renamed.  Use UnityEngine.XR.XRDevice instead.");
+			}
 		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern TrackingSpaceType GetTrackingSpaceType();
+		public static float refreshRate
+		{
+			get
+			{
+				throw new NotSupportedException("VRDevice has been moved and renamed.  Use UnityEngine.XR.XRDevice instead.");
+			}
+		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern bool SetTrackingSpaceType(TrackingSpaceType trackingSpaceType);
+		public static UnityEngine.XR.TrackingSpaceType GetTrackingSpaceType()
+		{
+			throw new NotSupportedException("VRDevice has been moved and renamed.  Use UnityEngine.XR.XRDevice instead.");
+		}
+
+		public static bool SetTrackingSpaceType(UnityEngine.XR.TrackingSpaceType trackingSpaceType)
+		{
+			throw new NotSupportedException("VRDevice has been moved and renamed.  Use UnityEngine.XR.XRDevice instead.");
+		}
 
 		public static IntPtr GetNativePtr()
 		{
-			IntPtr result;
-			VRDevice.INTERNAL_CALL_GetNativePtr(out result);
-			return result;
+			throw new NotSupportedException("VRDevice has been moved and renamed.  Use UnityEngine.XR.XRDevice instead.");
 		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_GetNativePtr(out IntPtr value);
+		[Obsolete("DisableAutoVRCameraTracking has been moved and renamed.  Use UnityEngine.XR.XRDevice.DisableAutoXRCameraTracking instead (UnityUpgradable) -> UnityEngine.XR.XRDevice.DisableAutoXRCameraTracking(*)", true)]
+		public static void DisableAutoVRCameraTracking(Camera camera, bool disabled)
+		{
+			throw new NotSupportedException("VRDevice has been moved and renamed.  Use UnityEngine.XR.XRDevice instead.");
+		}
 	}
 }

@@ -3,13 +3,15 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEditor.AnimatedValues;
+using UnityEditor.Build;
+using UnityEditor.Experimental.AssetImporters;
 using UnityEngine;
 using UnityEngine.Events;
 
 namespace UnityEditor
 {
 	[CanEditMultipleObjects, CustomEditor(typeof(VideoClipImporter))]
-	internal class VideoClipImporterInspector : AssetImporterInspector
+	internal class VideoClipImporterInspector : AssetImporterEditor
 	{
 		internal struct MultiTargetSettingState
 		{
@@ -107,15 +109,19 @@ namespace UnityEditor
 
 			public GUIContent spatialQualityContent = EditorGUIUtility.TextContent("Spatial Quality|Adds a downsize during import to reduce bitrate using resolution.");
 
-			public GUIContent importerVersionContent = EditorGUIUtility.TextContent("Importer Version|Selects the type of asset produced (legacy MovieTexture or new VideoClip).");
+			public GUIContent importerVersionContent = EditorGUIUtility.TextContent("Importer Version|Selects the type of video asset produced.");
 
 			public GUIContent[] importerVersionOptions = new GUIContent[]
 			{
-				EditorGUIUtility.TextContent("MovieTexture (Legacy)|Produce MovieTexture asset (old version)"),
-				EditorGUIUtility.TextContent("VideoClip|Produce VideoClip asset (for use with VideoPlayer)")
+				EditorGUIUtility.TrTextContent("VideoClip", "Produce VideoClip asset (for use with VideoPlayer)", null),
+				EditorGUIUtility.TrTextContent("MovieTexture (Deprecated)", "Produce MovieTexture asset (deprecated in factor of VideoClip)", null)
 			};
 
 			public GUIContent transcodeWarning = EditorGUIUtility.TextContent("Not all platforms transcoded. Clip is not guaranteed to be compatible on platforms without transcoding.");
+
+			public GUIContent transcodeSkippedWarning = EditorGUIUtility.TextContent("Transcode was skipped. Current clip does not match import settings. Reimport to resolve.");
+
+			public GUIContent multipleTranscodeSkippedWarning = EditorGUIUtility.TextContent("Transcode was skipped for some clips and they don't match import settings. Reimport to resolve.");
 		}
 
 		private SerializedProperty m_UseLegacyImporter;
@@ -163,7 +169,15 @@ namespace UnityEditor
 
 		private const int kToggleButtonWidth = 16;
 
-		internal override bool showImportedObject
+		private const int kMinCustomWidth = 1;
+
+		private const int kMaxCustomWidth = 16384;
+
+		private const int kMinCustomHeight = 1;
+
+		private const int kMaxCustomHeight = 16384;
+
+		public override bool showImportedObject
 		{
 			get
 			{
@@ -184,7 +198,7 @@ namespace UnityEditor
 			this.m_TargetSettings = null;
 			if (base.targets.Length > 0)
 			{
-				List<BuildPlayerWindow.BuildPlatform> validPlatforms = BuildPlayerWindow.GetValidPlatforms();
+				List<BuildPlatform> validPlatforms = BuildPlatforms.instance.GetValidPlatforms();
 				this.m_TargetSettings = new VideoClipImporterInspector.InspectorTargetSettings[base.targets.Length, validPlatforms.Count + 1];
 				for (int i = 0; i < base.targets.Length; i++)
 				{
@@ -208,7 +222,7 @@ namespace UnityEditor
 		{
 			if (this.m_TargetSettings != null)
 			{
-				List<BuildPlayerWindow.BuildPlatform> validPlatforms = BuildPlayerWindow.GetValidPlatforms();
+				List<BuildPlatform> validPlatforms = BuildPlatforms.instance.GetValidPlatforms();
 				for (int i = 0; i < base.targets.Length; i++)
 				{
 					VideoClipImporter videoClipImporter = (VideoClipImporter)base.targets[i];
@@ -230,7 +244,7 @@ namespace UnityEditor
 			this.m_ModifiedTargetSettings = false;
 		}
 
-		public void OnEnable()
+		public override void OnEnable()
 		{
 			if (VideoClipImporterInspector.s_Styles == null)
 			{
@@ -412,7 +426,8 @@ namespace UnityEditor
 				{
 					EditorGUI.showMixedValue = multiState.mixedCustomWidth;
 					EditorGUI.BeginChangeCheck();
-					int customWidth = EditorGUILayout.IntField(VideoClipImporterInspector.s_Styles.widthContent, multiState.firstCustomWidth, new GUILayoutOption[0]);
+					int num = EditorGUILayout.IntField(VideoClipImporterInspector.s_Styles.widthContent, multiState.firstCustomWidth, new GUILayoutOption[0]);
+					num = Mathf.Clamp(num, 1, 16384);
 					EditorGUI.showMixedValue = false;
 					if (EditorGUI.EndChangeCheck())
 					{
@@ -420,14 +435,15 @@ namespace UnityEditor
 						{
 							if (this.m_TargetSettings[j, platformIndex].settings != null)
 							{
-								this.m_TargetSettings[j, platformIndex].settings.customWidth = customWidth;
+								this.m_TargetSettings[j, platformIndex].settings.customWidth = num;
 								this.m_ModifiedTargetSettings = true;
 							}
 						}
 					}
 					EditorGUI.showMixedValue = multiState.mixedCustomHeight;
 					EditorGUI.BeginChangeCheck();
-					int customHeight = EditorGUILayout.IntField(VideoClipImporterInspector.s_Styles.heightContent, multiState.firstCustomHeight, new GUILayoutOption[0]);
+					int num2 = EditorGUILayout.IntField(VideoClipImporterInspector.s_Styles.heightContent, multiState.firstCustomHeight, new GUILayoutOption[0]);
+					num2 = Mathf.Clamp(num2, 1, 16384);
 					EditorGUI.showMixedValue = false;
 					if (EditorGUI.EndChangeCheck())
 					{
@@ -435,7 +451,7 @@ namespace UnityEditor
 						{
 							if (this.m_TargetSettings[k, platformIndex].settings != null)
 							{
-								this.m_TargetSettings[k, platformIndex].settings.customHeight = customHeight;
+								this.m_TargetSettings[k, platformIndex].settings.customHeight = num2;
 								this.m_ModifiedTargetSettings = true;
 							}
 						}
@@ -609,7 +625,7 @@ namespace UnityEditor
 
 		private void OnTargetsInspectorGUI()
 		{
-			BuildPlayerWindow.BuildPlatform[] array = BuildPlayerWindow.GetValidPlatforms().ToArray();
+			BuildPlatform[] array = BuildPlatforms.instance.GetValidPlatforms().ToArray();
 			int num = EditorGUILayout.BeginPlatformGrouping(array, GUIContent.Temp("Default"));
 			string platformName = (num != -1) ? array[num].name : "Default";
 			this.OnTargetInspectorGUI(num + 1, platformName);
@@ -637,7 +653,7 @@ namespace UnityEditor
 				EditorGUI.BeginChangeCheck();
 				float labelWidth = EditorGUIUtility.labelWidth;
 				EditorGUIUtility.labelWidth = 100f;
-				int num2 = EditorGUILayout.Popup(VideoClipImporterInspector.s_Styles.importerVersionContent, (!this.m_UseLegacyImporter.boolValue) ? 1 : 0, VideoClipImporterInspector.s_Styles.importerVersionOptions, EditorStyles.popup, new GUILayoutOption[]
+				int num2 = EditorGUILayout.Popup(VideoClipImporterInspector.s_Styles.importerVersionContent, (!this.m_UseLegacyImporter.boolValue) ? 0 : 1, VideoClipImporterInspector.s_Styles.importerVersionOptions, EditorStyles.popup, new GUILayoutOption[]
 				{
 					GUILayout.MaxWidth(230f)
 				});
@@ -645,12 +661,12 @@ namespace UnityEditor
 				EditorGUI.showMixedValue = false;
 				if (EditorGUI.EndChangeCheck())
 				{
-					this.m_UseLegacyImporter.boolValue = (num2 == 0);
+					this.m_UseLegacyImporter.boolValue = (num2 == 1);
 				}
 				GUILayout.FlexibleSpace();
 				if (GUILayout.Button("Open", EditorStyles.miniButton, new GUILayoutOption[0]))
 				{
-					AssetDatabase.OpenAsset(this.assetEditor.targets);
+					AssetDatabase.OpenAsset(base.assetTargets);
 					GUIUtility.ExitGUI();
 				}
 			}
@@ -674,15 +690,26 @@ namespace UnityEditor
 					EditorGUILayout.HelpBox(VideoClipImporterInspector.s_Styles.transcodeWarning.text, MessageType.Info);
 				}
 			}
+			UnityEngine.Object[] targets = base.targets;
+			for (int i = 0; i < targets.Length; i++)
+			{
+				UnityEngine.Object @object = targets[i];
+				VideoClipImporter videoClipImporter = @object as VideoClipImporter;
+				if (videoClipImporter && videoClipImporter.transcodeSkipped)
+				{
+					EditorGUILayout.HelpBox((base.targets.Length != 1) ? VideoClipImporterInspector.s_Styles.multipleTranscodeSkippedWarning.text : VideoClipImporterInspector.s_Styles.transcodeSkippedWarning.text, MessageType.Error);
+					break;
+				}
+			}
 			base.ApplyRevertGUI();
 		}
 
-		internal override bool HasModified()
+		public override bool HasModified()
 		{
 			return base.HasModified() || this.m_ModifiedTargetSettings;
 		}
 
-		internal override void Apply()
+		protected override void Apply()
 		{
 			base.Apply();
 			this.WriteSettingsToBackend();
@@ -721,7 +748,7 @@ namespace UnityEditor
 			return previewTitle;
 		}
 
-		internal override void ResetValues()
+		protected override void ResetValues()
 		{
 			base.ResetValues();
 			this.OnEnable();
@@ -729,51 +756,60 @@ namespace UnityEditor
 
 		public override void OnPreviewSettings()
 		{
-			EditorGUI.BeginDisabledGroup(Application.isPlaying || this.HasModified());
+			VideoClipImporter videoClipImporter = (VideoClipImporter)base.target;
+			EditorGUI.BeginDisabledGroup(Application.isPlaying || this.HasModified() || videoClipImporter.useLegacyImporter);
 			this.m_IsPlaying = (PreviewGUI.CycleButton((!this.m_IsPlaying) ? 0 : 1, VideoClipImporterInspector.s_Styles.playIcons) != 0);
 			EditorGUI.EndDisabledGroup();
 		}
 
 		public override void OnPreviewGUI(Rect r, GUIStyle background)
 		{
-			if (Event.current.type == EventType.Repaint)
+			bool flag = Event.current.type == EventType.Repaint;
+			if (flag)
 			{
 				background.Draw(r, false, false, false, false);
-				VideoClipImporter videoClipImporter = (VideoClipImporter)base.target;
-				if (this.m_IsPlaying && !videoClipImporter.isPlayingPreview)
+			}
+			VideoClipImporter videoClipImporter = (VideoClipImporter)base.target;
+			if (this.m_IsPlaying && !videoClipImporter.isPlayingPreview)
+			{
+				videoClipImporter.PlayPreview();
+			}
+			else if (!this.m_IsPlaying && videoClipImporter.isPlayingPreview)
+			{
+				videoClipImporter.StopPreview();
+			}
+			Texture previewTexture = videoClipImporter.GetPreviewTexture();
+			if (previewTexture && previewTexture.width != 0 && previewTexture.height != 0)
+			{
+				float num = (float)previewTexture.width;
+				float num2 = (float)previewTexture.height;
+				if (videoClipImporter.defaultTargetSettings.enableTranscoding)
 				{
-					videoClipImporter.PlayPreview();
+					VideoResizeMode resizeMode = videoClipImporter.defaultTargetSettings.resizeMode;
+					num = (float)videoClipImporter.GetResizeWidth(resizeMode);
+					num2 = (float)videoClipImporter.GetResizeHeight(resizeMode);
 				}
-				else if (!this.m_IsPlaying && videoClipImporter.isPlayingPreview)
+				if (videoClipImporter.pixelAspectRatioDenominator > 0)
 				{
-					videoClipImporter.StopPreview();
+					num *= (float)videoClipImporter.pixelAspectRatioNumerator / (float)videoClipImporter.pixelAspectRatioDenominator;
 				}
-				Texture previewTexture = videoClipImporter.GetPreviewTexture();
-				if (previewTexture && previewTexture.width != 0 && previewTexture.height != 0)
+				float num3;
+				if (r.width / num * num2 > r.height)
 				{
-					float num = 1f;
-					float num2 = 1f;
-					if (videoClipImporter.defaultTargetSettings.enableTranscoding)
-					{
-						VideoResizeMode resizeMode = videoClipImporter.defaultTargetSettings.resizeMode;
-						num = (float)(videoClipImporter.GetResizeWidth(resizeMode) / previewTexture.width);
-						num2 = (float)(videoClipImporter.GetResizeHeight(resizeMode) / previewTexture.height);
-					}
-					float num3 = Mathf.Min(new float[]
-					{
-						num * r.width / (float)previewTexture.width,
-						num2 * r.height / (float)previewTexture.height,
-						num,
-						num2
-					});
-					Rect rect = new Rect(r.x, r.y, (float)previewTexture.width * num3, (float)previewTexture.height * num3);
-					PreviewGUI.BeginScrollView(r, this.m_Position, rect, "PreHorizontalScrollbar", "PreHorizontalScrollbarThumb");
-					EditorGUI.DrawTextureTransparent(rect, previewTexture, ScaleMode.StretchToFill);
-					this.m_Position = PreviewGUI.EndScrollView();
-					if (this.m_IsPlaying)
-					{
-						GUIView.current.Repaint();
-					}
+					num3 = r.height / num2;
+				}
+				else
+				{
+					num3 = r.width / num;
+				}
+				num3 = Mathf.Clamp01(num3);
+				Rect rect = new Rect(r.x, r.y, num * num3, num2 * num3);
+				PreviewGUI.BeginScrollView(r, this.m_Position, rect, "PreHorizontalScrollbar", "PreHorizontalScrollbarThumb");
+				EditorGUI.DrawTextureTransparent(rect, previewTexture, ScaleMode.StretchToFill);
+				this.m_Position = PreviewGUI.EndScrollView();
+				if (this.m_IsPlaying && flag)
+				{
+					GUIView.current.Repaint();
 				}
 			}
 		}

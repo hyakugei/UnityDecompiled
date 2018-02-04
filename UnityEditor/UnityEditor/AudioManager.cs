@@ -1,9 +1,14 @@
 using System;
+using UnityEditorInternal;
 using UnityEngine;
 
 namespace UnityEditor
 {
-	internal sealed class AudioManager : UnityEngine.Object
+	[NativeClass(null)]
+	internal sealed class AudioManager : ProjectSettingsBase
 	{
+		private AudioManager()
+		{
+		}
 	}
 }

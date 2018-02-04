@@ -1,12 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using UnityEngine;
 
 namespace UnityEditor
 {
-	internal class ExpressionEvaluator
+	public class ExpressionEvaluator
 	{
 		private enum Associativity
 		{
@@ -70,7 +69,7 @@ namespace UnityEditor
 					ExpressionEvaluator.Operator @operator = ExpressionEvaluator.CharToOperator(text[0]);
 					List<T> list = new List<T>();
 					bool flag = true;
-					while (stack.LongCount<string>() > 0L && !ExpressionEvaluator.IsCommand(stack.Peek()) && list.Count < @operator.inputs)
+					while (stack.Count > 0 && !ExpressionEvaluator.IsCommand(stack.Peek()) && list.Count < @operator.inputs)
 					{
 						T item;
 						flag &= ExpressionEvaluator.TryParse<T>(stack.Pop(), out item);
@@ -82,16 +81,16 @@ namespace UnityEditor
 						result = default(T);
 						return result;
 					}
-					Stack<string> arg_D0_0 = stack;
+					Stack<string> arg_CF_0 = stack;
 					T t = ExpressionEvaluator.Evaluate<T>(list.ToArray(), text[0]);
-					arg_D0_0.Push(t.ToString());
+					arg_CF_0.Push(t.ToString());
 				}
 				else
 				{
 					stack.Push(text);
 				}
 			}
-			if (stack.LongCount<string>() == 1L)
+			if (stack.Count == 1)
 			{
 				T t2;
 				if (ExpressionEvaluator.TryParse<T>(stack.Pop(), out t2))
@@ -107,7 +106,7 @@ namespace UnityEditor
 		private static string[] InfixToRPN(string[] tokens)
 		{
 			Stack<char> stack = new Stack<char>();
-			Stack<string> stack2 = new Stack<string>();
+			Queue<string> queue = new Queue<string>();
 			for (int i = 0; i < tokens.Length; i++)
 			{
 				string text = tokens[i];
@@ -120,11 +119,11 @@ namespace UnityEditor
 					}
 					else if (c == ')')
 					{
-						while (stack.LongCount<char>() > 0L && stack.Peek() != '(')
+						while (stack.Count > 0 && stack.Peek() != '(')
 						{
-							stack2.Push(stack.Pop().ToString());
+							queue.Enqueue(stack.Pop().ToString());
 						}
-						if (stack.LongCount<char>() > 0L)
+						if (stack.Count > 0)
 						{
 							stack.Pop();
 						}
@@ -134,27 +133,27 @@ namespace UnityEditor
 						ExpressionEvaluator.Operator newOperator = ExpressionEvaluator.CharToOperator(c);
 						while (ExpressionEvaluator.NeedToPop(stack, newOperator))
 						{
-							stack2.Push(stack.Pop().ToString());
+							queue.Enqueue(stack.Pop().ToString());
 						}
 						stack.Push(c);
 					}
 				}
 				else
 				{
-					stack2.Push(text);
+					queue.Enqueue(text);
 				}
 			}
-			while (stack.LongCount<char>() > 0L)
+			while (stack.Count > 0)
 			{
-				stack2.Push(stack.Pop().ToString());
+				queue.Enqueue(stack.Pop().ToString());
 			}
-			return stack2.Reverse<string>().ToArray<string>();
+			return queue.ToArray();
 		}
 
 		private static bool NeedToPop(Stack<char> operatorStack, ExpressionEvaluator.Operator newOperator)
 		{
 			bool result;
-			if (operatorStack.LongCount<char>() > 0L)
+			if (operatorStack.Count > 0)
 			{
 				ExpressionEvaluator.Operator @operator = ExpressionEvaluator.CharToOperator(operatorStack.Peek());
 				if (ExpressionEvaluator.IsOperator(@operator.character))

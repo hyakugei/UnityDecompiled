@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.Scripting;
 
 namespace UnityEditor.Audio
 {
+	[ExcludeFromPreset]
 	internal sealed class AudioMixerGroupController : AudioMixerGroup
 	{
 		public extern GUID groupID

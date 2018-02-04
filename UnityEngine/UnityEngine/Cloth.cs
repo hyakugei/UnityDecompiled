@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using UnityEngine.Internal;
 using UnityEngine.Scripting;
@@ -10,40 +11,32 @@ namespace UnityEngine
 	{
 		public extern float sleepThreshold
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern float bendingStiffness
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern float stretchingStiffness
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		public extern float damping
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
@@ -53,12 +46,12 @@ namespace UnityEngine
 			get
 			{
 				Vector3 result;
-				this.INTERNAL_get_externalAcceleration(out result);
+				this.get_externalAcceleration_Injected(out result);
 				return result;
 			}
 			set
 			{
-				this.INTERNAL_set_externalAcceleration(ref value);
+				this.set_externalAcceleration_Injected(ref value);
 			}
 		}
 
@@ -67,37 +60,121 @@ namespace UnityEngine
 			get
 			{
 				Vector3 result;
-				this.INTERNAL_get_randomAcceleration(out result);
+				this.get_randomAcceleration_Injected(out result);
 				return result;
 			}
 			set
 			{
-				this.INTERNAL_set_randomAcceleration(ref value);
+				this.set_randomAcceleration_Injected(ref value);
 			}
 		}
 
 		public extern bool useGravity
 		{
-			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			get;
-			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public extern bool enabled
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public extern float friction
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public extern float collisionMassScale
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public extern bool enableContinuousCollision
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public extern float useVirtualParticles
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public extern float worldVelocityScale
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public extern float worldAccelerationScale
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public extern float clothSolverFrequency
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public extern bool useTethers
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public extern float stiffnessFrequency
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public extern float selfCollisionDistance
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		public extern float selfCollisionStiffness
+		{
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
 			[MethodImpl(MethodImplOptions.InternalCall)]
 			set;
 		}
 
 		[Obsolete("Deprecated. Cloth.selfCollisions is no longer supported since Unity 5.0.", true)]
 		public extern bool selfCollision
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		public extern bool enabled
 		{
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
@@ -121,37 +198,8 @@ namespace UnityEngine
 			get;
 		}
 
-		public extern float friction
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		public extern float collisionMassScale
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
+		[Obsolete("useContinuousCollision is no longer supported, use enableContinuousCollision instead")]
 		public extern float useContinuousCollision
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		public extern float useVirtualParticles
 		{
 			[GeneratedByOldBindingsGenerator]
 			[MethodImpl(MethodImplOptions.InternalCall)]
@@ -171,34 +219,17 @@ namespace UnityEngine
 			set;
 		}
 
-		public extern float worldVelocityScale
+		[Obsolete("Parameter solverFrequency is obsolete and no longer supported. Please use clothSolverFrequency instead.")]
+		public bool solverFrequency
 		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		public extern float worldAccelerationScale
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
-		}
-
-		public extern bool solverFrequency
-		{
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			get;
-			[GeneratedByOldBindingsGenerator]
-			[MethodImpl(MethodImplOptions.InternalCall)]
-			set;
+			get
+			{
+				return this.clothSolverFrequency > 0f;
+			}
+			set
+			{
+				this.clothSolverFrequency = ((!value) ? 0f : 120f);
+			}
 		}
 
 		public extern CapsuleCollider[] capsuleColliders
@@ -221,21 +252,59 @@ namespace UnityEngine
 			set;
 		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void INTERNAL_get_externalAcceleration(out Vector3 value);
+		public void GetVirtualParticleIndices(List<uint> indices)
+		{
+			if (indices == null)
+			{
+				throw new ArgumentNullException("indices");
+			}
+			this.GetVirtualParticleIndicesMono(indices);
+		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void INTERNAL_set_externalAcceleration(ref Vector3 value);
+		public void SetVirtualParticleIndices(List<uint> indices)
+		{
+			if (indices == null)
+			{
+				throw new ArgumentNullException("indices");
+			}
+			this.SetVirtualParticleIndicesMono(indices);
+		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void INTERNAL_get_randomAcceleration(out Vector3 value);
+		public void GetVirtualParticleWeights(List<Vector3> weights)
+		{
+			if (weights == null)
+			{
+				throw new ArgumentNullException("weights");
+			}
+			this.GetVirtualParticleWeightsMono(weights);
+		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private extern void INTERNAL_set_randomAcceleration(ref Vector3 value);
+		public void SetVirtualParticleWeights(List<Vector3> weights)
+		{
+			if (weights == null)
+			{
+				throw new ArgumentNullException("weights");
+			}
+			this.SetVirtualParticleWeightsMono(weights);
+		}
+
+		public void GetSelfAndInterCollisionIndices(List<uint> indices)
+		{
+			if (indices == null)
+			{
+				throw new ArgumentNullException("indices");
+			}
+			this.GetSelfAndInterCollisionIndicesMono(indices);
+		}
+
+		public void SetSelfAndInterCollisionIndices(List<uint> indices)
+		{
+			if (indices == null)
+			{
+				throw new ArgumentNullException("indices");
+			}
+			this.SetSelfAndInterCollisionIndicesMono(indices);
+		}
 
 		public void ClearTransformMotion()
 		{
@@ -256,5 +325,41 @@ namespace UnityEngine
 			float interpolationTime = 0.5f;
 			this.SetEnabledFading(enabled, interpolationTime);
 		}
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern void GetVirtualParticleIndicesMono(object indicesOutList);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern void SetVirtualParticleIndicesMono(object indicesInList);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern void GetVirtualParticleWeightsMono(object weightsOutList);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern void SetVirtualParticleWeightsMono(object weightsInList);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern void GetSelfAndInterCollisionIndicesMono(object indicesOutList);
+
+		[GeneratedByOldBindingsGenerator]
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern void SetSelfAndInterCollisionIndicesMono(object indicesInList);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void get_externalAcceleration_Injected(out Vector3 ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void set_externalAcceleration_Injected(ref Vector3 value);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void get_randomAcceleration_Injected(out Vector3 ret);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private extern void set_randomAcceleration_Injected(ref Vector3 value);
 	}
 }

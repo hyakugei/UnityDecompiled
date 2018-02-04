@@ -1,53 +1,88 @@
 using System;
 using System.Runtime.CompilerServices;
 using UnityEngine;
-using UnityEngine.Scripting;
 
 namespace UnityEditor
 {
-	public sealed class AnimationMode
+	public class AnimationMode
 	{
-		internal delegate void AnimationModeChangedCallback(bool newValue);
-
 		private static bool s_InAnimationPlaybackMode = false;
 
-		private static Color s_AnimatedPropertyColorLight = new Color(1f, 0.65f, 0.6f, 1f);
+		private static bool s_InAnimationRecordMode = false;
 
-		private static Color s_AnimatedPropertyColorDark = new Color(1f, 0.55f, 0.5f, 1f);
+		private static PrefColor s_AnimatedPropertyColor = new PrefColor("Animation/Property Animated", 0.82f, 0.97f, 1f, 1f, 0.54f, 0.85f, 1f, 1f);
 
-		internal static AnimationMode.AnimationModeChangedCallback animationModeChangedCallback;
+		private static PrefColor s_RecordedPropertyColor = new PrefColor("Animation/Property Recorded", 1f, 0.6f, 0.6f, 1f, 1f, 0.5f, 0.5f, 1f);
+
+		private static PrefColor s_CandidatePropertyColor = new PrefColor("Animation/Property Candidate", 1f, 0.7f, 0.6f, 1f, 1f, 0.67f, 0.43f, 1f);
+
+		private static AnimationModeDriver s_DummyDriver;
 
 		public static Color animatedPropertyColor
 		{
 			get
 			{
-				return (!EditorGUIUtility.isProSkin) ? AnimationMode.s_AnimatedPropertyColorLight : AnimationMode.s_AnimatedPropertyColorDark;
+				return AnimationMode.s_AnimatedPropertyColor;
 			}
 		}
 
-		[GeneratedByOldBindingsGenerator]
+		public static Color recordedPropertyColor
+		{
+			get
+			{
+				return AnimationMode.s_RecordedPropertyColor;
+			}
+		}
+
+		public static Color candidatePropertyColor
+		{
+			get
+			{
+				return AnimationMode.s_CandidatePropertyColor;
+			}
+		}
+
+		private static AnimationModeDriver DummyDriver()
+		{
+			if (AnimationMode.s_DummyDriver == null)
+			{
+				AnimationMode.s_DummyDriver = ScriptableObject.CreateInstance<AnimationModeDriver>();
+				AnimationMode.s_DummyDriver.name = "DummyDriver";
+			}
+			return AnimationMode.s_DummyDriver;
+		}
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern bool IsPropertyAnimated(UnityEngine.Object target, string propertyPath);
 
-		private static void InternalAnimationModeChanged(bool newValue)
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern bool IsPropertyCandidate(UnityEngine.Object target, string propertyPath);
+
+		public static void StopAnimationMode()
 		{
-			if (AnimationMode.animationModeChangedCallback != null)
-			{
-				AnimationMode.animationModeChangedCallback(newValue);
-			}
+			AnimationMode.StopAnimationMode(AnimationMode.DummyDriver());
 		}
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern void StopAnimationMode();
+		internal static extern void StopAnimationMode(UnityEngine.Object driver);
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern bool InAnimationMode();
+		public static bool InAnimationMode()
+		{
+			return AnimationMode.Internal_InAnimationModeNoDriver();
+		}
 
-		[GeneratedByOldBindingsGenerator]
+		internal static bool InAnimationMode(UnityEngine.Object driver)
+		{
+			return AnimationMode.Internal_InAnimationMode(driver);
+		}
+
+		public static void StartAnimationMode()
+		{
+			AnimationMode.StartAnimationMode(AnimationMode.DummyDriver());
+		}
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		public static extern void StartAnimationMode();
+		internal static extern void StartAnimationMode(UnityEngine.Object driver);
 
 		internal static void StopAnimationPlaybackMode()
 		{
@@ -64,41 +99,74 @@ namespace UnityEditor
 			AnimationMode.s_InAnimationPlaybackMode = true;
 		}
 
-		[GeneratedByOldBindingsGenerator]
+		internal static void StopAnimationRecording()
+		{
+			AnimationMode.s_InAnimationRecordMode = false;
+		}
+
+		internal static bool InAnimationRecording()
+		{
+			return AnimationMode.s_InAnimationRecordMode;
+		}
+
+		internal static void StartAnimationRecording()
+		{
+			AnimationMode.s_InAnimationRecordMode = true;
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void StartCandidateRecording(UnityEngine.Object driver);
+
+		internal static void AddCandidate(EditorCurveBinding binding, PropertyModification modification, bool keepPrefabOverride)
+		{
+			AnimationMode.AddCandidate_Injected(ref binding, modification, keepPrefabOverride);
+		}
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void StopCandidateRecording();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern bool IsRecordingCandidates();
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void BeginSampling();
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void EndSampling();
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public static extern void SampleAnimationClip(GameObject gameObject, AnimationClip clip, float time);
 
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void SampleCandidateClip(GameObject gameObject, AnimationClip clip, float time);
+
 		public static void AddPropertyModification(EditorCurveBinding binding, PropertyModification modification, bool keepPrefabOverride)
 		{
-			AnimationMode.INTERNAL_CALL_AddPropertyModification(ref binding, modification, keepPrefabOverride);
+			AnimationMode.AddPropertyModification_Injected(ref binding, modification, keepPrefabOverride);
 		}
 
-		[GeneratedByOldBindingsGenerator]
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		private static extern void INTERNAL_CALL_AddPropertyModification(ref EditorCurveBinding binding, PropertyModification modification, bool keepPrefabOverride);
-
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern void InitializePropertyModificationForGameObject(GameObject gameObject, AnimationClip clip);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern void InitializePropertyModificationForObject(UnityEngine.Object target, AnimationClip clip);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern void RevertPropertyModificationsForGameObject(GameObject gameObject);
 
-		[GeneratedByOldBindingsGenerator]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern void RevertPropertyModificationsForObject(UnityEngine.Object target);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern bool Internal_InAnimationMode(UnityEngine.Object driver);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern bool Internal_InAnimationModeNoDriver();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void AddCandidate_Injected(ref EditorCurveBinding binding, PropertyModification modification, bool keepPrefabOverride);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		private static extern void AddPropertyModification_Injected(ref EditorCurveBinding binding, PropertyModification modification, bool keepPrefabOverride);
 	}
 }

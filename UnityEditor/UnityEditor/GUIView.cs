@@ -1,7 +1,12 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Threading;
+using UnityEditor.Experimental.UIElements;
+using UnityEditor.StyleSheets;
 using UnityEngine;
+using UnityEngine.Experimental.UIElements;
+using UnityEngine.Experimental.UIElements.StyleSheets;
 using UnityEngine.Scripting;
 
 namespace UnityEditor
@@ -10,15 +15,51 @@ namespace UnityEditor
 	[StructLayout(LayoutKind.Sequential)]
 	internal class GUIView : View
 	{
+		private Panel m_Panel = null;
+
+		private EditorCursorManager m_CursorManager = new EditorCursorManager();
+
+		private static EditorContextualMenuManager s_ContextualMenuManager;
+
 		private int m_DepthBufferBits = 0;
 
-		private bool m_WantsMouseMove = false;
-
-		private bool m_WantsMouseEnterLeaveWindow = false;
+		private EventInterests m_EventInterests;
 
 		private bool m_AutoRepaintOnSceneChange = false;
 
 		private bool m_BackgroundValid = false;
+
+		[CompilerGenerated]
+		private static LoadResourceFunction <>f__mg$cache0;
+
+		[CompilerGenerated]
+		private static StyleSheetApplicator.CreateDefaultCursorStyleFunction <>f__mg$cache1;
+
+		internal static event Action<GUIView> positionChanged
+		{
+			add
+			{
+				Action<GUIView> action = GUIView.positionChanged;
+				Action<GUIView> action2;
+				do
+				{
+					action2 = action;
+					action = Interlocked.CompareExchange<Action<GUIView>>(ref GUIView.positionChanged, (Action<GUIView>)Delegate.Combine(action2, value), action);
+				}
+				while (action != action2);
+			}
+			remove
+			{
+				Action<GUIView> action = GUIView.positionChanged;
+				Action<GUIView> action2;
+				do
+				{
+					action2 = action;
+					action = Interlocked.CompareExchange<Action<GUIView>>(ref GUIView.positionChanged, (Action<GUIView>)Delegate.Remove(action2, value), action);
+				}
+				while (action != action2);
+			}
+		}
 
 		public static extern GUIView current
 		{
@@ -58,16 +99,71 @@ namespace UnityEditor
 			set;
 		}
 
+		internal extern bool disableInputEvents
+		{
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			get;
+			[GeneratedByOldBindingsGenerator]
+			[MethodImpl(MethodImplOptions.InternalCall)]
+			set;
+		}
+
+		protected Panel panel
+		{
+			get
+			{
+				if (this.m_Panel == null)
+				{
+					UXMLEditorFactories.RegisterAll();
+					this.m_Panel = UIElementsUtility.FindOrCreatePanel(this, ContextType.Editor, DataWatchService.sharedInstance);
+					this.m_Panel.cursorManager = this.m_CursorManager;
+					this.m_Panel.contextualMenuManager = GUIView.s_ContextualMenuManager;
+				}
+				return this.m_Panel;
+			}
+		}
+
+		public VisualElement visualTree
+		{
+			get
+			{
+				return this.panel.visualTree;
+			}
+		}
+
+		protected IMGUIContainer imguiContainer
+		{
+			get;
+			private set;
+		}
+
+		public EventInterests eventInterests
+		{
+			get
+			{
+				return this.m_EventInterests;
+			}
+			set
+			{
+				this.m_EventInterests = value;
+				this.panel.IMGUIEventInterests = this.m_EventInterests;
+				this.Internal_SetWantsMouseMove(this.wantsMouseMove);
+				this.Internal_SetWantsMouseEnterLeaveWindow(this.wantsMouseEnterLeaveWindow);
+			}
+		}
+
 		public bool wantsMouseMove
 		{
 			get
 			{
-				return this.m_WantsMouseMove;
+				return this.m_EventInterests.wantsMouseMove;
 			}
 			set
 			{
-				this.m_WantsMouseMove = value;
-				this.Internal_SetWantsMouseMove(this.m_WantsMouseMove);
+				this.m_EventInterests.wantsMouseMove = value;
+				this.panel.IMGUIEventInterests = this.m_EventInterests;
+				this.Internal_SetWantsMouseMove(this.wantsMouseMove);
 			}
 		}
 
@@ -75,12 +171,13 @@ namespace UnityEditor
 		{
 			get
 			{
-				return this.m_WantsMouseEnterLeaveWindow;
+				return this.m_EventInterests.wantsMouseEnterLeaveWindow;
 			}
 			set
 			{
-				this.m_WantsMouseEnterLeaveWindow = value;
-				this.Internal_SetWantsMouseEnterLeaveWindow(this.m_WantsMouseEnterLeaveWindow);
+				this.m_EventInterests.wantsMouseEnterLeaveWindow = value;
+				this.panel.IMGUIEventInterests = this.m_EventInterests;
+				this.Internal_SetWantsMouseEnterLeaveWindow(this.wantsMouseEnterLeaveWindow);
 			}
 		}
 
@@ -131,6 +228,23 @@ namespace UnityEditor
 			set
 			{
 			}
+		}
+
+		static GUIView()
+		{
+			GUIView.positionChanged = null;
+			GUIView.s_ContextualMenuManager = new EditorContextualMenuManager();
+			if (GUIView.<>f__mg$cache0 == null)
+			{
+				GUIView.<>f__mg$cache0 = new LoadResourceFunction(StyleSheetResourceUtil.LoadResource);
+			}
+			Panel.loadResourceFunc = GUIView.<>f__mg$cache0;
+			if (GUIView.<>f__mg$cache1 == null)
+			{
+				GUIView.<>f__mg$cache1 = new StyleSheetApplicator.CreateDefaultCursorStyleFunction(UIElementsEditorUtility.CreateDefaultCursorStyle);
+			}
+			StyleSheetApplicator.createDefaultCursorStyleFunc = GUIView.<>f__mg$cache1;
+			Panel.TimeSinceStartup = (() => (long)(EditorApplication.timeSinceStartup * 1000.0));
 		}
 
 		[GeneratedByOldBindingsGenerator]
@@ -211,7 +325,7 @@ namespace UnityEditor
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern void Focus();
 
-		[GeneratedByOldBindingsGenerator]
+		[GeneratedByOldBindingsGenerator, ThreadAndSerializationSafe]
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		public extern void Repaint();
 
@@ -275,8 +389,9 @@ namespace UnityEditor
 			}
 			this.Internal_SetAutoRepaint(this.m_AutoRepaintOnSceneChange);
 			this.Internal_SetPosition(base.windowPosition);
-			this.Internal_SetWantsMouseMove(this.m_WantsMouseMove);
-			this.Internal_SetWantsMouseEnterLeaveWindow(this.m_WantsMouseEnterLeaveWindow);
+			this.Internal_SetWantsMouseMove(this.m_EventInterests.wantsMouseMove);
+			this.Internal_SetWantsMouseEnterLeaveWindow(this.m_EventInterests.wantsMouseMove);
+			this.panel.visualTree.SetSize(base.windowPosition.size);
 			this.m_BackgroundValid = false;
 		}
 
@@ -284,6 +399,34 @@ namespace UnityEditor
 		{
 			this.Internal_Recreate(this.m_DepthBufferBits);
 			this.m_BackgroundValid = false;
+		}
+
+		protected virtual void OnEnable()
+		{
+			this.imguiContainer = new IMGUIContainer(new Action(this.OldOnGUI))
+			{
+				useOwnerObjectGUIState = true
+			};
+			this.imguiContainer.StretchToParentSize();
+			this.imguiContainer.persistenceKey = "Dockarea";
+			this.visualTree.Insert(0, this.imguiContainer);
+		}
+
+		protected virtual void OnDisable()
+		{
+			if (this.imguiContainer.HasMouseCapture())
+			{
+				MouseCaptureController.ReleaseMouseCapture();
+			}
+			this.visualTree.Remove(this.imguiContainer);
+		}
+
+		protected virtual void OldOnGUI()
+		{
+		}
+
+		protected virtual void OnGUI()
+		{
 		}
 
 		protected override void SetPosition(Rect newPos)
@@ -298,11 +441,16 @@ namespace UnityEditor
 			{
 				this.Internal_SetPosition(base.windowPosition);
 				this.m_BackgroundValid = false;
+				this.panel.visualTree.SetSize(base.windowPosition.size);
+				if (GUIView.positionChanged != null)
+				{
+					GUIView.positionChanged(this);
+				}
 				this.Repaint();
 			}
 		}
 
-		public new void OnDestroy()
+		protected override void OnDestroy()
 		{
 			this.Internal_Close();
 			base.OnDestroy();

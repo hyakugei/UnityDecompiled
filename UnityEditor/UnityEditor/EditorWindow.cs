@@ -1,13 +1,15 @@
 using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using UnityEditor.Experimental.UIElements;
 using UnityEngine;
+using UnityEngine.Experimental.UIElements;
 using UnityEngine.Internal;
 using UnityEngine.Scripting;
 
 namespace UnityEditor
 {
-	[UsedByNativeCode]
+	[ExcludeFromObjectFactory, UsedByNativeCode]
 	public class EditorWindow : ScriptableObject
 	{
 		[HideInInspector, SerializeField]
@@ -22,11 +24,18 @@ namespace UnityEditor
 		[HideInInspector, SerializeField]
 		internal GUIContent m_TitleContent;
 
-		[HideInInspector, SerializeField]
+		[HideInInspector]
 		private int m_DepthBufferBits = 0;
 
 		[HideInInspector, SerializeField]
 		internal Rect m_Pos = new Rect(0f, 0f, 320f, 240f);
+
+		private VisualElement m_RootVisualContainer;
+
+		[HideInInspector, SerializeField]
+		private SerializableJsonDictionary m_PersistentViewDataDictionary;
+
+		private bool m_EnableViewDataPersistence;
 
 		private Rect m_GameViewRect;
 
@@ -36,9 +45,9 @@ namespace UnityEditor
 
 		private bool m_DontClearBackground;
 
-		private bool m_WantsMouseMove;
+		private EventInterests m_EventInterests = default(EventInterests);
 
-		private bool m_WantsMouseEnterLeaveWindow;
+		private bool m_DisableInputEvents;
 
 		[NonSerialized]
 		internal HostView m_Parent;
@@ -53,15 +62,46 @@ namespace UnityEditor
 
 		internal float m_FadeoutTime = 0f;
 
+		internal VisualElement rootVisualContainer
+		{
+			get
+			{
+				if (this.m_RootVisualContainer == null)
+				{
+					this.m_RootVisualContainer = new VisualElement
+					{
+						name = VisualElementUtils.GetUniqueName("rootVisualContainer"),
+						pickingMode = PickingMode.Ignore,
+						persistenceKey = "rootVisualContainer"
+					};
+					UIElementsEditorUtility.AddDefaultEditorStyleSheets(this.m_RootVisualContainer);
+				}
+				return this.m_RootVisualContainer;
+			}
+		}
+
+		internal SerializableJsonDictionary viewDataDictionary
+		{
+			get
+			{
+				if (this.m_EnableViewDataPersistence && this.m_PersistentViewDataDictionary == null)
+				{
+					string preferencesFileName = base.GetType().ToString();
+					this.m_PersistentViewDataDictionary = ScriptableSingletonDictionary<EditorWindowPersistentViewData, SerializableJsonDictionary>.instance[preferencesFileName];
+				}
+				return this.m_PersistentViewDataDictionary;
+			}
+		}
+
 		public bool wantsMouseMove
 		{
 			get
 			{
-				return this.m_WantsMouseMove;
+				return this.m_EventInterests.wantsMouseMove;
 			}
 			set
 			{
-				this.m_WantsMouseMove = value;
+				this.m_EventInterests.wantsMouseMove = value;
 				this.MakeParentsSettingsMatchMe();
 			}
 		}
@@ -70,11 +110,11 @@ namespace UnityEditor
 		{
 			get
 			{
-				return this.m_WantsMouseEnterLeaveWindow;
+				return this.m_EventInterests.wantsMouseEnterLeaveWindow;
 			}
 			set
 			{
-				this.m_WantsMouseEnterLeaveWindow = value;
+				this.m_EventInterests.wantsMouseEnterLeaveWindow = value;
 				this.MakeParentsSettingsMatchMe();
 			}
 		}
@@ -144,6 +184,22 @@ namespace UnityEditor
 			get
 			{
 				return this.m_Parent != null && this.m_Parent.window != null && !this.m_Parent.window.IsNotDocked();
+			}
+		}
+
+		internal bool disableInputEvents
+		{
+			get
+			{
+				return this.m_DisableInputEvents;
+			}
+			set
+			{
+				if (this.m_DisableInputEvents != value)
+				{
+					this.m_DisableInputEvents = value;
+					this.MakeParentsSettingsMatchMe();
+				}
 			}
 		}
 
@@ -303,6 +359,7 @@ namespace UnityEditor
 
 		public EditorWindow()
 		{
+			this.m_EnableViewDataPersistence = true;
 			this.titleContent.text = base.GetType().ToString();
 		}
 
@@ -359,6 +416,33 @@ namespace UnityEditor
 			return EditorWindow.GetWindowWithRectPrivate(t, rect, utility, title);
 		}
 
+		internal void SavePersistentViewData()
+		{
+			if (this.m_EnableViewDataPersistence && this.m_PersistentViewDataDictionary != null)
+			{
+				string preferencesFileName = base.GetType().ToString();
+				ScriptableSingletonDictionary<EditorWindowPersistentViewData, SerializableJsonDictionary>.instance.Save(preferencesFileName, this.m_PersistentViewDataDictionary);
+			}
+		}
+
+		internal ISerializableJsonDictionary GetViewDataDictionary()
+		{
+			return this.viewDataDictionary;
+		}
+
+		internal void DisableViewDataPersistence()
+		{
+			this.m_EnableViewDataPersistence = false;
+		}
+
+		internal void ClearPersistentViewData()
+		{
+			string preferencesFileName = base.GetType().ToString();
+			ScriptableSingletonDictionary<EditorWindowPersistentViewData, SerializableJsonDictionary>.instance.Clear(preferencesFileName);
+			UnityEngine.Object.DestroyImmediate(this.m_PersistentViewDataDictionary);
+			this.m_PersistentViewDataDictionary = null;
+		}
+
 		public void BeginWindows()
 		{
 			EditorGUIInternal.BeginWindowsForward(1, base.GetInstanceID());
@@ -411,11 +495,11 @@ namespace UnityEditor
 				}
 				if (!string.IsNullOrEmpty(text))
 				{
-					result = EditorGUIUtility.TextContentWithIcon(editorWindowTitleAttribute.title, text);
+					result = EditorGUIUtility.TrTextContentWithIcon(editorWindowTitleAttribute.title, text);
 				}
 				else
 				{
-					result = EditorGUIUtility.TextContent(editorWindowTitleAttribute.title);
+					result = EditorGUIUtility.TrTextContent(editorWindowTitleAttribute.title, null, null);
 				}
 			}
 			else
@@ -558,8 +642,8 @@ namespace UnityEditor
 				bool flag = this.m_Parent.depthBufferBits != this.m_DepthBufferBits;
 				this.m_Parent.depthBufferBits = this.m_DepthBufferBits;
 				this.m_Parent.SetInternalGameViewDimensions(this.m_GameViewRect, this.m_GameViewClippedRect, this.m_GameViewTargetSize);
-				this.m_Parent.wantsMouseMove = this.m_WantsMouseMove;
-				this.m_Parent.wantsMouseEnterLeaveWindow = this.m_WantsMouseEnterLeaveWindow;
+				this.m_Parent.eventInterests = this.m_EventInterests;
+				this.m_Parent.disableInputEvents = this.m_DisableInputEvents;
 				Vector2 b = new Vector2((float)(this.m_Parent.borderSize.left + this.m_Parent.borderSize.right), (float)(this.m_Parent.borderSize.top + this.m_Parent.borderSize.bottom));
 				this.m_Parent.SetMinMaxSizes(this.minSize + b, this.maxSize + b);
 				if (flag)
